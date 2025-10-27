@@ -71,6 +71,43 @@ definitions:
         example: "2025-08-03T10:00:00Z"
         type: string
     type: object
+  handlers.ErrorResponse:
+    properties:
+      details:
+        example: Additional error details
+        type: string
+      error:
+        example: Template name is required
+        type: string
+    type: object
+  handlers.PDFGenerateRequest:
+    properties:
+      data:
+        additionalProperties: true
+        type: object
+      fileName:
+        example: generated-report
+        type: string
+      templateName:
+        example: report.html
+        type: string
+    required:
+    - data
+    - fileName
+    - templateName
+    type: object
+  handlers.PDFGenerateResponse:
+    properties:
+      filename:
+        example: generated-report.pdf
+        type: string
+      message:
+        example: PDF generated successfully
+        type: string
+      success:
+        example: true
+        type: boolean
+    type: object
   models.APIResponse:
     properties:
       data: {}
@@ -567,6 +604,38 @@ info:
   title: AE SaaS Basic API
   version: "1.0"
 paths:
+  /api/v1/pdf/create:
+    post:
+      consumes:
+      - application/json
+      description: Generate a PDF document based on a specified template and data
+      parameters:
+      - description: PDF generation request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.PDFGenerateRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: PDF generated successfully
+          schema:
+            $ref: '#/definitions/handlers.PDFGenerateResponse'
+        "400":
+          description: Invalid request
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+        "500":
+          description: Failed to generate PDF
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Generate PDF from template
+      tags:
+      - pdf
   /api/v1/ping:
     get:
       description: Simple ping endpoint

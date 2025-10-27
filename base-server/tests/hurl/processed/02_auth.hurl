@@ -2,9 +2,9 @@
 # Tests user registration, login, logout, and token management
 
 # Variables for this test run (automatically generated):
-# testuser_1761575244_7f3dbf06 - Unique username for this test
-# test_1761575244_7f3dbf06@example.com - Unique email for this test  
-# Pass123_7f3dbf06 - Unique password for this test
+# testuser_1761600534_af78c817 - Unique username for this test
+# test_1761600534_af78c817@example.com - Unique email for this test  
+# Pass123_af78c817 - Unique password for this test
 # http://localhost:8080 - Server host URL
 
 # Test 1: User Login with known existing user (we'll use testuser which should exist)
@@ -28,12 +28,12 @@ auth_token: jsonpath "$.data.token"
 POST http://localhost:8080/api/v1/auth/register
 Content-Type: application/json
 {
-  "username": "testuser_1761575244_7f3dbf06",
-  "email": "test_1761575244_7f3dbf06@example.com",
-  "password": "Pass123_7f3dbf06",
+  "username": "testuser_1761600534_af78c817",
+  "email": "test_1761600534_af78c817@example.com",
+  "password": "Pass123_af78c817",
   "first_name": "Test",
   "last_name": "User",
-  "company_name": "Test Company 1761575244_7f3dbf06",
+  "company_name": "Test Company 1761600534_af78c817",
   "accept_terms": true,
   "newsletter_opt_in": false
 }
@@ -55,7 +55,7 @@ jsonpath "$.success" == true
 POST http://localhost:8080/api/v1/auth/login
 Content-Type: application/json
 {
-  "username": "testuser_1761575244_7f3dbf06",
+  "username": "testuser_1761600534_af78c817",
   "password": "wrongpassword"
 }
 
@@ -68,8 +68,8 @@ jsonpath "$.message" exists
 POST http://localhost:8080/api/v1/auth/login
 Content-Type: application/json
 {
-  "username": "nonexistent_1761575244_7f3dbf06",
-  "password": "Pass123_7f3dbf06"
+  "username": "nonexistent_1761600534_af78c817",
+  "password": "Pass123_af78c817"
 }
 
 HTTP 401
@@ -86,7 +86,7 @@ jsonpath "$.success" == false
 
 # Test 7: Access protected endpoint with invalid token
 GET http://localhost:8080/api/v1/user-settings
-Authorization: Bearer invalid_token_1761575244_7f3dbf06
+Authorization: Bearer invalid_token_1761600534_af78c817
 
 HTTP 401
 [Asserts]

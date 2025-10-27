@@ -5,12 +5,12 @@
 POST http://localhost:8080/api/v1/auth/register
 Content-Type: application/json
 {
-  "username": "testuser_1761575244_7f3dbf06",
-  "email": "test_1761575244_7f3dbf06@example.com",
-  "password": "Pass123_7f3dbf06",
+  "username": "testuser_1761600534_af78c817",
+  "email": "test_1761600534_af78c817@example.com",
+  "password": "Pass123_af78c817",
   "first_name": "Email",
   "last_name": "Tester",
-  "company_name": "Email Test Company 1761575244_7f3dbf06",
+  "company_name": "Email Test Company 1761600534_af78c817",
   "accept_terms": true,
   "newsletter_opt_in": false
 }
@@ -22,8 +22,8 @@ HTTP *
 POST http://localhost:8080/api/v1/auth/login
 Content-Type: application/json
 {
-  "username": "testuser_1761575244_7f3dbf06",
-  "password": "Pass123_7f3dbf06"
+  "username": "testuser_1761600534_af78c817",
+  "password": "Pass123_af78c817"
 }
 
 HTTP 200
@@ -35,11 +35,11 @@ POST http://localhost:8080/api/v1/emails/send
 Authorization: Bearer {{auth_token}}
 Content-Type: application/json
 {
-  "to": "test_1761575244_7f3dbf06@example.com",
-  "from": "sender_1761575244_7f3dbf06@example.com",
-  "subject": "Test Email Subject - 1761575244_7f3dbf06",
-  "body": "This is a test email body for 1761575244_7f3dbf06.",
-  "html_body": "<h1>Test Email 1761575244_7f3dbf06</h1><p>This is a test email body in <strong>HTML</strong>.</p>"
+  "to": "test_1761600534_af78c817@example.com",
+  "from": "sender_1761600534_af78c817@example.com",
+  "subject": "Test Email Subject - 1761600534_af78c817",
+  "body": "This is a test email body for 1761600534_af78c817.",
+  "html_body": "<h1>Test Email 1761600534_af78c817</h1><p>This is a test email body in <strong>HTML</strong>.</p>"
 }
 
 # Email creation may have database issues, accept various status codes
@@ -66,7 +66,7 @@ HTTP *
 jsonpath "$.success" exists
 
 # Test 4: Search emails by subject
-GET http://localhost:8080/api/v1/emails?search=1761575244_7f3dbf06
+GET http://localhost:8080/api/v1/emails?search=1761600534_af78c817
 Authorization: Bearer {{auth_token}}
 
 HTTP 200
@@ -75,7 +75,7 @@ jsonpath "$.success" == true
 jsonpath "$.data.data" isCollection
 
 # Test 5: Filter emails by recipient (may not be implemented)
-GET http://localhost:8080/api/v1/emails?to=test_1761575244_7f3dbf06@example.com
+GET http://localhost:8080/api/v1/emails?to=test_1761600534_af78c817@example.com
 Authorization: Bearer {{auth_token}}
 
 HTTP 200

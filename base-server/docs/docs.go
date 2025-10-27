@@ -24,6 +24,57 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/api/v1/pdf/create": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Generate a PDF document based on a specified template and data",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "pdf"
+                ],
+                "summary": "Generate PDF from template",
+                "parameters": [
+                    {
+                        "description": "PDF generation request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/handlers.PDFGenerateRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "PDF generated successfully",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.PDFGenerateResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to generate PDF",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/ping": {
             "get": {
                 "description": "Simple ping endpoint",
@@ -2122,6 +2173,58 @@ const docTemplate = `{
                 "updatedAt": {
                     "type": "string",
                     "example": "2025-08-03T10:00:00Z"
+                }
+            }
+        },
+        "handlers.ErrorResponse": {
+            "type": "object",
+            "properties": {
+                "details": {
+                    "type": "string",
+                    "example": "Additional error details"
+                },
+                "error": {
+                    "type": "string",
+                    "example": "Template name is required"
+                }
+            }
+        },
+        "handlers.PDFGenerateRequest": {
+            "type": "object",
+            "required": [
+                "data",
+                "fileName",
+                "templateName"
+            ],
+            "properties": {
+                "data": {
+                    "type": "object",
+                    "additionalProperties": true
+                },
+                "fileName": {
+                    "type": "string",
+                    "example": "generated-report"
+                },
+                "templateName": {
+                    "type": "string",
+                    "example": "report.html"
+                }
+            }
+        },
+        "handlers.PDFGenerateResponse": {
+            "type": "object",
+            "properties": {
+                "filename": {
+                    "type": "string",
+                    "example": "generated-report.pdf"
+                },
+                "message": {
+                    "type": "string",
+                    "example": "PDF generated successfully"
+                },
+                "success": {
+                    "type": "boolean",
+                    "example": true
                 }
             }
         },

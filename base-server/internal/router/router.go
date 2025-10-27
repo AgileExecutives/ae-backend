@@ -4,7 +4,8 @@ import (
 	"github.com/ae-saas-basic/ae-saas-basic/internal/config"
 	"github.com/ae-saas-basic/ae-saas-basic/internal/handlers"
 	"github.com/ae-saas-basic/ae-saas-basic/internal/middleware"
-	"github.com/ae-saas-basic/ae-saas-basic/internal/services"
+	internalServices "github.com/ae-saas-basic/ae-saas-basic/internal/services"
+	"github.com/ae-saas-basic/ae-saas-basic/services"
 	"github.com/gin-gonic/gin"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
@@ -37,23 +38,11 @@ func SetupRouter(db *gorm.DB, cfg config.Config) *gin.Engine {
 	// staticHandler := handlers.NewStaticHandler("./statics")
 
 	// Initialize PDF service and handler
-	pdfServiceConfig := &services.PDFConfig{
-		PageSize:     cfg.PDF.PageSize,
-		Orientation:  cfg.PDF.Orientation,
-		MarginTop:    cfg.PDF.MarginTop,
-		MarginRight:  cfg.PDF.MarginRight,
-		MarginBottom: cfg.PDF.MarginBottom,
-		MarginLeft:   cfg.PDF.MarginLeft,
-		Quality:      cfg.PDF.Quality,
-		EnableJS:     cfg.PDF.EnableJS,
-		LoadTimeout:  cfg.PDF.LoadTimeout,
-		Headers:      make(map[string]string),
-	}
-	pdfService := services.NewPDFService(cfg.PDF.TemplateDir, cfg.PDF.OutputDir, pdfServiceConfig)
+	pdfService := services.NewPDFGenerator()
 	pdfHandler := handlers.NewPDFHandler(pdfService)
 
-	// Initialize fuzzy search service and handler
-	fuzzySearchService := services.NewFuzzySearchService(db, nil)
+	// Initialize fuzzy search service and handler (use internal services)
+	fuzzySearchService := internalServices.NewFuzzySearchService(db, nil)
 	fuzzySearchHandler := handlers.NewFuzzySearchHandler(fuzzySearchService)
 
 	// Public routes (no authentication required)
@@ -98,13 +87,6 @@ func SetupRouter(db *gorm.DB, cfg config.Config) *gin.Engine {
 		// Public plans (for signup pages)
 		public.GET("/plans", planHandler.GetPlans)
 		public.GET("/plans/:id", planHandler.GetPlan)
-
-		// Static asset serving
-		// public.GET("/assets/*path", staticHandler.ServeAsset)
-		// public.GET("/logo", staticHandler.ServeLogo)
-
-		// Public PDF routes (no public routes needed for PDF)
-		// All PDF functionality requires authentication
 
 		// Public fuzzy search routes (basic search only)
 		search := public.Group("/search")
@@ -179,28 +161,11 @@ func SetupRouter(db *gorm.DB, cfg config.Config) *gin.Engine {
 			userSettings.POST("/reset", userSettingsHandler.ResetUserSettings)
 		}
 
-		// Static file management (authenticated)
-		// statics := protected.Group("/admin/static")
-		// {
-		//	statics.GET("/assets", staticHandler.ListAssets)
-		//	statics.GET("/templates/:type/:template", staticHandler.ServeTemplate)
-		// }
-
 		// PDF generation routes (authenticated)
 		pdf := protected.Group("/pdf")
 		{
 			// Template management
-			pdf.GET("/templates", pdfHandler.ListTemplates)
-			pdf.GET("/templates/:template", pdfHandler.GetTemplateInfo)
-			pdf.POST("/templates/:template/preview", pdfHandler.PreviewTemplate)
-
-			// PDF generation
-			pdf.POST("/generate", pdfHandler.GeneratePDF)
-			pdf.POST("/generate/html", pdfHandler.GeneratePDFFromHTML)
-			pdf.POST("/generate/stream", pdfHandler.StreamPDF)
-
-			// Configuration
-			pdf.GET("/config", pdfHandler.GetPDFConfig)
+			pdf.POST("/create", pdfHandler.GeneratePDFFromTemplate)
 		}
 
 		// Fuzzy search routes (authenticated)
