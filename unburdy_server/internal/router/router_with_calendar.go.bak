@@ -1,0 +1,119 @@
+package router
+
+import (
+	"github.com/gin-contrib/cors"
+	"github.com/gin-gonic/gin"
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
+
+	// Import ae-saas-basic public API
+	baseAPI "github.com/ae-saas-basic/ae-saas-basic/api"
+
+	// Import calendar module
+	"github.com/ae-backend/calendar-module"
+
+	// Import unburdy-specific modules
+	"github.com/unburdy/unburdy-server-api/internal/handlers"
+	"github.com/unburdy/unburdy-server-api/internal/services"
+	"gorm.io/gorm"
+)
+
+// SetupExtendedRouterWithCalendar creates a router with client management and calendar functionality
+// Uses ae-saas-basic handlers for authentication and extends with additional modules
+func SetupExtendedRouterWithCalendar(db *gorm.DB) *gin.Engine {
+	r := gin.Default()
+
+	// CORS middleware
+	config := cors.DefaultConfig()
+	config.AllowOrigins = []string{"*"}
+	config.AllowHeaders = []string{"*"}
+	config.AllowMethods = []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"}
+	r.Use(cors.New(config))
+
+	// Initialize ae-saas-basic handlers
+	authHandler := baseAPI.NewAuthHandler(db)
+	healthHandler := baseAPI.NewHealthHandlerWithConfig(db)
+
+	// Initialize unburdy-specific services and handlers
+	clientService := services.NewClientService(db)
+	clientHandler := handlers.NewClientHandler(clientService)
+
+	// Health check endpoint (no auth required)
+	r.GET("/health", healthHandler.Health)
+
+	// Swagger documentation
+	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+
+	// API v1 routes
+	v1 := r.Group("/api/v1")
+
+	// Public routes (no authentication required)
+	{
+		// Health checks
+		v1.GET("/ping", healthHandler.Health)
+
+		// Authentication routes from ae-saas-basic
+		auth := v1.Group("/auth")
+		{
+			auth.POST("/login", authHandler.Login)
+			auth.POST("/register", authHandler.Register)
+			auth.POST("/forgot-password", authHandler.ForgotPassword)
+			auth.POST("/new-password/:token", authHandler.ResetPassword)
+			auth.GET("/verify-email/:token", authHandler.VerifyEmail)
+			auth.GET("/password-security", authHandler.GetPasswordSecurity)
+		}
+
+		// Register public calendar routes (if any)
+		calendar.RegisterCalendarPublicRoutes(v1, db)
+	}
+
+	// Protected routes (authentication required) - using ae-saas-basic auth middleware
+	protected := v1.Group("")
+	protected.Use(baseAPI.AuthMiddleware(db))
+	{
+		// Auth routes for authenticated users
+		auth := protected.Group("/auth")
+		{
+			auth.POST("/logout", authHandler.Logout)
+			auth.GET("/me", authHandler.Me)
+			auth.POST("/change-password", authHandler.ChangePassword)
+		}
+
+		// Client management endpoints (authenticated)
+		clients := protected.Group("/clients")
+		{
+			clients.POST("", clientHandler.CreateClient)
+			clients.GET("", clientHandler.GetAllClients)
+			clients.GET("/search", clientHandler.SearchClients)
+			clients.GET("/:id", clientHandler.GetClient)
+			clients.PUT("/:id", clientHandler.UpdateClient)
+			clients.DELETE("/:id", clientHandler.DeleteClient)
+		}
+
+		// Register calendar module routes (authenticated)
+		// This automatically adds all calendar endpoints under /api/v1/calendar/*
+		calendar.RegisterCalendarRoutes(protected, db)
+
+		// Future modules can be added the same way:
+		// billing.RegisterRoutes(protected, db)
+		// notifications.RegisterRoutes(protected, db)
+
+		// Status endpoint
+		protected.GET("/status", func(c *gin.Context) {
+			c.JSON(200, gin.H{
+				"message": "Unburdy Extended API",
+				"features": gin.H{
+					"client_management":    "✓ Available",
+					"calendar_integration": "✓ Available",
+					"base_api_integration": "✓ Active",
+				},
+				"modules": gin.H{
+					"calendar": "✓ Loaded",
+					"base_saas": "✓ Loaded",
+				},
+			})
+		})
+	}
+
+	return r
+}

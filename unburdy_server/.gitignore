@@ -1,0 +1,51 @@
+ae-saas-basic
+# Environment variables
+.env
+.env.staging
+
+# Data 
+statics
+
+# Go build artifacts
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+go.work
+
+# Dependency directories
+vendor/
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Docker
+.dockerignore
+
+debug*
+*.debug
+*.test
+*.log
+
+bin
+tmp
+main
+
+test_results
+server.log

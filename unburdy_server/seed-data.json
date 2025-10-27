@@ -1,0 +1,56 @@
+{
+  "tenants": [
+    {
+      "name": "Admin Tenant",
+      "slug": "admin"
+    },
+    {
+      "name": "Default Tenant",
+      "slug": "default-tenant"
+    }
+  ],
+  "plans": [
+    {
+      "name": "Basic Plan",
+      "slug": "basic",
+      "description": "Basic SaaS plan with essential features",
+      "price": 29.99,
+      "currency": "EUR",
+      "invoice_period": "monthly",
+      "active": true
+    },
+        {
+      "name": "Pro Plan",
+      "slug": "pro",
+      "description": "Pro SaaS plan with advanced features",
+      "price": 49.99,
+      "currency": "EUR",
+      "invoice_period": "monthly",
+      "active": true
+    }
+  ],
+  "users": [
+    {
+      "username": "admin",
+      "email": "admin@unburdy.de",
+      "password": "123123",
+      "first_name": "Admin",
+      "last_name": "Super",
+      "role": "super-admin",
+      "active": true,
+      "tenant_slug": "admin",
+      "email_verified": true
+    },
+    {
+      "username": "testuser",
+      "email": "testuser@unburdy.de",
+      "password": "newpass123",
+      "first_name": "Test",
+      "last_name": "User",
+      "role": "admin",
+      "active": true,
+      "tenant_slug": "default-tenant",
+      "email_verified": true
+    }
+  ]
+}

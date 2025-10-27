@@ -1,0 +1,2118 @@
+basePath: /api/v1
+definitions:
+  github_com_ae-saas-basic_ae-saas-basic_internal_models.ContactFormRequest:
+    description: Contact form submission request
+    properties:
+      email:
+        example: john.doe@example.com
+        type: string
+      message:
+        example: I am interested in learning more about your therapy services.
+        type: string
+      name:
+        example: John Doe
+        type: string
+      newsletter:
+        example: true
+        type: boolean
+      source:
+        example: website
+        type: string
+      subject:
+        example: Inquiry about therapy services
+        type: string
+      timestamp:
+        example: "2025-08-03T10:00:00Z"
+        type: string
+    required:
+    - email
+    - message
+    - name
+    - source
+    - subject
+    type: object
+  github_com_ae-saas-basic_ae-saas-basic_internal_models.ContactFormResponse:
+    description: Contact form submission response
+    properties:
+      message:
+        example: Contact form submitted successfully
+        type: string
+      newsletterAdded:
+        example: true
+        type: boolean
+      newsletterMessage:
+        example: Successfully subscribed to newsletter
+        type: string
+    type: object
+  github_com_ae-saas-basic_ae-saas-basic_internal_models.Newsletter:
+    properties:
+      createdAt:
+        example: "2025-08-03T10:00:00Z"
+        type: string
+      email:
+        example: john.doe@example.com
+        type: string
+      id:
+        example: 1
+        type: integer
+      interest:
+        example: mental_health
+        type: string
+      lastContact:
+        example: "2025-08-03T10:00:00Z"
+        type: string
+      name:
+        example: John Doe
+        type: string
+      source:
+        example: website
+        type: string
+      updatedAt:
+        example: "2025-08-03T10:00:00Z"
+        type: string
+    type: object
+  models.APIResponse:
+    properties:
+      data: {}
+      error:
+        type: string
+      message:
+        type: string
+      success:
+        type: boolean
+    type: object
+  models.ClientResponse:
+    properties:
+      created_at:
+        type: string
+      created_by:
+        type: integer
+      date_of_birth:
+        type: string
+      first_name:
+        type: string
+      id:
+        type: integer
+      last_name:
+        type: string
+      tenant_id:
+        type: integer
+      updated_at:
+        type: string
+    type: object
+  models.ContactCreateRequest:
+    properties:
+      city:
+        type: string
+      country:
+        type: string
+      email:
+        type: string
+      first_name:
+        type: string
+      last_name:
+        type: string
+      mobile:
+        type: string
+      notes:
+        type: string
+      phone:
+        type: string
+      street:
+        type: string
+      type:
+        type: string
+      zip:
+        type: string
+    required:
+    - first_name
+    - last_name
+    type: object
+  models.ContactResponse:
+    properties:
+      active:
+        type: boolean
+      city:
+        type: string
+      country:
+        type: string
+      created_at:
+        type: string
+      email:
+        type: string
+      first_name:
+        type: string
+      id:
+        type: integer
+      last_name:
+        type: string
+      mobile:
+        type: string
+      notes:
+        type: string
+      phone:
+        type: string
+      street:
+        type: string
+      type:
+        type: string
+      zip:
+        type: string
+    type: object
+  models.ContactUpdateRequest:
+    properties:
+      active:
+        type: boolean
+      city:
+        type: string
+      country:
+        type: string
+      email:
+        type: string
+      first_name:
+        type: string
+      last_name:
+        type: string
+      mobile:
+        type: string
+      notes:
+        type: string
+      phone:
+        type: string
+      street:
+        type: string
+      type:
+        type: string
+      zip:
+        type: string
+    type: object
+  models.CreateClientRequest:
+    properties:
+      date_of_birth:
+        example: "1990-01-15"
+        type: string
+      first_name:
+        example: John
+        type: string
+      last_name:
+        example: Doe
+        type: string
+    required:
+    - first_name
+    - last_name
+    type: object
+  models.CustomerCreateRequest:
+    properties:
+      city:
+        type: string
+      country:
+        type: string
+      email:
+        type: string
+      name:
+        type: string
+      payment_method:
+        type: string
+      phone:
+        type: string
+      plan_id:
+        type: integer
+      street:
+        type: string
+      tax_id:
+        type: string
+      tenant_id:
+        type: integer
+      vat:
+        type: string
+      zip:
+        type: string
+    required:
+    - email
+    - name
+    - plan_id
+    - tenant_id
+    type: object
+  models.CustomerResponse:
+    properties:
+      active:
+        type: boolean
+      city:
+        type: string
+      country:
+        type: string
+      created_at:
+        type: string
+      email:
+        type: string
+      id:
+        type: integer
+      name:
+        type: string
+      payment_method:
+        type: string
+      phone:
+        type: string
+      plan:
+        $ref: '#/definitions/models.PlanResponse'
+      plan_id:
+        type: integer
+      status:
+        type: string
+      street:
+        type: string
+      tax_id:
+        type: string
+      tenant:
+        $ref: '#/definitions/models.TenantResponse'
+      tenant_id:
+        type: integer
+      vat:
+        type: string
+      zip:
+        type: string
+    type: object
+  models.CustomerUpdateRequest:
+    properties:
+      active:
+        type: boolean
+      city:
+        type: string
+      country:
+        type: string
+      email:
+        type: string
+      name:
+        type: string
+      payment_method:
+        type: string
+      phone:
+        type: string
+      plan_id:
+        type: integer
+      status:
+        type: string
+      street:
+        type: string
+      tax_id:
+        type: string
+      vat:
+        type: string
+      zip:
+        type: string
+    type: object
+  models.EmailResponse:
+    properties:
+      created_at:
+        type: string
+      delivered_at:
+        type: string
+      error_message:
+        type: string
+      from:
+        type: string
+      id:
+        type: integer
+      sent_at:
+        type: string
+      status:
+        type: string
+      subject:
+        type: string
+      to:
+        type: string
+    type: object
+  models.EmailSendRequest:
+    properties:
+      body:
+        type: string
+      from:
+        type: string
+      html_body:
+        type: string
+      subject:
+        type: string
+      to:
+        type: string
+    required:
+    - body
+    - from
+    - subject
+    - to
+    type: object
+  models.ErrorResponse:
+    properties:
+      code:
+        type: integer
+      details:
+        type: string
+      error:
+        type: string
+    type: object
+  models.HealthResponse:
+    properties:
+      database:
+        type: string
+      settings:
+        $ref: '#/definitions/models.HealthSettingsResponse'
+      status:
+        type: string
+      timestamp:
+        type: string
+      version:
+        type: string
+    type: object
+  models.HealthSettingsResponse:
+    properties:
+      mock_email:
+        type: boolean
+      rate_limit_enabled:
+        type: boolean
+    type: object
+  models.ListResponse:
+    properties:
+      data: {}
+      pagination:
+        $ref: '#/definitions/models.PaginationResponse'
+    type: object
+  models.LoginRequest:
+    properties:
+      password:
+        type: string
+      username:
+        type: string
+    required:
+    - password
+    - username
+    type: object
+  models.LoginResponse:
+    properties:
+      token:
+        type: string
+      user:
+        $ref: '#/definitions/models.UserResponse'
+    type: object
+  models.PaginationResponse:
+    properties:
+      limit:
+        type: integer
+      page:
+        type: integer
+      total:
+        type: integer
+      total_pages:
+        type: integer
+    type: object
+  models.PlanCreateRequest:
+    properties:
+      active:
+        type: boolean
+      currency:
+        type: string
+      description:
+        type: string
+      features:
+        type: string
+      invoice_period:
+        type: string
+      max_clients:
+        type: integer
+      max_users:
+        type: integer
+      name:
+        type: string
+      price:
+        type: number
+      slug:
+        type: string
+    required:
+    - name
+    - price
+    - slug
+    type: object
+  models.PlanResponse:
+    properties:
+      active:
+        type: boolean
+      created_at:
+        type: string
+      currency:
+        type: string
+      description:
+        type: string
+      features:
+        type: string
+      id:
+        type: integer
+      invoice_period:
+        type: string
+      max_clients:
+        type: integer
+      max_users:
+        type: integer
+      name:
+        type: string
+      price:
+        type: number
+      slug:
+        type: string
+    type: object
+  models.PlanUpdateRequest:
+    properties:
+      active:
+        type: boolean
+      currency:
+        type: string
+      description:
+        type: string
+      features:
+        type: string
+      invoice_period:
+        type: string
+      max_clients:
+        type: integer
+      max_users:
+        type: integer
+      name:
+        type: string
+      price:
+        type: number
+    type: object
+  models.TenantResponse:
+    properties:
+      created_at:
+        type: string
+      id:
+        type: integer
+      name:
+        type: string
+      slug:
+        type: string
+    type: object
+  models.UpdateClientRequest:
+    properties:
+      date_of_birth:
+        example: "1990-01-15"
+        type: string
+      first_name:
+        example: John
+        type: string
+      last_name:
+        example: Doe
+        type: string
+    type: object
+  models.UserCreateRequest:
+    properties:
+      accept_terms:
+        description: Terms and conditions acceptance
+        type: boolean
+      company_name:
+        description: Required unless user-signup token is present
+        type: string
+      email:
+        type: string
+      first_name:
+        type: string
+      last_name:
+        type: string
+      newsletter_opt_in:
+        description: Newsletter subscription
+        type: boolean
+      password:
+        type: string
+      role:
+        type: string
+      username:
+        type: string
+    required:
+    - email
+    - first_name
+    - last_name
+    - password
+    - username
+    type: object
+  models.UserResponse:
+    properties:
+      active:
+        type: boolean
+      created_at:
+        type: string
+      email:
+        type: string
+      email_verified:
+        type: boolean
+      email_verified_at:
+        type: string
+      first_name:
+        type: string
+      id:
+        type: integer
+      last_name:
+        type: string
+      role:
+        type: string
+      tenant:
+        $ref: '#/definitions/models.TenantResponse'
+      tenant_id:
+        type: integer
+      username:
+        type: string
+    type: object
+  models.UserSettingsResponse:
+    properties:
+      id:
+        type: integer
+      language:
+        type: string
+      settings:
+        type: string
+      theme:
+        type: string
+      timezone:
+        type: string
+      updated_at:
+        type: string
+      user_id:
+        type: integer
+    type: object
+  models.UserSettingsUpdateRequest:
+    properties:
+      language:
+        type: string
+      settings:
+        type: string
+      theme:
+        type: string
+      timezone:
+        type: string
+    type: object
+  utils.PasswordRequirements:
+    properties:
+      capital:
+        type: boolean
+      minLength:
+        type: integer
+      numbers:
+        type: boolean
+      special:
+        type: boolean
+    type: object
+host: localhost:8080
+info:
+  contact:
+    email: support@unburdy.com
+    name: API Support
+    url: https://unburdy.com/support
+  description: Extended SaaS backend API built on AE SaaS Basic, adding client management
+    functionality
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+  termsOfService: https://unburdy.com/terms
+  title: Unburdy Extended API
+  version: "1.0"
+paths:
+  /api/v1/ping:
+    get:
+      description: Simple ping endpoint
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: pong
+          schema:
+            type: string
+      summary: Ping check
+      tags:
+      - health
+  /assets:
+    get:
+      description: Get a list of available static assets
+      parameters:
+      - description: Asset type filter
+        in: query
+        name: type
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: List static assets
+      tags:
+      - static
+  /assets/{path}:
+    get:
+      description: Serve static files like CSS, JS, images with appropriate headers
+      parameters:
+      - description: Asset path
+        in: path
+        name: path
+        required: true
+        type: string
+      responses:
+        "200":
+          description: Asset content
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      summary: Serve static assets
+      tags:
+      - static
+  /auth/change-password:
+    post:
+      consumes:
+      - application/json
+      description: Change user password
+      parameters:
+      - description: Password change data
+        in: body
+        name: request
+        required: true
+        schema:
+          properties:
+            current_password:
+              type: string
+            new_password:
+              type: string
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.APIResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Change password
+      tags:
+      - auth
+  /auth/forgot-password:
+    post:
+      consumes:
+      - application/json
+      description: Send password reset link to user email
+      parameters:
+      - description: User email
+        in: body
+        name: request
+        required: true
+        schema:
+          properties:
+            email:
+              type: string
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.APIResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      summary: Request password reset
+      tags:
+      - auth
+  /auth/generate-signup-token:
+    post:
+      consumes:
+      - application/json
+      description: Generate a token for inviting users to join a specific tenant
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/models.APIResponse'
+            - properties:
+                data:
+                  properties:
+                    expires_in:
+                      type: string
+                    token:
+                      type: string
+                  type: object
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Generate user signup token
+      tags:
+      - auth
+  /auth/login:
+    post:
+      consumes:
+      - application/json
+      description: Authenticate user with username/email and password
+      parameters:
+      - description: Login credentials
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.LoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/models.APIResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/models.LoginResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      summary: Login user
+      tags:
+      - auth
+  /auth/logout:
+    post:
+      consumes:
+      - application/json
+      description: Blacklist the current JWT token
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.APIResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Logout user
+      tags:
+      - auth
+  /auth/me:
+    get:
+      consumes:
+      - application/json
+      description: Get current authenticated user information
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/models.APIResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/models.UserResponse'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get current user
+      tags:
+      - auth
+  /auth/new-password/{token}:
+    post:
+      consumes:
+      - application/json
+      description: Reset user password with reset token
+      parameters:
+      - description: Reset token
+        in: path
+        name: token
+        required: true
+        type: string
+      - description: New password
+        in: body
+        name: request
+        required: true
+        schema:
+          properties:
+            new_password:
+              type: string
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.APIResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      summary: Reset password
+      tags:
+      - auth
+  /auth/password-security:
+    get:
+      consumes:
+      - application/json
+      description: Returns the current password security requirements including minimum
+        length and character requirements
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/utils.PasswordRequirements'
+      summary: Get password security requirements
+      tags:
+      - auth
+  /auth/register:
+    post:
+      consumes:
+      - application/json
+      description: Create a new user account. If a user-signup token is provided in
+        Authorization header, user will join that tenant. Otherwise, company_name
+        is required to create new tenant.
+      parameters:
+      - description: Bearer token for user signup invitation
+        in: header
+        name: Authorization
+        type: string
+      - description: User registration data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.UserCreateRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            allOf:
+            - $ref: '#/definitions/models.APIResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/models.UserResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      summary: Register new user
+      tags:
+      - auth
+  /auth/verify-email/{token}:
+    get:
+      consumes:
+      - application/json
+      description: Verify user email address with token from verification email
+      parameters:
+      - description: Verification token
+        in: path
+        name: token
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.APIResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      summary: Verify email address
+      tags:
+      - auth
+  /clients:
+    get:
+      description: Retrieve all clients with optional pagination
+      parameters:
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 10
+        description: Items per page
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get all clients
+      tags:
+      - clients
+    post:
+      consumes:
+      - application/json
+      description: Create a new client with first name, last name, and date of birth
+      parameters:
+      - description: Client data
+        in: body
+        name: client
+        required: true
+        schema:
+          $ref: '#/definitions/models.CreateClientRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/models.ClientResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Create a new client
+      tags:
+      - clients
+  /clients/{id}:
+    delete:
+      description: Soft delete a client by ID
+      parameters:
+      - description: Client ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Delete a client
+      tags:
+      - clients
+    get:
+      description: Retrieve a specific client by their ID
+      parameters:
+      - description: Client ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.ClientResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get a client by ID
+      tags:
+      - clients
+    put:
+      consumes:
+      - application/json
+      description: Update an existing client's information
+      parameters:
+      - description: Client ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Client update data
+        in: body
+        name: client
+        required: true
+        schema:
+          $ref: '#/definitions/models.UpdateClientRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.ClientResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Update a client
+      tags:
+      - clients
+  /clients/search:
+    get:
+      description: Search clients by first name or last name
+      parameters:
+      - description: Search query
+        in: query
+        name: q
+        required: true
+        type: string
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 10
+        description: Items per page
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Search clients
+      tags:
+      - clients
+  /contact/form:
+    post:
+      consumes:
+      - application/json
+      description: Submit a contact form and optionally subscribe to newsletter
+      parameters:
+      - description: Contact form data
+        in: body
+        name: contactForm
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_ae-saas-basic_ae-saas-basic_internal_models.ContactFormRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_ae-saas-basic_ae-saas-basic_internal_models.ContactFormResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      summary: Submit contact form
+      tags:
+      - contact
+  /contact/newsletter:
+    get:
+      consumes:
+      - application/json
+      description: Get all newsletter subscriptions for admin users
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/github_com_ae-saas-basic_ae-saas-basic_internal_models.Newsletter'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get newsletter subscriptions
+      tags:
+      - contact
+  /contact/newsletter/unsubscribe:
+    delete:
+      consumes:
+      - application/json
+      description: Unsubscribe an email from the newsletter
+      parameters:
+      - description: Email to unsubscribe
+        in: query
+        name: email
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      summary: Unsubscribe from newsletter
+      tags:
+      - contact
+  /contacts:
+    get:
+      description: Get a paginated list of all contacts
+      parameters:
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 10
+        description: Items per page
+        in: query
+        name: limit
+        type: integer
+      - description: Filter by active status
+        in: query
+        name: active
+        type: boolean
+      - description: Filter by contact type
+        in: query
+        name: type
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/models.APIResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/models.ListResponse'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get all contacts
+      tags:
+      - contacts
+    post:
+      consumes:
+      - application/json
+      description: Create a new contact
+      parameters:
+      - description: Contact creation data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.ContactCreateRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            allOf:
+            - $ref: '#/definitions/models.APIResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/models.ContactResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Create a new contact
+      tags:
+      - contacts
+  /contacts/{id}:
+    delete:
+      description: Soft delete a contact by ID
+      parameters:
+      - description: Contact ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.APIResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Delete a contact
+      tags:
+      - contacts
+    get:
+      description: Get a specific contact by its ID
+      parameters:
+      - description: Contact ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/models.APIResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/models.ContactResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get contact by ID
+      tags:
+      - contacts
+    put:
+      consumes:
+      - application/json
+      description: Update an existing contact by ID
+      parameters:
+      - description: Contact ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Contact update data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.ContactUpdateRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/models.APIResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/models.ContactResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Update a contact
+      tags:
+      - contacts
+  /customers:
+    get:
+      description: Get a paginated list of customers for the authenticated tenant
+      parameters:
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 10
+        description: Items per page
+        in: query
+        name: limit
+        type: integer
+      - description: Filter by active status
+        in: query
+        name: active
+        type: boolean
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/models.APIResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/models.ListResponse'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get all customers
+      tags:
+      - customers
+    post:
+      consumes:
+      - application/json
+      description: Create a new customer within the authenticated tenant
+      parameters:
+      - description: Customer creation data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.CustomerCreateRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            allOf:
+            - $ref: '#/definitions/models.APIResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/models.CustomerResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Create a new customer
+      tags:
+      - customers
+  /customers/{id}:
+    delete:
+      description: Soft delete a customer by ID within the authenticated tenant
+      parameters:
+      - description: Customer ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.APIResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Delete a customer
+      tags:
+      - customers
+    get:
+      description: Get a specific customer by its ID within the authenticated tenant
+      parameters:
+      - description: Customer ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/models.APIResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/models.CustomerResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get customer by ID
+      tags:
+      - customers
+    put:
+      consumes:
+      - application/json
+      description: Update an existing customer by ID within the authenticated tenant
+      parameters:
+      - description: Customer ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Customer update data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.CustomerUpdateRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/models.APIResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/models.CustomerResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Update a customer
+      tags:
+      - customers
+  /emails:
+    get:
+      description: Get a paginated list of all emails
+      parameters:
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 10
+        description: Items per page
+        in: query
+        name: limit
+        type: integer
+      - description: Filter by email status
+        in: query
+        name: status
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/models.APIResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/models.ListResponse'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get all emails
+      tags:
+      - emails
+  /emails/{id}:
+    get:
+      description: Get a specific email by its ID
+      parameters:
+      - description: Email ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/models.APIResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/models.EmailResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get email by ID
+      tags:
+      - emails
+  /emails/send:
+    post:
+      consumes:
+      - application/json
+      description: Create and queue an email for sending
+      parameters:
+      - description: Email send data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.EmailSendRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            allOf:
+            - $ref: '#/definitions/models.APIResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/models.EmailResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Send an email
+      tags:
+      - emails
+  /emails/stats:
+    get:
+      description: Get email statistics including counts by status
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/models.APIResponse'
+            - properties:
+                data:
+                  type: object
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get email statistics
+      tags:
+      - emails
+  /health:
+    get:
+      description: Check the health status of the API and database
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.HealthResponse'
+        "503":
+          description: Service Unavailable
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      summary: Health check
+      tags:
+      - health
+  /logo:
+    get:
+      description: Serve the company logo in various formats
+      parameters:
+      - default: svg
+        description: Logo format (svg|png|jpg)
+        in: query
+        name: format
+        type: string
+      responses:
+        "200":
+          description: Logo file
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      summary: Get company logo
+      tags:
+      - static
+  /plans:
+    get:
+      description: Get a paginated list of all plans
+      parameters:
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 10
+        description: Items per page
+        in: query
+        name: limit
+        type: integer
+      - description: Filter by active status
+        in: query
+        name: active
+        type: boolean
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/models.APIResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/models.ListResponse'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      summary: Get all plans
+      tags:
+      - plans
+    post:
+      consumes:
+      - application/json
+      description: Create a new subscription plan
+      parameters:
+      - description: Plan creation data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.PlanCreateRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            allOf:
+            - $ref: '#/definitions/models.APIResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/models.PlanResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Create a new plan
+      tags:
+      - plans
+  /plans/{id}:
+    delete:
+      description: Soft delete a plan by ID
+      parameters:
+      - description: Plan ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.APIResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Delete a plan
+      tags:
+      - plans
+    get:
+      description: Get a specific plan by its ID
+      parameters:
+      - description: Plan ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/models.APIResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/models.PlanResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      summary: Get plan by ID
+      tags:
+      - plans
+    put:
+      consumes:
+      - application/json
+      description: Update an existing plan by ID
+      parameters:
+      - description: Plan ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Plan update data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.PlanUpdateRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/models.APIResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/models.PlanResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Update a plan
+      tags:
+      - plans
+  /templates/{type}/{template}:
+    get:
+      description: Serve template files for preview purposes
+      parameters:
+      - description: Template type (email|pdf)
+        in: path
+        name: type
+        required: true
+        type: string
+      - description: Template name
+        in: path
+        name: template
+        required: true
+        type: string
+      responses:
+        "200":
+          description: Template content
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Preview templates
+      tags:
+      - static
+  /user-settings:
+    get:
+      description: Get the authenticated user's settings
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/models.APIResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/models.UserSettingsResponse'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get user settings
+      tags:
+      - user-settings
+    put:
+      consumes:
+      - application/json
+      description: Update the authenticated user's settings
+      parameters:
+      - description: User settings update data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.UserSettingsUpdateRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/models.APIResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/models.UserSettingsResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Update user settings
+      tags:
+      - user-settings
+  /user-settings/reset:
+    post:
+      description: Reset the authenticated user's settings to default values
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/models.APIResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/models.UserSettingsResponse'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Reset user settings
+      tags:
+      - user-settings
+securityDefinitions:
+  BearerAuth:
+    description: Type "Bearer" followed by a space and JWT token.
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"
+tags:
+- description: Authentication and user management endpoints (from base)
+  name: authentication
+- description: User management operations (from base)
+  name: users
+- description: Customer management operations (from base)
+  name: customers
+- description: Client management operations (extended functionality)
+  name: clients
+- description: Contact management operations (from base)
+  name: contacts
+- description: Email management and sending operations (from base)
+  name: emails
