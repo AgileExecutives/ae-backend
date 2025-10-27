@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>New User Invitation</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+        .container {
+            background-color: #ffffff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .header {
+            text-align: center;
+            border-bottom: 2px solid #e9ecef;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            color: #007bff;
+            margin-bottom: 10px;
+        }
+        .title {
+            font-size: 24px;
+            color: #6f42c1;
+            margin-bottom: 10px;
+        }
+        .content {
+            margin-bottom: 30px;
+        }
+        .invitation-info {
+            background-color: #f3e5f5;
+            padding: 20px;
+            border-radius: 5px;
+            border-left: 4px solid #6f42c1;
+            margin: 20px 0;
+        }
+        .button {
+            display: inline-block;
+            padding: 12px 30px;
+            background-color: #6f42c1;
+            color: #ffffff;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: bold;
+            text-align: center;
+            margin: 20px 0;
+        }
+        .button:hover {
+            background-color: #5a2d91;
+        }
+        .footer {
+            border-top: 1px solid #e9ecef;
+            padding-top: 20px;
+            text-align: center;
+            color: #6c757d;
+            font-size: 14px;
+        }
+        .benefits {
+            background-color: #e8f4fd;
+            padding: 20px;
+            border-radius: 5px;
+            border-left: 4px solid #007bff;
+        }
+        .inviter-info {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">AE SaaS</div>
+            <h1 class="title">You're Invited!</h1>
+        </div>
+        
+        <div class="content">
+            <p>Hi there!</p>
+            
+            <p><strong>{{.InviterName}}</strong> has invited you to join <strong>{{.OrganizationName}}</strong> on AE SaaS.</p>
+            
+            <div class="inviter-info">
+                <h3>Invitation From:</h3>
+                <ul>
+                    <li><strong>Name:</strong> {{.InviterName}}</li>
+                    <li><strong>Email:</strong> {{.InviterEmail}}</li>
+                    <li><strong>Organization:</strong> {{.OrganizationName}}</li>
+                    <li><strong>Role:</strong> {{.InviterRole}}</li>
+                </ul>
+            </div>
+            
+            <div class="invitation-info">
+                <h3>Your Invitation Details:</h3>
+                <ul>
+                    <li><strong>Organization:</strong> {{.OrganizationName}}</li>
+                    <li><strong>Your Role:</strong> {{.UserRole}}</li>
+                    <li><strong>Plan:</strong> {{.PlanName}}</li>
+                    <li><strong>Invited Email:</strong> {{.InvitedEmail}}</li>
+                </ul>
+            </div>
+            
+            <div class="benefits">
+                <h3>What You'll Get Access To:</h3>
+                <ul>
+                    <li>Full access to the organization's dashboard</li>
+                    <li>Collaboration tools with team members</li>
+                    <li>All features included in the {{.PlanName}} plan</li>
+                    <li>Real-time notifications and updates</li>
+                    <li>Secure data sharing and management</li>
+                </ul>
+            </div>
+            
+            <p>To accept this invitation and create your account, click the button below:</p>
+            
+            <center>
+                <a href="{{.InvitationURL}}" class="button">Accept Invitation</a>
+            </center>
+            
+            <p><strong>Personal Message from {{.InviterName}}:</strong></p>
+            <div style="background-color: #fff3cd; padding: 15px; border-radius: 5px; font-style: italic;">
+                "{{.PersonalMessage}}"
+            </div>
+            
+            <p>This invitation will expire in <strong>7 days</strong>. If you have any questions, you can reply to this email or contact {{.InviterName}} directly.</p>
+            
+            <p>If the button above doesn't work, copy and paste this URL into your browser:</p>
+            <p style="word-break: break-all; color: #007bff;">{{.InvitationURL}}</p>
+        </div>
+        
+        <div class="footer">
+            <p>Best regards,<br>The AE SaaS Team</p>
+            <p>If you don't want to receive these invitations, please contact support.</p>
+        </div>
+    </div>
+</body>
+</html>

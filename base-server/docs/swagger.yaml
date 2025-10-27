@@ -319,12 +319,21 @@ definitions:
     properties:
       database:
         type: string
+      settings:
+        $ref: '#/definitions/models.HealthSettingsResponse'
       status:
         type: string
       timestamp:
         type: string
       version:
         type: string
+    type: object
+  models.HealthSettingsResponse:
+    properties:
+      mock_email:
+        type: boolean
+      rate_limit_enabled:
+        type: boolean
     type: object
   models.ListResponse:
     properties:
@@ -448,8 +457,11 @@ definitions:
     type: object
   models.UserCreateRequest:
     properties:
+      accept_terms:
+        description: Terms and conditions acceptance
+        type: boolean
       company_name:
-        description: Used to create tenant
+        description: Required unless user-signup token is present
         type: string
       email:
         type: string
@@ -457,17 +469,16 @@ definitions:
         type: string
       last_name:
         type: string
+      newsletter_opt_in:
+        description: Newsletter subscription
+        type: boolean
       password:
         type: string
       role:
         type: string
-      tenant_id:
-        description: 'Optional: if provided, user joins existing tenant'
-        type: integer
       username:
         type: string
     required:
-    - company_name
     - email
     - first_name
     - last_name
@@ -556,48 +567,19 @@ info:
   title: AE SaaS Basic API
   version: "1.0"
 paths:
-  /assets:
+  /api/v1/ping:
     get:
-      description: Get a list of available static assets
-      parameters:
-      - description: Asset type filter
-        in: query
-        name: type
-        type: string
+      description: Simple ping endpoint
+      produces:
+      - application/json
       responses:
         "200":
-          description: OK
+          description: pong
           schema:
-            additionalProperties: true
-            type: object
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/models.ErrorResponse'
-      security:
-      - BearerAuth: []
-      summary: List static assets
+            type: string
+      summary: Ping check
       tags:
-      - static
-  /assets/{path}:
-    get:
-      description: Serve static files like CSS, JS, images with appropriate headers
-      parameters:
-      - description: Asset path
-        in: path
-        name: path
-        required: true
-        type: string
-      responses:
-        "200":
-          description: Asset content
-        "404":
-          description: Not Found
-          schema:
-            $ref: '#/definitions/models.ErrorResponse'
-      summary: Serve static assets
-      tags:
-      - static
+      - health
   /auth/change-password:
     post:
       consumes:
@@ -662,6 +644,45 @@ paths:
           schema:
             $ref: '#/definitions/models.ErrorResponse'
       summary: Request password reset
+      tags:
+      - auth
+  /auth/generate-signup-token:
+    post:
+      consumes:
+      - application/json
+      description: Generate a token for inviting users to join a specific tenant
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/models.APIResponse'
+            - properties:
+                data:
+                  properties:
+                    expires_in:
+                      type: string
+                    token:
+                      type: string
+                  type: object
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Generate user signup token
       tags:
       - auth
   /auth/login:
@@ -804,8 +825,14 @@ paths:
     post:
       consumes:
       - application/json
-      description: Create a new user account
+      description: Create a new user account. If a user-signup token is provided in
+        Authorization header, user will join that tenant. Otherwise, company_name
+        is required to create new tenant.
       parameters:
+      - description: Bearer token for user signup invitation
+        in: header
+        name: Authorization
+        type: string
       - description: User registration data
         in: body
         name: request
@@ -1447,38 +1474,6 @@ paths:
       summary: Health check
       tags:
       - health
-  /logo:
-    get:
-      description: Serve the company logo in various formats
-      parameters:
-      - default: svg
-        description: Logo format (svg|png|jpg)
-        in: query
-        name: format
-        type: string
-      responses:
-        "200":
-          description: Logo file
-        "404":
-          description: Not Found
-          schema:
-            $ref: '#/definitions/models.ErrorResponse'
-      summary: Get company logo
-      tags:
-      - static
-  /ping:
-    get:
-      description: Simple ping endpoint
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: pong
-          schema:
-            type: string
-      summary: Ping check
-      tags:
-      - health
   /plans:
     get:
       description: Get a paginated list of all plans
@@ -1653,34 +1648,60 @@ paths:
       summary: Update a plan
       tags:
       - plans
-  /templates/{type}/{template}:
+  /static:
     get:
-      description: Serve template files for preview purposes
+      description: Get a list of all JSON files available in the statics/json directory
+      responses:
+        "200":
+          description: List of available JSON files
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Failed to read directory
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: List available static JSON files
+      tags:
+      - static
+  /static/{filename}:
+    get:
+      description: Dynamically serve any JSON data file from the statics/json directory.
+        Just drop a .json file in the directory and it becomes available at /static/{filename}
       parameters:
-      - description: Template type (email|pdf)
+      - description: JSON filename (without .json extension)
+        example: '"bundeslaender"'
         in: path
-        name: type
-        required: true
-        type: string
-      - description: Template name
-        in: path
-        name: template
+        name: filename
         required: true
         type: string
       responses:
         "200":
-          description: Template content
-        "403":
-          description: Forbidden
+          description: JSON file content
           schema:
-            $ref: '#/definitions/models.ErrorResponse'
+            additionalProperties: true
+            type: object
+        "400":
+          description: Invalid file name
+          schema:
+            additionalProperties:
+              type: string
+            type: object
         "404":
-          description: Not Found
+          description: File not found
           schema:
-            $ref: '#/definitions/models.ErrorResponse'
-      security:
-      - BearerAuth: []
-      summary: Preview templates
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Failed to read file
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Serve static JSON files
       tags:
       - static
   /user-settings:

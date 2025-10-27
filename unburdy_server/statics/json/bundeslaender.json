@@ -1,0 +1,479 @@
+{
+    "version": "1.0",
+    "content": "Bundesländer in Deutschland",
+    "states": {
+        "BW": "Baden-Württemberg",
+        "BY": "Bayern",
+        "BE": "Berlin",
+        "BB": "Brandenburg",
+        "HB": "Bremen",
+        "HH": "Hamburg",
+        "HE": "Hessen",
+        "MV": "Mecklenburg-Vorpommern",
+        "NI": "Niedersachsen",
+        "NW": "Nordrhein-Westfalen",
+        "RP": "Rheinland-Pfalz",
+        "SL": "Saarland",
+        "SN": "Sachsen",
+        "ST": "Sachsen-Anhalt",
+        "SH": "Schleswig-Holstein",
+        "TH": "Thüringen"
+    },
+    "postal_codes": [
+        {
+            "from": "01000",
+            "to": "01999",
+            "state": "SN"
+        },
+        {
+            "from": "02000",
+            "to": "02999",
+            "state": "SN"
+        },
+        {
+            "from": "03000",
+            "to": "03999",
+            "state": "BB"
+        },
+        {
+            "from": "04000",
+            "to": "04999",
+            "state": "ST"
+        },
+        {
+            "from": "06000",
+            "to": "06999",
+            "state": "ST"
+        },
+        {
+            "from": "07000",
+            "to": "07999",
+            "state": "TH"
+        },
+        {
+            "from": "08000",
+            "to": "08999",
+            "state": "SN"
+        },
+        {
+            "from": "09000",
+            "to": "09999",
+            "state": "SN"
+        },
+        {
+            "from": "10000",
+            "to": "14999",
+            "state": "BE"
+        },
+        {
+            "from": "15000",
+            "to": "15999",
+            "state": "BB"
+        },
+        {
+            "from": "16000",
+            "to": "17999",
+            "state": "MV"
+        },
+        {
+            "from": "18000",
+            "to": "19999",
+            "state": "MV"
+        },
+        {
+            "from": "20000",
+            "to": "20999",
+            "state": "HH"
+        },
+        {
+            "from": "21000",
+            "to": "21999",
+            "state": "HH"
+        },
+        {
+            "from": "22000",
+            "to": "22999",
+            "state": "HH"
+        },
+        {
+            "from": "23000",
+            "to": "23999",
+            "state": "SH"
+        },
+        {
+            "from": "24000",
+            "to": "24999",
+            "state": "SH"
+        },
+        {
+            "from": "25000",
+            "to": "25999",
+            "state": "SH"
+        },
+        {
+            "from": "26000",
+            "to": "26999",
+            "state": "NI"
+        },
+        {
+            "from": "27000",
+            "to": "27999",
+            "state": "NI"
+        },
+        {
+            "from": "28000",
+            "to": "28999",
+            "state": "HB"
+        },
+        {
+            "from": "29000",
+            "to": "29999",
+            "state": "NI"
+        },
+        {
+            "from": "30000",
+            "to": "30999",
+            "state": "NI"
+        },
+        {
+            "from": "31000",
+            "to": "31999",
+            "state": "NI"
+        },
+        {
+            "from": "32000",
+            "to": "32999",
+            "state": "NW"
+        },
+        {
+            "from": "33000",
+            "to": "33999",
+            "state": "NW"
+        },
+        {
+            "from": "34000",
+            "to": "34999",
+            "state": "HE"
+        },
+        {
+            "from": "35000",
+            "to": "35999",
+            "state": "HE"
+        },
+        {
+            "from": "36000",
+            "to": "36999",
+            "state": "HE"
+        },
+        {
+            "from": "37000",
+            "to": "37999",
+            "state": "NI"
+        },
+        {
+            "from": "38000",
+            "to": "38999",
+            "state": "NI"
+        },
+        {
+            "from": "40000",
+            "to": "40999",
+            "state": "NW"
+        },
+        {
+            "from": "41000",
+            "to": "41999",
+            "state": "NW"
+        },
+        {
+            "from": "42000",
+            "to": "42999",
+            "state": "NW"
+        },
+        {
+            "from": "43000",
+            "to": "43999",
+            "state": "NW"
+        },
+        {
+            "from": "44000",
+            "to": "44999",
+            "state": "NW"
+        },
+        {
+            "from": "45000",
+            "to": "45999",
+            "state": "NW"
+        },
+        {
+            "from": "46000",
+            "to": "46999",
+            "state": "NW"
+        },
+        {
+            "from": "47000",
+            "to": "47999",
+            "state": "NW"
+        },
+        {
+            "from": "48000",
+            "to": "48999",
+            "state": "NW"
+        },
+        {
+            "from": "49000",
+            "to": "49999",
+            "state": "NI"
+        },
+        {
+            "from": "50000",
+            "to": "50999",
+            "state": "NW"
+        },
+        {
+            "from": "51000",
+            "to": "51999",
+            "state": "NW"
+        },
+        {
+            "from": "52000",
+            "to": "52999",
+            "state": "NW"
+        },
+        {
+            "from": "53000",
+            "to": "53999",
+            "state": "NW"
+        },
+        {
+            "from": "54000",
+            "to": "54999",
+            "state": "RP"
+        },
+        {
+            "from": "55000",
+            "to": "55999",
+            "state": "RP"
+        },
+        {
+            "from": "56000",
+            "to": "56999",
+            "state": "RP"
+        },
+        {
+            "from": "57000",
+            "to": "57999",
+            "state": "NW"
+        },
+        {
+            "from": "58000",
+            "to": "58999",
+            "state": "NW"
+        },
+        {
+            "from": "59000",
+            "to": "59999",
+            "state": "NW"
+        },
+        {
+            "from": "60000",
+            "to": "60999",
+            "state": "HE"
+        },
+        {
+            "from": "61000",
+            "to": "61999",
+            "state": "HE"
+        },
+        {
+            "from": "62000",
+            "to": "62999",
+            "state": "HE"
+        },
+        {
+            "from": "63000",
+            "to": "63999",
+            "state": "HE"
+        },
+        {
+            "from": "64000",
+            "to": "64999",
+            "state": "HE"
+        },
+        {
+            "from": "65000",
+            "to": "65999",
+            "state": "RP"
+        },
+        {
+            "from": "66000",
+            "to": "66999",
+            "state": "SL"
+        },
+        {
+            "from": "67000",
+            "to": "67999",
+            "state": "RP"
+        },
+        {
+            "from": "68000",
+            "to": "68999",
+            "state": "RP"
+        },
+        {
+            "from": "69000",
+            "to": "69999",
+            "state": "HE"
+        },
+        {
+            "from": "70000",
+            "to": "70999",
+            "state": "BW"
+        },
+        {
+            "from": "71000",
+            "to": "71999",
+            "state": "BW"
+        },
+        {
+            "from": "72000",
+            "to": "72999",
+            "state": "BW"
+        },
+        {
+            "from": "73000",
+            "to": "73999",
+            "state": "BW"
+        },
+        {
+            "from": "74000",
+            "to": "74999",
+            "state": "BW"
+        },
+        {
+            "from": "75000",
+            "to": "75999",
+            "state": "BW"
+        },
+        {
+            "from": "76000",
+            "to": "76999",
+            "state": "BW"
+        },
+        {
+            "from": "77000",
+            "to": "77999",
+            "state": "BW"
+        },
+        {
+            "from": "78000",
+            "to": "78999",
+            "state": "BW"
+        },
+        {
+            "from": "79000",
+            "to": "79999",
+            "state": "BW"
+        },
+        {
+            "from": "80000",
+            "to": "80999",
+            "state": "BY"
+        },
+        {
+            "from": "81000",
+            "to": "81999",
+            "state": "BY"
+        },
+        {
+            "from": "82000",
+            "to": "82999",
+            "state": "BY"
+        },
+        {
+            "from": "83000",
+            "to": "83999",
+            "state": "BY"
+        },
+        {
+            "from": "84000",
+            "to": "84999",
+            "state": "BY"
+        },
+        {
+            "from": "85000",
+            "to": "85999",
+            "state": "BY"
+        },
+        {
+            "from": "86000",
+            "to": "86999",
+            "state": "BY"
+        },
+        {
+            "from": "87000",
+            "to": "87999",
+            "state": "BY"
+        },
+        {
+            "from": "88000",
+            "to": "88999",
+            "state": "BY"
+        },
+        {
+            "from": "89000",
+            "to": "89999",
+            "state": "BY"
+        },
+        {
+            "from": "90000",
+            "to": "90999",
+            "state": "BY"
+        },
+        {
+            "from": "91000",
+            "to": "91999",
+            "state": "BY"
+        },
+        {
+            "from": "92000",
+            "to": "92999",
+            "state": "BY"
+        },
+        {
+            "from": "93000",
+            "to": "93999",
+            "state": "BY"
+        },
+        {
+            "from": "94000",
+            "to": "94999",
+            "state": "BY"
+        },
+        {
+            "from": "95000",
+            "to": "95999",
+            "state": "BY"
+        },
+        {
+            "from": "96000",
+            "to": "96999",
+            "state": "BY"
+        },
+        {
+            "from": "97000",
+            "to": "97999",
+            "state": "BY"
+        },
+        {
+            "from": "98000",
+            "to": "98999",
+            "state": "BY"
+        },
+        {
+            "from": "99000",
+            "to": "99999",
+            "state": "TH"
+        }
+    ]
+}

@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome to {{.OrganizationName}}</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+        .container {
+            background-color: #ffffff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .header {
+            text-align: center;
+            border-bottom: 2px solid #e9ecef;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            color: #007bff;
+            margin-bottom: 10px;
+        }
+        .welcome-title {
+            font-size: 28px;
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+        .content {
+            margin-bottom: 30px;
+        }
+        .user-info {
+            background-color: #f8f9fa;
+            padding: 20px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        .button {
+            display: inline-block;
+            padding: 12px 30px;
+            background-color: #007bff;
+            color: #ffffff;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: bold;
+            text-align: center;
+            margin: 20px 0;
+        }
+        .footer {
+            border-top: 1px solid #e9ecef;
+            padding-top: 20px;
+            text-align: center;
+            color: #6c757d;
+            font-size: 14px;
+        }
+        .next-steps {
+            background-color: #e8f4fd;
+            padding: 20px;
+            border-radius: 5px;
+            border-left: 4px solid #007bff;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">AE SaaS</div>
+            <h1 class="welcome-title">Welcome to Your Account!</h1>
+        </div>
+        
+        <div class="content">
+            <p>Hi {{.FirstName}},</p>
+            
+            <p>Welcome to <strong>{{.OrganizationName}}</strong>! We're excited to have you on board.</p>
+            
+            <p>Your account has been successfully created and you can now start exploring all the features available to you.</p>
+            
+            <div class="user-info">
+                <h3>Account Details:</h3>
+                <ul>
+                    <li><strong>Name:</strong> {{.FirstName}} {{.LastName}}</li>
+                    <li><strong>Email:</strong> {{.Email}}</li>
+                    <li><strong>Username:</strong> {{.Username}}</li>
+                    <li><strong>Organization:</strong> {{.OrganizationName}}</li>
+                    <li><strong>Plan:</strong> {{.PlanName}}</li>
+                </ul>
+            </div>
+            
+            <div class="next-steps">
+                <h3>Next Steps:</h3>
+                <ol>
+                    <li>Complete your profile setup</li>
+                    <li>Invite team members to your organization</li>
+                    <li>Explore the dashboard and available features</li>
+                    <li>Set up your preferences in user settings</li>
+                </ol>
+            </div>
+            
+            <p>If you have any questions or need assistance, don't hesitate to reach out to our support team.</p>
+            
+            <center>
+                <a href="{{.LoginURL}}" class="button">Login to Your Account</a>
+            </center>
+        </div>
+        
+        <div class="footer">
+            <p>Best regards,<br>The AE SaaS Team</p>
+            <p>This email was sent to {{.Email}}. If you didn't create an account with us, please ignore this email.</p>
+        </div>
+    </div>
+</body>
+</html>

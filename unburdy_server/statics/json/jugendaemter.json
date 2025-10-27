@@ -1,0 +1,452 @@
+[
+  {
+    "organization": "Stadt Mannheim",
+    "department": "Jugendamt",
+    "street": "E 5, Rathaus",
+    "zip": "68159",
+    "city": "Mannheim",
+    "phone": "0621-293-0",
+    "email": "jugendamt@mannheim.de",
+    "state": "BW"
+  },
+  {
+    "organization": "Landratsamt Rhein-Neckar-Kreis",
+    "department": "Jugendamt",
+    "street": "Kurfürsten Anlage 40",
+    "zip": "69115",
+    "city": "Heidelberg",
+    "phone": "06221-522-0",
+    "email": "jugendamt@rhein-neckar-kreis.de",
+    "state": "BW"
+  },
+  {
+    "organization": "Stadt Heidelberg",
+    "department": "Kinder- und Jugendamt",
+    "street": "Eppelheimer Straße 13",
+    "zip": "69115",
+    "city": "Heidelberg",
+    "phone": "06221-58-31510+31520",
+    "email": "jugendamt@heidelberg.de",
+    "state": "BW"
+  },
+  {
+    "organization": "Landeshauptstadt Stuttgart",
+    "department": "Jugendamt",
+    "street": "Wilhelmstraße (M) 3",
+    "zip": "70182",
+    "city": "Stuttgart-Mitte",
+    "phone": "0711/216-55555",
+    "email": "poststelle.jugendamt@stuttgart.de",
+    "state": "BW"
+  },
+  {
+    "organization": "Landratsamt Rems-Murr-Kreis",
+    "department": "Kreisjugendamt",
+    "street": "Alter Postplatz 10",
+    "zip": "71332",
+    "city": "Waiblingen",
+    "phone": "07151/501-0",
+    "email": "info@rems-murr-kreis.de",
+    "state": "BW"
+  },
+  {
+    "organization": "Landratsamt Ludwigsburg",
+    "department": "Dezernat IV Arbeit, Jugend und Soziales",
+    "street": "Hindenburgstraße 40",
+    "zip": "71638",
+    "city": "Ludwigsburg",
+    "phone": "07141/144-0",
+    "email": "mail@landkreis-ludwigsburg.de",
+    "state": "BW"
+  },
+  {
+    "organization": "Landratsamt Tübingen",
+    "department": "Jugendamt",
+    "street": "Wilhelm-Keil-Straße 50",
+    "zip": "72072",
+    "city": "Tübingen",
+    "phone": "07071/207-0",
+    "email": "post@kreis-tuebingen.de",
+    "state": "BW"
+  },
+  {
+    "organization": "Landratsamt Freudenstadt",
+    "department": "Jugendamt",
+    "street": "Landhausstraße 32+34",
+    "zip": "72250",
+    "city": "Freudenstadt",
+    "phone": "07441-920-6001",
+    "email": "jugendamt@kreis-fds.de",
+    "state": "BW"
+  },
+  {
+    "organization": "Landratsamt Zollernalbkreis",
+    "department": "Kreisjugendamt",
+    "street": "Hirschbergstraße 29",
+    "zip": "72336",
+    "city": "Balingen",
+    "phone": "07433/92-01",
+    "email": "jugendamt@zollernalbkreis.de",
+    "state": "BW"
+  },
+  {
+    "organization": "Landratsamt Sigmaringen",
+    "department": "Fachbereich Jugend",
+    "street": "Leopoldstraße 4",
+    "zip": "72488",
+    "city": "Sigmaringen",
+    "phone": "07571/102-0",
+    "email": "info@lrasig.de",
+    "state": "BW"
+  },
+  {
+    "organization": "Landratsamt Reutlingen",
+    "department": "Kreisjugendamt",
+    "street": "Bismarckstraße 16",
+    "zip": "72764",
+    "city": "Reutlingen",
+    "phone": "07121/480-4210",
+    "email": "jugendamt@kreis-reutlingen.de",
+    "state": "BW"
+  },
+  {
+    "organization": "Landratsamt Göppingen",
+    "department": "Jugendamt",
+    "street": "Lorcher Straße 6",
+    "zip": "73033",
+    "city": "Göppingen",
+    "phone": "07161/202-4201",
+    "email": "kreisjugendamt@lkgp.de",
+    "state": "BW"
+  },
+  {
+    "organization": "Landratsamt Ostalbkreis",
+    "department": "Jugend und Familie",
+    "street": "Stuttgarter Straße 41",
+    "zip": "73430",
+    "city": "Aalen",
+    "phone": "07361/503-1445",
+    "email": "info@ostalbkreis.de",
+    "state": "BW"
+  },
+  {
+    "organization": "Landratsamt Esslingen",
+    "department": "Jugendamt",
+    "street": "Pulverwiesen 11",
+    "zip": "73728",
+    "city": "Esslingen",
+    "phone": "0711/3902-0",
+    "email": "jugendamt@lra-es.de",
+    "state": "BW"
+  },
+  {
+    "organization": "Landratsamt Heilbronn",
+    "department": "Jugendamt",
+    "street": "Lerchenstraße 40",
+    "zip": "74072",
+    "city": "Heilbronn",
+    "phone": "07131/994-352",
+    "email": "jugendamt@landratsamt-heilbronn.de",
+    "state": "BW"
+  },
+  {
+    "organization": "Stadt Heilbronn",
+    "department": "Jugendamt",
+    "street": "Marktplatz 7",
+    "zip": "74072",
+    "city": "Heilbronn",
+    "phone": "07131/56-0",
+    "email": "soziales+jugend@heilbronn.de",
+    "state": "BW"
+  },
+  {
+    "organization": "Landratsamt Schwäbisch Hall",
+    "department": "Jugendamt",
+    "street": "Münzstraße 1",
+    "zip": "74523",
+    "city": "Schwäbisch-Hall",
+    "phone": "0791/755-7660",
+    "email": "info@lrasha.de",
+    "state": "BW"
+  },
+  {
+    "organization": "Landratsamt Hohenlohekreis",
+    "department": "Jugendamt",
+    "street": "Allee 16",
+    "zip": "74653",
+    "city": "Künzelsau",
+    "phone": "07940/18-1504",
+    "email": "jugendamt@hohenlohekreis.de",
+    "state": "BW"
+  },
+  {
+    "organization": "Landratsamt Neckar-Odenwald-Kreis",
+    "department": "Jugendamt",
+    "street": "Renzstraße 12",
+    "zip": "74821",
+    "city": "Mosbach",
+    "phone": "06261-84-0",
+    "email": "jugendamt@neckar-odenwald-kreis.de",
+    "state": "BW"
+  },
+  {
+    "organization": "Stadt Pforzheim",
+    "department": "Jugend- und Sozialamt",
+    "street": "Marktplatz 4",
+    "zip": "75175",
+    "city": "Pforzheim",
+    "phone": "07231-39-2424",
+    "email": "jsa@stadt-pforzheim.de",
+    "state": "BW"
+  },
+  {
+    "organization": "Landratsamt Böblingen",
+    "department": "Jugendamt",
+    "street": "Parkstraße 16",
+    "zip": "71034",
+    "city": "Böblingen",
+    "phone": "07031/663-1397",
+    "email": "jugend@lrabb.de",
+    "state": "BW"
+  },
+  {
+    "organization": "Landratsamt Enzkreis",
+    "department": "Jugendamt",
+    "street": "Zähringerallee 3",
+    "zip": "75177",
+    "city": "Pforzheim",
+    "phone": "07231-308-0",
+    "email": "Landratsamt@Enzkreis.de",
+    "state": "BW"
+  },
+  {
+    "organization": "Landratsamt Calw",
+    "department": "Jugendamt",
+    "street": "Vogteistraße 44-46",
+    "zip": "75365",
+    "city": "Calw",
+    "phone": "07051-160-0",
+    "email": "Landratsamt.info@kreis-calw.de",
+    "state": "BW"
+  },
+  {
+    "organization": "Stadt Karlsruhe",
+    "department": "Sozial- und Jugendbehörde",
+    "street": "Südendstraße 42",
+    "zip": "76135",
+    "city": "Karlsruhe",
+    "phone": "0721/133-0",
+    "email": "sodi@sjb.karlsruhe.de",
+    "state": "BW"
+  },
+  {
+    "organization": "Landratsamt Karlsruhe",
+    "department": "Jugendamt",
+    "street": "Wolfartsweiererstraße 5",
+    "zip": "76131",
+    "city": "Karlsruhe",
+    "phone": "0721-936-50",
+    "email": "jugendamt@landratsamt-karlsruhe.de",
+    "state": "BW"
+  },
+  {
+    "organization": "Landratsamt Rastatt",
+    "department": "Jugend und Familie",
+    "street": "Am Schlossplatz 5",
+    "zip": "76437",
+    "city": "Rastatt",
+    "phone": "07222-381-2251",
+    "email": "amt22@landkreis-rastatt.de",
+    "state": "BW"
+  },
+  {
+    "organization": "Stadt Baden-Baden",
+    "department": "Jugendamt",
+    "street": "Gewerbepark Cité 1",
+    "zip": "76532",
+    "city": "Baden-Baden",
+    "phone": "07221-93-1400",
+    "email": "bildung.soziales@baden-baden.de",
+    "state": "BW"
+  },
+  {
+    "organization": "Landratsamt Ortenaukreis",
+    "department": "Jugendamt",
+    "street": "Badstraße 20",
+    "zip": "77652",
+    "city": "Offenburg",
+    "phone": "0781-805-0",
+    "email": "landratsamt@ortenaukreis.de",
+    "state": "BW"
+  },
+  {
+    "organization": "Landratsamt Schwarzwald-Baar-Kreis",
+    "department": "Kreisjugendamt",
+    "street": "Bahnhofstrasse 6",
+    "zip": "78048",
+    "city": "Villingen-Schwenningen",
+    "phone": "07721-913-7960",
+    "email": "jugendamt@lrasbk.de",
+    "state": "BW"
+  },
+  {
+    "organization": "Landratsamt Konstanz",
+    "department": "Amt für Kinder, Jugend und Familie",
+    "street": "Otto-Blesch-Straße 49/51",
+    "zip": "78315",
+    "city": "Radolfzell",
+    "phone": "07531-800-2700",
+    "email": "jugendamt@lrakn.de",
+    "state": "BW"
+  },
+  {
+    "organization": "Stadt Konstanz",
+    "department": "Sozial- und Jugendamt",
+    "street": "Benediktinerplatz 2",
+    "zip": "78467",
+    "city": "Konstanz",
+    "phone": "07531-900-0",
+    "email": "sja@konstanz.de",
+    "state": "BW"
+  },
+  {
+    "organization": "Landratsamt Tuttlingen",
+    "department": "Jugendamt",
+    "street": "Bahnhofstraße 100",
+    "zip": "78532",
+    "city": "Tuttlingen",
+    "phone": "07461-926-0",
+    "email": "info@landkreis-tuttlingen.de",
+    "state": "BW"
+  },
+  {
+    "organization": "Landratsamt Rottweil",
+    "department": "Jugendamt",
+    "street": "Königsstraße 36",
+    "zip": "78628",
+    "city": "Rottweil",
+    "phone": "0741-244-0",
+    "email": "info@landkreis-rottweil.de",
+    "state": "BW"
+  },
+  {
+    "organization": "Stadt Freiburg",
+    "department": "Amt für Kinder, Jugend und Familie",
+    "street": "Europaplatz 1",
+    "zip": "79098",
+    "city": "Freiburg",
+    "phone": "0761-201-8310",
+    "email": "aki@stadt.freiburg.de",
+    "state": "BW"
+  },
+  {
+    "organization": "Landratsamt Breisgau-Hochschwarzwald",
+    "department": "Jugendamt",
+    "street": "Berliner Allee 3",
+    "zip": "79114",
+    "city": "Freiburg",
+    "phone": "0761-2187-0",
+    "email": "jugendamt@lkbh.de",
+    "state": "BW"
+  },
+  {
+    "organization": "Landratsamt Emmendingen",
+    "department": "Jugendamt",
+    "street": "Bahnhofstraße 2-4",
+    "zip": "79312",
+    "city": "Emmendingen",
+    "phone": "07641-451-3101",
+    "email": "kreisjugendamt@landkreis-emmendingen.de",
+    "state": "BW"
+  },
+  {
+    "organization": "Landratsamt Lörrach",
+    "department": "Jugendamt",
+    "street": "Palmstraße 3",
+    "zip": "79539",
+    "city": "Lörrach",
+    "phone": "07621-410-0",
+    "email": "mail@loerrach-landkreis.de",
+    "state": "BW"
+  },
+  {
+    "organization": "Landratsamt Waldshut",
+    "department": "Jugendamt",
+    "street": "Kaiserstraße 110",
+    "zip": "79761",
+    "city": "Waldshut-Tiengen",
+    "phone": "07751-86-4300",
+    "email": "post@landkeis-waldshut.de",
+    "state": "BW"
+  },
+  {
+    "organization": "Landratsamt Bodenseekreis",
+    "department": "Jugendamt",
+    "street": "Albrechtstraße 75",
+    "zip": "88045",
+    "city": "Friedrichshafen",
+    "phone": "07541/204-0",
+    "email": "jugendamt@bodenseekreis.de",
+    "state": "BW"
+  },
+  {
+    "organization": "Landratsamt Ravensburg",
+    "department": "Jugendamt",
+    "street": "Gartenstraße 107",
+    "zip": "88212",
+    "city": "Ravensburg",
+    "phone": "0751/85-3210",
+    "email": "ju@rv.de",
+    "state": "BW"
+  },
+  {
+    "organization": "Landratsamt Biberach",
+    "department": "Jugendamt",
+    "street": "Rollinstraße 9",
+    "zip": "88400",
+    "city": "Biberach",
+    "phone": "07351/52-0",
+    "email": "poststelle@biberach.de",
+    "state": "BW"
+  },
+  {
+    "organization": "Stadtkreis Ulm",
+    "department": "Jugendamt",
+    "street": "Olgastraße 152",
+    "zip": "89073",
+    "city": "Ulm",
+    "phone": "0731/161-5101",
+    "email": "info@ulm.de",
+    "state": "BW"
+  },
+  {
+    "organization": "Landratsamt Alb-Donau-Kreis",
+    "department": "Fachdienst Jugendhilfe",
+    "street": "Schillerstraße 30",
+    "zip": "89077",
+    "city": "Ulm",
+    "phone": "0731/185-4385",
+    "email": "jugendhilfe@alb-donau-kreis.de",
+    "state": "BW"
+  },
+  {
+    "organization": "Landratsamt Heidenheim",
+    "department": "Jugend und Familie",
+    "street": "Felsenstraße 36",
+    "zip": "89518",
+    "city": "Heidenheim",
+    "phone": "07321/321-0",
+    "email": "post@landkreis-heidenheim.de",
+    "state": "BW"
+  },
+  {
+    "organization": "Landratsamt Main-Tauber-Kreis",
+    "department": "Jugendamt",
+    "street": "Gartenstraße 1",
+    "zip": "97941",
+    "city": "Tauberbischofsheim",
+    "phone": "09341/82-0",
+    "email": "jugend@main-tauber-kreis.de",
+    "state": "BW"
+  }
+]

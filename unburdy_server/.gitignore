@@ -3,9 +3,6 @@ ae-saas-basic
 .env
 .env.staging
 
-# Data 
-statics
-
 # Go build artifacts
 *.exe
 *.exe~

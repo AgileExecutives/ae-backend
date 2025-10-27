@@ -1,96 +1,89 @@
-# Static Assets API Tests 
-# Tests static file serving including CSS, JavaScript, images, and templates
+# Static JSON API Tests 
+# Tests static JSON file serving from the statics/json directory
 
-# Test 1: Serve CSS assets
-GET {{HOST}}/static/css/email.css
-
-HTTP 200
-[Asserts]
-header "Content-Type" contains "text/css"
-
-# Test 2: Serve JavaScript assets
-GET {{HOST}}/static/js/main.js
+# Test 1: Serve bundeslaender JSON data
+GET {{HOST}}/static/bundeslaender
 
 HTTP 200
 [Asserts]
-header "Content-Type" contains "javascript"
+header "Content-Type" contains "application/json"
+body contains "Baden-Württemberg"
+body contains "states"
 
-# Test 3: Serve SVG logo image
-GET {{HOST}}/static/images/logo.svg
-
-HTTP 200
-[Asserts]
-header "Content-Type" contains "svg"
-
-# Test 4: Serve favicon
-GET {{HOST}}/static/images/favicon.svg
+# Test 2: Serve enumerations JSON data
+GET {{HOST}}/static/enumerations
 
 HTTP 200
 [Asserts]
-header "Content-Type" contains "svg"
+header "Content-Type" contains "application/json"
+body contains "focus_areas"
 
-# Test 5: Serve email template
-GET {{HOST}}/static/email_templates/welcome.html
+# Test 3: Serve diagnostic_std JSON data
+GET {{HOST}}/static/diagnostic_std
 
 HTTP 200
 [Asserts]
-header "Content-Type" contains "html"
+header "Content-Type" contains "application/json"
 
-# Test 6: Serve PDF template (may not be implemented)
-GET {{HOST}}/static/pdf_templates/invoice.html
+# Test 4: Serve ferien-feiertage JSON data
+GET {{HOST}}/static/ferien-feiertage
 
-HTTP *
+HTTP 200
+[Asserts]
+header "Content-Type" contains "application/json"
 
-# Test 7: Test directory traversal protection
+# Test 5: Serve jugendaemter JSON data
+GET {{HOST}}/static/jugendaemter
+
+HTTP 200
+[Asserts]
+header "Content-Type" contains "application/json"
+
+# Test 6: Serve potential_customers JSON data
+GET {{HOST}}/static/potential_customers
+
+HTTP 200
+[Asserts]
+header "Content-Type" contains "application/json"
+
+# Test 7: Test directory traversal protection - URL normalization makes this a 404
 GET {{HOST}}/static/../../../etc/passwd
 
-# Should return 404 or similar security response
-HTTP *
-
-# Test 8: Test non-existent asset
-GET {{HOST}}/static/css/nonexistent_{{UNIQUE_ID}}.css
-
-# Should return 404 
 HTTP 404
 
-# Test 9: Test static assets without extension
-GET {{HOST}}/static/README.md
+# Test 8: Test filename with dots - should be blocked by our validation
+GET {{HOST}}/static/test..test
 
-HTTP 200
+HTTP 400
+[Asserts]
+body contains "Invalid file name"
 
-# Test 10: Test email template with variables
-GET {{HOST}}/static/email_templates/password_reset.html
+# Test 9: Test non-existent JSON file
+GET {{HOST}}/static/nonexistent_{{UNIQUE_ID}}
+
+HTTP 404
+[Asserts]
+body contains "File not found"
+
+# Test 10: Test filename with slash - router returns 404 
+GET {{HOST}}/static/test/path
+
+HTTP 404
+
+# Test 11: Test valid JSON response structure for bundeslaender
+GET {{HOST}}/static/bundeslaender
 
 HTTP 200
 [Asserts]
-header "Content-Type" contains "html"
-body contains "html"
+header "Content-Type" == "application/json"
+jsonpath "$.states.BW" == "Baden-Württemberg"
+jsonpath "$.states.BY" == "Bayern"
 
-# Test 11: Test asset caching headers (if implemented)
-GET {{HOST}}/static/css/email.css
-
-HTTP 200
-# Cache headers are optional, just verify the file serves correctly
-[Asserts]
-header "Content-Type" contains "text/css"
-
-# Test 12: Test various image formats
-GET {{HOST}}/static/images/logo-full.svg
+# Test 12: Test valid JSON response structure for enumerations
+GET {{HOST}}/static/enumerations
 
 HTTP 200
 [Asserts]
-header "Content-Type" contains "svg"
-
-# Test 13: Verify large file handling (if applicable)
-GET {{HOST}}/static/js/main.js
-
-HTTP 200
-[Asserts]
-header "Content-Type" contains "javascript"
-
-# Test 14: Test MIME type detection
-GET {{HOST}}/static/css/email.css
-
-HTTP 200
-[Asserts]
-header "Content-Type" == "text/css; charset=utf-8"
+header "Content-Type" == "application/json" 
+jsonpath "$.focus_areas" exists
+jsonpath "$.service_offers" exists

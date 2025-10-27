@@ -21,8 +21,9 @@ func SetupRouter(db *gorm.DB, cfg config.Config) *gin.Engine {
 	// Swagger documentation endpoint
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
-	// Serve static files
-	router.Static("/static", "./statics")
+	// Serve JSON files from statics directory
+	router.GET("/static", handlers.ListStaticJSON)
+	router.GET("/static/:filename", handlers.ServeStaticJSON)
 	router.StaticFile("/favicon.ico", "./statics/images/favicon.ico")
 
 	// Initialize handlers
@@ -33,7 +34,7 @@ func SetupRouter(db *gorm.DB, cfg config.Config) *gin.Engine {
 	contactHandler := handlers.NewContactHandler(db)
 	emailHandler := handlers.NewEmailHandler(db)
 	userSettingsHandler := handlers.NewUserSettingsHandler(db)
-	staticHandler := handlers.NewStaticHandler("./statics")
+	// staticHandler := handlers.NewStaticHandler("./statics")
 
 	// Initialize PDF service and handler
 	pdfServiceConfig := &services.PDFConfig{
@@ -99,8 +100,8 @@ func SetupRouter(db *gorm.DB, cfg config.Config) *gin.Engine {
 		public.GET("/plans/:id", planHandler.GetPlan)
 
 		// Static asset serving
-		public.GET("/assets/*path", staticHandler.ServeAsset)
-		public.GET("/logo", staticHandler.ServeLogo)
+		// public.GET("/assets/*path", staticHandler.ServeAsset)
+		// public.GET("/logo", staticHandler.ServeLogo)
 
 		// Public PDF routes (no public routes needed for PDF)
 		// All PDF functionality requires authentication
@@ -179,11 +180,11 @@ func SetupRouter(db *gorm.DB, cfg config.Config) *gin.Engine {
 		}
 
 		// Static file management (authenticated)
-		statics := protected.Group("/static")
-		{
-			statics.GET("/assets", staticHandler.ListAssets)
-			statics.GET("/templates/:type/:template", staticHandler.ServeTemplate)
-		}
+		// statics := protected.Group("/admin/static")
+		// {
+		//	statics.GET("/assets", staticHandler.ListAssets)
+		//	statics.GET("/templates/:type/:template", staticHandler.ServeTemplate)
+		// }
 
 		// PDF generation routes (authenticated)
 		pdf := protected.Group("/pdf")

@@ -1,0 +1,42 @@
+{
+    "focus_areas": {
+      "LRS": "Lese- und Rechtschreibstörung",
+      "LEGASTHENIE": "Legasthenie / Lese-Rechtschreib-Schwäche", 
+      "DYSKALKULIE": "Dyskalkulie / Rechenschwäche",
+      "ADHD": "ADHS / Aufmerksamkeitsdefizit-Hyperaktivitätsstörung",
+      "KONZENTRATION": "Konzentrationstraining",
+      "WAHRNEHMUNG": "Wahrnehmungs- und Konzentrationstraining",
+      "LERNSTRATEGIEN": "Lernstrategietraining",
+      "FREMDSPRACHEN_LRS": "Fremdsprachen-Legasthenie",
+      "ENGLISCH_LRS": "Englisch-Legasthenie",
+      "PHONOLOGISCHE_BEWUSSTHEIT": "Phonologische Bewusstheit",
+      "VORSCHULFOERDERUNG": "Vorschulförderung",
+      "LERNBLOCKADEN": "Lernblockaden",
+      "ELTERNBERATUNG": "Elternberatung",
+      "PSYCHOLOGISCHE_BERATUNG": "Psychologische Beratung",
+      "LERNCOACHING": "Lerncoaching",
+      "SCHULCOACHING": "Schulcoaching",
+      "RHYTHMIK": "Rhythmik",
+      "KUNSTTHERAPIE": "Kunsttherapie",
+      "PSYCHOMOTORIK": "Psychomotorik",
+      "AUTISMUS": "Autismus-assoziierte Probleme"
+    },
+    "service_offers": {
+      "DIAGNOSTIK": "Diagnostik",
+      "FOERDERDIAGNOSTIK": "Förderdiagnostik", 
+      "EINZELTHERAPIE": "Einzeltherapie",
+      "GRUPPENTHERAPIE": "Gruppentherapie",
+      "KLEINGRUPPENFOERDERUNG": "Kleingruppenförderung",
+      "ELTERNBERATUNG": "Elternberatung",
+      "ELTERNCOACHING": "Elterncoaching",
+      "ELTERNSEMINARE": "Elternseminare",
+      "LERNSTRATEGIETRAINING": "Lernstrategietraining",
+      "BEWEGUNGSTHERAPIE": "Einzeltherapie mit Bewegungselementen",
+      "INTEGRATIVE_LERNTHERAPIE": "Integrative Lerntherapie",
+      "PSYCHOMOTORIK": "Psychomotorik",
+      "ONLINE_THERAPIE": "Online-Therapie",
+      "HAUSBESUCHE": "Hausbesuche / Häusliche Förderung",
+      "KOSTENLOSE_BERATUNG": "Kostenlose Beratung",
+      "KOSTENLOSE_DIAGNOSTIK": "Kostenlose Diagnostik"
+    }
+  }

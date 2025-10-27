@@ -5,12 +5,12 @@
 POST http://localhost:8080/api/v1/auth/register
 Content-Type: application/json
 {
-  "username": "testuser_1761570720_3905b88b",
-  "email": "test_1761570720_3905b88b@example.com",
-  "password": "Pass123_3905b88b",
+  "username": "testuser_1761575244_7f3dbf06",
+  "email": "test_1761575244_7f3dbf06@example.com",
+  "password": "Pass123_7f3dbf06",
   "first_name": "Customer",
   "last_name": "Tester",
-  "company_name": "Customer Test Company 1761570720_3905b88b",
+  "company_name": "Customer Test Company 1761575244_7f3dbf06",
   "accept_terms": true,
   "newsletter_opt_in": false
 }
@@ -22,8 +22,8 @@ HTTP *
 POST http://localhost:8080/api/v1/auth/login
 Content-Type: application/json
 {
-  "username": "testuser_1761570720_3905b88b",
-  "password": "Pass123_3905b88b"
+  "username": "testuser_1761575244_7f3dbf06",
+  "password": "Pass123_7f3dbf06"
 }
 
 HTTP 200
@@ -35,8 +35,8 @@ POST http://localhost:8080/api/v1/customers
 Authorization: Bearer {{auth_token}}
 Content-Type: application/json
 {
-  "name": "customer_1761570720_3905b88b Corp",
-  "email": "test_1761570720_3905b88b@example.com",
+  "name": "customer_1761575244_7f3dbf06 Corp",
+  "email": "test_1761575244_7f3dbf06@example.com",
   "phone": "+1-555-123456",
   "address": "123 Test Street, Test City, TC 12345",
   "tenant_id": 1,
@@ -46,8 +46,8 @@ Content-Type: application/json
 HTTP 201
 [Asserts]
 jsonpath "$.success" == true
-jsonpath "$.data.name" == "customer_1761570720_3905b88b Corp"
-jsonpath "$.data.email" == "test_1761570720_3905b88b@example.com"
+jsonpath "$.data.name" == "customer_1761575244_7f3dbf06 Corp"
+jsonpath "$.data.email" == "test_1761575244_7f3dbf06@example.com"
 
 [Captures]
 customer_id: jsonpath "$.data.id"
@@ -60,7 +60,7 @@ HTTP 200
 [Asserts]
 jsonpath "$.success" == true
 jsonpath "$.data.data" isCollection
-jsonpath "$.data.data[*].name" contains "customer_1761570720_3905b88b Corp"
+jsonpath "$.data.data[*].name" contains "customer_1761575244_7f3dbf06 Corp"
 
 # Test 3: Get customer by ID
 GET http://localhost:8080/api/v1/customers/{{customer_id}}
@@ -70,27 +70,27 @@ HTTP 200
 [Asserts]
 jsonpath "$.success" == true
 jsonpath "$.data.id" == {{customer_id}}
-jsonpath "$.data.name" == "customer_1761570720_3905b88b Corp"
+jsonpath "$.data.name" == "customer_1761575244_7f3dbf06 Corp"
 
 # Test 4: Update customer
 PUT http://localhost:8080/api/v1/customers/{{customer_id}}
 Authorization: Bearer {{auth_token}}
 Content-Type: application/json
 {
-  "name": "customer_1761570720_3905b88b Updated Corp",
-  "email": "updated_test_1761570720_3905b88b@example.com",
-  "phone": "+1-555-1761570720_3905b88b-UPD",
+  "name": "customer_1761575244_7f3dbf06 Updated Corp",
+  "email": "updated_test_1761575244_7f3dbf06@example.com",
+  "phone": "+1-555-1761575244_7f3dbf06-UPD",
   "address": "456 Updated Street, Update City, UC 67890"
 }
 
 HTTP 200
 [Asserts]
 jsonpath "$.success" == true
-jsonpath "$.data.name" == "customer_1761570720_3905b88b Updated Corp"
-jsonpath "$.data.email" == "updated_test_1761570720_3905b88b@example.com"
+jsonpath "$.data.name" == "customer_1761575244_7f3dbf06 Updated Corp"
+jsonpath "$.data.email" == "updated_test_1761575244_7f3dbf06@example.com"
 
 # Test 5: Search customers by name
-GET http://localhost:8080/api/v1/customers?search=customer_1761570720_3905b88b
+GET http://localhost:8080/api/v1/customers?search=customer_1761575244_7f3dbf06
 Authorization: Bearer {{auth_token}}
 
 HTTP 200
@@ -99,7 +99,7 @@ jsonpath "$.success" == true
 jsonpath "$.data.data" isCollection
 
 # Test 6: Filter customers by email
-GET http://localhost:8080/api/v1/customers?email=updated_test_1761570720_3905b88b@example.com
+GET http://localhost:8080/api/v1/customers?email=updated_test_1761575244_7f3dbf06@example.com
 Authorization: Bearer {{auth_token}}
 
 HTTP 200
@@ -112,7 +112,7 @@ POST http://localhost:8080/api/v1/customers
 Authorization: Bearer {{auth_token}}
 Content-Type: application/json
 {
-  "email": "incomplete_test_1761570720_3905b88b@example.com"
+  "email": "incomplete_test_1761575244_7f3dbf06@example.com"
 }
 
 HTTP 400

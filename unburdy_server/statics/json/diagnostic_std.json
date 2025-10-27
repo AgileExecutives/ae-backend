@@ -1,0 +1,216 @@
+{
+  "de": [
+    {
+      "icd10": "F81.0",
+      "kategorie": "Lernstörungen",
+      "titel": "Lese-Rechtschreib-Störung",
+      "abbreviation": "LRS",
+      "beschreibung": "Deutliche Schwierigkeiten beim Lesen und/oder Schreiben trotz normaler Intelligenz."
+    },
+    {
+      "icd10": "F81.1",
+      "kategorie": "Lernstörungen",
+      "titel": "Isolierte Rechtschreibstörung",
+      "abbreviation": "IRS",
+      "beschreibung": "Rechtschreibprobleme ohne Beeinträchtigung des Lesens."
+    },
+    {
+      "icd10": "F81.2",
+      "kategorie": "Lernstörungen",
+      "titel": "Rechenstörung (Dyskalkulie)",
+      "abbreviation": "Dyskalkulie",
+      "beschreibung": "Deutliche Schwierigkeiten beim Rechnen oder Zahlenverständnis."
+    },
+    {
+      "icd10": "F81.3",
+      "kategorie": "Lernstörungen",
+      "titel": "Kombinierte Störung schulischer Fertigkeiten",
+      "abbreviation": "KSSF",
+      "beschreibung": "Beeinträchtigungen in mehreren schulischen Bereichen."
+    },
+    {
+      "icd10": "F80.1",
+      "kategorie": "Sprach- und Kommunikationsstörungen",
+      "titel": "Expressive Sprachstörung",
+      "abbreviation": "ESS",
+      "beschreibung": "Das Kind kann sich sprachlich schwer ausdrücken, versteht aber Gesprochenes."
+    },
+    {
+      "icd10": "F90.0",
+      "kategorie": "Emotionale und Verhaltensstörungen",
+      "titel": "Aufmerksamkeitsdefizit-/Hyperaktivitätsstörung (ADHS)",
+      "abbreviation": "ADHS",
+      "beschreibung": "Unaufmerksamkeit, Impulsivität und motorische Unruhe."
+    },
+    {
+      "icd10": "F90.1",
+      "kategorie": "Emotionale und Verhaltensstörungen",
+      "titel": "Hyperkinetische Störung des Sozialverhaltens",
+      "abbreviation": "HSS",
+      "beschreibung": "ADHS-Symptome kombiniert mit auffälligem Sozialverhalten."
+    },
+    {
+      "icd10": "F43.2",
+      "kategorie": "Emotionale und Verhaltensstörungen",
+      "titel": "Anpassungsstörung",
+      "abbreviation": "AS",
+      "beschreibung": "Emotionale Reaktionen auf belastende Lebensveränderungen (z. B. Schulwechsel)."
+    },
+    {
+      "icd10": "F41.1",
+      "kategorie": "Emotionale und Verhaltensstörungen",
+      "titel": "Generalisierte Angststörung",
+      "abbreviation": "GAS",
+      "beschreibung": "Anhaltende Ängstlichkeit und Sorgen ohne spezifischen Auslöser."
+    },
+    {
+      "icd10": "F32.0",
+      "kategorie": "Emotionale und Verhaltensstörungen",
+      "titel": "Leichte depressive Episode",
+      "abbreviation": "LDE",
+      "beschreibung": "Leichte depressive Symptome mit Auswirkungen auf den Alltag."
+    },
+    {
+      "icd10": "F91.0",
+      "kategorie": "Emotionale und Verhaltensstörungen",
+      "titel": "Störung des Sozialverhaltens auf den Familienkreis beschränkt",
+      "abbreviation": "SSV-F",
+      "beschreibung": "Aggressives oder oppositionelles Verhalten vor allem im Familienumfeld."
+    },
+    {
+      "icd10": "F84.0",
+      "kategorie": "Neuroentwicklungsstörungen",
+      "titel": "Frühkindlicher Autismus",
+      "abbreviation": "FKA",
+      "beschreibung": "Früh beginnender Autismus mit sozialen und kommunikativen Auffälligkeiten."
+    },
+    {
+      "icd10": "F84.5",
+      "kategorie": "Neuroentwicklungsstörungen",
+      "titel": "Asperger-Syndrom",
+      "abbreviation": "Asperger",
+      "beschreibung": "Autismus-Spektrum-Störung mit normaler oder überdurchschnittlicher Intelligenz und eingeschränkter sozialer Interaktion."
+    },
+    {
+      "icd10": "F70",
+      "kategorie": "Intelligenzminderungen",
+      "titel": "Leichte Intelligenzminderung",
+      "abbreviation": "LIM",
+      "beschreibung": "Generelle kognitive Einschränkung, die Lernen und Anpassung erschwert."
+    },
+    {
+      "icd10": "Z76.8",
+      "kategorie": "Intelligenzminderungen",
+      "titel": "Grenzbereich der Intelligenz",
+      "abbreviation": "GBI",
+      "beschreibung": "Kognitive Leistungsfähigkeit knapp über der Schwelle zur Intelligenzminderung."
+    }
+  ],
+  "en": [
+    {
+      "icd10": "F81.0",
+      "category": "Learning Disorders",
+      "title": "Specific Reading Disorder",
+      "abbreviation": "SRD",
+      "description": "Significant difficulty in reading and/or writing despite normal intelligence."
+    },
+    {
+      "icd10": "F81.1",
+      "category": "Learning Disorders",
+      "title": "Specific Spelling Disorder",
+      "abbreviation": "SSD",
+      "description": "Spelling difficulties with unaffected reading ability."
+    },
+    {
+      "icd10": "F81.2",
+      "category": "Learning Disorders",
+      "title": "Specific Arithmetic Disorder",
+      "abbreviation": "Dyscalculia",
+      "description": "Marked difficulty with arithmetic or number comprehension."
+    },
+    {
+      "icd10": "F81.3",
+      "category": "Learning Disorders",
+      "title": "Mixed Disorder of Scholastic Skills",
+      "abbreviation": "MDSS",
+      "description": "Impairments in multiple academic skill areas."
+    },
+    {
+      "icd10": "F80.1",
+      "category": "Speech and Communication Disorders",
+      "title": "Expressive Language Disorder",
+      "abbreviation": "ELD",
+      "description": "Child struggles to express verbally but understands spoken language."
+    },
+    {
+      "icd10": "F90.0",
+      "category": "Emotional and Behavioral Disorders",
+      "title": "Attention Deficit Hyperactivity Disorder (ADHD)",
+      "abbreviation": "ADHD",
+      "description": "Inattention, impulsivity, and hyperactivity."
+    },
+    {
+      "icd10": "F90.1",
+      "category": "Emotional and Behavioral Disorders",
+      "title": "Hyperkinetic Conduct Disorder",
+      "abbreviation": "HCD",
+      "description": "ADHD symptoms combined with conduct disorder behaviors."
+    },
+    {
+      "icd10": "F43.2",
+      "category": "Emotional and Behavioral Disorders",
+      "title": "Adjustment Disorder",
+      "abbreviation": "AD",
+      "description": "Emotional responses to stressful life changes (e.g., school transitions)."
+    },
+    {
+      "icd10": "F41.1",
+      "category": "Emotional and Behavioral Disorders",
+      "title": "Generalized Anxiety Disorder",
+      "abbreviation": "GAD",
+      "description": "Chronic anxiety, worry, and tension without specific cause."
+    },
+    {
+      "icd10": "F32.0",
+      "category": "Emotional and Behavioral Disorders",
+      "title": "Mild Depressive Episode",
+      "abbreviation": "MDE",
+      "description": "Mild but noticeable symptoms of depression impacting daily life."
+    },
+    {
+      "icd10": "F91.0",
+      "category": "Emotional and Behavioral Disorders",
+      "title": "Conduct Disorder, confined to the family context",
+      "abbreviation": "CD-F",
+      "description": "Aggressive or defiant behavior mainly within the family environment."
+    },
+    {
+      "icd10": "F84.0",
+      "category": "Neurodevelopmental Disorders",
+      "title": "Childhood Autism",
+      "abbreviation": "Autism",
+      "description": "Early-onset autism with social and communication difficulties."
+    },
+    {
+      "icd10": "F84.5",
+      "category": "Neurodevelopmental Disorders",
+      "title": "Asperger's Syndrome",
+      "abbreviation": "Asperger's",
+      "description": "Autism spectrum condition with average or above intelligence and limited social interaction."
+    },
+    {
+      "icd10": "F70",
+      "category": "Intellectual Disabilities",
+      "title": "Mild Intellectual Disability",
+      "abbreviation": "MID",
+      "description": "General cognitive impairment affecting learning and adaptation."
+    },
+    {
+      "icd10": "Z76.8",
+      "category": "Intellectual Disabilities",
+      "title": "Borderline Intellectual Functioning",
+      "abbreviation": "BIF",
+      "description": "Cognitive ability just above intellectual disability threshold."
+    }
+  ]
+}

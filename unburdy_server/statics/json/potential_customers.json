@@ -1,0 +1,602 @@
+[
+  {
+    "id": "freiburg_001",
+    "name": "Praxis für integrative Lerntherapie Andrea Röhm",
+    "address": "Simone-de-Beauvoir-Weg 8, 79111 Freiburg",
+    "phone": "0761 4774755",
+    "email": "ar@lerntherapiefreiburg.de",
+    "focus": [
+      "LRS",
+      "DYSKALKULIE",
+      "ENGLISCH_LRS"
+    ],
+    "offers": [
+      "INTEGRATIVE_LERNTHERAPIE",
+      "EINZELTHERAPIE"
+    ],
+    "website": "www.lerntherapiefreiburg.de",
+    "notes": null
+  },
+  {
+    "id": "freiburg_002",
+    "name": "Praxis für integrative Lerntherapie Susanne Baader (spielRaum)",
+    "address": "Schillerstr. 10, 79102 Freiburg",
+    "phone": "0761 701890",
+    "email": "susanne.baader@web.de",
+    "focus": [
+      "LEGASTHENIE",
+      "ADHD"
+    ],
+    "offers": [
+      "INTEGRATIVE_LERNTHERAPIE",
+      "DIAGNOSTIK"
+    ],
+    "website": "www.spielraum-freiburg.de",
+    "notes": null
+  },
+  {
+    "id": "freiburg_003",
+    "name": "Praxis für Lerntherapie Monika Burr",
+    "address": "Malteserordensstr. 15, 79111 Freiburg",
+    "phone": "0761 1307775",
+    "email": "moni.burr@gmx.de",
+    "focus": [
+      "LRS",
+      "WAHRNEHMUNG",
+      "KONZENTRATION"
+    ],
+    "offers": [
+      "EINZELTHERAPIE"
+    ],
+    "website": null,
+    "notes": null
+  },
+  {
+    "id": "freiburg_004",
+    "name": "Praxis für integrative Lerntherapie Katharina Fritzsche (LERNMUT)",
+    "address": "Talstraße 38, 79102 Freiburg",
+    "phone": "0761 7072540",
+    "email": "kf@lernmut.de",
+    "focus": [
+      "LRS",
+      "DYSKALKULIE",
+      "KONZENTRATION",
+      "LERNSTRATEGIEN"
+    ],
+    "offers": [
+      "INTEGRATIVE_LERNTHERAPIE",
+      "EINZELTHERAPIE"
+    ],
+    "website": "www.lernmut.de",
+    "notes": "Schwerpunkt Klasse 1–4"
+  },
+  {
+    "id": "freiburg_005",
+    "name": "Praxis Dorothea Gloderer",
+    "address": "Ziegelhofstr. 4, 79110 Freiburg",
+    "phone": "0761 8972780",
+    "fax": "0761 8972782",
+    "email": "praxis@gloderer.de",
+    "focus": [
+      "DYSKALKULIE",
+      "PSYCHOLOGISCHE_BERATUNG"
+    ],
+    "offers": [
+      "EINZELTHERAPIE",
+      "ELTERNBERATUNG"
+    ],
+    "website": "www.gloderer.de",
+    "notes": null
+  },
+  {
+    "id": "freiburg_006",
+    "name": "Praxis Doris Hartenthaler-Sobotta",
+    "address": "Käthe-Kollwitz-Str. 10, 79111 Freiburg",
+    "phone": "0761 4538771",
+    "email": "doris@hartenthaler.de",
+    "focus": [
+      "LRS",
+      "DYSKALKULIE",
+      "VORSCHULFOERDERUNG"
+    ],
+    "offers": [
+      "EINZELTHERAPIE"
+    ],
+    "website": null,
+    "notes": "Schwerpunkt 1.–5. Schuljahr"
+  },
+  {
+    "id": "freiburg_007",
+    "name": "Praxis Almut Hoffmann",
+    "address": "Schwarzkehlchenweg 5, 79111 Freiburg",
+    "phone": "0761 38450568",
+    "email": "Almut.Hoffmann@gmx.net",
+    "focus": [
+      "LEGASTHENIE",
+      "ENGLISCH_LRS",
+      "ELTERNBERATUNG"
+    ],
+    "offers": [
+      "EINZELTHERAPIE",
+      "ELTERNBERATUNG"
+    ],
+    "website": null,
+    "notes": "Deutsch & Englisch"
+  },
+  {
+    "id": "freiburg_008",
+    "name": "Praxis Gabriele Jäger-Bergmann",
+    "address": "Rempartstr. 1, 79098 Freiburg",
+    "phone": "0761 21439226",
+    "email": "g.jaeger-bergmann@web.de",
+    "focus": [
+      "LRS",
+      "DYSKALKULIE"
+    ],
+    "offers": [
+      "EINZELTHERAPIE"
+    ],
+    "website": null,
+    "notes": null
+  },
+  {
+    "id": "freiburg_009",
+    "name": "Praxis Maiken Jerusalem",
+    "address": "Dreikönigstr. 42, 79102 Freiburg",
+    "phone": "0761 42961547",
+    "mobile": "0152 02403296",
+    "email": "maikenjerusalem@posteo.de",
+    "focus": [
+      "LRS",
+      "DYSKALKULIE",
+      "FREMDSPRACHEN_LRS"
+    ],
+    "offers": [
+      "EINZELTHERAPIE"
+    ],
+    "website": "www.lerntherapie-freiburg.de",
+    "notes": null
+  },
+  {
+    "id": "freiburg_010",
+    "name": "Praxis Birgit Klinger",
+    "address": "Bertoldstr. 16, 79098 Freiburg",
+    "phone": "0761 38848807",
+    "mobile": "0175 1936669",
+    "email": "info@lerntherapie-klinger.de",
+    "focus": [
+      "LRS",
+      "LEGASTHENIE"
+    ],
+    "offers": [
+      "EINZELTHERAPIE"
+    ],
+    "website": "www.lerntherapie-klinger.de",
+    "notes": null
+  },
+  {
+    "id": "freiburg_011",
+    "name": "Praxis Marion Streller (Marianne Streller)",
+    "address": "Sternwaldstr. 32, 79102 Freiburg",
+    "phone": "0761 42997612",
+    "email": "m.streller@posteo.de",
+    "focus": [
+      "LRS",
+      "DYSKALKULIE",
+      "ELTERNBERATUNG"
+    ],
+    "offers": [
+      "EINZELTHERAPIE",
+      "ELTERNBERATUNG"
+    ],
+    "website": null,
+    "notes": null
+  },
+  {
+    "id": "freiburg_012",
+    "name": "Praxis Barbara Villis",
+    "address": "Bertoldstr. 16, 79098 Freiburg",
+    "phone": "0163 1467833",
+    "email": "villis@dellekom.de",
+    "focus": [
+      "LRS",
+      "DYSKALKULIE"
+    ],
+    "offers": [
+      "EINZELTHERAPIE"
+    ],
+    "website": null,
+    "notes": null
+  },
+  {
+    "id": "freiburg_013",
+    "name": "Praxis Christine Wewers",
+    "address": "Oberrieder Str. 25, 79117 Freiburg",
+    "phone": "0172 5150906",
+    "email": "christinewewers@posteo.de",
+    "focus": [
+      "LRS",
+      "DYSKALKULIE"
+    ],
+    "offers": [
+      "EINZELTHERAPIE"
+    ],
+    "website": "www.legasthenie-dyskalkulie-freiburg.de",
+    "notes": null
+  },
+  {
+    "id": "karlsruhe_001",
+    "name": "Facheinrichtung für Lerntherapie Miriam Ertl",
+    "address": "Sophienstraße 78, 76135 Karlsruhe",
+    "phone": "0721 4646044",
+    "email": "me@lerntherapie-ertl.de",
+    "focus": [
+      "LRS",
+      "DYSKALKULIE",
+      "ADHD"
+    ],
+    "offers": [
+      "DIAGNOSTIK",
+      "ELTERNCOACHING",
+      "EINZELTHERAPIE"
+    ],
+    "website": "www.lerntherapie-ertl.de",
+    "notes": "Eltern-Kind-Coaching, ADS-und Lernstrategie-Programme"
+  },
+  {
+    "id": "karlsruhe_002",
+    "name": "Lernkessel – Arnhild Kessel",
+    "address": null,
+    "phone": "0721 60991109",
+    "email": "info@lernkessel.de",
+    "focus": [
+      "LRS",
+      "DYSKALKULIE",
+      "ADHD"
+    ],
+    "offers": [
+      "DIAGNOSTIK",
+      "BEWEGUNGSTHERAPIE",
+      "ELTERNSEMINARE"
+    ],
+    "website": "www.lernkessel.de",
+    "notes": "Kombination aus Lerntherapie & Physiotherapie / Bewegung"
+  },
+  {
+    "id": "karlsruhe_003",
+    "name": "Integrative Lerntherapie Gloria Simon Lopez",
+    "address": null,
+    "phone": "+49 157 52955363",
+    "email": "info@lerntherapie-simon.de",
+    "focus": [
+      "LRS",
+      "DYSKALKULIE",
+      "LERNBLOCKADEN",
+      "KONZENTRATION"
+    ],
+    "offers": [
+      "DIAGNOSTIK",
+      "ELTERNBERATUNG",
+      "LERNSTRATEGIETRAINING"
+    ],
+    "website": "www.lerntherapie-simon.de",
+    "notes": "Integrative Lerntherapie mit Fokus auf Selbstwert und Merktechniken"
+  },
+  {
+    "id": "ortenau_001",
+    "name": "Lerntherapie Krug (Jessica Krug)",
+    "address": "Ortenaukreis (häuslich, Raum Achern–Offenburg)",
+    "phone": "0157/82727535",
+    "email": "info@lerntherapie-krug.de",
+    "focus": [
+      "LRS",
+      "LEGASTHENIE",
+      "DYSKALKULIE"
+    ],
+    "offers": [
+      "HAUSBESUCHE",
+      "KOSTENLOSE_BERATUNG"
+    ],
+    "website": "lerntherapie-krug.de",
+    "free_initial_consultation": true,
+    "diagnostic_test": null,
+    "notes": "Flexible häusliche Förderung durch erfahrene Sonderschullehrerin (WhatsApp verfügbar)"
+  },
+  {
+    "id": "ortenau_002",
+    "name": "Nicole Ott Lerntherapie",
+    "address": null,
+    "phone": "0151 28444222",
+    "email": "Lerntherapie@Nicole-Ott.de",
+    "focus": [
+      "DYSKALKULIE",
+      "LRS",
+      "FREMDSPRACHEN_LRS"
+    ],
+    "offers": [
+      "DIAGNOSTIK",
+      "INTEGRATIVE_LERNTHERAPIE"
+    ],
+    "website": "www.nicole-ott.de",
+    "notes": "Diagnostik + integrative Förderprogramme"
+  },
+  {
+    "id": "ortenau_003",
+    "name": "Lerntherapie Carina Schäfer",
+    "address": null,
+    "phone": "0157/355 68 500",
+    "email": "lerntherapie-schaefer@outlook.de",
+    "focus": [
+      "LRS",
+      "DYSKALKULIE"
+    ],
+    "offers": [
+      "EINZELTHERAPIE",
+      "ELTERNBERATUNG"
+    ],
+    "website": "lerntherapie-schaefer.jimdosite.com",
+    "notes": "Einzeltherapie, Eltern-/Beratungsgespräche"
+  },
+  {
+    "id": "ortenau_004",
+    "name": "Lernpunkt Ortenau",
+    "address": "Fruchtfeld 17, 77723 Gengenbach-Berghaupten",
+    "phone": "07835 4849260",
+    "email": "v.b.ronberg2015@online.de",
+    "focus": [
+      "LRS",
+      "DYSKALKULIE",
+      "ADHD",
+      "LERNCOACHING"
+    ],
+    "offers": [
+      "EINZELTHERAPIE",
+      "ELTERNBERATUNG"
+    ],
+    "website": "www.lerntherapie-ortenau.com",
+    "notes": "Einzelstunden, Beratung und Antragsunterstützung beim Jugendamt"
+  },
+  {
+    "id": "ortenau_005",
+    "name": "Strodel Monika – Rechen-Raum",
+    "address": "Roethestr. 23a, 79312 Emmendingen",
+    "phone": "07641 573790",
+    "email": "m.strodel@gmx.de",
+    "focus": [
+      "DYSKALKULIE",
+      "LERNCOACHING",
+      "SCHULCOACHING"
+    ],
+    "offers": [
+      "EINZELTHERAPIE"
+    ],
+    "website": "www.rechen-raum.de",
+    "notes": "Einzeltherapie Mathematik, Schwerpunkt Grundschule"
+  },
+  {
+    "id": "ortenau_006",
+    "name": "Seckinger Claudia – SILBENZAHL",
+    "address": "Friedrichstr. 88, 77933 Lahr",
+    "phone": "07821 3273705",
+    "email": "claudia.seckinger@silbenzahl.de",
+    "focus": [
+      "LRS",
+      "DYSKALKULIE"
+    ],
+    "offers": [
+      "EINZELTHERAPIE"
+    ],
+    "website": "www.silbenzahl.de",
+    "notes": "Einzeltherapie LRS & Rechenschwäche, Schwerpunkt Klasse 1–6"
+  },
+  {
+    "id": "ortenau_007",
+    "name": "Hanning Ursula",
+    "address": "Schillerstr. 14, 79183 Waldkirch",
+    "phone": "07681 475362",
+    "email": "uhanning@web.de",
+    "focus": [
+      "LRS",
+      "PHONOLOGISCHE_BEWUSSTHEIT"
+    ],
+    "offers": [
+      "EINZELTHERAPIE"
+    ],
+    "website": null,
+    "notes": "Logopädin, ganzheitliche Lerntherapie, alle Altersstufen"
+  },
+  {
+    "id": "ortenau_008",
+    "name": "Petrovic Katarina",
+    "address": "Am Buchenbühl 2, 79183 Waldkirch",
+    "phone": "07681 6829",
+    "email": "mail@kat-petrovic.de",
+    "focus": [
+      "LEGASTHENIE",
+      "DYSKALKULIE",
+      "RHYTHMIK",
+      "KUNSTTHERAPIE"
+    ],
+    "offers": [
+      "EINZELTHERAPIE"
+    ],
+    "website": null,
+    "notes": "Dipl. Pädagogin, klinische Lerntherapie, alle Altersstufen"
+  },
+  {
+    "id": "ortenau_009",
+    "name": "Mack-Ruppenthal Carolin",
+    "address": "Sommerhofweg 6, 79211 Denzlingen",
+    "phone": "07666 99900",
+    "email": "Logo-denzlingen@gmx.de",
+    "focus": [
+      "LRS",
+      "PHONOLOGISCHE_BEWUSSTHEIT",
+      "KONZENTRATION"
+    ],
+    "offers": [
+      "EINZELTHERAPIE",
+      "VORSCHULFOERDERUNG"
+    ],
+    "website": "www.logopaedie-denzlingen.de",
+    "notes": "Logopädin, auch Vorschulförderung"
+  },
+  {
+    "id": "loerrach_001",
+    "name": "Praxis Rückenwind – Karin Marx-Pfaff",
+    "address": "Bündtenstraße 14, 79541 Lörrach-Brombach",
+    "phone": "07621 1613225",
+    "email": "info@rueckenwind-lerntherapie.de",
+    "focus": [
+      "LRS",
+      "DYSKALKULIE",
+      "KONZENTRATION",
+      "ADHD"
+    ],
+    "offers": [
+      "INTEGRATIVE_LERNTHERAPIE",
+      "EINZELTHERAPIE"
+    ],
+    "website": "www.rueckenwind-lerntherapie.de",
+    "notes": "Ganzheitlicher Ansatz, inklusive Yoga-Elemente und Montessori-Einflüsse"
+  },
+  {
+    "id": "loerrach_002",
+    "name": "Integrative Lerntherapie Sabine Geisert",
+    "address": "Schlangeneckstraße 15, 79346 Endingen am Kaiserstuhl",
+    "phone": "0171 2602606",
+    "email": null,
+    "focus": [
+      "LRS",
+      "DYSKALKULIE",
+      "ADHD",
+      "AUTISMUS"
+    ],
+    "offers": [
+      "INTEGRATIVE_LERNTHERAPIE",
+      "EINZELTHERAPIE"
+    ],
+    "website": "lerntherapie-geisert.de",
+    "notes": "Ressourcenorientierte Einzeltherapie, Selbstwert- und Lernstrategien"
+  },
+  {
+    "id": "vs_001",
+    "name": "Lerntherapie Susanne Seyfried",
+    "address": "Nagoldstraße 47, 78054 VS-Schwenningen",
+    "phone": null,
+    "email": "kontakt@lerntherapie-vs.de",
+    "focus": [
+      "LRS",
+      "DYSKALKULIE"
+    ],
+    "offers": [
+      "FOERDERDIAGNOSTIK",
+      "EINZELTHERAPIE",
+      "ELTERNCOACHING",
+      "ONLINE_THERAPIE"
+    ],
+    "website": "www.lerntherapie-vs.de",
+    "notes": "Räumliche Nähe: VS, aber Schüler:innen werden europaweit online betreut"
+  },
+  {
+    "id": "vs_002",
+    "name": "Heidi Patzer – Praxis für Lerntherapie & Psychomotorik",
+    "address": "nahe Villingen-Schwenningen (Planregion)",
+    "phone": "+49 7123 21431",
+    "email": null,
+    "focus": [
+      "LRS",
+      "KONZENTRATION",
+      "LERNBLOCKADEN"
+    ],
+    "offers": [
+      "INTEGRATIVE_LERNTHERAPIE",
+      "PSYCHOMOTORIK",
+      "ONLINE_THERAPIE"
+    ],
+    "website": "www.lerntherapie-patzer.de",
+    "notes": "Einzeltherapie, auch online möglich; integrative Förderprogramme"
+  },
+  {
+    "id": "kette_001",
+    "name": "LOS Offenburg",
+    "brand": "LOS",
+    "address": "Zähringerstraße 23, 77652 Offenburg",
+    "phone": "0781 9708045",
+    "email": null,
+    "focus": [
+      "LRS",
+      "LEGASTHENIE",
+      "DYSKALKULIE"
+    ],
+    "offers": [
+      "KOSTENLOSE_BERATUNG",
+      "KOSTENLOSE_DIAGNOSTIK",
+      "EINZELTHERAPIE"
+    ],
+    "website": "www.los.de",
+    "notes": "Wissenschaftlich fundierte Therapie, Beratung und Testung inklusive"
+  },
+  {
+    "id": "kette_002",
+    "name": "PTE Offenburg (Oberkirch)",
+    "brand": "PTE",
+    "address": "Weingärtnerstraße 33, 77704 Oberkirch",
+    "phone": null,
+    "email": "pte-offenburg@pte.de",
+    "focus": [
+      "LRS",
+      "DYSKALKULIE",
+      "ADHD",
+      "LERNCOACHING"
+    ],
+    "offers": [
+      "KOSTENLOSE_BERATUNG",
+      "KOSTENLOSE_DIAGNOSTIK",
+      "EINZELTHERAPIE"
+    ],
+    "website": "www.pte.de/pte-offenburg",
+    "notes": "Pädagogische Lerntherapie im Ortenaukreis"
+  },
+  {
+    "id": "kette_003",
+    "name": "LOS Lörrach",
+    "brand": "LOS",
+    "address": "Luisenstraße 1, 79539 Lörrach",
+    "phone": "07621 169616",
+    "email": null,
+    "focus": [
+      "LRS",
+      "LEGASTHENIE",
+      "DYSKALKULIE"
+    ],
+    "offers": [
+      "KOSTENLOSE_BERATUNG",
+      "KOSTENLOSE_DIAGNOSTIK",
+      "EINZELTHERAPIE"
+    ],
+    "website": "www.los.de/loerrach",
+    "notes": "Pädagogisch fundiertes Förderkonzept, kostenlose Beratung und Diagnostik"
+  },
+  {
+    "id": "kette_004",
+    "name": "LOS Karlsruhe",
+    "brand": "LOS",
+    "address": "Kriegsstraße 154, 76133 Karlsruhe",
+    "phone": "0721 9850106",
+    "email": null,
+    "focus": [
+      "LRS",
+      "LEGASTHENIE",
+      "DYSKALKULIE"
+    ],
+    "offers": [
+      "KOSTENLOSE_BERATUNG",
+      "KOSTENLOSE_DIAGNOSTIK",
+      "EINZELTHERAPIE",
+      "KLEINGRUPPENFOERDERUNG"
+    ],
+    "website": "www.los.de/karlsruhe",
+    "notes": "Wissenschaftlich fundierte LRS-Therapie seit 1995, inklusive normierter Tests"
+  }
+]
