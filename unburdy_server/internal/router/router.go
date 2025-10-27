@@ -17,7 +17,7 @@ import (
 func SetupExtendedRouter(db *gorm.DB) *gin.Engine {
 	// Start with the complete base router that has all the endpoints
 	r := baseAPI.SetupBaseRouterWithConfig(db)
-	
+
 	// Initialize unburdy-specific services and handlers
 	clientService := services.NewClientService(db)
 	clientHandler := handlers.NewClientHandler(clientService)

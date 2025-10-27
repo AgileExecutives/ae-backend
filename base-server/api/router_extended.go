@@ -17,12 +17,12 @@ type RouterExtensionFunc func(*gin.Engine, *gorm.DB, interface{})
 func SetupExtendedRouter(db *gorm.DB, cfg config.Config, extensions ...RouterExtensionFunc) *gin.Engine {
 	// Get the base router with all standard endpoints
 	r := router.SetupRouter(db, cfg)
-	
+
 	// Apply any extensions
 	for _, extension := range extensions {
 		extension(r, db, cfg)
 	}
-	
+
 	return r
 }
 
