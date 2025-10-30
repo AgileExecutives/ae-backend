@@ -38,17 +38,17 @@ type ErrorResponse struct {
 }
 
 // GeneratePDFFromTemplate generates a PDF from a specified template and data
-// @Summary Generate PDF from template
-// @Description Generate a PDF document based on a specified template and data
-// @Tags pdf
-// @Accept json
-// @Produce application/json
-// @Security BearerAuth
-// @Param request body PDFGenerateRequest true "PDF generation request"
-// @Success 200 {object} PDFGenerateResponse "PDF generated successfully"
-// @Failure 400 {object} ErrorResponse "Invalid request"
-// @Failure 500 {object} ErrorResponse "Failed to generate PDF"
-// @Router /api/v1/pdf/create [post]
+// DISABLED-SWAGGER: @Summary Generate PDF from template
+// DISABLED-SWAGGER: @Description Generate a PDF document based on a specified template and data
+// DISABLED-SWAGGER: @Tags pdf
+// DISABLED-SWAGGER: @Accept json
+// DISABLED-SWAGGER: @Produce application/json
+// DISABLED-SWAGGER: @Security BearerAuth
+// DISABLED-SWAGGER: @Param request body PDFGenerateRequest true "PDF generation request"
+// DISABLED-SWAGGER: @Success 200 {object} PDFGenerateResponse "PDF generated successfully"
+// DISABLED-SWAGGER: @Failure 400 {object} ErrorResponse "Invalid request"
+// DISABLED-SWAGGER: @Failure 500 {object} ErrorResponse "Failed to generate PDF"
+// DISABLED-SWAGGER: @Router /api/v1/pdf/create [post]
 func (h *PdfHandler) GeneratePDFFromTemplate(c *gin.Context) {
 	var requestBody PDFGenerateRequest
 

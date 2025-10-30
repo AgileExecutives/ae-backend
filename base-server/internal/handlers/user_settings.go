@@ -18,15 +18,15 @@ func NewUserSettingsHandler(db *gorm.DB) *UserSettingsHandler {
 }
 
 // GetUserSettings retrieves the current user's settings
-// @Summary Get user settings
-// @Description Get the authenticated user's settings
-// @Tags user-settings
-// @Produce json
-// @Security BearerAuth
-// @Success 200 {object} models.APIResponse{data=models.UserSettingsResponse}
-// @Failure 401 {object} models.ErrorResponse
-// @Failure 404 {object} models.ErrorResponse
-// @Router /user-settings [get]
+// DISABLED-SWAGGER: @Summary Get user settings
+// DISABLED-SWAGGER: @Description Get the authenticated user's settings
+// DISABLED-SWAGGER: @Tags user-settings
+// DISABLED-SWAGGER: @Produce json
+// DISABLED-SWAGGER: @Security BearerAuth
+// DISABLED-SWAGGER: @Success 200 {object} models.APIResponse{data=models.UserSettingsResponse}
+// DISABLED-SWAGGER: @Failure 401 {object} models.ErrorResponse
+// DISABLED-SWAGGER: @Failure 404 {object} models.ErrorResponse
+// DISABLED-SWAGGER: @Router /user-settings [get]
 func (h *UserSettingsHandler) GetUserSettings(c *gin.Context) {
 	// Get user from context
 	userInterface, exists := c.Get("user")
@@ -62,17 +62,17 @@ func (h *UserSettingsHandler) GetUserSettings(c *gin.Context) {
 }
 
 // UpdateUserSettings updates the current user's settings
-// @Summary Update user settings
-// @Description Update the authenticated user's settings
-// @Tags user-settings
-// @Accept json
-// @Produce json
-// @Security BearerAuth
-// @Param request body models.UserSettingsUpdateRequest true "User settings update data"
-// @Success 200 {object} models.APIResponse{data=models.UserSettingsResponse}
-// @Failure 400 {object} models.ErrorResponse
-// @Failure 401 {object} models.ErrorResponse
-// @Router /user-settings [put]
+// DISABLED-SWAGGER: @Summary Update user settings
+// DISABLED-SWAGGER: @Description Update the authenticated user's settings
+// DISABLED-SWAGGER: @Tags user-settings
+// DISABLED-SWAGGER: @Accept json
+// DISABLED-SWAGGER: @Produce json
+// DISABLED-SWAGGER: @Security BearerAuth
+// DISABLED-SWAGGER: @Param request body models.UserSettingsUpdateRequest true "User settings update data"
+// DISABLED-SWAGGER: @Success 200 {object} models.APIResponse{data=models.UserSettingsResponse}
+// DISABLED-SWAGGER: @Failure 400 {object} models.ErrorResponse
+// DISABLED-SWAGGER: @Failure 401 {object} models.ErrorResponse
+// DISABLED-SWAGGER: @Router /user-settings [put]
 func (h *UserSettingsHandler) UpdateUserSettings(c *gin.Context) {
 	// Get user from context
 	userInterface, exists := c.Get("user")
@@ -128,14 +128,14 @@ func (h *UserSettingsHandler) UpdateUserSettings(c *gin.Context) {
 }
 
 // ResetUserSettings resets the current user's settings to defaults
-// @Summary Reset user settings
-// @Description Reset the authenticated user's settings to default values
-// @Tags user-settings
-// @Produce json
-// @Security BearerAuth
-// @Success 200 {object} models.APIResponse{data=models.UserSettingsResponse}
-// @Failure 401 {object} models.ErrorResponse
-// @Router /user-settings/reset [post]
+// DISABLED-SWAGGER: @Summary Reset user settings
+// DISABLED-SWAGGER: @Description Reset the authenticated user's settings to default values
+// DISABLED-SWAGGER: @Tags user-settings
+// DISABLED-SWAGGER: @Produce json
+// DISABLED-SWAGGER: @Security BearerAuth
+// DISABLED-SWAGGER: @Success 200 {object} models.APIResponse{data=models.UserSettingsResponse}
+// DISABLED-SWAGGER: @Failure 401 {object} models.ErrorResponse
+// DISABLED-SWAGGER: @Router /user-settings/reset [post]
 func (h *UserSettingsHandler) ResetUserSettings(c *gin.Context) {
 	// Get user from context
 	userInterface, exists := c.Get("user")

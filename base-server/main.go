@@ -1,22 +1,23 @@
 package main
 
 import (
+	"context"
 	"log"
-	"net/http"
 
 	_ "github.com/ae-base-server/docs" // swagger docs
 	"github.com/ae-base-server/internal/config"
-	"github.com/ae-base-server/internal/database"
-	"github.com/ae-base-server/internal/eventbus"
-	"github.com/ae-base-server/internal/router"
-	"github.com/ae-base-server/pkg/auth"
-	"github.com/gin-gonic/gin"
+	"github.com/ae-base-server/modules/base"
+	"github.com/ae-base-server/modules/customer"
+	"github.com/ae-base-server/modules/email"
+	"github.com/ae-base-server/modules/pdf"
+	"github.com/ae-base-server/pkg/bootstrap"
+	"github.com/ae-base-server/pkg/core"
 	"github.com/joho/godotenv"
 )
 
-// @title AE SaaS Basic API
-// @version 1.0
-// @description A comprehensive SaaS backend API built with Go and Gin framework, providing authentication, user management, customer management, email handling, PDF generation, search functionality, and more.
+// @title AE Base Server - Modular API
+// @version 2.0
+// @description A modular SaaS backend API built with Go and Gin framework. Features a plugin-based architecture with four core modules: Base (authentication, users, tenants, contacts, newsletter), Customer (plans, customer management), Email (SMTP services, notifications), and PDF (document generation). Supports dependency injection, event-driven communication, and automatic module discovery.
 // @termsOfService https://ae-base-server.com/terms
 
 // @contact.name API Support
@@ -26,7 +27,7 @@ import (
 // @license.name MIT
 // @license.url https://opensource.org/licenses/MIT
 
-// @host localhost:8080
+// @host localhost:8081
 // @BasePath /api/v1
 
 // @securityDefinitions.apikey BearerAuth
@@ -35,46 +36,37 @@ import (
 // @description Type "Bearer" followed by a space and JWT token.
 
 // @tag.name authentication
-// @tag.description Authentication and user management endpoints
+// @tag.description [Base Module] Authentication and user management endpoints including login, registration, password reset, and token management
 
 // @tag.name users
-// @tag.description User management operations
+// @tag.description [Base Module] User account management operations within tenant context
 
-// @tag.name customers
-// @tag.description Customer management operations
-
-// @tag.name contacts
-// @tag.description Contact management operations
-
-// @tag.name emails
-// @tag.description Email management and sending operations
-
-// @tag.name plans
-// @tag.description Subscription plan management
-
-// @tag.name user-settings
-// @tag.description User preferences and settings management
-
-// @tag.name pdf
-// @tag.description PDF generation and template management
-
-// @tag.name search
-// @tag.description Fuzzy search across all entities
-
-// @tag.name static
-// @tag.description Static file serving and asset management
-
-// @tag.name health
-// @tag.description System health and status endpoints
-
-// @tag.name newsletter
-// @tag.description Newsletter subscription management
+// @tag.name tenants
+// @tag.description [Base Module] Multi-tenant organization management and configuration
 
 // @tag.name contact-form
-// @tag.description Public contact form endpoints
+// @tag.description [Base Module] Public contact form submission and processing
 
-// @tag.name demo
-// @tag.description Demo module endpoints for testing modular architecture
+// @tag.name newsletter
+// @tag.description [Base Module] Newsletter subscription management and bulk operations
+
+// @tag.name customers
+// @tag.description [Customer Module] Customer relationship management and account operations
+
+// @tag.name plans
+// @tag.description [Customer Module] Subscription plan management and pricing configuration
+
+// @tag.name emails
+// @tag.description [Email Module] Email sending, tracking, and notification management with SMTP integration
+
+// @tag.name pdf
+// @tag.description [PDF Module] Document generation from templates with ChromeDP integration
+
+// @tag.name health
+// @tag.description [System] Application health checks, system status, and monitoring endpoints
+
+// @tag.name modules
+// @tag.description [System] Module registry, discovery, and runtime information endpoints
 
 func main() {
 	// Load .env file
@@ -85,45 +77,31 @@ func main() {
 	// Load configuration
 	cfg := config.Load()
 
-	// Set Gin mode
-	gin.SetMode(cfg.Server.Mode)
+	// Create application
+	app := bootstrap.NewApplication(cfg)
 
-	// Set JWT secret
-	auth.SetJWTSecret(cfg.JWT.Secret)
-
-	// Connect to database (create database if it doesn't exist)
-	db, err := database.ConnectWithAutoCreate(cfg.Database)
-	if err != nil {
-		log.Fatal("Failed to connect to database:", err)
+	// Register modules in dependency order
+	modules := []core.Module{
+		base.NewBaseModule(),         // Base authentication and user management
+		customer.NewCustomerModule(), // Customer and plan management
+		email.NewEmailModule(),       // Email management and notifications
+		pdf.NewPDFModule(),           // PDF generation services
 	}
 
-	// Run migrations
-	if err := database.Migrate(db); err != nil {
-		log.Fatal("Failed to migrate database:", err)
+	for _, module := range modules {
+		if err := app.RegisterModule(module); err != nil {
+			log.Fatalf("Failed to register module %s: %v", module.Name(), err)
+		}
 	}
 
-	// Seed database with initial data
-	if err := database.Seed(db); err != nil {
-		log.Fatal("Failed to seed database:", err)
+	// Initialize application
+	if err := app.Initialize(); err != nil {
+		log.Fatal("Failed to initialize application:", err)
 	}
 
-	// Initialize event bus and handlers
-	eventbus.InitializeEventHandlers()
-
-	// Setup router
-	r := router.SetupRouter(db, cfg)
-
-	// Start server
-	addr := cfg.Server.Host + ":" + cfg.Server.Port
-	log.Printf("Starting AE SaaS Basic server on %s", addr)
-	log.Printf("Health check available at: http://%s/api/v1/health", addr)
-
-	server := &http.Server{
-		Addr:    addr,
-		Handler: r,
-	}
-
-	if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-		log.Fatal("Failed to start server:", err)
+	// Start application
+	ctx := context.Background()
+	if err := app.Start(ctx); err != nil {
+		log.Fatal("Failed to start application:", err)
 	}
 }

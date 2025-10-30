@@ -25,18 +25,18 @@ func NewContactHandler(db *gorm.DB) *ContactHandler {
 }
 
 // GetContacts retrieves all contacts with pagination
-// @Summary Get all contacts
-// @Description Get a paginated list of all contacts
-// @Tags contacts
-// @Produce json
-// @Security BearerAuth
-// @Param page query int false "Page number" default(1)
-// @Param limit query int false "Items per page" default(10)
-// @Param active query bool false "Filter by active status"
-// @Param type query string false "Filter by contact type"
-// @Success 200 {object} models.APIResponse{data=models.ListResponse}
-// @Failure 500 {object} models.ErrorResponse
-// @Router /contacts [get]
+// DISABLED-SWAGGER: @Summary Get all contacts
+// DISABLED-SWAGGER: @Description Get a paginated list of all contacts
+// DISABLED-SWAGGER: @Tags contacts
+// DISABLED-SWAGGER: @Produce json
+// DISABLED-SWAGGER: @Security BearerAuth
+// DISABLED-SWAGGER: @Param page query int false "Page number" default(1)
+// DISABLED-SWAGGER: @Param limit query int false "Items per page" default(10)
+// DISABLED-SWAGGER: @Param active query bool false "Filter by active status"
+// DISABLED-SWAGGER: @Param type query string false "Filter by contact type"
+// DISABLED-SWAGGER: @Success 200 {object} models.APIResponse{data=models.ListResponse}
+// DISABLED-SWAGGER: @Failure 500 {object} models.ErrorResponse
+// DISABLED-SWAGGER: @Router /contacts [get]
 func (h *ContactHandler) GetContacts(c *gin.Context) {
 	page, limit := utils.GetPaginationParams(c)
 	offset := utils.GetOffset(page, limit)
@@ -92,16 +92,16 @@ func (h *ContactHandler) GetContacts(c *gin.Context) {
 }
 
 // GetContact retrieves a specific contact by ID
-// @Summary Get contact by ID
-// @Description Get a specific contact by its ID
-// @Tags contacts
-// @Produce json
-// @Security BearerAuth
-// @Param id path int true "Contact ID"
-// @Success 200 {object} models.APIResponse{data=models.ContactResponse}
-// @Failure 400 {object} models.ErrorResponse
-// @Failure 404 {object} models.ErrorResponse
-// @Router /contacts/{id} [get]
+// DISABLED-SWAGGER: @Summary Get contact by ID
+// DISABLED-SWAGGER: @Description Get a specific contact by its ID
+// DISABLED-SWAGGER: @Tags contacts
+// DISABLED-SWAGGER: @Produce json
+// DISABLED-SWAGGER: @Security BearerAuth
+// DISABLED-SWAGGER: @Param id path int true "Contact ID"
+// DISABLED-SWAGGER: @Success 200 {object} models.APIResponse{data=models.ContactResponse}
+// DISABLED-SWAGGER: @Failure 400 {object} models.ErrorResponse
+// DISABLED-SWAGGER: @Failure 404 {object} models.ErrorResponse
+// DISABLED-SWAGGER: @Router /contacts/{id} [get]
 func (h *ContactHandler) GetContact(c *gin.Context) {
 	id, err := utils.ValidateID(c, "id")
 	if err != nil {
@@ -123,16 +123,16 @@ func (h *ContactHandler) GetContact(c *gin.Context) {
 }
 
 // CreateContact creates a new contact
-// @Summary Create a new contact
-// @Description Create a new contact
-// @Tags contacts
-// @Accept json
-// @Produce json
-// @Security BearerAuth
-// @Param request body models.ContactCreateRequest true "Contact creation data"
-// @Success 201 {object} models.APIResponse{data=models.ContactResponse}
-// @Failure 400 {object} models.ErrorResponse
-// @Router /contacts [post]
+// DISABLED-SWAGGER: @Summary Create a new contact
+// DISABLED-SWAGGER: @Description Create a new contact
+// DISABLED-SWAGGER: @Tags contacts
+// DISABLED-SWAGGER: @Accept json
+// DISABLED-SWAGGER: @Produce json
+// DISABLED-SWAGGER: @Security BearerAuth
+// DISABLED-SWAGGER: @Param request body models.ContactCreateRequest true "Contact creation data"
+// DISABLED-SWAGGER: @Success 201 {object} models.APIResponse{data=models.ContactResponse}
+// DISABLED-SWAGGER: @Failure 400 {object} models.ErrorResponse
+// DISABLED-SWAGGER: @Router /contacts [post]
 func (h *ContactHandler) CreateContact(c *gin.Context) {
 	var req models.ContactCreateRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -170,18 +170,18 @@ func (h *ContactHandler) CreateContact(c *gin.Context) {
 }
 
 // UpdateContact updates an existing contact
-// @Summary Update a contact
-// @Description Update an existing contact by ID
-// @Tags contacts
-// @Accept json
-// @Produce json
-// @Security BearerAuth
-// @Param id path int true "Contact ID"
-// @Param request body models.ContactUpdateRequest true "Contact update data"
-// @Success 200 {object} models.APIResponse{data=models.ContactResponse}
-// @Failure 400 {object} models.ErrorResponse
-// @Failure 404 {object} models.ErrorResponse
-// @Router /contacts/{id} [put]
+// DISABLED-SWAGGER: @Summary Update a contact
+// DISABLED-SWAGGER: @Description Update an existing contact by ID
+// DISABLED-SWAGGER: @Tags contacts
+// DISABLED-SWAGGER: @Accept json
+// DISABLED-SWAGGER: @Produce json
+// DISABLED-SWAGGER: @Security BearerAuth
+// DISABLED-SWAGGER: @Param id path int true "Contact ID"
+// DISABLED-SWAGGER: @Param request body models.ContactUpdateRequest true "Contact update data"
+// DISABLED-SWAGGER: @Success 200 {object} models.APIResponse{data=models.ContactResponse}
+// DISABLED-SWAGGER: @Failure 400 {object} models.ErrorResponse
+// DISABLED-SWAGGER: @Failure 404 {object} models.ErrorResponse
+// DISABLED-SWAGGER: @Router /contacts/{id} [put]
 func (h *ContactHandler) UpdateContact(c *gin.Context) {
 	id, err := utils.ValidateID(c, "id")
 	if err != nil {
@@ -252,16 +252,16 @@ func (h *ContactHandler) UpdateContact(c *gin.Context) {
 }
 
 // DeleteContact deletes a contact (soft delete)
-// @Summary Delete a contact
-// @Description Soft delete a contact by ID
-// @Tags contacts
-// @Produce json
-// @Security BearerAuth
-// @Param id path int true "Contact ID"
-// @Success 200 {object} models.APIResponse
-// @Failure 400 {object} models.ErrorResponse
-// @Failure 404 {object} models.ErrorResponse
-// @Router /contacts/{id} [delete]
+// DISABLED-SWAGGER: @Summary Delete a contact
+// DISABLED-SWAGGER: @Description Soft delete a contact by ID
+// DISABLED-SWAGGER: @Tags contacts
+// DISABLED-SWAGGER: @Produce json
+// DISABLED-SWAGGER: @Security BearerAuth
+// DISABLED-SWAGGER: @Param id path int true "Contact ID"
+// DISABLED-SWAGGER: @Success 200 {object} models.APIResponse
+// DISABLED-SWAGGER: @Failure 400 {object} models.ErrorResponse
+// DISABLED-SWAGGER: @Failure 404 {object} models.ErrorResponse
+// DISABLED-SWAGGER: @Router /contacts/{id} [delete]
 func (h *ContactHandler) DeleteContact(c *gin.Context) {
 	id, err := utils.ValidateID(c, "id")
 	if err != nil {
@@ -288,16 +288,16 @@ func (h *ContactHandler) DeleteContact(c *gin.Context) {
 }
 
 // SubmitContactForm handles contact form submissions
-// @Summary Submit contact form
-// @Description Submit a contact form and optionally subscribe to newsletter
-// @Tags contact
-// @Accept json
-// @Produce json
-// @Param contactForm body models.ContactFormRequest true "Contact form data"
-// @Success 200 {object} models.ContactFormResponse
-// @Failure 400 {object} models.ErrorResponse
-// @Failure 500 {object} models.ErrorResponse
-// @Router /contact/form [post]
+// DISABLED-SWAGGER: @Summary Submit contact form
+// DISABLED-SWAGGER: @Description Submit a contact form and optionally subscribe to newsletter
+// DISABLED-SWAGGER: @Tags contact
+// DISABLED-SWAGGER: @Accept json
+// DISABLED-SWAGGER: @Produce json
+// DISABLED-SWAGGER: @Param contactForm body models.ContactFormRequest true "Contact form data"
+// DISABLED-SWAGGER: @Success 200 {object} models.ContactFormResponse
+// DISABLED-SWAGGER: @Failure 400 {object} models.ErrorResponse
+// DISABLED-SWAGGER: @Failure 500 {object} models.ErrorResponse
+// DISABLED-SWAGGER: @Router /contact/form [post]
 func (h *ContactHandler) SubmitContactForm(c *gin.Context) {
 	var req models.ContactFormRequest
 
@@ -382,15 +382,15 @@ func (h *ContactHandler) SubmitContactForm(c *gin.Context) {
 }
 
 // GetNewsletterSubscriptions gets all newsletter subscriptions (admin only)
-// @Summary Get newsletter subscriptions
-// @Description Get all newsletter subscriptions for admin users
-// @Tags contact
-// @Accept json
-// @Produce json
-// @Success 200 {array} models.Newsletter
-// @Failure 500 {object} models.ErrorResponse
-// @Security BearerAuth
-// @Router /contact/newsletter [get]
+// DISABLED-SWAGGER: @Summary Get newsletter subscriptions
+// DISABLED-SWAGGER: @Description Get all newsletter subscriptions for admin users
+// DISABLED-SWAGGER: @Tags contact
+// DISABLED-SWAGGER: @Accept json
+// DISABLED-SWAGGER: @Produce json
+// DISABLED-SWAGGER: @Success 200 {array} models.Newsletter
+// DISABLED-SWAGGER: @Failure 500 {object} models.ErrorResponse
+// DISABLED-SWAGGER: @Security BearerAuth
+// DISABLED-SWAGGER: @Router /contact/newsletter [get]
 func (h *ContactHandler) GetNewsletterSubscriptions(c *gin.Context) {
 	var newsletters []models.Newsletter
 
@@ -403,17 +403,17 @@ func (h *ContactHandler) GetNewsletterSubscriptions(c *gin.Context) {
 }
 
 // UnsubscribeFromNewsletter handles newsletter unsubscription
-// @Summary Unsubscribe from newsletter
-// @Description Unsubscribe an email from the newsletter
-// @Tags contact
-// @Accept json
-// @Produce json
-// @Param email query string true "Email to unsubscribe"
-// @Success 200 {object} map[string]string
-// @Failure 400 {object} models.ErrorResponse
-// @Failure 404 {object} models.ErrorResponse
-// @Failure 500 {object} models.ErrorResponse
-// @Router /contact/newsletter/unsubscribe [delete]
+// DISABLED-SWAGGER: @Summary Unsubscribe from newsletter
+// DISABLED-SWAGGER: @Description Unsubscribe an email from the newsletter
+// DISABLED-SWAGGER: @Tags contact
+// DISABLED-SWAGGER: @Accept json
+// DISABLED-SWAGGER: @Produce json
+// DISABLED-SWAGGER: @Param email query string true "Email to unsubscribe"
+// DISABLED-SWAGGER: @Success 200 {object} map[string]string
+// DISABLED-SWAGGER: @Failure 400 {object} models.ErrorResponse
+// DISABLED-SWAGGER: @Failure 404 {object} models.ErrorResponse
+// DISABLED-SWAGGER: @Failure 500 {object} models.ErrorResponse
+// DISABLED-SWAGGER: @Router /contact/newsletter/unsubscribe [delete]
 func (h *ContactHandler) UnsubscribeFromNewsletter(c *gin.Context) {
 	email := c.Query("email")
 	if email == "" {

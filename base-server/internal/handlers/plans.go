@@ -19,16 +19,16 @@ func NewPlanHandler(db *gorm.DB) *PlanHandler {
 }
 
 // GetPlans retrieves all plans with pagination
-// @Summary Get all plans
-// @Description Get a paginated list of all plans
-// @Tags plans
-// @Produce json
-// @Param page query int false "Page number" default(1)
-// @Param limit query int false "Items per page" default(10)
-// @Param active query bool false "Filter by active status"
-// @Success 200 {object} models.APIResponse{data=models.ListResponse}
-// @Failure 500 {object} models.ErrorResponse
-// @Router /plans [get]
+// DISABLED-SWAGGER: @Summary Get all plans
+// DISABLED-SWAGGER: @Description Get a paginated list of all plans
+// DISABLED-SWAGGER: @Tags plans
+// DISABLED-SWAGGER: @Produce json
+// DISABLED-SWAGGER: @Param page query int false "Page number" default(1)
+// DISABLED-SWAGGER: @Param limit query int false "Items per page" default(10)
+// DISABLED-SWAGGER: @Param active query bool false "Filter by active status"
+// DISABLED-SWAGGER: @Success 200 {object} models.APIResponse{data=models.ListResponse}
+// DISABLED-SWAGGER: @Failure 500 {object} models.ErrorResponse
+// DISABLED-SWAGGER: @Router /plans [get]
 func (h *PlanHandler) GetPlans(c *gin.Context) {
 	page, limit := utils.GetPaginationParams(c)
 	offset := utils.GetOffset(page, limit)
@@ -79,15 +79,15 @@ func (h *PlanHandler) GetPlans(c *gin.Context) {
 }
 
 // GetPlan retrieves a specific plan by ID
-// @Summary Get plan by ID
-// @Description Get a specific plan by its ID
-// @Tags plans
-// @Produce json
-// @Param id path int true "Plan ID"
-// @Success 200 {object} models.APIResponse{data=models.PlanResponse}
-// @Failure 400 {object} models.ErrorResponse
-// @Failure 404 {object} models.ErrorResponse
-// @Router /plans/{id} [get]
+// DISABLED-SWAGGER: @Summary Get plan by ID
+// DISABLED-SWAGGER: @Description Get a specific plan by its ID
+// DISABLED-SWAGGER: @Tags plans
+// DISABLED-SWAGGER: @Produce json
+// DISABLED-SWAGGER: @Param id path int true "Plan ID"
+// DISABLED-SWAGGER: @Success 200 {object} models.APIResponse{data=models.PlanResponse}
+// DISABLED-SWAGGER: @Failure 400 {object} models.ErrorResponse
+// DISABLED-SWAGGER: @Failure 404 {object} models.ErrorResponse
+// DISABLED-SWAGGER: @Router /plans/{id} [get]
 func (h *PlanHandler) GetPlan(c *gin.Context) {
 	id, err := utils.ValidateID(c, "id")
 	if err != nil {
@@ -109,17 +109,17 @@ func (h *PlanHandler) GetPlan(c *gin.Context) {
 }
 
 // CreatePlan creates a new plan
-// @Summary Create a new plan
-// @Description Create a new subscription plan
-// @Tags plans
-// @Accept json
-// @Produce json
-// @Security BearerAuth
-// @Param request body models.PlanCreateRequest true "Plan creation data"
-// @Success 201 {object} models.APIResponse{data=models.PlanResponse}
-// @Failure 400 {object} models.ErrorResponse
-// @Failure 409 {object} models.ErrorResponse
-// @Router /plans [post]
+// DISABLED-SWAGGER: @Summary Create a new plan
+// DISABLED-SWAGGER: @Description Create a new subscription plan
+// DISABLED-SWAGGER: @Tags plans
+// DISABLED-SWAGGER: @Accept json
+// DISABLED-SWAGGER: @Produce json
+// DISABLED-SWAGGER: @Security BearerAuth
+// DISABLED-SWAGGER: @Param request body models.PlanCreateRequest true "Plan creation data"
+// DISABLED-SWAGGER: @Success 201 {object} models.APIResponse{data=models.PlanResponse}
+// DISABLED-SWAGGER: @Failure 400 {object} models.ErrorResponse
+// DISABLED-SWAGGER: @Failure 409 {object} models.ErrorResponse
+// DISABLED-SWAGGER: @Router /plans [post]
 func (h *PlanHandler) CreatePlan(c *gin.Context) {
 	var req models.PlanCreateRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -175,18 +175,18 @@ func (h *PlanHandler) CreatePlan(c *gin.Context) {
 }
 
 // UpdatePlan updates an existing plan
-// @Summary Update a plan
-// @Description Update an existing plan by ID
-// @Tags plans
-// @Accept json
-// @Produce json
-// @Security BearerAuth
-// @Param id path int true "Plan ID"
-// @Param request body models.PlanUpdateRequest true "Plan update data"
-// @Success 200 {object} models.APIResponse{data=models.PlanResponse}
-// @Failure 400 {object} models.ErrorResponse
-// @Failure 404 {object} models.ErrorResponse
-// @Router /plans/{id} [put]
+// DISABLED-SWAGGER: @Summary Update a plan
+// DISABLED-SWAGGER: @Description Update an existing plan by ID
+// DISABLED-SWAGGER: @Tags plans
+// DISABLED-SWAGGER: @Accept json
+// DISABLED-SWAGGER: @Produce json
+// DISABLED-SWAGGER: @Security BearerAuth
+// DISABLED-SWAGGER: @Param id path int true "Plan ID"
+// DISABLED-SWAGGER: @Param request body models.PlanUpdateRequest true "Plan update data"
+// DISABLED-SWAGGER: @Success 200 {object} models.APIResponse{data=models.PlanResponse}
+// DISABLED-SWAGGER: @Failure 400 {object} models.ErrorResponse
+// DISABLED-SWAGGER: @Failure 404 {object} models.ErrorResponse
+// DISABLED-SWAGGER: @Router /plans/{id} [put]
 func (h *PlanHandler) UpdatePlan(c *gin.Context) {
 	id, err := utils.ValidateID(c, "id")
 	if err != nil {
@@ -248,16 +248,16 @@ func (h *PlanHandler) UpdatePlan(c *gin.Context) {
 }
 
 // DeletePlan deletes a plan (soft delete)
-// @Summary Delete a plan
-// @Description Soft delete a plan by ID
-// @Tags plans
-// @Produce json
-// @Security BearerAuth
-// @Param id path int true "Plan ID"
-// @Success 200 {object} models.APIResponse
-// @Failure 400 {object} models.ErrorResponse
-// @Failure 404 {object} models.ErrorResponse
-// @Router /plans/{id} [delete]
+// DISABLED-SWAGGER: @Summary Delete a plan
+// DISABLED-SWAGGER: @Description Soft delete a plan by ID
+// DISABLED-SWAGGER: @Tags plans
+// DISABLED-SWAGGER: @Produce json
+// DISABLED-SWAGGER: @Security BearerAuth
+// DISABLED-SWAGGER: @Param id path int true "Plan ID"
+// DISABLED-SWAGGER: @Success 200 {object} models.APIResponse
+// DISABLED-SWAGGER: @Failure 400 {object} models.ErrorResponse
+// DISABLED-SWAGGER: @Failure 404 {object} models.ErrorResponse
+// DISABLED-SWAGGER: @Router /plans/{id} [delete]
 func (h *PlanHandler) DeletePlan(c *gin.Context) {
 	id, err := utils.ValidateID(c, "id")
 	if err != nil {

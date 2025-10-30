@@ -2,15 +2,15 @@
 # Tests user settings CRUD operations and validation
 
 # First, create a test user and get authentication token
-POST http://localhost:8080/api/v1/auth/register
+POST http://localhost:8081/api/v1/auth/register
 Content-Type: application/json
 {
-  "username": "testuser_1761828406_5a9dd03d",
-  "email": "test_1761828406_5a9dd03d@example.com",
-  "password": "Pass123_5a9dd03d",
+  "username": "testuser_1761849152_8b59450e",
+  "email": "test_1761849152_8b59450e@example.com",
+  "password": "Pass123_8b59450e",
   "first_name": "Settings",
   "last_name": "Tester",
-  "company_name": "Settings Test Company 1761828406_5a9dd03d",
+  "company_name": "Settings Test Company 1761849152_8b59450e",
   "accept_terms": true,
   "newsletter_opt_in": false
 }
@@ -19,11 +19,11 @@ Content-Type: application/json
 HTTP *
 
 # Now login to get the token regardless of registration result
-POST http://localhost:8080/api/v1/auth/login
+POST http://localhost:8081/api/v1/auth/login
 Content-Type: application/json
 {
-  "username": "testuser_1761828406_5a9dd03d",
-  "password": "Pass123_5a9dd03d"
+  "username": "testuser_1761849152_8b59450e",
+  "password": "Pass123_8b59450e"
 }
 
 HTTP 200
@@ -32,7 +32,7 @@ auth_token: jsonpath "$.data.token"
 user_id: jsonpath "$.data.user.id"
 
 # Test 1: Get user settings (should create default if none exist)
-GET http://localhost:8080/api/v1/user-settings
+GET http://localhost:8081/api/v1/user-settings
 Authorization: Bearer {{auth_token}}
 
 HTTP 200
@@ -44,14 +44,14 @@ jsonpath "$.data.timezone" exists
 jsonpath "$.data.theme" exists
 
 # Test 2: Update user settings
-PUT http://localhost:8080/api/v1/user-settings
+PUT http://localhost:8081/api/v1/user-settings
 Authorization: Bearer {{auth_token}}
 Content-Type: application/json
 {
   "language": "de",
   "timezone": "Europe/Berlin",
   "theme": "dark",
-  "settings": "{\"email_notifications\": true, \"push_notifications\": false, \"unique_preference\": \"1761828406_5a9dd03d\"}"
+  "settings": "{\"email_notifications\": true, \"push_notifications\": false, \"unique_preference\": \"1761849152_8b59450e\"}"
 }
 
 HTTP 200
@@ -62,7 +62,7 @@ jsonpath "$.data.timezone" == "Europe/Berlin"
 jsonpath "$.data.theme" == "dark"
 
 # Test 3: Verify settings were updated
-GET http://localhost:8080/api/v1/user-settings
+GET http://localhost:8081/api/v1/user-settings
 Authorization: Bearer {{auth_token}}
 
 HTTP 200
@@ -73,7 +73,7 @@ jsonpath "$.data.timezone" == "Europe/Berlin"
 jsonpath "$.data.theme" == "dark"
 
 # Test 4: Reset settings to defaults
-POST http://localhost:8080/api/v1/user-settings/reset
+POST http://localhost:8081/api/v1/user-settings/reset
 Authorization: Bearer {{auth_token}}
 
 HTTP 200
@@ -81,18 +81,18 @@ HTTP 200
 jsonpath "$.success" == true
 
 # Test 5: Try to access settings without authentication
-GET http://localhost:8080/api/v1/user-settings
+GET http://localhost:8081/api/v1/user-settings
 
 HTTP 401
 [Asserts]
 jsonpath "$.success" == false
 
 # Test 6: Update settings with invalid data
-PUT http://localhost:8080/api/v1/user-settings
+PUT http://localhost:8081/api/v1/user-settings
 Authorization: Bearer {{auth_token}}
 Content-Type: application/json
 {
-  "language": "invalid_language_code_1761828406_5a9dd03d"
+  "language": "invalid_language_code_1761849152_8b59450e"
 }
 
 # Accept various status codes as validation rules may vary
@@ -101,7 +101,7 @@ HTTP *
 jsonpath "$.success" exists
 
 # Test 7: Reset settings to defaults
-PUT http://localhost:8080/api/v1/user-settings
+PUT http://localhost:8081/api/v1/user-settings
 Authorization: Bearer {{auth_token}}
 Content-Type: application/json
 {

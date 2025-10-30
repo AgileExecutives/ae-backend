@@ -24,13 +24,13 @@ func NewHealthHandler(db *gorm.DB, cfg config.Config) *HealthHandler {
 }
 
 // Health performs a health check
-// @Summary Health check
-// @Description Check the health status of the API and database
-// @Tags health
-// @Produce json
-// @Success 200 {object} models.HealthResponse
-// @Failure 503 {object} models.ErrorResponse
-// @Router /health [get]
+// DISABLED-SWAGGER: @Summary Health check
+// DISABLED-SWAGGER: @Description Check the health status of the API and database
+// DISABLED-SWAGGER: @Tags health
+// DISABLED-SWAGGER: @Produce json
+// DISABLED-SWAGGER: @Success 200 {object} models.HealthResponse
+// DISABLED-SWAGGER: @Failure 503 {object} models.ErrorResponse
+// DISABLED-SWAGGER: @Router /health [get]
 func (h *HealthHandler) Health(c *gin.Context) {
 	// Check database connection
 	sqlDB, err := h.db.DB()
@@ -65,12 +65,12 @@ func (h *HealthHandler) Health(c *gin.Context) {
 }
 
 // Ping performs a simple ping check
-// @Summary Ping check
-// @Description Simple ping endpoint
-// @Tags health
-// @Produce json
-// @Success 200 {string} string "pong"
-// @Router /api/v1/ping [get]
+// DISABLED-SWAGGER: @Summary Ping check
+// DISABLED-SWAGGER: @Description Simple ping endpoint
+// DISABLED-SWAGGER: @Tags health
+// DISABLED-SWAGGER: @Produce json
+// DISABLED-SWAGGER: @Success 200 {string} string "pong"
+// DISABLED-SWAGGER: @Router /api/v1/ping [get]
 func (h *HealthHandler) Ping(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "pong"})
 }

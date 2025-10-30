@@ -10,15 +10,15 @@ import (
 )
 
 // ServeStaticJSON serves any JSON file from the statics/json directory
-// @Summary Serve static JSON files
-// @Description Dynamically serve any JSON data file from the statics/json directory. Just drop a .json file in the directory and it becomes available at /static/{filename}
-// @Tags static
-// @Param filename path string true "JSON filename (without .json extension)" example("bundeslaender")
-// @Success 200 {object} map[string]interface{} "JSON file content"
-// @Failure 400 {object} map[string]string "Invalid file name"
-// @Failure 404 {object} map[string]string "File not found"
-// @Failure 500 {object} map[string]string "Failed to read file"
-// @Router /static/{filename} [get]
+// DISABLED-SWAGGER: @Summary Serve static JSON files
+// DISABLED-SWAGGER: @Description Dynamically serve any JSON data file from the statics/json directory. Just drop a .json file in the directory and it becomes available at /static/{filename}
+// DISABLED-SWAGGER: @Tags static
+// DISABLED-SWAGGER: @Param filename path string true "JSON filename (without .json extension)" example("bundeslaender")
+// DISABLED-SWAGGER: @Success 200 {object} map[string]interface{} "JSON file content"
+// DISABLED-SWAGGER: @Failure 400 {object} map[string]string "Invalid file name"
+// DISABLED-SWAGGER: @Failure 404 {object} map[string]string "File not found"
+// DISABLED-SWAGGER: @Failure 500 {object} map[string]string "Failed to read file"
+// DISABLED-SWAGGER: @Router /static/{filename} [get]
 func ServeStaticJSON(c *gin.Context) {
 	// Get the requested file name
 	fileName := c.Param("filename")
@@ -51,12 +51,12 @@ func ServeStaticJSON(c *gin.Context) {
 }
 
 // ListStaticJSON lists all available JSON files in the statics/json directory
-// @Summary List available static JSON files
-// @Description Get a list of all JSON files available in the statics/json directory
-// @Tags static
-// @Success 200 {object} map[string]interface{} "List of available JSON files"
-// @Failure 500 {object} map[string]string "Failed to read directory"
-// @Router /static [get]
+// DISABLED-SWAGGER: @Summary List available static JSON files
+// DISABLED-SWAGGER: @Description Get a list of all JSON files available in the statics/json directory
+// DISABLED-SWAGGER: @Tags static
+// DISABLED-SWAGGER: @Success 200 {object} map[string]interface{} "List of available JSON files"
+// DISABLED-SWAGGER: @Failure 500 {object} map[string]string "Failed to read directory"
+// DISABLED-SWAGGER: @Router /static [get]
 func ListStaticJSON(c *gin.Context) {
 	// Read the statics/json directory
 	entries, err := os.ReadDir("./statics/json")

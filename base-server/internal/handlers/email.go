@@ -19,17 +19,17 @@ func NewEmailHandler(db *gorm.DB) *EmailHandler {
 }
 
 // GetEmails retrieves all emails with pagination
-// @Summary Get all emails
-// @Description Get a paginated list of all emails
-// @Tags emails
-// @Produce json
-// @Security BearerAuth
-// @Param page query int false "Page number" default(1)
-// @Param limit query int false "Items per page" default(10)
-// @Param status query string false "Filter by email status"
-// @Success 200 {object} models.APIResponse{data=models.ListResponse}
-// @Failure 500 {object} models.ErrorResponse
-// @Router /emails [get]
+// DISABLED-SWAGGER: @Summary Get all emails
+// DISABLED-SWAGGER: @Description Get a paginated list of all emails
+// DISABLED-SWAGGER: @Tags emails
+// DISABLED-SWAGGER: @Produce json
+// DISABLED-SWAGGER: @Security BearerAuth
+// DISABLED-SWAGGER: @Param page query int false "Page number" default(1)
+// DISABLED-SWAGGER: @Param limit query int false "Items per page" default(10)
+// DISABLED-SWAGGER: @Param status query string false "Filter by email status"
+// DISABLED-SWAGGER: @Success 200 {object} models.APIResponse{data=models.ListResponse}
+// DISABLED-SWAGGER: @Failure 500 {object} models.ErrorResponse
+// DISABLED-SWAGGER: @Router /emails [get]
 func (h *EmailHandler) GetEmails(c *gin.Context) {
 	page, limit := utils.GetPaginationParams(c)
 	offset := utils.GetOffset(page, limit)
@@ -76,16 +76,16 @@ func (h *EmailHandler) GetEmails(c *gin.Context) {
 }
 
 // GetEmail retrieves a specific email by ID
-// @Summary Get email by ID
-// @Description Get a specific email by its ID
-// @Tags emails
-// @Produce json
-// @Security BearerAuth
-// @Param id path int true "Email ID"
-// @Success 200 {object} models.APIResponse{data=models.EmailResponse}
-// @Failure 400 {object} models.ErrorResponse
-// @Failure 404 {object} models.ErrorResponse
-// @Router /emails/{id} [get]
+// DISABLED-SWAGGER: @Summary Get email by ID
+// DISABLED-SWAGGER: @Description Get a specific email by its ID
+// DISABLED-SWAGGER: @Tags emails
+// DISABLED-SWAGGER: @Produce json
+// DISABLED-SWAGGER: @Security BearerAuth
+// DISABLED-SWAGGER: @Param id path int true "Email ID"
+// DISABLED-SWAGGER: @Success 200 {object} models.APIResponse{data=models.EmailResponse}
+// DISABLED-SWAGGER: @Failure 400 {object} models.ErrorResponse
+// DISABLED-SWAGGER: @Failure 404 {object} models.ErrorResponse
+// DISABLED-SWAGGER: @Router /emails/{id} [get]
 func (h *EmailHandler) GetEmail(c *gin.Context) {
 	id, err := utils.ValidateID(c, "id")
 	if err != nil {
@@ -107,16 +107,16 @@ func (h *EmailHandler) GetEmail(c *gin.Context) {
 }
 
 // SendEmail creates and queues an email for sending
-// @Summary Send an email
-// @Description Create and queue an email for sending
-// @Tags emails
-// @Accept json
-// @Produce json
-// @Security BearerAuth
-// @Param request body models.EmailSendRequest true "Email send data"
-// @Success 201 {object} models.APIResponse{data=models.EmailResponse}
-// @Failure 400 {object} models.ErrorResponse
-// @Router /emails/send [post]
+// DISABLED-SWAGGER: @Summary Send an email
+// DISABLED-SWAGGER: @Description Create and queue an email for sending
+// DISABLED-SWAGGER: @Tags emails
+// DISABLED-SWAGGER: @Accept json
+// DISABLED-SWAGGER: @Produce json
+// DISABLED-SWAGGER: @Security BearerAuth
+// DISABLED-SWAGGER: @Param request body models.EmailSendRequest true "Email send data"
+// DISABLED-SWAGGER: @Success 201 {object} models.APIResponse{data=models.EmailResponse}
+// DISABLED-SWAGGER: @Failure 400 {object} models.ErrorResponse
+// DISABLED-SWAGGER: @Router /emails/send [post]
 func (h *EmailHandler) SendEmail(c *gin.Context) {
 	var req models.EmailSendRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -146,14 +146,14 @@ func (h *EmailHandler) SendEmail(c *gin.Context) {
 }
 
 // GetEmailStats retrieves email statistics
-// @Summary Get email statistics
-// @Description Get email statistics including counts by status
-// @Tags emails
-// @Produce json
-// @Security BearerAuth
-// @Success 200 {object} models.APIResponse{data=object}
-// @Failure 500 {object} models.ErrorResponse
-// @Router /emails/stats [get]
+// DISABLED-SWAGGER: @Summary Get email statistics
+// DISABLED-SWAGGER: @Description Get email statistics including counts by status
+// DISABLED-SWAGGER: @Tags emails
+// DISABLED-SWAGGER: @Produce json
+// DISABLED-SWAGGER: @Security BearerAuth
+// DISABLED-SWAGGER: @Success 200 {object} models.APIResponse{data=object}
+// DISABLED-SWAGGER: @Failure 500 {object} models.ErrorResponse
+// DISABLED-SWAGGER: @Router /emails/stats [get]
 func (h *EmailHandler) GetEmailStats(c *gin.Context) {
 	type EmailStats struct {
 		Total     int64 `json:"total"`
