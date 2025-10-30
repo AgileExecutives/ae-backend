@@ -4,15 +4,10 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 	_ "github.com/unburdy/unburdy-server-api/docs" // Swagger docs
 	"github.com/unburdy/unburdy-server-api/internal/database"
 	"github.com/unburdy/unburdy-server-api/internal/router"
-
-	// Import base-server module system
-	calendar "github.com/ae-backend/calendar-module"
-	"github.com/ae-base-server/pkg/modules"
 )
 
 // @title Unburdy Extended API
@@ -65,42 +60,13 @@ func main() {
 		log.Fatal("Failed to initialize database:", err)
 	}
 
-	// Initialize module registry and register calendar module
-	log.Println("🔧 Setting up module system...")
-	moduleRegistry := modules.NewRegistry(db)
-
-	// Register calendar module
-	calendarModule := calendar.NewCalendarModule()
-	if err := moduleRegistry.RegisterModule(calendarModule); err != nil {
-		log.Fatal("Failed to register calendar module:", err)
-	}
-
-	// Run module migrations
-	if err := moduleRegistry.MigrateModels(); err != nil {
-		log.Fatal("Failed to migrate module models:", err)
-	}
-
 	// Set up extended router (includes all base routes + client routes)
 	r := router.SetupExtendedRouter(db)
-
-	// Register module routes
-	moduleRegistry.RegisterModuleRoutes(r)
-
-	// Add module documentation endpoint
-	r.GET("/api/v1/modules/swagger", func(c *gin.Context) {
-		swaggerInfo := moduleRegistry.GetCombinedSwaggerInfo()
-		c.JSON(200, gin.H{
-			"message": "Module Swagger Documentation",
-			"modules": swaggerInfo,
-			"tags":    moduleRegistry.GenerateSwaggerTags(),
-		})
-	})
 
 	// Start server
 	log.Println("🚀 Unburdy Extended API Server starting on :8080")
 	log.Println("📋 Swagger documentation available at http://localhost:8080/swagger/index.html")
-	log.Println("🔧 Includes all AE SaaS Basic endpoints plus client management")
-	log.Println("📅 Calendar module is now available at /api/v1/modules/calendar/")
+	log.Println("🔧 Includes all AE Base Server endpoints plus client management")
 
 	server := &http.Server{
 		Addr:    ":8080",

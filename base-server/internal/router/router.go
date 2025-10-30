@@ -4,7 +4,6 @@ import (
 	"github.com/ae-base-server/internal/config"
 	"github.com/ae-base-server/internal/handlers"
 	"github.com/ae-base-server/internal/middleware"
-	"github.com/ae-base-server/internal/modules"
 	internalServices "github.com/ae-base-server/internal/services"
 	"github.com/ae-base-server/services"
 	"github.com/gin-gonic/gin"
@@ -15,11 +14,6 @@ import (
 
 // SetupRouter sets up the Gin router with all routes
 func SetupRouter(db *gorm.DB, cfg config.Config) *gin.Engine {
-	return SetupRouterWithModules(db, cfg, nil)
-}
-
-// SetupRouterWithModules sets up the Gin router with module support
-func SetupRouterWithModules(db *gorm.DB, cfg config.Config, moduleManager *modules.Manager) *gin.Engine {
 	router := gin.Default()
 
 	// Add middleware
@@ -50,12 +44,6 @@ func SetupRouterWithModules(db *gorm.DB, cfg config.Config, moduleManager *modul
 	// Initialize fuzzy search service and handler (use internal services)
 	fuzzySearchService := internalServices.NewFuzzySearchService(db, nil)
 	fuzzySearchHandler := handlers.NewFuzzySearchHandler(fuzzySearchService)
-
-	// Initialize module handler if module manager is provided
-	var moduleHandler *handlers.ModuleHandler
-	if moduleManager != nil {
-		moduleHandler = handlers.NewModuleHandler(moduleManager)
-	}
 
 	// Public routes (no authentication required)
 	public := router.Group("/api/v1")
@@ -219,29 +207,7 @@ func SetupRouterWithModules(db *gorm.DB, cfg config.Config, moduleManager *modul
 			adminSearch.GET("/stats", fuzzySearchHandler.SearchStats)
 		}
 
-		// Module management (if module handler is available)
-		if moduleHandler != nil {
-			adminModules := admin.Group("/modules")
-			{
-				adminModules.GET("", moduleHandler.GetModules)
-				adminModules.GET("/:name", moduleHandler.GetModuleInfo)
-			}
-		}
 	}
 
 	return router
-}
-
-// registerModuleRoutesForSwagger is a placeholder function that registers module routes
-// with Swagger annotations for documentation generation. This function is never called
-// but allows swag init to discover and document module endpoints.
-func registerModuleRoutesForSwagger() {
-	// This function exists only for swagger documentation generation
-	// The actual routes are registered by the module system
-	router := gin.New()
-	moduleRegistry := &handlers.ModuleRouteRegistry{}
-
-	// Demo module routes for Swagger documentation
-	demoGroup := router.Group("/api/v1/modules/demo")
-	moduleRegistry.RegisterDemoRoutes(demoGroup, nil, config.Config{})
 }
