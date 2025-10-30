@@ -38,7 +38,7 @@ User Registration → Auth Handler → PublishUserCreated → Calendar Handler �
 ### Publishing Events
 
 ```go
-import "github.com/ae-saas-basic/ae-saas-basic/internal/eventbus"
+import "github.com/ae-base-server/internal/eventbus"
 
 // Synchronous event publishing
 err := eventbus.PublishUserCreated(ctx, userID, email, tenantID)

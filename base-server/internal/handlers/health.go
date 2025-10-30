@@ -4,8 +4,8 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/ae-saas-basic/ae-saas-basic/internal/config"
-	"github.com/ae-saas-basic/ae-saas-basic/internal/models"
+	"github.com/ae-base-server/internal/config"
+	"github.com/ae-base-server/internal/models"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 )

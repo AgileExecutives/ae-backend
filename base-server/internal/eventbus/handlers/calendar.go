@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/ae-saas-basic/ae-saas-basic/pkg/eventbus"
+	"github.com/ae-base-server/pkg/eventbus"
 ) // CalendarHandler is an example event handler that creates calendars when users are created
 type CalendarHandler struct {
 	name string

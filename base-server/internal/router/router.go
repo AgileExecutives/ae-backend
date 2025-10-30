@@ -1,12 +1,12 @@
 package router
 
 import (
-	"github.com/ae-saas-basic/ae-saas-basic/internal/config"
-	"github.com/ae-saas-basic/ae-saas-basic/internal/handlers"
-	"github.com/ae-saas-basic/ae-saas-basic/internal/middleware"
-	"github.com/ae-saas-basic/ae-saas-basic/internal/modules"
-	internalServices "github.com/ae-saas-basic/ae-saas-basic/internal/services"
-	"github.com/ae-saas-basic/ae-saas-basic/services"
+	"github.com/ae-base-server/internal/config"
+	"github.com/ae-base-server/internal/handlers"
+	"github.com/ae-base-server/internal/middleware"
+	"github.com/ae-base-server/internal/modules"
+	internalServices "github.com/ae-base-server/internal/services"
+	"github.com/ae-base-server/services"
 	"github.com/gin-gonic/gin"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"

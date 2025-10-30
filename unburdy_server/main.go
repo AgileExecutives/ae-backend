@@ -12,7 +12,7 @@ import (
 
 	// Import base-server module system
 	calendar "github.com/ae-backend/calendar-module"
-	"github.com/ae-saas-basic/ae-saas-basic/pkg/modules"
+	"github.com/ae-base-server/pkg/modules"
 )
 
 // @title Unburdy Extended API

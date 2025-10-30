@@ -1,7 +1,7 @@
 package modules
 
 import (
-	"github.com/ae-saas-basic/ae-saas-basic/pkg/eventbus"
+	"github.com/ae-base-server/pkg/eventbus"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 )

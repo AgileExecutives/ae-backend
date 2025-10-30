@@ -2,7 +2,7 @@
 package calendar
 
 import (
-	"github.com/ae-saas-basic/ae-saas-basic/api"
+	"github.com/ae-base-server/api"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 )

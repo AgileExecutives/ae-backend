@@ -11,7 +11,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/ae-saas-basic/ae-saas-basic/pkg/utils"
+	"github.com/ae-base-server/pkg/utils"
 	"github.com/chromedp/cdproto/page"
 	"github.com/chromedp/chromedp"
 )

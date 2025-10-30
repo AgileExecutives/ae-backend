@@ -7,8 +7,8 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/ae-saas-basic/ae-saas-basic/api"
-	"github.com/ae-saas-basic/ae-saas-basic/pkg/utils"
+	"github.com/ae-base-server/api"
+	"github.com/ae-base-server/pkg/utils"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 )

@@ -3,7 +3,7 @@ package handlers
 import (
 	"net/http"
 
-	"github.com/ae-saas-basic/ae-saas-basic/services"
+	"github.com/ae-base-server/services"
 	"github.com/gin-gonic/gin"
 )
 
@@ -19,9 +19,9 @@ func NewPDFHandler(pdfService *services.PDFGenerator) *PdfHandler {
 
 // PDFGenerateRequest represents the request structure for PDF generation
 type PDFGenerateRequest struct {
-	Data         map[string]interface{} `json:"data" binding:"required"`
-	TemplateName string                 `json:"templateName" binding:"required" example:"report.html"`
-	FileName     string                 `json:"fileName" binding:"required" example:"generated-report"`
+	Data         map[string]interface{} `json:"data"`
+	TemplateName string                 `json:"templateName" example:"report.html"`
+	FileName     string                 `json:"fileName" example:"generated-report"`
 }
 
 // PDFGenerateResponse represents the response structure for successful PDF generation
@@ -60,7 +60,14 @@ func (h *PdfHandler) GeneratePDFFromTemplate(c *gin.Context) {
 		return
 	}
 
-	// Validate required fields
+	// Validate required fields manually to give specific error messages
+	if requestBody.Data == nil {
+		c.JSON(http.StatusBadRequest, ErrorResponse{
+			Error: "Data is required",
+		})
+		return
+	}
+
 	if requestBody.TemplateName == "" {
 		c.JSON(http.StatusBadRequest, ErrorResponse{
 			Error: "Template name is required",

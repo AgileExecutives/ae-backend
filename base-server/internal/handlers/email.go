@@ -3,8 +3,8 @@ package handlers
 import (
 	"net/http"
 
-	"github.com/ae-saas-basic/ae-saas-basic/internal/models"
-	"github.com/ae-saas-basic/ae-saas-basic/pkg/utils"
+	"github.com/ae-base-server/internal/models"
+	"github.com/ae-base-server/pkg/utils"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 )

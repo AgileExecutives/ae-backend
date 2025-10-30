@@ -1,4 +1,4 @@
-ae-saas-basic
+ae-base-server
 # Environment variables
 .env
 .env.staging

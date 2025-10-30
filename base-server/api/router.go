@@ -1,9 +1,9 @@
-// Package api provides public access to ae-saas-basic router setup
+// Package api provides public access to ae-base-server router setup
 package api
 
 import (
-	"github.com/ae-saas-basic/ae-saas-basic/internal/config"
-	"github.com/ae-saas-basic/ae-saas-basic/internal/router"
+	"github.com/ae-base-server/internal/config"
+	"github.com/ae-base-server/internal/router"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 )

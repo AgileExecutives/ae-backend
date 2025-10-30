@@ -4,8 +4,8 @@ import (
 	"net/http"
 	"strconv"
 
-	baseAPI "github.com/ae-saas-basic/ae-saas-basic/api"
-	"github.com/ae-saas-basic/ae-saas-basic/pkg/utils"
+	baseAPI "github.com/ae-base-server/api"
+	"github.com/ae-base-server/pkg/utils"
 	"github.com/gin-gonic/gin"
 	"github.com/unburdy/unburdy-server-api/internal/models"
 	"github.com/unburdy/unburdy-server-api/internal/services"

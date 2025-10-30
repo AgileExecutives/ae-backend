@@ -1,8 +1,8 @@
-// Package api provides public access to ae-saas-basic models
+// Package api provides public access to ae-base-server models
 package api
 
 import (
-	"github.com/ae-saas-basic/ae-saas-basic/internal/models"
+	"github.com/ae-base-server/internal/models"
 )
 
 // Re-export commonly used models

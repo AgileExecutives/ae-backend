@@ -3,7 +3,7 @@ package eventbus
 import (
 	"log"
 
-	"github.com/ae-saas-basic/ae-saas-basic/internal/eventbus/handlers"
+	"github.com/ae-base-server/internal/eventbus/handlers"
 ) // InitializeEventHandlers sets up all event handlers
 func InitializeEventHandlers() {
 	log.Println("Initializing event handlers...")

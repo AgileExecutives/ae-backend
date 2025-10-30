@@ -4,13 +4,13 @@ import (
 	"log"
 	"net/http"
 
-	_ "github.com/ae-saas-basic/ae-saas-basic/docs" // swagger docs
-	"github.com/ae-saas-basic/ae-saas-basic/internal/config"
-	"github.com/ae-saas-basic/ae-saas-basic/internal/database"
-	"github.com/ae-saas-basic/ae-saas-basic/internal/eventbus"
-	"github.com/ae-saas-basic/ae-saas-basic/internal/modules"
-	"github.com/ae-saas-basic/ae-saas-basic/internal/router"
-	"github.com/ae-saas-basic/ae-saas-basic/pkg/auth"
+	_ "github.com/ae-base-server/docs" // swagger docs
+	"github.com/ae-base-server/internal/config"
+	"github.com/ae-base-server/internal/database"
+	"github.com/ae-base-server/internal/eventbus"
+	"github.com/ae-base-server/internal/modules"
+	"github.com/ae-base-server/internal/router"
+	"github.com/ae-base-server/pkg/auth"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 )
@@ -18,11 +18,11 @@ import (
 // @title AE SaaS Basic API
 // @version 1.0
 // @description A comprehensive SaaS backend API built with Go and Gin framework, providing authentication, user management, customer management, email handling, PDF generation, search functionality, and more.
-// @termsOfService https://ae-saas-basic.com/terms
+// @termsOfService https://ae-base-server.com/terms
 
 // @contact.name API Support
-// @contact.url https://ae-saas-basic.com/support
-// @contact.email support@ae-saas-basic.com
+// @contact.url https://ae-base-server.com/support
+// @contact.email support@ae-base-server.com
 
 // @license.name MIT
 // @license.url https://opensource.org/licenses/MIT

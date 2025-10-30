@@ -3,8 +3,8 @@ package modules
 import (
 "log"
 
-"github.com/ae-saas-basic/ae-saas-basic/internal/config"
-"github.com/ae-saas-basic/ae-saas-basic/internal/eventbus"
+"github.com/ae-base-server/internal/config"
+"github.com/ae-base-server/internal/eventbus"
 "github.com/gin-gonic/gin"
 "gorm.io/gorm"
 )

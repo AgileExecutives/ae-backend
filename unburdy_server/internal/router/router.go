@@ -5,7 +5,7 @@ import (
 	"gorm.io/gorm"
 
 	// Import ae-saas-basic public API
-	baseAPI "github.com/ae-saas-basic/ae-saas-basic/api"
+	baseAPI "github.com/ae-base-server/api"
 
 	// Import unburdy-specific modules
 	"github.com/unburdy/unburdy-server-api/internal/handlers"

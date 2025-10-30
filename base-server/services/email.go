@@ -12,7 +12,7 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/ae-saas-basic/ae-saas-basic/pkg/utils"
+	"github.com/ae-base-server/pkg/utils"
 )
 
 // EmailProvider represents different email service providers

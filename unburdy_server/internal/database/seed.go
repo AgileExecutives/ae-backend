@@ -9,7 +9,7 @@ import (
 	"path/filepath"
 	"time"
 
-	baseAPI "github.com/ae-saas-basic/ae-saas-basic/api"
+	baseAPI "github.com/ae-base-server/api"
 	"github.com/unburdy/unburdy-server-api/internal/models"
 	"gorm.io/gorm"
 )
@@ -65,15 +65,15 @@ type ClientSeed struct {
 	Zip                  string     `json:"zip"`   // Direct zip field
 }
 
-// SeedDatabase seeds the database with data from ae-saas seed-data.json
+// SeedDatabase seeds the database with data from ae-base-server seed-data.json
 // plus unburdy-specific data
 func SeedDatabase(db *gorm.DB) error {
-	log.Println("🌱 Seeding database with ae-saas-basic data from seed-data.json...")
+	log.Println("🌱 Seeding database with ae-base-server data from seed-data.json...")
 
-	// Use ae-saas-basic's seed function to load data from seed-data.json
+	// Use ae-base-server's seed function to load data from seed-data.json
 	// This creates: tenants, users, plans from the JSON file
 	if err := baseAPI.SeedBaseData(db); err != nil {
-		log.Printf("⚠️  Warning: ae-saas seed failed (may already be seeded): %v", err)
+		log.Printf("⚠️  Warning: ae-base-server seed failed (may already be seeded): %v", err)
 		// Don't return error - continue with unburdy-specific seeding
 	}
 

@@ -1,8 +1,8 @@
-// Package api provides public access to ae-saas-basic middleware
+// Package api provides public access to ae-base-server middleware
 package api
 
 import (
-	"github.com/ae-saas-basic/ae-saas-basic/internal/middleware"
+	"github.com/ae-base-server/internal/middleware"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 )

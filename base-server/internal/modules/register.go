@@ -3,7 +3,7 @@ package modules
 import (
 	"log"
 
-	"github.com/ae-saas-basic/ae-saas-basic/internal/config"
+	"github.com/ae-base-server/internal/config"
 	"gorm.io/gorm"
 )
 

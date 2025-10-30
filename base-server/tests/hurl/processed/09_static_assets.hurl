@@ -59,7 +59,7 @@ HTTP 400
 body contains "Invalid file name"
 
 # Test 9: Test non-existent JSON file
-GET http://localhost:8080/static/nonexistent_1761600534_af78c817
+GET http://localhost:8080/static/nonexistent_1761828406_5a9dd03d
 
 HTTP 404
 [Asserts]

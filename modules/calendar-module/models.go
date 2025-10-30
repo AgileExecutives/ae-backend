@@ -5,7 +5,7 @@ package calendar
 import (
 	"time"
 
-	"github.com/ae-saas-basic/ae-saas-basic/api"
+	"github.com/ae-base-server/api"
 	"gorm.io/gorm"
 )
 

@@ -1,4 +1,4 @@
-# AE SaaS Basic Makefile
+# AE Base Server Makefile
 
 .PHONY: help build run test clean docker-build docker-run setup
 
@@ -9,7 +9,7 @@ help: ## Show this help message
 
 # Development commands
 build: ## Build the application
-	go build -v -o bin/ae-saas-basic .
+	go build -v -o bin/ae-base-server .
 
 run: ## Run the application
 	go run main.go
@@ -34,16 +34,16 @@ setup: ## Set up the development environment
 
 # Database commands
 db-create: ## Create database (requires psql)
-	createdb ae_saas_basic
+	createdb ae_base_server
 
 db-drop: ## Drop database (requires psql)
-	dropdb ae_saas_basic
+	dropdb ae_base_server
 
 db-reset: db-drop db-create ## Reset database
 
 # Docker commands
 docker-build: ## Build Docker image
-	docker build -t ae-saas-basic .
+	docker build -t ae-base-server .
 
 docker-run: ## Run with Docker Compose
 	docker-compose up -d

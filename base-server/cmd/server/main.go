@@ -4,10 +4,10 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/ae-saas-basic/ae-saas-basic/internal/config"
-	"github.com/ae-saas-basic/ae-saas-basic/internal/database"
-	"github.com/ae-saas-basic/ae-saas-basic/internal/router"
-	"github.com/ae-saas-basic/ae-saas-basic/pkg/auth"
+	"github.com/ae-base-server/internal/config"
+	"github.com/ae-base-server/internal/database"
+	"github.com/ae-base-server/internal/router"
+	"github.com/ae-base-server/pkg/auth"
 	"github.com/gin-gonic/gin"
 )
 

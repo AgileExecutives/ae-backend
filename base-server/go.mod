@@ -1,4 +1,4 @@
-module github.com/ae-saas-basic/ae-saas-basic
+module github.com/ae-base-server
 
 go 1.24
 

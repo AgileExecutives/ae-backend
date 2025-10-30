@@ -4,7 +4,7 @@ import (
 	"os"
 	"strconv"
 
-	"github.com/ae-saas-basic/ae-saas-basic/internal/database"
+	"github.com/ae-base-server/internal/database"
 )
 
 // Config holds all configuration for the application

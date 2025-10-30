@@ -5,7 +5,7 @@ go 1.24.0
 toolchain go1.24.5
 
 require (
-	github.com/ae-saas-basic/ae-saas-basic v0.0.0
+	github.com/ae-base-server v0.0.0
 	github.com/gin-contrib/cors v1.7.6
 	github.com/gin-gonic/gin v1.10.1
 	github.com/swaggo/files v1.0.1
@@ -76,4 +76,4 @@ require (
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
 
-replace github.com/ae-saas-basic/ae-saas-basic => ../base-server
+replace github.com/ae-base-server => ../base-server

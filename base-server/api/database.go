@@ -1,11 +1,11 @@
-// Package api provides public access to ae-saas-basic database functions
+// Package api provides public access to ae-base-server database functions
 package api
 
 import (
 	"log"
 
-	"github.com/ae-saas-basic/ae-saas-basic/internal/database"
-	"github.com/ae-saas-basic/ae-saas-basic/internal/models"
+	"github.com/ae-base-server/internal/database"
+	"github.com/ae-base-server/internal/models"
 	"gorm.io/gorm"
 )
 

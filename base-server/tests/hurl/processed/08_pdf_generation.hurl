@@ -5,12 +5,12 @@
 POST http://localhost:8080/api/v1/auth/register
 Content-Type: application/json
 {
-  "username": "testuser_1761600534_af78c817",
-  "email": "test_1761600534_af78c817@example.com",
-  "password": "Pass123_af78c817",
+  "username": "testuser_1761828406_5a9dd03d",
+  "email": "test_1761828406_5a9dd03d@example.com",
+  "password": "Pass123_5a9dd03d",
   "first_name": "PDF",
   "last_name": "Tester",
-  "company_name": "PDF Test Company 1761600534_af78c817",
+  "company_name": "PDF Test Company 1761828406_5a9dd03d",
   "accept_terms": true,
   "newsletter_opt_in": false
 }
@@ -22,8 +22,8 @@ HTTP *
 POST http://localhost:8080/api/v1/auth/login
 Content-Type: application/json
 {
-  "username": "testuser_1761600534_af78c817",
-  "password": "Pass123_af78c817"
+  "username": "testuser_1761828406_5a9dd03d",
+  "password": "Pass123_5a9dd03d"
 }
 
 HTTP 200
@@ -37,14 +37,14 @@ Authorization: Bearer {{auth_token}}
 Content-Type: application/json
 {
   "data": {
-    "invoice_number": "INV-1761600534_af78c817",
-    "customer_name": "customer_1761600534_af78c817",
+    "invoice_number": "INV-1761828406_5a9dd03d",
+    "customer_name": "customer_1761828406_5a9dd03d",
     "amount": "€123.45",
     "date": "2025-10-27",
-    "unique_id": "1761600534_af78c817"
+    "unique_id": "1761828406_5a9dd03d"
   },
   "templateName": "report.html",
-  "fileName": "test-invoice-1761600534_af78c817"
+  "fileName": "test-invoice-1761828406_5a9dd03d"
 }
 
 # Accept either success or server error (if template missing or Chrome not available)  
@@ -59,11 +59,11 @@ Authorization: Bearer {{auth_token}}
 Content-Type: application/json
 {
   "data": {
-    "title": "Simple Test 1761600534_af78c817",
+    "title": "Simple Test 1761828406_5a9dd03d",
     "content": "PDF generation test"
   },
   "templateName": "invoice_units_template.html",
-  "fileName": "simple-test-1761600534_af78c817"
+  "fileName": "simple-test-1761828406_5a9dd03d"
 }
 
 # Accept either success or server error

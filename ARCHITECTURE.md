@@ -110,11 +110,11 @@ go mod init github.com/ae-backend/your-module
 ```go
 // go.mod
 require (
-    github.com/ae-saas-basic/ae-saas-basic v0.0.0
+    github.com/ae-base-server v0.0.0
     github.com/gin-gonic/gin v1.10.1
     gorm.io/gorm v1.30.0
 )
-replace github.com/ae-saas-basic/ae-saas-basic => ../../base-server
+replace github.com/ae-base-server => ../../base-server
 ```
 
 ### Step 3: Implement Module

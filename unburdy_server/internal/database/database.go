@@ -5,39 +5,39 @@ import (
 	"log"
 	"os"
 
-	baseAPI "github.com/ae-saas-basic/ae-saas-basic/api"
+	baseAPI "github.com/ae-base-server/api"
 	"github.com/unburdy/unburdy-server-api/internal/models"
 	"gorm.io/gorm"
 )
 
-// SetupExtendedDatabase initializes the database with ae-saas-basic models + client tables
-// Uses the same PostgreSQL database and configuration as ae-saas
+// SetupExtendedDatabase initializes the database with ae-base-server models + client tables
+// Uses the same PostgreSQL database and configuration as ae-base-server
 func SetupExtendedDatabase() (*gorm.DB, error) {
-	log.Println("🔧 Setting up database with ae-saas-basic configuration...")
+	log.Println("🔧 Setting up database with ae-base-server configuration...")
 
-	// Use ae-saas database configuration (same database as ae-saas)
-	config := baseAPI.DatabaseConfig{
+	// Use ae-base-server database configuration (same database as ae-base-server)
+	dbConfig := baseAPI.DatabaseConfig{
 		Host:     getEnv("DB_HOST", "localhost"),
 		Port:     getEnv("DB_PORT", "5432"),
 		User:     getEnv("DB_USER", "postgres"),
-		Password: getEnv("DB_PASSWORD", "password"),
-		DBName:   getEnv("DB_NAME", "ae_saas_basic_test"),
+		Password: getEnv("DB_PASSWORD", "pass"),
+		DBName:   getEnv("DB_NAME", "ae_base_server_test"),
 		SSLMode:  getEnv("DB_SSL_MODE", "disable"),
 	}
 
-	log.Printf("📡 Connecting to PostgreSQL: %s:%s/%s", config.Host, config.Port, config.DBName)
+	log.Printf("📡 Connecting to PostgreSQL: %s:%s/%s", dbConfig.Host, dbConfig.Port, dbConfig.DBName)
 
 	// Connect with auto-create (creates database if it doesn't exist)
-	db, err := baseAPI.ConnectDatabaseWithAutoCreate(config)
+	db, err := baseAPI.ConnectDatabaseWithAutoCreate(dbConfig)
 	if err != nil {
 		return nil, fmt.Errorf("failed to connect to PostgreSQL: %w", err)
 	}
 
-	// Run ae-saas migrations (handles existing tables correctly)
-	log.Println("📦 Running ae-saas-basic migrations...")
+	// Run ae-base-server migrations (handles existing tables correctly)
+	log.Println("📦 Running ae-base-server migrations...")
 	err = baseAPI.MigrateDatabase(db)
 	if err != nil {
-		return nil, fmt.Errorf("failed to run ae-saas migrations: %w", err)
+		return nil, fmt.Errorf("failed to run ae-base-server migrations: %w", err)
 	}
 
 	// Run migrations for unburdy-specific models (Client and CostProvider)
@@ -59,8 +59,8 @@ func SetupExtendedDatabase() (*gorm.DB, error) {
 		log.Printf("⚠️  Warning: Failed to seed database: %v", err)
 	}
 
-	log.Println("✅ Database initialized: ae-saas-basic + Client + CostProvider models")
-	log.Printf("✅ Database: %s@%s:%s/%s", config.User, config.Host, config.Port, config.DBName)
+	log.Println("✅ Database initialized: ae-base-server + Client + CostProvider models")
+	log.Printf("✅ Database: %s@%s:%s/%s", dbConfig.User, dbConfig.Host, dbConfig.Port, dbConfig.DBName)
 	return db, nil
 }
 

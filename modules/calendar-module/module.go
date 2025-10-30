@@ -4,8 +4,8 @@ import (
 	"context"
 	"log"
 
-	"github.com/ae-saas-basic/ae-saas-basic/pkg/eventbus"
-	"github.com/ae-saas-basic/ae-saas-basic/pkg/modules"
+	"github.com/ae-base-server/pkg/eventbus"
+	"github.com/ae-base-server/pkg/modules"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 ) // CalendarModule implements the Module interface for calendar functionality

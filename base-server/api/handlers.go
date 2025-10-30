@@ -1,10 +1,10 @@
-// Package api provides public access to ae-saas-basic handlers
+// Package api provides public access to ae-base-server handlers
 // This allows external modules to use the base authentication and user management
 package api
 
 import (
-	"github.com/ae-saas-basic/ae-saas-basic/internal/config"
-	"github.com/ae-saas-basic/ae-saas-basic/internal/handlers"
+	"github.com/ae-base-server/internal/config"
+	"github.com/ae-base-server/internal/handlers"
 	"gorm.io/gorm"
 )
 

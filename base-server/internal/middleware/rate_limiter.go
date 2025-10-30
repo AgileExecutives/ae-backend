@@ -7,7 +7,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/ae-saas-basic/ae-saas-basic/internal/models"
+	"github.com/ae-base-server/internal/models"
 	"github.com/gin-gonic/gin"
 	"github.com/ulule/limiter/v3"
 	mgin "github.com/ulule/limiter/v3/drivers/middleware/gin"

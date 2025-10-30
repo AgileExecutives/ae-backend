@@ -6,7 +6,7 @@ import (
 	"log"
 	"strings"
 
-	internalModules "github.com/ae-saas-basic/ae-saas-basic/internal/modules"
+	internalModules "github.com/ae-base-server/internal/modules"
 	"github.com/swaggo/swag"
 )
 

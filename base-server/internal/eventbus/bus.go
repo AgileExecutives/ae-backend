@@ -5,7 +5,7 @@ import (
 	"log"
 	"sync"
 
-	"github.com/ae-saas-basic/ae-saas-basic/pkg/eventbus"
+	"github.com/ae-base-server/pkg/eventbus"
 )
 
 var (

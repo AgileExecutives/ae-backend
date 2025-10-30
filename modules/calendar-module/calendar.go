@@ -1,5 +1,5 @@
 // Package calendar provides calendar and event management functionality
-// This package can be imported and used by any application built on top of ae-saas-basic
+// This package can be imported and used by any application built on top of ae-base-server
 package calendar
 
 // Re-export main types and functions for easy importing
