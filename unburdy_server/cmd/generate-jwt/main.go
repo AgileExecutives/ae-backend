@@ -19,7 +19,7 @@ type UserClaims struct {
 
 func main() {
 	// JWT secret (same as in the server)
-	secretKey := "default-development-secret-key"
+	secretKey := "test-jwt-secret-key-for-development-only"
 
 	// Create claims for the default user/tenant
 	claims := UserClaims{
@@ -45,5 +45,5 @@ func main() {
 	fmt.Printf("Use this token in the Authorization header as:\n")
 	fmt.Printf("Authorization: Bearer %s\n\n", tokenString)
 	fmt.Printf("Test with curl:\n")
-	fmt.Printf("curl -H \"Authorization: Bearer %s\" http://localhost:8081/api/v1/clients\n", tokenString)
+	fmt.Printf("curl -H \"Authorization: Bearer %s\" http://localhost:8080/api/v1/clients\n", tokenString)
 }

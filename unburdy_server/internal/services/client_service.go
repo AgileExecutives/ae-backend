@@ -17,59 +17,82 @@ func NewClientService(db *gorm.DB) *ClientService {
 	return &ClientService{db: db}
 }
 
-// CreateClient creates a new client within the user's tenant
-func (s *ClientService) CreateClient(req models.CreateClientRequest, userID, tenantID uint) (*models.Client, error) {
+// CreateClient creates a new client for a specific tenant
+func (s *ClientService) CreateClient(req models.CreateClientRequest, tenantID uint) (*models.Client, error) {
 	client := models.Client{
-		FirstName:   req.FirstName,
-		LastName:    req.LastName,
-		DateOfBirth: req.DateOfBirth,
-		TenantID:    tenantID,
-		CreatedBy:   userID,
+		TenantID:             tenantID,
+		CostProviderID:       req.CostProviderID,
+		FirstName:            req.FirstName,
+		LastName:             req.LastName,
+		DateOfBirth:          req.DateOfBirth,
+		Gender:               req.Gender,
+		PrimaryLanguage:      req.PrimaryLanguage,
+		ContactFirstName:     req.ContactFirstName,
+		ContactLastName:      req.ContactLastName,
+		ContactEmail:         req.ContactEmail,
+		ContactPhone:         req.ContactPhone,
+		AlternativeFirstName: req.AlternativeFirstName,
+		AlternativeLastName:  req.AlternativeLastName,
+		AlternativePhone:     req.AlternativePhone,
+		AlternativeEmail:     req.AlternativeEmail,
+		StreetAddress:        req.StreetAddress,
+		Zip:                  req.Zip,
+		City:                 req.City,
+		Email:                req.Email,
+		Phone:                req.Phone,
+		TherapyTitle:         req.TherapyTitle,
+		ProviderApprovalCode: req.ProviderApprovalCode,
+		UnitPrice:            req.UnitPrice,
+		Status:               req.Status,
+		AdmissionDate:        req.AdmissionDate,
+		ReferralSource:       req.ReferralSource,
+		Notes:                req.Notes,
+	}
+
+	// Set default values if not provided
+	if client.Gender == "" {
+		client.Gender = "undisclosed"
+	}
+	if client.Status == "" {
+		client.Status = "waiting"
+	}
+	if req.InvoicedIndividually != nil {
+		client.InvoicedIndividually = *req.InvoicedIndividually
 	}
 
 	if err := s.db.Create(&client).Error; err != nil {
 		return nil, fmt.Errorf("failed to create client: %w", err)
 	}
 
-	// Load related data
-	if err := s.db.Preload("Tenant").Preload("CreatedByUser").First(&client, client.ID).Error; err != nil {
-		return nil, fmt.Errorf("failed to load client relations: %w", err)
-	}
-
 	return &client, nil
 }
 
-// GetClientByID returns a client by ID within a tenant
+// GetClientByID returns a client by ID within a tenant with preloaded cost provider
 func (s *ClientService) GetClientByID(id, tenantID uint) (*models.Client, error) {
 	var client models.Client
-	if err := s.db.Preload("Tenant").Preload("CreatedByUser").
-		Where("id = ? AND tenant_id = ?", id, tenantID).
-		First(&client).Error; err != nil {
+	if err := s.db.Preload("CostProvider").Where("id = ? AND tenant_id = ?", id, tenantID).First(&client).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, fmt.Errorf("client with ID %d not found in tenant", id)
+			return nil, fmt.Errorf("client with ID %d not found", id)
 		}
 		return nil, fmt.Errorf("failed to fetch client: %w", err)
 	}
 	return &client, nil
 }
 
-// GetAllClients returns all clients within a tenant with pagination
+// GetAllClients returns all clients with pagination for a tenant with preloaded cost providers
 func (s *ClientService) GetAllClients(page, limit int, tenantID uint) ([]models.Client, int, error) {
 	var clients []models.Client
 	var total int64
 
 	offset := (page - 1) * limit
 
-	query := s.db.Where("tenant_id = ?", tenantID)
-
 	// Count total records for the tenant
-	if err := query.Model(&models.Client{}).Count(&total).Error; err != nil {
+	if err := s.db.Model(&models.Client{}).Where("tenant_id = ?", tenantID).Count(&total).Error; err != nil {
 		return nil, 0, fmt.Errorf("failed to count clients: %w", err)
 	}
 
-	// Get paginated records with relations
-	if err := query.Preload("Tenant").Preload("CreatedByUser").
-		Offset(offset).Limit(limit).Find(&clients).Error; err != nil {
+	// Get paginated records for the tenant with preloaded cost provider
+	if err := s.db.Preload("CostProvider").Where("tenant_id = ?", tenantID).Offset(offset).Limit(limit).Find(&clients).Error; err != nil {
 		return nil, 0, fmt.Errorf("failed to fetch clients: %w", err)
 	}
 
@@ -81,12 +104,15 @@ func (s *ClientService) UpdateClient(id, tenantID uint, req models.UpdateClientR
 	var client models.Client
 	if err := s.db.Where("id = ? AND tenant_id = ?", id, tenantID).First(&client).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, fmt.Errorf("client with ID %d not found in tenant", id)
+			return nil, fmt.Errorf("client with ID %d not found", id)
 		}
 		return nil, fmt.Errorf("failed to get client: %w", err)
 	}
 
 	// Update fields if provided
+	if req.CostProviderID != nil {
+		client.CostProviderID = req.CostProviderID
+	}
 	if req.FirstName != nil {
 		client.FirstName = *req.FirstName
 	}
@@ -101,9 +127,9 @@ func (s *ClientService) UpdateClient(id, tenantID uint, req models.UpdateClientR
 		return nil, fmt.Errorf("failed to update client: %w", err)
 	}
 
-	// Load relations
-	if err := s.db.Preload("Tenant").Preload("CreatedByUser").First(&client, client.ID).Error; err != nil {
-		return nil, fmt.Errorf("failed to load client relations: %w", err)
+	// Reload client to get updated data with cost provider
+	if err := s.db.Preload("CostProvider").First(&client, client.ID).Error; err != nil {
+		return nil, fmt.Errorf("failed to reload client: %w", err)
 	}
 
 	return &client, nil
@@ -114,7 +140,7 @@ func (s *ClientService) DeleteClient(id, tenantID uint) error {
 	var client models.Client
 	if err := s.db.Where("id = ? AND tenant_id = ?", id, tenantID).First(&client).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return fmt.Errorf("client with ID %d not found in tenant", id)
+			return fmt.Errorf("client with ID %d not found", id)
 		}
 		return fmt.Errorf("failed to get client: %w", err)
 	}
@@ -146,9 +172,8 @@ func (s *ClientService) SearchClients(query string, page, limit int, tenantID ui
 	// Calculate offset
 	offset := (page - 1) * limit
 
-	// Get paginated search results with relations
-	if err := searchQuery.Preload("Tenant").Preload("CreatedByUser").
-		Offset(offset).Limit(limit).Find(&clients).Error; err != nil {
+	// Get paginated search results with cost provider preload
+	if err := searchQuery.Preload("CostProvider").Offset(offset).Limit(limit).Find(&clients).Error; err != nil {
 		return nil, 0, fmt.Errorf("failed to search clients: %w", err)
 	}
 

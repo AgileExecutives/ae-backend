@@ -71,6 +71,19 @@ definitions:
         example: "2025-08-03T10:00:00Z"
         type: string
     type: object
+  github_com_ae-saas-basic_ae-saas-basic_internal_modules.ModuleInfo:
+    properties:
+      author:
+        type: string
+      description:
+        type: string
+      enabled:
+        type: boolean
+      name:
+        type: string
+      version:
+        type: string
+    type: object
   handlers.ErrorResponse:
     properties:
       details:
@@ -604,6 +617,259 @@ info:
   title: AE SaaS Basic API
   version: "1.0"
 paths:
+  /admin/modules:
+    get:
+      consumes:
+      - application/json
+      description: Get information about all registered modules in the system
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/models.APIResponse'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/github_com_ae-saas-basic_ae-saas-basic_internal_modules.ModuleInfo'
+                  type: array
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get registered modules
+      tags:
+      - modules
+  /admin/modules/{name}:
+    get:
+      consumes:
+      - application/json
+      description: Get detailed information about a specific module by name
+      parameters:
+      - description: Module name
+        in: path
+        name: name
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/models.APIResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_ae-saas-basic_ae-saas-basic_internal_modules.ModuleInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get module details
+      tags:
+      - modules
+  /api/v1/modules/demo/demo:
+    get:
+      description: Get information about the demo module
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Demo information
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Get demo information
+      tags:
+      - demo
+  /api/v1/modules/demo/items:
+    get:
+      description: Retrieve all demo items from the demo module
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of demo items
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get all demo items
+      tags:
+      - demo
+    post:
+      consumes:
+      - application/json
+      description: Create a new demo item in the demo module
+      parameters:
+      - description: Demo item data
+        in: body
+        name: item
+        required: true
+        schema:
+          additionalProperties: true
+          type: object
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created demo item
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Create a new demo item
+      tags:
+      - demo
+  /api/v1/modules/demo/items/{id}:
+    delete:
+      description: Delete a demo item by ID
+      parameters:
+      - description: Demo Item ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Deletion confirmation
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Demo item not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Delete a demo item
+      tags:
+      - demo
+    get:
+      description: Retrieve a specific demo item by its ID
+      parameters:
+      - description: Demo Item ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Demo item details
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Demo item not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get demo item by ID
+      tags:
+      - demo
+    put:
+      consumes:
+      - application/json
+      description: Update an existing demo item by ID
+      parameters:
+      - description: Demo Item ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Updated demo item data
+        in: body
+        name: item
+        required: true
+        schema:
+          additionalProperties: true
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Updated demo item
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Demo item not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Update a demo item
+      tags:
+      - demo
   /api/v1/pdf/create:
     post:
       consumes:
@@ -1895,3 +2161,5 @@ tags:
   name: newsletter
 - description: Public contact form endpoints
   name: contact-form
+- description: Demo module endpoints for testing modular architecture
+  name: demo

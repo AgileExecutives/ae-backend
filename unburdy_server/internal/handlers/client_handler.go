@@ -5,6 +5,7 @@ import (
 	"strconv"
 
 	baseAPI "github.com/ae-saas-basic/ae-saas-basic/api"
+	"github.com/ae-saas-basic/ae-saas-basic/pkg/utils"
 	"github.com/gin-gonic/gin"
 	"github.com/unburdy/unburdy-server-api/internal/models"
 	"github.com/unburdy/unburdy-server-api/internal/services"
@@ -34,13 +35,7 @@ func NewClientHandler(clientService *services.ClientService) *ClientHandler {
 // @Security BearerAuth
 // @Router /clients [post]
 func (h *ClientHandler) CreateClient(c *gin.Context) {
-	// Get authenticated user info
-	userID, err := baseAPI.GetUserID(c)
-	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Authentication required"})
-		return
-	}
-
+	// Get authenticated tenant info
 	tenantID, err := baseAPI.GetTenantID(c)
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Tenant information required"})
@@ -53,7 +48,7 @@ func (h *ClientHandler) CreateClient(c *gin.Context) {
 		return
 	}
 
-	client, err := h.clientService.CreateClient(req, userID, tenantID)
+	client, err := h.clientService.CreateClient(req, tenantID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -103,14 +98,14 @@ func (h *ClientHandler) GetClient(c *gin.Context) {
 
 // GetAllClients godoc
 // @Summary Get all clients
-// @Description Retrieve all clients with optional pagination
+// @Description Get a paginated list of all clients
 // @Tags clients
+// @Accept json
 // @Produce json
 // @Param page query int false "Page number" default(1)
 // @Param limit query int false "Items per page" default(10)
-// @Success 200 {object} map[string]interface{}
-// @Failure 400 {object} map[string]interface{}
-// @Failure 500 {object} map[string]interface{}
+// @Success 200 {object} map[string]interface{} "data: array of ClientResponse, total: int, page: int, limit: int"
+// @Failure 500 {object} map[string]interface{} "error: string"
 // @Security BearerAuth
 // @Router /clients [get]
 func (h *ClientHandler) GetAllClients(c *gin.Context) {
@@ -121,15 +116,7 @@ func (h *ClientHandler) GetAllClients(c *gin.Context) {
 		return
 	}
 
-	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
-	limit, _ := strconv.Atoi(c.DefaultQuery("limit", "10"))
-
-	if page < 1 {
-		page = 1
-	}
-	if limit < 1 || limit > 100 {
-		limit = 10
-	}
+	page, limit := utils.GetPaginationParams(c)
 
 	clients, total, err := h.clientService.GetAllClients(page, limit, tenantID)
 	if err != nil {
@@ -264,15 +251,7 @@ func (h *ClientHandler) SearchClients(c *gin.Context) {
 		return
 	}
 
-	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
-	limit, _ := strconv.Atoi(c.DefaultQuery("limit", "10"))
-
-	if page < 1 {
-		page = 1
-	}
-	if limit < 1 || limit > 100 {
-		limit = 10
-	}
+	page, limit := utils.GetPaginationParams(c)
 
 	clients, total, err := h.clientService.SearchClients(query, page, limit, tenantID)
 	if err != nil {

@@ -1,5 +1,4 @@
 package test
-package test
 
 import (
 	"testing"
@@ -14,7 +13,7 @@ import (
 
 func setupTestDB() *gorm.DB {
 	db, _ := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
-	db.AutoMigrate(&models.Client{})
+	db.AutoMigrate(&models.Client{}, &models.CostProvider{})
 	return db
 }
 
@@ -29,12 +28,14 @@ func TestClientService_CreateClient(t *testing.T) {
 		DateOfBirth: &dob,
 	}
 
-	client, err := service.CreateClient(req)
+	tenantID := uint(1)
+	client, err := service.CreateClient(req, tenantID)
 
 	assert.NoError(t, err)
 	assert.Equal(t, "John", client.FirstName)
 	assert.Equal(t, "Doe", client.LastName)
 	assert.Equal(t, &dob, client.DateOfBirth)
+	assert.Equal(t, tenantID, client.TenantID)
 }
 
 func TestClientService_GetClientByID(t *testing.T) {
@@ -49,11 +50,12 @@ func TestClientService_GetClientByID(t *testing.T) {
 		DateOfBirth: &dob,
 	}
 
-	created, err := service.CreateClient(req)
+	tenantID := uint(1)
+	created, err := service.CreateClient(req, tenantID)
 	assert.NoError(t, err)
 
 	// Get the client by ID
-	retrieved, err := service.GetClientByID(created.ID)
+	retrieved, err := service.GetClientByID(created.ID, tenantID)
 	assert.NoError(t, err)
 	assert.Equal(t, created.ID, retrieved.ID)
 	assert.Equal(t, "Jane", retrieved.FirstName)
@@ -72,7 +74,8 @@ func TestClientService_UpdateClient(t *testing.T) {
 		DateOfBirth: &dob,
 	}
 
-	created, err := service.CreateClient(req)
+	tenantID := uint(1)
+	created, err := service.CreateClient(req, tenantID)
 	assert.NoError(t, err)
 
 	// Update the client
@@ -81,7 +84,7 @@ func TestClientService_UpdateClient(t *testing.T) {
 		FirstName: &newFirstName,
 	}
 
-	updated, err := service.UpdateClient(created.ID, updateReq)
+	updated, err := service.UpdateClient(created.ID, tenantID, updateReq)
 	assert.NoError(t, err)
 	assert.Equal(t, "Jane", updated.FirstName)
 	assert.Equal(t, "Doe", updated.LastName) // Should remain unchanged
@@ -98,13 +101,14 @@ func TestClientService_SearchClients(t *testing.T) {
 		{FirstName: "Bob", LastName: "Johnson"},
 	}
 
+	tenantID := uint(1)
 	for _, req := range clients {
-		_, err := service.CreateClient(req)
+		_, err := service.CreateClient(req, tenantID)
 		assert.NoError(t, err)
 	}
 
 	// Search for "John"
-	results, total, err := service.SearchClients("John", 1, 10)
+	results, total, err := service.SearchClients("John", 1, 10, tenantID)
 	assert.NoError(t, err)
 	assert.Equal(t, int64(2), total) // Should find "John Doe" and "Bob Johnson"
 	assert.Len(t, results, 2)

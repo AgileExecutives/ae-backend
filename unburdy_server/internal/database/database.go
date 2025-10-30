@@ -40,12 +40,17 @@ func SetupExtendedDatabase() (*gorm.DB, error) {
 		return nil, fmt.Errorf("failed to run ae-saas migrations: %w", err)
 	}
 
-	// Run migrations for unburdy-specific models (Client)
-	log.Println("📦 Running unburdy-specific migrations (Client table)...")
-	err = db.AutoMigrate(&models.Client{})
+	// Run migrations for unburdy-specific models (Client and CostProvider)
+	log.Println("📦 Running unburdy-specific migrations (Client and CostProvider tables)...")
+
+	// First, let AutoMigrate create the tables if they don't exist
+	log.Println("Creating tables if they don't exist...")
+	err = db.AutoMigrate(&models.CostProvider{}, &models.Client{})
 	if err != nil {
-		return nil, fmt.Errorf("failed to migrate Client model: %w", err)
+		return nil, fmt.Errorf("failed to migrate Client and CostProvider models: %w", err)
 	}
+
+	log.Println("✅ Client and CostProvider tables migrated successfully")
 
 	// Seed initial data
 	log.Println("🌱 Seeding database from seed-data.json...")
@@ -54,7 +59,7 @@ func SetupExtendedDatabase() (*gorm.DB, error) {
 		log.Printf("⚠️  Warning: Failed to seed database: %v", err)
 	}
 
-	log.Println("✅ Database initialized: ae-saas-basic + Client model")
+	log.Println("✅ Database initialized: ae-saas-basic + Client + CostProvider models")
 	log.Printf("✅ Database: %s@%s:%s/%s", config.User, config.Host, config.Port, config.DBName)
 	return db, nil
 }

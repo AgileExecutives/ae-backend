@@ -9,9 +9,15 @@ import (
 )
 
 // GetPaginationParams extracts pagination parameters from query string
+// Uses configurable MAX_PAGE_LIMIT environment variable (default 100)
+// Uses configurable DEFAULT_PAGE_LIMIT environment variable (default 10)
 func GetPaginationParams(c *gin.Context) (page int, limit int) {
+	// Get configurable limits from environment
+	maxLimit := getEnvInt("MAX_PAGE_LIMIT", 100)
+	defaultLimit := getEnvInt("DEFAULT_PAGE_LIMIT", 10)
+
 	page = 1
-	limit = 10
+	limit = defaultLimit
 
 	if p := c.Query("page"); p != "" {
 		if parsed, err := strconv.Atoi(p); err == nil && parsed > 0 {
@@ -20,7 +26,7 @@ func GetPaginationParams(c *gin.Context) (page int, limit int) {
 	}
 
 	if l := c.Query("limit"); l != "" {
-		if parsed, err := strconv.Atoi(l); err == nil && parsed > 0 && parsed <= 100 {
+		if parsed, err := strconv.Atoi(l); err == nil && parsed > 0 && parsed <= maxLimit {
 			limit = parsed
 		}
 	}
@@ -66,4 +72,14 @@ func GetEnv(key, fallback string) string {
 		return value
 	}
 	return fallback
+}
+
+// getEnvInt gets an environment variable as int with a default value
+func getEnvInt(key string, defaultValue int) int {
+	if value := os.Getenv(key); value != "" {
+		if intValue, err := strconv.Atoi(value); err == nil {
+			return intValue
+		}
+	}
+	return defaultValue
 }

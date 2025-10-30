@@ -24,6 +24,459 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/admin/modules": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Get information about all registered modules in the system",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "modules"
+                ],
+                "summary": "Get registered modules",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/models.APIResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/github_com_ae-saas-basic_ae-saas-basic_internal_modules.ModuleInfo"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/models.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/modules/{name}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Get detailed information about a specific module by name",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "modules"
+                ],
+                "summary": "Get module details",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Module name",
+                        "name": "name",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/models.APIResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/github_com_ae-saas-basic_ae-saas-basic_internal_modules.ModuleInfo"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/models.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/models.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/modules/demo/demo": {
+            "get": {
+                "description": "Get information about the demo module",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "demo"
+                ],
+                "summary": "Get demo information",
+                "responses": {
+                    "200": {
+                        "description": "Demo information",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/modules/demo/items": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Retrieve all demo items from the demo module",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "demo"
+                ],
+                "summary": "Get all demo items",
+                "responses": {
+                    "200": {
+                        "description": "List of demo items",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Create a new demo item in the demo module",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "demo"
+                ],
+                "summary": "Create a new demo item",
+                "parameters": [
+                    {
+                        "description": "Demo item data",
+                        "name": "item",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created demo item",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/modules/demo/items/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Retrieve a specific demo item by its ID",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "demo"
+                ],
+                "summary": "Get demo item by ID",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Demo Item ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Demo item details",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Demo item not found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            },
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Update an existing demo item by ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "demo"
+                ],
+                "summary": "Update a demo item",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Demo Item ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Updated demo item data",
+                        "name": "item",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Updated demo item",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Demo item not found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Delete a demo item by ID",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "demo"
+                ],
+                "summary": "Delete a demo item",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Demo Item ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Deletion confirmation",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Demo item not found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/pdf/create": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Generate a PDF document based on a specified template and data",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "pdf"
+                ],
+                "summary": "Generate PDF from template",
+                "parameters": [
+                    {
+                        "description": "PDF generation request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/handlers.PDFGenerateRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "PDF generated successfully",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.PDFGenerateResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to generate PDF",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/ping": {
             "get": {
                 "description": "Simple ping endpoint",
@@ -39,72 +492,6 @@ const docTemplate = `{
                         "description": "pong",
                         "schema": {
                             "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/assets": {
-            "get": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "Get a list of available static assets",
-                "tags": [
-                    "static"
-                ],
-                "summary": "List static assets",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Asset type filter",
-                        "name": "type",
-                        "in": "query"
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": true
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/models.ErrorResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/assets/{path}": {
-            "get": {
-                "description": "Serve static files like CSS, JS, images with appropriate headers",
-                "tags": [
-                    "static"
-                ],
-                "summary": "Serve static assets",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Asset path",
-                        "name": "path",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Asset content"
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "$ref": "#/definitions/models.ErrorResponse"
                         }
                     }
                 }
@@ -608,7 +995,10 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "Retrieve all clients with optional pagination",
+                "description": "Get a paginated list of all clients",
+                "consumes": [
+                    "application/json"
+                ],
                 "produces": [
                     "application/json"
                 ],
@@ -634,21 +1024,14 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": true
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
+                        "description": "data: array of ClientResponse, total: int, page: int, limit: int",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
                         }
                     },
                     "500": {
-                        "description": "Internal Server Error",
+                        "description": "error: string",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
@@ -1912,35 +2295,6 @@ const docTemplate = `{
                 }
             }
         },
-        "/logo": {
-            "get": {
-                "description": "Serve the company logo in various formats",
-                "tags": [
-                    "static"
-                ],
-                "summary": "Get company logo",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "default": "svg",
-                        "description": "Logo format (svg|png|jpg)",
-                        "name": "format",
-                        "in": "query"
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Logo file"
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "$ref": "#/definitions/models.ErrorResponse"
-                        }
-                    }
-                }
-            }
-        },
         "/plans": {
             "get": {
                 "description": "Get a paginated list of all plans",
@@ -2227,48 +2581,83 @@ const docTemplate = `{
                 }
             }
         },
-        "/templates/{type}/{template}": {
+        "/static": {
             "get": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "Serve template files for preview purposes",
+                "description": "Get a list of all JSON files available in the statics/json directory",
                 "tags": [
                     "static"
                 ],
-                "summary": "Preview templates",
+                "summary": "List available static JSON files",
+                "responses": {
+                    "200": {
+                        "description": "List of available JSON files",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to read directory",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/static/{filename}": {
+            "get": {
+                "description": "Dynamically serve any JSON data file from the statics/json directory. Just drop a .json file in the directory and it becomes available at /static/{filename}",
+                "tags": [
+                    "static"
+                ],
+                "summary": "Serve static JSON files",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "Template type (email|pdf)",
-                        "name": "type",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "Template name",
-                        "name": "template",
+                        "example": "\"bundeslaender\"",
+                        "description": "JSON filename (without .json extension)",
+                        "name": "filename",
                         "in": "path",
                         "required": true
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "Template content"
-                    },
-                    "403": {
-                        "description": "Forbidden",
+                        "description": "JSON file content",
                         "schema": {
-                            "$ref": "#/definitions/models.ErrorResponse"
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid file name",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
                         }
                     },
                     "404": {
-                        "description": "Not Found",
+                        "description": "File not found",
                         "schema": {
-                            "$ref": "#/definitions/models.ErrorResponse"
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to read file",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
                         }
                     }
                 }
@@ -2525,6 +2914,78 @@ const docTemplate = `{
                 }
             }
         },
+        "github_com_ae-saas-basic_ae-saas-basic_internal_modules.ModuleInfo": {
+            "type": "object",
+            "properties": {
+                "author": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "enabled": {
+                    "type": "boolean"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "version": {
+                    "type": "string"
+                }
+            }
+        },
+        "handlers.ErrorResponse": {
+            "type": "object",
+            "properties": {
+                "details": {
+                    "type": "string",
+                    "example": "Additional error details"
+                },
+                "error": {
+                    "type": "string",
+                    "example": "Template name is required"
+                }
+            }
+        },
+        "handlers.PDFGenerateRequest": {
+            "type": "object",
+            "required": [
+                "data",
+                "fileName",
+                "templateName"
+            ],
+            "properties": {
+                "data": {
+                    "type": "object",
+                    "additionalProperties": true
+                },
+                "fileName": {
+                    "type": "string",
+                    "example": "generated-report"
+                },
+                "templateName": {
+                    "type": "string",
+                    "example": "report.html"
+                }
+            }
+        },
+        "handlers.PDFGenerateResponse": {
+            "type": "object",
+            "properties": {
+                "filename": {
+                    "type": "string",
+                    "example": "generated-report.pdf"
+                },
+                "message": {
+                    "type": "string",
+                    "example": "PDF generated successfully"
+                },
+                "success": {
+                    "type": "boolean",
+                    "example": true
+                }
+            }
+        },
         "models.APIResponse": {
             "type": "object",
             "properties": {
@@ -2543,28 +3004,91 @@ const docTemplate = `{
         "models.ClientResponse": {
             "type": "object",
             "properties": {
+                "admission_date": {
+                    "type": "string"
+                },
+                "alternative_email": {
+                    "type": "string"
+                },
+                "alternative_first_name": {
+                    "type": "string"
+                },
+                "alternative_last_name": {
+                    "type": "string"
+                },
+                "alternative_phone": {
+                    "type": "string"
+                },
+                "city": {
+                    "type": "string"
+                },
+                "contact_email": {
+                    "type": "string"
+                },
+                "contact_first_name": {
+                    "type": "string"
+                },
+                "contact_last_name": {
+                    "type": "string"
+                },
+                "contact_phone": {
+                    "type": "string"
+                },
                 "created_at": {
                     "type": "string"
                 },
-                "created_by": {
-                    "type": "integer"
-                },
                 "date_of_birth": {
+                    "type": "string"
+                },
+                "email": {
                     "type": "string"
                 },
                 "first_name": {
                     "type": "string"
                 },
+                "gender": {
+                    "type": "string"
+                },
                 "id": {
                     "type": "integer"
+                },
+                "invoiced_individually": {
+                    "type": "boolean"
                 },
                 "last_name": {
                     "type": "string"
                 },
-                "tenant_id": {
-                    "type": "integer"
+                "notes": {
+                    "type": "string"
+                },
+                "phone": {
+                    "type": "string"
+                },
+                "primary_language": {
+                    "type": "string"
+                },
+                "provider_approval_code": {
+                    "type": "string"
+                },
+                "referral_source": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "street_address": {
+                    "type": "string"
+                },
+                "therapy_title": {
+                    "type": "string"
+                },
+                "unit_price": {
+                    "type": "number"
                 },
                 "updated_at": {
+                    "type": "string"
+                },
+                "zip": {
                     "type": "string"
                 }
             }
@@ -2706,17 +3230,109 @@ const docTemplate = `{
                 "last_name"
             ],
             "properties": {
+                "admission_date": {
+                    "type": "string",
+                    "example": "2025-01-01"
+                },
+                "alternative_email": {
+                    "type": "string",
+                    "example": "johnny.d@example.com"
+                },
+                "alternative_first_name": {
+                    "type": "string",
+                    "example": "Johnny"
+                },
+                "alternative_last_name": {
+                    "type": "string",
+                    "example": "D"
+                },
+                "alternative_phone": {
+                    "type": "string",
+                    "example": "+0987654321"
+                },
+                "city": {
+                    "type": "string",
+                    "example": "New York"
+                },
+                "contact_email": {
+                    "type": "string",
+                    "example": "jane.smith@example.com"
+                },
+                "contact_first_name": {
+                    "type": "string",
+                    "example": "Jane"
+                },
+                "contact_last_name": {
+                    "type": "string",
+                    "example": "Smith"
+                },
+                "contact_phone": {
+                    "type": "string",
+                    "example": "+1234567890"
+                },
                 "date_of_birth": {
                     "type": "string",
                     "example": "1990-01-15"
+                },
+                "email": {
+                    "type": "string",
+                    "example": "john.doe@example.com"
                 },
                 "first_name": {
                     "type": "string",
                     "example": "John"
                 },
+                "gender": {
+                    "type": "string",
+                    "example": "male"
+                },
+                "invoiced_individually": {
+                    "type": "boolean",
+                    "example": false
+                },
                 "last_name": {
                     "type": "string",
                     "example": "Doe"
+                },
+                "notes": {
+                    "type": "string",
+                    "example": "Additional notes about the client"
+                },
+                "phone": {
+                    "type": "string",
+                    "example": "+1234567890"
+                },
+                "primary_language": {
+                    "type": "string",
+                    "example": "English"
+                },
+                "provider_approval_code": {
+                    "type": "string",
+                    "example": "PROV123456"
+                },
+                "referral_source": {
+                    "type": "string",
+                    "example": "Doctor Smith"
+                },
+                "status": {
+                    "type": "string",
+                    "example": "waiting"
+                },
+                "street_address": {
+                    "type": "string",
+                    "example": "123 Main Street"
+                },
+                "therapy_title": {
+                    "type": "string",
+                    "example": "Cognitive Behavioral Therapy"
+                },
+                "unit_price": {
+                    "type": "number",
+                    "example": 150
+                },
+                "zip": {
+                    "type": "string",
+                    "example": "12345"
                 }
             }
         },
@@ -3158,17 +3774,109 @@ const docTemplate = `{
         "models.UpdateClientRequest": {
             "type": "object",
             "properties": {
+                "admission_date": {
+                    "type": "string",
+                    "example": "2025-01-01"
+                },
+                "alternative_email": {
+                    "type": "string",
+                    "example": "johnny.d@example.com"
+                },
+                "alternative_first_name": {
+                    "type": "string",
+                    "example": "Johnny"
+                },
+                "alternative_last_name": {
+                    "type": "string",
+                    "example": "D"
+                },
+                "alternative_phone": {
+                    "type": "string",
+                    "example": "+0987654321"
+                },
+                "city": {
+                    "type": "string",
+                    "example": "New York"
+                },
+                "contact_email": {
+                    "type": "string",
+                    "example": "jane.smith@example.com"
+                },
+                "contact_first_name": {
+                    "type": "string",
+                    "example": "Jane"
+                },
+                "contact_last_name": {
+                    "type": "string",
+                    "example": "Smith"
+                },
+                "contact_phone": {
+                    "type": "string",
+                    "example": "+1234567890"
+                },
                 "date_of_birth": {
                     "type": "string",
                     "example": "1990-01-15"
+                },
+                "email": {
+                    "type": "string",
+                    "example": "john.doe@example.com"
                 },
                 "first_name": {
                     "type": "string",
                     "example": "John"
                 },
+                "gender": {
+                    "type": "string",
+                    "example": "male"
+                },
+                "invoiced_individually": {
+                    "type": "boolean",
+                    "example": false
+                },
                 "last_name": {
                     "type": "string",
                     "example": "Doe"
+                },
+                "notes": {
+                    "type": "string",
+                    "example": "Additional notes about the client"
+                },
+                "phone": {
+                    "type": "string",
+                    "example": "+1234567890"
+                },
+                "primary_language": {
+                    "type": "string",
+                    "example": "English"
+                },
+                "provider_approval_code": {
+                    "type": "string",
+                    "example": "PROV123456"
+                },
+                "referral_source": {
+                    "type": "string",
+                    "example": "Doctor Smith"
+                },
+                "status": {
+                    "type": "string",
+                    "example": "active"
+                },
+                "street_address": {
+                    "type": "string",
+                    "example": "123 Main Street"
+                },
+                "therapy_title": {
+                    "type": "string",
+                    "example": "Cognitive Behavioral Therapy"
+                },
+                "unit_price": {
+                    "type": "number",
+                    "example": 150
+                },
+                "zip": {
+                    "type": "string",
+                    "example": "12345"
                 }
             }
         },

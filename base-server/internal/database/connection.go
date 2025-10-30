@@ -158,7 +158,7 @@ func Migrate(db *gorm.DB) error {
 	}
 
 	if tableCount == 9 {
-		log.Println("All tables already exist, skipping migrations")
+		log.Println("All core tables already exist, skipping core migrations")
 		return nil
 	}
 
@@ -198,7 +198,29 @@ func Migrate(db *gorm.DB) error {
 		log.Printf("Successfully migrated model %T", model)
 	}
 
-	log.Println("Database migrations completed successfully")
+	log.Println("Core database migrations completed successfully")
+	return nil
+}
+
+// MigrateWithModules runs migrations including module models
+func MigrateWithModules(db *gorm.DB, moduleModels []interface{}) error {
+	// First run core migrations
+	if err := Migrate(db); err != nil {
+		return err
+	}
+
+	// Then run module migrations if any
+	if len(moduleModels) > 0 {
+		log.Printf("🗃️  Running module model migrations (%d models)...", len(moduleModels))
+		for i, model := range moduleModels {
+			log.Printf("   Migrating module model %d/%d: %T", i+1, len(moduleModels), model)
+			if err := db.AutoMigrate(model); err != nil {
+				return fmt.Errorf("failed to migrate module model %T: %w", model, err)
+			}
+		}
+		log.Println("✅ Module model migrations completed successfully")
+	}
+
 	return nil
 }
 

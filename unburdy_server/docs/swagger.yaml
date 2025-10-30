@@ -71,6 +71,56 @@ definitions:
         example: "2025-08-03T10:00:00Z"
         type: string
     type: object
+  github_com_ae-saas-basic_ae-saas-basic_internal_modules.ModuleInfo:
+    properties:
+      author:
+        type: string
+      description:
+        type: string
+      enabled:
+        type: boolean
+      name:
+        type: string
+      version:
+        type: string
+    type: object
+  handlers.ErrorResponse:
+    properties:
+      details:
+        example: Additional error details
+        type: string
+      error:
+        example: Template name is required
+        type: string
+    type: object
+  handlers.PDFGenerateRequest:
+    properties:
+      data:
+        additionalProperties: true
+        type: object
+      fileName:
+        example: generated-report
+        type: string
+      templateName:
+        example: report.html
+        type: string
+    required:
+    - data
+    - fileName
+    - templateName
+    type: object
+  handlers.PDFGenerateResponse:
+    properties:
+      filename:
+        example: generated-report.pdf
+        type: string
+      message:
+        example: PDF generated successfully
+        type: string
+      success:
+        example: true
+        type: boolean
+    type: object
   models.APIResponse:
     properties:
       data: {}
@@ -83,21 +133,63 @@ definitions:
     type: object
   models.ClientResponse:
     properties:
+      admission_date:
+        type: string
+      alternative_email:
+        type: string
+      alternative_first_name:
+        type: string
+      alternative_last_name:
+        type: string
+      alternative_phone:
+        type: string
+      city:
+        type: string
+      contact_email:
+        type: string
+      contact_first_name:
+        type: string
+      contact_last_name:
+        type: string
+      contact_phone:
+        type: string
       created_at:
         type: string
-      created_by:
-        type: integer
       date_of_birth:
+        type: string
+      email:
         type: string
       first_name:
         type: string
+      gender:
+        type: string
       id:
         type: integer
+      invoiced_individually:
+        type: boolean
       last_name:
         type: string
-      tenant_id:
-        type: integer
+      notes:
+        type: string
+      phone:
+        type: string
+      primary_language:
+        type: string
+      provider_approval_code:
+        type: string
+      referral_source:
+        type: string
+      status:
+        type: string
+      street_address:
+        type: string
+      therapy_title:
+        type: string
+      unit_price:
+        type: number
       updated_at:
+        type: string
+      zip:
         type: string
     type: object
   models.ContactCreateRequest:
@@ -188,14 +280,83 @@ definitions:
     type: object
   models.CreateClientRequest:
     properties:
+      admission_date:
+        example: "2025-01-01"
+        type: string
+      alternative_email:
+        example: johnny.d@example.com
+        type: string
+      alternative_first_name:
+        example: Johnny
+        type: string
+      alternative_last_name:
+        example: D
+        type: string
+      alternative_phone:
+        example: "+0987654321"
+        type: string
+      city:
+        example: New York
+        type: string
+      contact_email:
+        example: jane.smith@example.com
+        type: string
+      contact_first_name:
+        example: Jane
+        type: string
+      contact_last_name:
+        example: Smith
+        type: string
+      contact_phone:
+        example: "+1234567890"
+        type: string
       date_of_birth:
         example: "1990-01-15"
+        type: string
+      email:
+        example: john.doe@example.com
         type: string
       first_name:
         example: John
         type: string
+      gender:
+        example: male
+        type: string
+      invoiced_individually:
+        example: false
+        type: boolean
       last_name:
         example: Doe
+        type: string
+      notes:
+        example: Additional notes about the client
+        type: string
+      phone:
+        example: "+1234567890"
+        type: string
+      primary_language:
+        example: English
+        type: string
+      provider_approval_code:
+        example: PROV123456
+        type: string
+      referral_source:
+        example: Doctor Smith
+        type: string
+      status:
+        example: waiting
+        type: string
+      street_address:
+        example: 123 Main Street
+        type: string
+      therapy_title:
+        example: Cognitive Behavioral Therapy
+        type: string
+      unit_price:
+        example: 150
+        type: number
+      zip:
+        example: "12345"
         type: string
     required:
     - first_name
@@ -491,14 +652,83 @@ definitions:
     type: object
   models.UpdateClientRequest:
     properties:
+      admission_date:
+        example: "2025-01-01"
+        type: string
+      alternative_email:
+        example: johnny.d@example.com
+        type: string
+      alternative_first_name:
+        example: Johnny
+        type: string
+      alternative_last_name:
+        example: D
+        type: string
+      alternative_phone:
+        example: "+0987654321"
+        type: string
+      city:
+        example: New York
+        type: string
+      contact_email:
+        example: jane.smith@example.com
+        type: string
+      contact_first_name:
+        example: Jane
+        type: string
+      contact_last_name:
+        example: Smith
+        type: string
+      contact_phone:
+        example: "+1234567890"
+        type: string
       date_of_birth:
         example: "1990-01-15"
+        type: string
+      email:
+        example: john.doe@example.com
         type: string
       first_name:
         example: John
         type: string
+      gender:
+        example: male
+        type: string
+      invoiced_individually:
+        example: false
+        type: boolean
       last_name:
         example: Doe
+        type: string
+      notes:
+        example: Additional notes about the client
+        type: string
+      phone:
+        example: "+1234567890"
+        type: string
+      primary_language:
+        example: English
+        type: string
+      provider_approval_code:
+        example: PROV123456
+        type: string
+      referral_source:
+        example: Doctor Smith
+        type: string
+      status:
+        example: active
+        type: string
+      street_address:
+        example: 123 Main Street
+        type: string
+      therapy_title:
+        example: Cognitive Behavioral Therapy
+        type: string
+      unit_price:
+        example: 150
+        type: number
+      zip:
+        example: "12345"
         type: string
     type: object
   models.UserCreateRequest:
@@ -612,6 +842,291 @@ info:
   title: Unburdy Extended API
   version: "1.0"
 paths:
+  /admin/modules:
+    get:
+      consumes:
+      - application/json
+      description: Get information about all registered modules in the system
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/models.APIResponse'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/github_com_ae-saas-basic_ae-saas-basic_internal_modules.ModuleInfo'
+                  type: array
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get registered modules
+      tags:
+      - modules
+  /admin/modules/{name}:
+    get:
+      consumes:
+      - application/json
+      description: Get detailed information about a specific module by name
+      parameters:
+      - description: Module name
+        in: path
+        name: name
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/models.APIResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_ae-saas-basic_ae-saas-basic_internal_modules.ModuleInfo'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get module details
+      tags:
+      - modules
+  /api/v1/modules/demo/demo:
+    get:
+      description: Get information about the demo module
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Demo information
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Get demo information
+      tags:
+      - demo
+  /api/v1/modules/demo/items:
+    get:
+      description: Retrieve all demo items from the demo module
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of demo items
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get all demo items
+      tags:
+      - demo
+    post:
+      consumes:
+      - application/json
+      description: Create a new demo item in the demo module
+      parameters:
+      - description: Demo item data
+        in: body
+        name: item
+        required: true
+        schema:
+          additionalProperties: true
+          type: object
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created demo item
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Create a new demo item
+      tags:
+      - demo
+  /api/v1/modules/demo/items/{id}:
+    delete:
+      description: Delete a demo item by ID
+      parameters:
+      - description: Demo Item ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Deletion confirmation
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Demo item not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Delete a demo item
+      tags:
+      - demo
+    get:
+      description: Retrieve a specific demo item by its ID
+      parameters:
+      - description: Demo Item ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Demo item details
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Demo item not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get demo item by ID
+      tags:
+      - demo
+    put:
+      consumes:
+      - application/json
+      description: Update an existing demo item by ID
+      parameters:
+      - description: Demo Item ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Updated demo item data
+        in: body
+        name: item
+        required: true
+        schema:
+          additionalProperties: true
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Updated demo item
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Demo item not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Update a demo item
+      tags:
+      - demo
+  /api/v1/pdf/create:
+    post:
+      consumes:
+      - application/json
+      description: Generate a PDF document based on a specified template and data
+      parameters:
+      - description: PDF generation request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.PDFGenerateRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: PDF generated successfully
+          schema:
+            $ref: '#/definitions/handlers.PDFGenerateResponse'
+        "400":
+          description: Invalid request
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+        "500":
+          description: Failed to generate PDF
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Generate PDF from template
+      tags:
+      - pdf
   /api/v1/ping:
     get:
       description: Simple ping endpoint
@@ -625,48 +1140,6 @@ paths:
       summary: Ping check
       tags:
       - health
-  /assets:
-    get:
-      description: Get a list of available static assets
-      parameters:
-      - description: Asset type filter
-        in: query
-        name: type
-        type: string
-      responses:
-        "200":
-          description: OK
-          schema:
-            additionalProperties: true
-            type: object
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/models.ErrorResponse'
-      security:
-      - BearerAuth: []
-      summary: List static assets
-      tags:
-      - static
-  /assets/{path}:
-    get:
-      description: Serve static files like CSS, JS, images with appropriate headers
-      parameters:
-      - description: Asset path
-        in: path
-        name: path
-        required: true
-        type: string
-      responses:
-        "200":
-          description: Asset content
-        "404":
-          description: Not Found
-          schema:
-            $ref: '#/definitions/models.ErrorResponse'
-      summary: Serve static assets
-      tags:
-      - static
   /auth/change-password:
     post:
       consumes:
@@ -976,7 +1449,9 @@ paths:
       - auth
   /clients:
     get:
-      description: Retrieve all clients with optional pagination
+      consumes:
+      - application/json
+      description: Get a paginated list of all clients
       parameters:
       - default: 1
         description: Page number
@@ -992,17 +1467,13 @@ paths:
       - application/json
       responses:
         "200":
-          description: OK
-          schema:
-            additionalProperties: true
-            type: object
-        "400":
-          description: Bad Request
+          description: 'data: array of ClientResponse, total: int, page: int, limit:
+            int'
           schema:
             additionalProperties: true
             type: object
         "500":
-          description: Internal Server Error
+          description: 'error: string'
           schema:
             additionalProperties: true
             type: object
@@ -1785,25 +2256,6 @@ paths:
       summary: Health check
       tags:
       - health
-  /logo:
-    get:
-      description: Serve the company logo in various formats
-      parameters:
-      - default: svg
-        description: Logo format (svg|png|jpg)
-        in: query
-        name: format
-        type: string
-      responses:
-        "200":
-          description: Logo file
-        "404":
-          description: Not Found
-          schema:
-            $ref: '#/definitions/models.ErrorResponse'
-      summary: Get company logo
-      tags:
-      - static
   /plans:
     get:
       description: Get a paginated list of all plans
@@ -1978,34 +2430,60 @@ paths:
       summary: Update a plan
       tags:
       - plans
-  /templates/{type}/{template}:
+  /static:
     get:
-      description: Serve template files for preview purposes
+      description: Get a list of all JSON files available in the statics/json directory
+      responses:
+        "200":
+          description: List of available JSON files
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Failed to read directory
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: List available static JSON files
+      tags:
+      - static
+  /static/{filename}:
+    get:
+      description: Dynamically serve any JSON data file from the statics/json directory.
+        Just drop a .json file in the directory and it becomes available at /static/{filename}
       parameters:
-      - description: Template type (email|pdf)
+      - description: JSON filename (without .json extension)
+        example: '"bundeslaender"'
         in: path
-        name: type
-        required: true
-        type: string
-      - description: Template name
-        in: path
-        name: template
+        name: filename
         required: true
         type: string
       responses:
         "200":
-          description: Template content
-        "403":
-          description: Forbidden
+          description: JSON file content
           schema:
-            $ref: '#/definitions/models.ErrorResponse'
+            additionalProperties: true
+            type: object
+        "400":
+          description: Invalid file name
+          schema:
+            additionalProperties:
+              type: string
+            type: object
         "404":
-          description: Not Found
+          description: File not found
           schema:
-            $ref: '#/definitions/models.ErrorResponse'
-      security:
-      - BearerAuth: []
-      summary: Preview templates
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Failed to read file
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Serve static JSON files
       tags:
       - static
   /user-settings:

@@ -22,6 +22,9 @@ func SetupExtendedRouter(db *gorm.DB) *gin.Engine {
 	clientService := services.NewClientService(db)
 	clientHandler := handlers.NewClientHandler(clientService)
 
+	costProviderService := services.NewCostProviderService(db)
+	costProviderHandler := handlers.NewCostProviderHandler(costProviderService)
+
 	// Add unburdy-specific protected routes to the existing router
 	protected := r.Group("/api/v1")
 	protected.Use(baseAPI.AuthMiddleware(db))
@@ -37,6 +40,17 @@ func SetupExtendedRouter(db *gorm.DB) *gin.Engine {
 			clients.DELETE("/:id", clientHandler.DeleteClient)
 		}
 
+		// Cost provider management endpoints (authenticated)
+		costProviders := protected.Group("/cost-providers")
+		{
+			costProviders.POST("", costProviderHandler.CreateCostProvider)
+			costProviders.GET("", costProviderHandler.GetAllCostProviders)
+			costProviders.GET("/search", costProviderHandler.SearchCostProviders)
+			costProviders.GET("/:id", costProviderHandler.GetCostProvider)
+			costProviders.PUT("/:id", costProviderHandler.UpdateCostProvider)
+			costProviders.DELETE("/:id", costProviderHandler.DeleteCostProvider)
+		}
+
 		// Add a status endpoint to show unburdy extensions
 		protected.GET("/unburdy/status", func(c *gin.Context) {
 			c.JSON(200, gin.H{
@@ -45,6 +59,7 @@ func SetupExtendedRouter(db *gorm.DB) *gin.Engine {
 					"client_management":    "✓ Available",
 					"base_api_integration": "✓ Complete",
 					"all_base_endpoints":   "✓ Available",
+					"calendar_module":      "✓ Available",
 				},
 			})
 		})

@@ -4,9 +4,11 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strconv"
 	"time"
 
 	"github.com/ae-saas-basic/ae-saas-basic/internal/config"
+	"github.com/ae-saas-basic/ae-saas-basic/internal/eventbus"
 	"github.com/ae-saas-basic/ae-saas-basic/internal/models"
 	"github.com/ae-saas-basic/ae-saas-basic/pkg/auth"
 	"github.com/ae-saas-basic/ae-saas-basic/pkg/utils"
@@ -291,6 +293,11 @@ func (h *AuthHandler) Register(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, models.ErrorResponseFunc("Failed to create user", err.Error()))
 		return
 	}
+
+	// Publish user created event
+	userIDStr := strconv.FormatUint(uint64(user.ID), 10)
+	tenantIDStr := strconv.FormatUint(uint64(user.TenantID), 10)
+	eventbus.PublishUserCreatedAsync(c.Request.Context(), userIDStr, user.Email, tenantIDStr)
 
 	// Handle newsletter subscription if opted in
 	if req.NewsletterOptIn {

@@ -7,6 +7,8 @@ import (
 	_ "github.com/ae-saas-basic/ae-saas-basic/docs" // swagger docs
 	"github.com/ae-saas-basic/ae-saas-basic/internal/config"
 	"github.com/ae-saas-basic/ae-saas-basic/internal/database"
+	"github.com/ae-saas-basic/ae-saas-basic/internal/eventbus"
+	"github.com/ae-saas-basic/ae-saas-basic/internal/modules"
 	"github.com/ae-saas-basic/ae-saas-basic/internal/router"
 	"github.com/ae-saas-basic/ae-saas-basic/pkg/auth"
 	"github.com/gin-gonic/gin"
@@ -72,6 +74,9 @@ import (
 // @tag.name contact-form
 // @tag.description Public contact form endpoints
 
+// @tag.name demo
+// @tag.description Demo module endpoints for testing modular architecture
+
 func main() {
 	// Load .env file
 	if err := godotenv.Load(); err != nil {
@@ -93,8 +98,20 @@ func main() {
 		log.Fatal("Failed to connect to database:", err)
 	}
 
-	// Run migrations
-	if err := database.Migrate(db); err != nil {
+	// Initialize module manager with all available modules
+	moduleManager, err := modules.CreateModuleManager(db, cfg)
+	if err != nil {
+		log.Fatal("Failed to create module manager:", err)
+	}
+
+	// Get all module models for migration
+	var allModuleModels []interface{}
+	for _, module := range moduleManager.GetRegistry().GetEnabledModules() {
+		allModuleModels = append(allModuleModels, module.GetModels()...)
+	}
+
+	// Run migrations including module models
+	if err := database.MigrateWithModules(db, allModuleModels); err != nil {
 		log.Fatal("Failed to migrate database:", err)
 	}
 
@@ -103,8 +120,19 @@ func main() {
 		log.Fatal("Failed to seed database:", err)
 	}
 
-	// Setup router
-	r := router.SetupRouter(db, cfg)
+	// Initialize event bus and handlers
+	eventbus.InitializeEventHandlers()
+
+	// Initialize modules (this will register event handlers)
+	if err := moduleManager.InitializeModules(); err != nil {
+		log.Fatal("Failed to initialize modules:", err)
+	}
+
+	// Setup router with module support
+	r := router.SetupRouterWithModules(db, cfg, moduleManager)
+
+	// Register module routes
+	moduleManager.RegisterModuleRoutes(r)
 
 	// Start server
 	addr := cfg.Server.Host + ":" + cfg.Server.Port

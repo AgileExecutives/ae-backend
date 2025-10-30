@@ -45,7 +45,8 @@ func RegisterPublicRoutes(router *gin.RouterGroup, db *gorm.DB) {
 		// calendarGroup.GET("/availability/:user_id", handler.GetPublicAvailability)
 
 		// For now, keep it empty as most calendar functionality requires auth
-		_ = handler // Avoid unused variable warning
+		_ = handler       // Avoid unused variable warning
+		_ = calendarGroup // Avoid unused variable warning
 	}
 }
 
