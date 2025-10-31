@@ -2,108 +2,108 @@
   "de": [
     {
       "icd10": "F81.0",
-      "kategorie": "Lernstörungen",
-      "titel": "Lese-Rechtschreib-Störung",
+      "category": "Lernstörungen",
+      "title": "Lese-Rechtschreib-Störung",
       "abbreviation": "LRS",
-      "beschreibung": "Deutliche Schwierigkeiten beim Lesen und/oder Schreiben trotz normaler Intelligenz."
+      "description": "Deutliche Schwierigkeiten beim Lesen und/oder Schreiben trotz normaler Intelligenz."
     },
     {
       "icd10": "F81.1",
-      "kategorie": "Lernstörungen",
-      "titel": "Isolierte Rechtschreibstörung",
+      "category": "Lernstörungen",
+      "title": "Isolierte Rechtschreibstörung",
       "abbreviation": "IRS",
-      "beschreibung": "Rechtschreibprobleme ohne Beeinträchtigung des Lesens."
+      "description": "Rechtschreibprobleme ohne Beeinträchtigung des Lesens."
     },
     {
       "icd10": "F81.2",
-      "kategorie": "Lernstörungen",
-      "titel": "Rechenstörung (Dyskalkulie)",
+      "category": "Lernstörungen",
+      "title": "Rechenstörung (Dyskalkulie)",
       "abbreviation": "Dyskalkulie",
-      "beschreibung": "Deutliche Schwierigkeiten beim Rechnen oder Zahlenverständnis."
+      "description": "Deutliche Schwierigkeiten beim Rechnen oder Zahlenverständnis."
     },
     {
       "icd10": "F81.3",
-      "kategorie": "Lernstörungen",
-      "titel": "Kombinierte Störung schulischer Fertigkeiten",
+      "category": "Lernstörungen",
+      "title": "Kombinierte Störung schulischer Fertigkeiten",
       "abbreviation": "KSSF",
-      "beschreibung": "Beeinträchtigungen in mehreren schulischen Bereichen."
+      "description": "Beeinträchtigungen in mehreren schulischen Bereichen."
     },
     {
       "icd10": "F80.1",
-      "kategorie": "Sprach- und Kommunikationsstörungen",
-      "titel": "Expressive Sprachstörung",
+      "category": "Sprach- und Kommunikationsstörungen",
+      "title": "Expressive Sprachstörung",
       "abbreviation": "ESS",
-      "beschreibung": "Das Kind kann sich sprachlich schwer ausdrücken, versteht aber Gesprochenes."
+      "description": "Das Kind kann sich sprachlich schwer ausdrücken, versteht aber Gesprochenes."
     },
     {
       "icd10": "F90.0",
-      "kategorie": "Emotionale und Verhaltensstörungen",
-      "titel": "Aufmerksamkeitsdefizit-/Hyperaktivitätsstörung (ADHS)",
+      "category": "Emotionale und Verhaltensstörungen",
+      "title": "Aufmerksamkeitsdefizit-/Hyperaktivitätsstörung (ADHS)",
       "abbreviation": "ADHS",
-      "beschreibung": "Unaufmerksamkeit, Impulsivität und motorische Unruhe."
+      "description": "Unaufmerksamkeit, Impulsivität und motorische Unruhe."
     },
     {
       "icd10": "F90.1",
-      "kategorie": "Emotionale und Verhaltensstörungen",
-      "titel": "Hyperkinetische Störung des Sozialverhaltens",
+      "category": "Emotionale und Verhaltensstörungen",
+      "title": "Hyperkinetische Störung des Sozialverhaltens",
       "abbreviation": "HSS",
-      "beschreibung": "ADHS-Symptome kombiniert mit auffälligem Sozialverhalten."
+      "description": "ADHS-Symptome kombiniert mit auffälligem Sozialverhalten."
     },
     {
       "icd10": "F43.2",
-      "kategorie": "Emotionale und Verhaltensstörungen",
-      "titel": "Anpassungsstörung",
+      "category": "Emotionale und Verhaltensstörungen",
+      "title": "Anpassungsstörung",
       "abbreviation": "AS",
-      "beschreibung": "Emotionale Reaktionen auf belastende Lebensveränderungen (z. B. Schulwechsel)."
+      "description": "Emotionale Reaktionen auf belastende Lebensveränderungen (z. B. Schulwechsel)."
     },
     {
       "icd10": "F41.1",
-      "kategorie": "Emotionale und Verhaltensstörungen",
-      "titel": "Generalisierte Angststörung",
+      "category": "Emotionale und Verhaltensstörungen",
+      "title": "Generalisierte Angststörung",
       "abbreviation": "GAS",
-      "beschreibung": "Anhaltende Ängstlichkeit und Sorgen ohne spezifischen Auslöser."
+      "description": "Anhaltende Ängstlichkeit und Sorgen ohne spezifischen Auslöser."
     },
     {
       "icd10": "F32.0",
-      "kategorie": "Emotionale und Verhaltensstörungen",
-      "titel": "Leichte depressive Episode",
+      "category": "Emotionale und Verhaltensstörungen",
+      "title": "Leichte depressive Episode",
       "abbreviation": "LDE",
-      "beschreibung": "Leichte depressive Symptome mit Auswirkungen auf den Alltag."
+      "description": "Leichte depressive Symptome mit Auswirkungen auf den Alltag."
     },
     {
       "icd10": "F91.0",
-      "kategorie": "Emotionale und Verhaltensstörungen",
-      "titel": "Störung des Sozialverhaltens auf den Familienkreis beschränkt",
+      "category": "Emotionale und Verhaltensstörungen",
+      "title": "Störung des Sozialverhaltens auf den Familienkreis beschränkt",
       "abbreviation": "SSV-F",
-      "beschreibung": "Aggressives oder oppositionelles Verhalten vor allem im Familienumfeld."
+      "description": "Aggressives oder oppositionelles Verhalten vor allem im Familienumfeld."
     },
     {
       "icd10": "F84.0",
-      "kategorie": "Neuroentwicklungsstörungen",
-      "titel": "Frühkindlicher Autismus",
+      "category": "Neuroentwicklungsstörungen",
+      "title": "Frühkindlicher Autismus",
       "abbreviation": "FKA",
-      "beschreibung": "Früh beginnender Autismus mit sozialen und kommunikativen Auffälligkeiten."
+      "description": "Früh beginnender Autismus mit sozialen und kommunikativen Auffälligkeiten."
     },
     {
       "icd10": "F84.5",
-      "kategorie": "Neuroentwicklungsstörungen",
-      "titel": "Asperger-Syndrom",
+      "category": "Neuroentwicklungsstörungen",
+      "title": "Asperger-Syndrom",
       "abbreviation": "Asperger",
-      "beschreibung": "Autismus-Spektrum-Störung mit normaler oder überdurchschnittlicher Intelligenz und eingeschränkter sozialer Interaktion."
+      "description": "Autismus-Spektrum-Störung mit normaler oder überdurchschnittlicher Intelligenz und eingeschränkter sozialer Interaktion."
     },
     {
       "icd10": "F70",
-      "kategorie": "Intelligenzminderungen",
-      "titel": "Leichte Intelligenzminderung",
+      "category": "Intelligenzminderungen",
+      "title": "Leichte Intelligenzminderung",
       "abbreviation": "LIM",
-      "beschreibung": "Generelle kognitive Einschränkung, die Lernen und Anpassung erschwert."
+      "description": "Generelle kognitive Einschränkung, die Lernen und Anpassung erschwert."
     },
     {
       "icd10": "Z76.8",
-      "kategorie": "Intelligenzminderungen",
-      "titel": "Grenzbereich der Intelligenz",
+      "category": "Intelligenzminderungen",
+      "title": "Grenzbereich der Intelligenz",
       "abbreviation": "GBI",
-      "beschreibung": "Kognitive Leistungsfähigkeit knapp über der Schwelle zur Intelligenzminderung."
+      "description": "Kognitive Leistungsfähigkeit knapp über der Schwelle zur Intelligenzminderung."
     }
   ],
   "en": [
