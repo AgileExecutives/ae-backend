@@ -2,8 +2,8 @@
 package api
 
 import (
-	"github.com/ae-base-server/internal/config"
 	"github.com/ae-base-server/internal/router"
+	"github.com/ae-base-server/pkg/config"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 )

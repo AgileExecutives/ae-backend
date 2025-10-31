@@ -2,8 +2,8 @@
 package api
 
 import (
-	"github.com/ae-base-server/internal/config"
 	"github.com/ae-base-server/internal/router"
+	"github.com/ae-base-server/pkg/config"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 )
@@ -19,4 +19,12 @@ func SetupBaseRouter(db *gorm.DB, cfg config.Config) *gin.Engine {
 func SetupBaseRouterWithConfig(db *gorm.DB) *gin.Engine {
 	cfg := config.Load()
 	return router.SetupRouter(db, cfg)
+}
+
+// CreateProtectedRouterGroup creates a router group with authentication middleware applied
+// This allows external modules to add authenticated routes to the base router
+func CreateProtectedRouterGroup(baseRouter *gin.Engine, db *gorm.DB, prefix string) *gin.RouterGroup {
+	group := baseRouter.Group(prefix)
+	group.Use(AuthMiddleware(db))
+	return group
 }

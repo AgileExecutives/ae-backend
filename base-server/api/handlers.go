@@ -3,8 +3,8 @@
 package api
 
 import (
-	"github.com/ae-base-server/internal/config"
 	"github.com/ae-base-server/internal/handlers"
+	"github.com/ae-base-server/pkg/config"
 	"gorm.io/gorm"
 )
 

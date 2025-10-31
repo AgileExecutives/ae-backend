@@ -4,25 +4,27 @@ import (
 	"log"
 	"net/http"
 
+	baseAPI "github.com/ae-base-server/api"
+	"github.com/ae-base-server/pkg/config"
+	"github.com/ae-base-server/pkg/database"
 	"github.com/joho/godotenv"
-	_ "github.com/unburdy/unburdy-server-api/docs" // Swagger docs
-	"github.com/unburdy/unburdy-server-api/internal/database"
-	"github.com/unburdy/unburdy-server-api/internal/router"
+	_ "github.com/unburdy/unburdy-server-api/docs" // swagger docs
+	"github.com/unburdy/unburdy-server-api/modules/client_management"
 )
 
-// @title Unburdy Extended API
-// @version 1.0
-// @description Extended SaaS backend API built on AE SaaS Basic, adding client management functionality
-// @termsOfService https://unburdy.com/terms
+// @title Unburdy Server - Modular API
+// @version 2.0
+// @description A modular SaaS backend API built with Go and Gin framework. Features a plugin-based architecture with four core modules: Base (authentication, users, tenants, contacts, newsletter), Customer (plans, customer management), Email (SMTP services, notifications), and PDF (document generation). Supports dependency injection, event-driven communication, and automatic module discovery.
+// @termsOfService https://ae-base-server.com/terms
 
 // @contact.name API Support
-// @contact.url https://unburdy.com/support
-// @contact.email support@unburdy.com
+// @contact.url https://ae-base-server.com/support
+// @contact.email support@ae-base-server.com
 
 // @license.name MIT
 // @license.url https://opensource.org/licenses/MIT
 
-// @host localhost:8080
+// @host localhost:8081
 // @BasePath /api/v1
 
 // @securityDefinitions.apikey BearerAuth
@@ -31,22 +33,43 @@ import (
 // @description Type "Bearer" followed by a space and JWT token.
 
 // @tag.name authentication
-// @tag.description Authentication and user management endpoints (from base)
+// @tag.description [Base Module] Authentication and user management endpoints including login, registration, password reset, and token management
 
 // @tag.name users
-// @tag.description User management operations (from base)
+// @tag.description [Base Module] User account management operations within tenant context
+
+// @tag.name tenants
+// @tag.description [Base Module] Multi-tenant organization management and configuration
+
+// @tag.name contact-form
+// @tag.description [Base Module] Public contact form submission and processing
+
+// @tag.name newsletter
+// @tag.description [Base Module] Newsletter subscription management and bulk operations
 
 // @tag.name customers
-// @tag.description Customer management operations (from base)
+// @tag.description [Customer Module] Customer relationship management and account operations
 
-// @tag.name clients
-// @tag.description Client management operations (extended functionality)
-
-// @tag.name contacts
-// @tag.description Contact management operations (from base)
+// @tag.name plans
+// @tag.description [Customer Module] Subscription plan management and pricing configuration
 
 // @tag.name emails
-// @tag.description Email management and sending operations (from base)
+// @tag.description [Email Module] Email sending, tracking, and notification management with SMTP integration
+
+// @tag.name pdf
+// @tag.description [PDF Module] Document generation from templates with ChromeDP integration
+
+// @tag.name health
+// @tag.description [System] Application health checks, system status, and monitoring endpoints
+
+// @tag.name modules
+// @tag.description [System] Module registry, discovery, and runtime information endpoints
+
+// @tag.name clients
+// @tag.description [Client Management Module] Client information management, therapy tracking, and client-specific operations
+
+// @tag.name cost-providers
+// @tag.description [Client Management Module] Cost provider (insurance) management and approval tracking
 
 func main() {
 	// Load .env file
@@ -54,26 +77,28 @@ func main() {
 		log.Println("Warning: .env file not found, using environment variables")
 	}
 
-	// Initialize extended database (includes base + client tables)
-	db, err := database.SetupExtendedDatabase()
+	// Load configuration and connect to database
+	cfg := config.Load()
+	db, err := database.ConnectWithAutoCreate(cfg.Database)
 	if err != nil {
-		log.Fatal("Failed to initialize database:", err)
+		log.Fatal("Failed to connect to database:", err)
 	}
 
-	// Set up extended router (includes all base routes + client routes)
-	r := router.SetupExtendedRouter(db)
+	// Create external modules
+	modules := []baseAPI.ModuleRouteProvider{
+		client_management.NewModule(db), // Client management and cost provider tracking
+	}
+
+	// Setup modular router (includes base server + external modules)
+	router := baseAPI.SetupModularRouter(db, modules)
 
 	// Start server
-	log.Println("🚀 Unburdy Extended API Server starting on :8080")
-	log.Println("📋 Swagger documentation available at http://localhost:8080/swagger/index.html")
-	log.Println("🔧 Includes all AE Base Server endpoints plus client management")
+	addr := cfg.Server.Host + ":" + cfg.Server.Port
+	log.Printf("Server starting on %s", addr)
+	log.Printf("Health check available at http://%s/api/v1/health", addr)
+	log.Printf("API documentation at http://%s/swagger/index.html", addr)
 
-	server := &http.Server{
-		Addr:    ":8080",
-		Handler: r,
-	}
-
-	if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+	if err := http.ListenAndServe(addr, router); err != nil {
 		log.Fatal("Failed to start server:", err)
 	}
 }

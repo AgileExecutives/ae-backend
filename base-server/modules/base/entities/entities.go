@@ -89,7 +89,7 @@ func NewTokenBlacklistEntity() core.Entity {
 }
 
 func (e *TokenBlacklistEntity) TableName() string {
-	return "token_blacklists"
+	return "token_blacklist"
 }
 
 func (e *TokenBlacklistEntity) GetModel() interface{} {
@@ -97,5 +97,24 @@ func (e *TokenBlacklistEntity) GetModel() interface{} {
 }
 
 func (e *TokenBlacklistEntity) GetMigrations() []core.Migration {
+	return []core.Migration{}
+}
+
+// UserSettingsEntity implements core.Entity for UserSettings model
+type UserSettingsEntity struct{}
+
+func NewUserSettingsEntity() core.Entity {
+	return &UserSettingsEntity{}
+}
+
+func (e *UserSettingsEntity) TableName() string {
+	return "user_settings"
+}
+
+func (e *UserSettingsEntity) GetModel() interface{} {
+	return &models.UserSettings{}
+}
+
+func (e *UserSettingsEntity) GetMigrations() []core.Migration {
 	return []core.Migration{}
 }

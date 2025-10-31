@@ -9,12 +9,13 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/ae-base-server/internal/config"
 	"github.com/ae-base-server/internal/database"
 	internalHandlers "github.com/ae-base-server/internal/handlers"
 	internalMiddleware "github.com/ae-base-server/internal/middleware"
 	"github.com/ae-base-server/pkg/auth"
+	"github.com/ae-base-server/pkg/config"
 	"github.com/ae-base-server/pkg/core"
+	pkgDB "github.com/ae-base-server/pkg/database"
 	"github.com/ae-base-server/services"
 	"github.com/gin-gonic/gin"
 	swaggerFiles "github.com/swaggo/files"
@@ -163,7 +164,7 @@ func (app *Application) initializeCoreServices() error {
 	auth.SetJWTSecret(app.config.JWT.Secret)
 
 	// Database
-	db, err := database.ConnectWithAutoCreate(app.config.Database)
+	db, err := pkgDB.ConnectWithAutoCreate(app.config.Database)
 	if err != nil {
 		return fmt.Errorf("failed to connect to database: %w", err)
 	}
@@ -180,8 +181,8 @@ func (app *Application) initializeCoreServices() error {
 	// Swagger documentation
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
-	// Static file serving
-	app.setupStaticRoutes(router, db)
+	// Setup miscellaneous static file routes (favicon, robots.txt, etc.)
+	app.setupStaticMiscRoutes(router)
 
 	// Add internal auth routes (temporary until modular auth is implemented)
 	app.setupInternalAuthRoutes(router, db, *app.config)
@@ -210,22 +211,6 @@ func (app *Application) initializeCoreServices() error {
 
 	app.server = router
 	return nil
-}
-
-// setupStaticRoutes adds static file serving routes
-func (app *Application) setupStaticRoutes(router *gin.Engine, db *gorm.DB) {
-	// Static file serving for various assets
-	router.Static("/statics", "./statics")
-
-	// JSON file serving from statics directory
-	router.GET("/static", internalHandlers.ListStaticJSON)
-	router.GET("/static/:filename", internalHandlers.ServeStaticJSON)
-
-	// Favicon
-	router.StaticFile("/favicon.ico", "./statics/images/favicon.ico")
-
-	// Additional static routes that might be needed
-	router.StaticFile("/robots.txt", "./statics/robots.txt")
 }
 
 // setupInternalAuthRoutes temporarily adds internal auth routes until modular auth is implemented
@@ -335,20 +320,31 @@ func (app *Application) setupInternalAuthRoutes(router *gin.Engine, db *gorm.DB,
 	}
 }
 
-// runMigrations runs database migrations for all modules
+// runMigrations runs database migrations for all registered module entities
 func (app *Application) runMigrations() error {
+	// Collect entities from all registered modules (including base module)
 	entities := make([]interface{}, 0)
+	moduleCount := 0
 
 	for _, module := range app.registry.GetAll() {
-		for _, entity := range module.Entities() {
-			entities = append(entities, entity.GetModel())
+		moduleEntities := module.Entities()
+		if len(moduleEntities) > 0 {
+			app.logger.Info("Collecting entities from module", "module", module.Name(), "count", len(moduleEntities))
+			for _, entity := range moduleEntities {
+				entities = append(entities, entity.GetModel())
+			}
+			moduleCount++
 		}
 	}
 
 	if len(entities) > 0 {
+		app.logger.Info("Running migrations", "modules", moduleCount, "entities", len(entities))
 		if err := app.context.DB.AutoMigrate(entities...); err != nil {
 			return fmt.Errorf("failed to migrate entities: %w", err)
 		}
+		app.logger.Info("All entity migrations completed successfully")
+	} else {
+		app.logger.Info("No entities to migrate")
 	}
 
 	return nil

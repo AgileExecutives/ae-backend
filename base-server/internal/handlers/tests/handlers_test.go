@@ -7,10 +7,10 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/ae-base-server/internal/config"
 	"github.com/ae-base-server/internal/database"
 	"github.com/ae-base-server/internal/models"
 	"github.com/ae-base-server/internal/router"
+	"github.com/ae-base-server/pkg/config"
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
 	"gorm.io/driver/sqlite"
@@ -24,8 +24,18 @@ func setupTestDB() *gorm.DB {
 		panic("failed to connect database")
 	}
 
-	// Run migrations
-	database.Migrate(db)
+	// Run direct migrations for test database
+	db.AutoMigrate(
+		&models.Tenant{},
+		&models.User{},
+		&models.Plan{},
+		&models.Customer{},
+		&models.Contact{},
+		&models.Email{},
+		&models.Newsletter{},
+		&models.TokenBlacklist{},
+		&models.UserSettings{},
+	)
 
 	return db
 }

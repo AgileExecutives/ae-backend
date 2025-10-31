@@ -22,10 +22,6 @@ echo "📋 Found seed data file: seed_app_data.json"
 
 # Run the seeding script
 echo "🚀 Running database seeding script..."
-cd scripts
-go run seed_database.go
-
-# Return to original directory
-cd ..
+go run ./scripts/seed_database.go
 
 echo "✅ Database seeding process completed!"

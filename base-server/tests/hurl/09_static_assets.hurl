@@ -1,231 +1,174 @@
-# Static Assets Tests
-# Test static file serving including email templates, CSS, images, and other assets
+# Static JSON API Tests
+# Test secure JSON file serving with enhanced security validation
 
-# Test serving CSS assets
-GET {{host}}/statics/css/email.css
-
-HTTP 200
-[Asserts]
-header "Content-Type" contains "text/css"
-body contains "body"
-
-# Test serving JavaScript assets
-GET {{host}}/statics/js/main.js
+# Test listing available JSON files
+GET {{host}}/api/v1/static
 
 HTTP 200
 [Asserts]
-header "Content-Type" contains "javascript"
+header "Content-Type" contains "application/json"
+jsonpath "$.available_files" exists
+jsonpath "$.available_files[*]" includes "diagnostic_std"
+jsonpath "$.available_files[*]" includes "bundeslaender"
+jsonpath "$.available_files[*]" includes "enumerations"
+jsonpath "$.security_note" exists
 
-# Test serving image assets - logo
-GET {{host}}/statics/images/logo.png
-
-HTTP 200
-[Asserts]
-header "Content-Type" contains "image/png"
-
-# Test serving email template assets
-GET {{host}}/statics/email_templates/welcome.html
+# Test serving legitimate JSON file - diagnostic_std
+GET {{host}}/api/v1/static/diagnostic_std
 
 HTTP 200
 [Asserts]
-header "Content-Type" contains "text/html"
-body contains "html"
-body contains "welcome"
+header "Content-Type" contains "application/json"
+body contains "icd10"
+body contains "kategorie"
 
-# Test serving registration email template
-GET {{host}}/statics/email_templates/registration.html
-
-HTTP 200
-[Asserts]
-header "Content-Type" contains "text/html"
-body contains "html"
-
-# Test serving password reset email template
-GET {{host}}/statics/email_templates/password_reset.html
-
-HTTP 200
-[Asserts]
-header "Content-Type" contains "text/html"
-body contains "html"
-body contains "password"
-
-# Test serving PDF templates (should be publicly accessible for testing)
-GET {{host}}/statics/templates/pdf/invoice.html
-
-HTTP 200
-[Asserts]
-header "Content-Type" contains "text/html"
-body contains "html"
-body contains "invoice"
-
-# Test serving report template
-GET {{host}}/statics/templates/pdf/report.html
-
-HTTP 200
-[Asserts]
-header "Content-Type" contains "text/html"
-body contains "html"
-
-# Test serving certificate template
-GET {{host}}/statics/templates/pdf/certificate.html
-
-HTTP 200
-[Asserts]
-header "Content-Type" contains "text/html"
-body contains "html"
-
-# Test favicon
-GET {{host}}/favicon.ico
-
-HTTP 200
-[Asserts]
-header "Content-Type" contains "image"
-
-# Test robots.txt
-GET {{host}}/robots.txt
-
-HTTP 200
-[Asserts]
-header "Content-Type" contains "text/plain"
-
-# Test non-existent static file (should return 404)
-GET {{host}}/statics/nonexistent/file.css
-
-HTTP 404
-
-# Test directory traversal protection
-GET {{host}}/statics/../../../etc/passwd
-
-HTTP 404
-
-# Test accessing file outside static directory
-GET {{host}}/statics/../../../../etc/hosts
-
-HTTP 404
-
-# Test case sensitivity for static files
-GET {{host}}/statics/CSS/EMAIL.CSS
-
-HTTP 404
-
-# Test accessing directory without index
-GET {{host}}/statics/css/
-
-HTTP 404
-
-# Test large static file handling (if exists)
-GET {{host}}/statics/images/large-image.jpg
-
-# Should either return 200 or 404, both acceptable
-HTTP *
-
-# Test MIME type detection for different file extensions
-GET {{host}}/statics/css/bootstrap.min.css
-
-HTTP 200
-[Asserts]
-header "Content-Type" contains "text/css"
-
-# Test JavaScript MIME type
-GET {{host}}/statics/js/jquery.min.js
-
-HTTP 200
-[Asserts]
-header "Content-Type" contains "javascript"
-
-# Test image MIME types
-GET {{host}}/statics/images/icon.svg
-
-HTTP 200
-[Asserts]
-header "Content-Type" contains "image/svg"
-
-# Test font file serving
-GET {{host}}/statics/fonts/roboto.woff2
-
-HTTP 200
-[Asserts]
-header "Content-Type" contains "font"
-
-# Test JSON file serving
-GET {{host}}/statics/data/config.json
+# Test serving legitimate JSON file - bundeslaender
+GET {{host}}/api/v1/static/bundeslaender
 
 HTTP 200
 [Asserts]
 header "Content-Type" contains "application/json"
 
-# Test caching headers for static assets
-GET {{host}}/statics/css/email.css
+# Test serving legitimate JSON file - enumerations
+GET {{host}}/api/v1/static/enumerations
 
 HTTP 200
 [Asserts]
-header "Cache-Control" exists
-header "ETag" exists
+header "Content-Type" contains "application/json"
 
-# Test compression for text assets
-GET {{host}}/statics/css/email.css
-Accept-Encoding: gzip
-
-HTTP 200
-# Note: Compression headers depend on server configuration
-
-# Test CORS headers for static assets
-GET {{host}}/statics/js/main.js
-Origin: https://example.com
-
-HTTP 200
-# Note: CORS headers depend on server configuration
-
-# Test static file serving under load (multiple identical requests)
-GET {{host}}/statics/css/email.css
-
-HTTP 200
-
-GET {{host}}/statics/css/email.css
-
-HTTP 200
-
-GET {{host}}/statics/css/email.css
-
-HTTP 200
-
-# Test mixed case file names
-GET {{host}}/statics/images/Logo.PNG
-
-HTTP 404
-
-# Test URL encoding in file names
-GET {{host}}/statics/css/email%20style.css
-
-HTTP 404
-
-# Test special characters in file paths
-GET {{host}}/statics/css/email@style.css
-
-HTTP 404
-
-# Test empty file name
-GET {{host}}/statics/css/
-
-HTTP 404
-
-# Test file extension variations
-GET {{host}}/statics/templates/pdf/invoice.HTML
-
-HTTP 404
-
-# Test accessing system files through static route
-GET {{host}}/statics/.env
-
-HTTP 404
-
-GET {{host}}/statics/.git/config
-
-HTTP 404
-
-# Test binary file serving
-GET {{host}}/statics/images/sample.pdf
+# Test serving legitimate JSON file - ferien-feiertage
+GET {{host}}/api/v1/static/ferien-feiertage
 
 HTTP 200
 [Asserts]
-header "Content-Type" contains "application/pdf"
+header "Content-Type" contains "application/json"
+
+# Test serving legitimate JSON file - jugendaemter
+GET {{host}}/api/v1/static/jugendaemter
+
+HTTP 200
+[Asserts]
+header "Content-Type" contains "application/json"
+
+# Test serving legitimate JSON file - potential_customers
+GET {{host}}/api/v1/static/potential_customers
+
+HTTP 200
+[Asserts]
+header "Content-Type" contains "application/json"
+
+# Security Tests - All should return 404 with security error
+
+# Test path traversal protection - parent directory access
+GET {{host}}/api/v1/static/../email_templates/welcome
+
+HTTP 404
+[Asserts]
+body contains "404 page not found"
+
+# Test path traversal with URL encoding
+GET {{host}}/api/v1/static/..%2Femail_templates%2Fwelcome
+
+HTTP 404
+[Asserts]
+body contains "404 page not found"
+
+# Test accessing non-existent JSON file
+GET {{host}}/api/v1/static/nonexistent_file
+
+HTTP 404
+[Asserts]
+body contains "File not found"
+
+# Test invalid characters - dot in filename
+GET {{host}}/api/v1/static/test.json
+
+HTTP 400
+[Asserts]
+body contains "Invalid file name"
+
+# Test invalid characters - special characters
+GET {{host}}/api/v1/static/test@file
+
+HTTP 400
+[Asserts]
+body contains "Invalid file name"
+
+# Test invalid characters - slash in filename
+GET {{host}}/api/v1/static/test/file
+
+HTTP 404
+[Asserts]
+body contains "404 page not found"
+
+# Test invalid characters - space in filename
+GET {{host}}/api/v1/static/test%20file
+
+HTTP 400
+[Asserts]
+body contains "Invalid file name"
+
+# Test invalid characters - backslash
+GET {{host}}/api/v1/static/test%5Cfile
+
+HTTP 400
+[Asserts]
+body contains "Invalid file name"
+
+# Test case sensitivity - uppercase should work for valid files
+GET {{host}}/api/v1/static/DIAGNOSTIC_STD
+
+HTTP 404
+[Asserts]
+body contains "File not found"
+
+# Test system file access attempts
+GET {{host}}/api/v1/static/.env
+
+HTTP 404
+[Asserts]
+body contains "File not found"
+
+GET {{host}}/api/v1/static/.git
+
+HTTP 404
+[Asserts]
+body contains "File not found"
+
+# Test double path traversal
+GET {{host}}/api/v1/static/../../etc/passwd
+
+HTTP 404
+[Asserts]
+body contains "404 page not found"
+
+# Test null byte injection
+GET {{host}}/api/v1/static/diagnostic_std%00.html
+
+HTTP 404
+[Asserts]
+body contains "File not found"
+
+# Test legitimate filenames with allowed characters
+# Only alphanumeric, hyphens, and underscores are allowed
+
+# Test hyphen (should work)
+GET {{host}}/api/v1/static/ferien-feiertage
+
+HTTP 200
+[Asserts]
+header "Content-Type" contains "application/json"
+
+# Test underscore (should work)
+GET {{host}}/api/v1/static/potential_customers
+
+HTTP 200
+[Asserts]
+header "Content-Type" contains "application/json"
+
+# Test mixed alphanumeric (should work)
+GET {{host}}/api/v1/static/diagnostic_std
+
+HTTP 200
+[Asserts]
+header "Content-Type" contains "application/json"

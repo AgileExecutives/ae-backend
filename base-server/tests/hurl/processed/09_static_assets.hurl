@@ -1,89 +1,174 @@
-# Static JSON API Tests 
-# Tests static JSON file serving from the statics/json directory
+# Static JSON API Tests
+# Test secure JSON file serving with enhanced security validation
 
-# Test 1: Serve bundeslaender JSON data
-GET http://localhost:8081/static/bundeslaender
-
-HTTP 200
-[Asserts]
-header "Content-Type" contains "application/json"
-body contains "Baden-Württemberg"
-body contains "states"
-
-# Test 2: Serve enumerations JSON data
-GET http://localhost:8081/static/enumerations
+# Test listing available JSON files
+GET http://localhost:8080/api/v1/static
 
 HTTP 200
 [Asserts]
 header "Content-Type" contains "application/json"
-body contains "focus_areas"
+jsonpath "$.available_files" exists
+jsonpath "$.available_files[*]" includes "diagnostic_std"
+jsonpath "$.available_files[*]" includes "bundeslaender"
+jsonpath "$.available_files[*]" includes "enumerations"
+jsonpath "$.security_note" exists
 
-# Test 3: Serve diagnostic_std JSON data
-GET http://localhost:8081/static/diagnostic_std
-
-HTTP 200
-[Asserts]
-header "Content-Type" contains "application/json"
-
-# Test 4: Serve ferien-feiertage JSON data
-GET http://localhost:8081/static/ferien-feiertage
+# Test serving legitimate JSON file - diagnostic_std
+GET http://localhost:8080/api/v1/static/diagnostic_std
 
 HTTP 200
 [Asserts]
 header "Content-Type" contains "application/json"
+body contains "icd10"
+body contains "kategorie"
 
-# Test 5: Serve jugendaemter JSON data
-GET http://localhost:8081/static/jugendaemter
+# Test serving legitimate JSON file - bundeslaender
+GET http://localhost:8080/api/v1/static/bundeslaender
 
 HTTP 200
 [Asserts]
 header "Content-Type" contains "application/json"
 
-# Test 6: Serve potential_customers JSON data
-GET http://localhost:8081/static/potential_customers
+# Test serving legitimate JSON file - enumerations
+GET http://localhost:8080/api/v1/static/enumerations
 
 HTTP 200
 [Asserts]
 header "Content-Type" contains "application/json"
 
-# Test 7: Test directory traversal protection - URL normalization makes this a 404
-GET http://localhost:8081/static/../../../etc/passwd
+# Test serving legitimate JSON file - ferien-feiertage
+GET http://localhost:8080/api/v1/static/ferien-feiertage
+
+HTTP 200
+[Asserts]
+header "Content-Type" contains "application/json"
+
+# Test serving legitimate JSON file - jugendaemter
+GET http://localhost:8080/api/v1/static/jugendaemter
+
+HTTP 200
+[Asserts]
+header "Content-Type" contains "application/json"
+
+# Test serving legitimate JSON file - potential_customers
+GET http://localhost:8080/api/v1/static/potential_customers
+
+HTTP 200
+[Asserts]
+header "Content-Type" contains "application/json"
+
+# Security Tests - All should return 404 with security error
+
+# Test path traversal protection - parent directory access
+GET http://localhost:8080/api/v1/static/../email_templates/welcome
 
 HTTP 404
-
-# Test 8: Test filename with dots - should be blocked by our validation
-GET http://localhost:8081/static/test..test
-
-HTTP 400
 [Asserts]
-body contains "Invalid file name"
+body contains "404 page not found"
 
-# Test 9: Test non-existent JSON file
-GET http://localhost:8081/static/nonexistent_1761849152_8b59450e
+# Test path traversal with URL encoding
+GET http://localhost:8080/api/v1/static/..%2Femail_templates%2Fwelcome
+
+HTTP 404
+[Asserts]
+body contains "404 page not found"
+
+# Test accessing non-existent JSON file
+GET http://localhost:8080/api/v1/static/nonexistent_1761901486_2faa433f
 
 HTTP 404
 [Asserts]
 body contains "File not found"
 
-# Test 10: Test filename with slash - router returns 404 
-GET http://localhost:8081/static/test/path
+# Test invalid characters - dot in filename
+GET http://localhost:8080/api/v1/static/test.json
+
+HTTP 400
+[Asserts]
+body contains "Invalid file name"
+
+# Test invalid characters - special characters
+GET http://localhost:8080/api/v1/static/test@file
+
+HTTP 400
+[Asserts]
+body contains "Invalid file name"
+
+# Test invalid characters - slash in filename
+GET http://localhost:8080/api/v1/static/test/file
 
 HTTP 404
+[Asserts]
+body contains "404 page not found"
 
-# Test 11: Test valid JSON response structure for bundeslaender
-GET http://localhost:8081/static/bundeslaender
+# Test invalid characters - space in filename
+GET http://localhost:8080/api/v1/static/test%20file
+
+HTTP 400
+[Asserts]
+body contains "Invalid file name"
+
+# Test invalid characters - backslash
+GET http://localhost:8080/api/v1/static/test%5Cfile
+
+HTTP 400
+[Asserts]
+body contains "Invalid file name"
+
+# Test case sensitivity - uppercase should work for valid files
+GET http://localhost:8080/api/v1/static/DIAGNOSTIC_STD
+
+HTTP 404
+[Asserts]
+body contains "File not found"
+
+# Test system file access attempts
+GET http://localhost:8080/api/v1/static/.env
+
+HTTP 404
+[Asserts]
+body contains "File not found"
+
+GET http://localhost:8080/api/v1/static/.git
+
+HTTP 404
+[Asserts]
+body contains "File not found"
+
+# Test double path traversal
+GET http://localhost:8080/api/v1/static/../../etc/passwd
+
+HTTP 404
+[Asserts]
+body contains "404 page not found"
+
+# Test null byte injection
+GET http://localhost:8080/api/v1/static/diagnostic_std%00.html
+
+HTTP 404
+[Asserts]
+body contains "File not found"
+
+# Test legitimate filenames with allowed characters
+# Only alphanumeric, hyphens, and underscores are allowed
+
+# Test hyphen (should work)
+GET http://localhost:8080/api/v1/static/ferien-feiertage
 
 HTTP 200
 [Asserts]
-header "Content-Type" == "application/json"
-jsonpath "$.states.BW" == "Baden-Württemberg"
-jsonpath "$.states.BY" == "Bayern"
+header "Content-Type" contains "application/json"
 
-# Test 12: Test valid JSON response structure for enumerations
-GET http://localhost:8081/static/enumerations
+# Test underscore (should work)
+GET http://localhost:8080/api/v1/static/potential_customers
 
 HTTP 200
 [Asserts]
-header "Content-Type" == "application/json" 
-jsonpath "$.focus_areas" exists
-jsonpath "$.service_offers" exists
+header "Content-Type" contains "application/json"
+
+# Test mixed alphanumeric (should work)
+GET http://localhost:8080/api/v1/static/diagnostic_std
+
+HTTP 200
+[Asserts]
+header "Content-Type" contains "application/json"

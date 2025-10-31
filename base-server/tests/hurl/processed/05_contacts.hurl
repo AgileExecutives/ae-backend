@@ -2,15 +2,15 @@
 # Tests contact CRUD operations, filtering, and validation
 
 # First, create a test user and get authentication token
-POST http://localhost:8081/api/v1/auth/register
+POST http://localhost:8080/api/v1/auth/register
 Content-Type: application/json
 {
-  "username": "testuser_1761849152_8b59450e",
-  "email": "test_1761849152_8b59450e@example.com",
-  "password": "Pass123_8b59450e",
+  "username": "testuser_1761901486_2faa433f",
+  "email": "test_1761901486_2faa433f@example.com",
+  "password": "Pass123_2faa433f",
   "first_name": "Contact",
   "last_name": "Tester",
-  "company_name": "Contact Test Company 1761849152_8b59450e",
+  "company_name": "Contact Test Company 1761901486_2faa433f",
   "accept_terms": true,
   "newsletter_opt_in": false
 }
@@ -19,11 +19,11 @@ Content-Type: application/json
 HTTP *
 
 # Now login to get the token regardless of registration result
-POST http://localhost:8081/api/v1/auth/login
+POST http://localhost:8080/api/v1/auth/login
 Content-Type: application/json
 {
-  "username": "testuser_1761849152_8b59450e",
-  "password": "Pass123_8b59450e"
+  "username": "testuser_1761901486_2faa433f",
+  "password": "Pass123_2faa433f"
 }
 
 HTTP 200
@@ -31,13 +31,13 @@ HTTP 200
 auth_token: jsonpath "$.data.token"
 
 # Test 1: Create a new contact
-POST http://localhost:8081/api/v1/contacts
+POST http://localhost:8080/api/v1/contacts
 Authorization: Bearer {{auth_token}}
 Content-Type: application/json
 {
-  "first_name": "1761849152_8b59450e_John",
-  "last_name": "1761849152_8b59450e_Doe", 
-  "email": "test_1761849152_8b59450e@example.com",
+  "first_name": "1761901486_2faa433f_John",
+  "last_name": "1761901486_2faa433f_Doe", 
+  "email": "test_1761901486_2faa433f@example.com",
   "phone": "+1-555-0100",
   "mobile": "+1-555-0101",
   "street": "456 Contact Street",
@@ -51,14 +51,14 @@ Content-Type: application/json
 HTTP 201
 [Asserts]
 jsonpath "$.success" == true
-jsonpath "$.data.first_name" == "1761849152_8b59450e_John"
-jsonpath "$.data.email" == "test_1761849152_8b59450e@example.com"
+jsonpath "$.data.first_name" == "1761901486_2faa433f_John"
+jsonpath "$.data.email" == "test_1761901486_2faa433f@example.com"
 
 [Captures]
 contact_id: jsonpath "$.data.id"
 
 # Test 2: Get all contacts
-GET http://localhost:8081/api/v1/contacts
+GET http://localhost:8080/api/v1/contacts
 Authorization: Bearer {{auth_token}}
 
 HTTP 200
@@ -67,23 +67,23 @@ jsonpath "$.success" == true
 jsonpath "$.data.data" isCollection
 
 # Test 3: Get contact by ID
-GET http://localhost:8081/api/v1/contacts/{{contact_id}}
+GET http://localhost:8080/api/v1/contacts/{{contact_id}}
 Authorization: Bearer {{auth_token}}
 
 HTTP 200
 [Asserts]
 jsonpath "$.success" == true
 jsonpath "$.data.id" == {{contact_id}}
-jsonpath "$.data.first_name" == "1761849152_8b59450e_John"
+jsonpath "$.data.first_name" == "1761901486_2faa433f_John"
 
 # Test 4: Update contact
-PUT http://localhost:8081/api/v1/contacts/{{contact_id}}
+PUT http://localhost:8080/api/v1/contacts/{{contact_id}}
 Authorization: Bearer {{auth_token}}
 Content-Type: application/json
 {
-  "first_name": "1761849152_8b59450e_John_Updated",
-  "last_name": "1761849152_8b59450e_Doe_Updated",
-  "email": "updated_test_1761849152_8b59450e@example.com",
+  "first_name": "1761901486_2faa433f_John_Updated",
+  "last_name": "1761901486_2faa433f_Doe_Updated",
+  "email": "updated_test_1761901486_2faa433f@example.com",
   "phone": "+1-555-0200",
   "type": "personal"
 }
@@ -91,10 +91,10 @@ Content-Type: application/json
 HTTP 200
 [Asserts]
 jsonpath "$.success" == true
-jsonpath "$.data.first_name" == "1761849152_8b59450e_John_Updated"
+jsonpath "$.data.first_name" == "1761901486_2faa433f_John_Updated"
 
 # Test 5: Search contacts
-GET http://localhost:8081/api/v1/contacts?search=1761849152_8b59450e_John
+GET http://localhost:8080/api/v1/contacts?search=1761901486_2faa433f_John
 Authorization: Bearer {{auth_token}}
 
 HTTP 200
@@ -103,7 +103,7 @@ jsonpath "$.success" == true
 jsonpath "$.data.data" isCollection
 
 # Test 6: Filter contacts by type
-GET http://localhost:8081/api/v1/contacts?type=personal
+GET http://localhost:8080/api/v1/contacts?type=personal
 Authorization: Bearer {{auth_token}}
 
 HTTP 200
@@ -112,14 +112,14 @@ jsonpath "$.success" == true
 jsonpath "$.data.data" isCollection
 
 # Test 7: Try to access contacts without authentication
-GET http://localhost:8081/api/v1/contacts
+GET http://localhost:8080/api/v1/contacts
 
 HTTP 401
 [Asserts]
 jsonpath "$.success" == false
 
 # Test 8: Delete contact
-DELETE http://localhost:8081/api/v1/contacts/{{contact_id}}
+DELETE http://localhost:8080/api/v1/contacts/{{contact_id}}
 Authorization: Bearer {{auth_token}}
 
 HTTP 200
@@ -127,7 +127,7 @@ HTTP 200
 jsonpath "$.success" == true
 
 # Test 9: Try to get deleted contact
-GET http://localhost:8081/api/v1/contacts/{{contact_id}}
+GET http://localhost:8080/api/v1/contacts/{{contact_id}}
 Authorization: Bearer {{auth_token}}
 
 HTTP 404

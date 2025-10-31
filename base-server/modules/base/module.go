@@ -76,6 +76,7 @@ func (m *BaseModule) Entities() []core.Entity {
 		entities.NewContactEntity(),
 		entities.NewNewsletterEntity(),
 		entities.NewTokenBlacklistEntity(),
+		entities.NewUserSettingsEntity(),
 	}
 }
 

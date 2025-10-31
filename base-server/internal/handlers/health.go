@@ -4,8 +4,8 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/ae-base-server/internal/config"
 	"github.com/ae-base-server/internal/models"
+	"github.com/ae-base-server/pkg/config"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 )

@@ -33,12 +33,8 @@ func SetupExtendedDatabase() (*gorm.DB, error) {
 		return nil, fmt.Errorf("failed to connect to PostgreSQL: %w", err)
 	}
 
-	// Run ae-base-server migrations (handles existing tables correctly)
-	log.Println("📦 Running ae-base-server migrations...")
-	err = baseAPI.MigrateDatabase(db)
-	if err != nil {
-		return nil, fmt.Errorf("failed to run ae-base-server migrations: %w", err)
-	}
+	// Note: ae-base-server migrations are now handled by the bootstrap system
+	// This function only handles unburdy-specific models (Client and CostProvider)
 
 	// Run migrations for unburdy-specific models (Client and CostProvider)
 	log.Println("📦 Running unburdy-specific migrations (Client and CostProvider tables)...")

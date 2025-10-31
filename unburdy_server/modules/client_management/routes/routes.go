@@ -1,0 +1,64 @@
+package routes
+
+import (
+	"github.com/gin-gonic/gin"
+
+	"github.com/unburdy/unburdy-server-api/modules/client_management/handlers"
+)
+
+// RouteProvider provides routing functionality for client management
+type RouteProvider struct {
+	clientHandler       *handlers.ClientHandler
+	costProviderHandler *handlers.CostProviderHandler
+}
+
+// NewRouteProvider creates a new route provider
+func NewRouteProvider(clientHandler *handlers.ClientHandler, costProviderHandler *handlers.CostProviderHandler) *RouteProvider {
+	return &RouteProvider{
+		clientHandler:       clientHandler,
+		costProviderHandler: costProviderHandler,
+	}
+}
+
+// RegisterRoutes registers the client management routes with the provided router group
+func (rp *RouteProvider) RegisterRoutes(router *gin.RouterGroup) {
+	// Note: Auth middleware is already applied at the router group level
+	// Client management endpoints (authenticated)
+	clients := router.Group("/clients")
+	{
+		clients.POST("", rp.clientHandler.CreateClient)
+		clients.GET("", rp.clientHandler.GetAllClients)
+		clients.GET("/search", rp.clientHandler.SearchClients)
+		clients.GET("/:id", rp.clientHandler.GetClient)
+		clients.PUT("/:id", rp.clientHandler.UpdateClient)
+		clients.DELETE("/:id", rp.clientHandler.DeleteClient)
+	}
+
+	// Cost provider management endpoints (authenticated)
+	costProviders := router.Group("/cost-providers")
+	{
+		costProviders.POST("", rp.costProviderHandler.CreateCostProvider)
+		costProviders.GET("", rp.costProviderHandler.GetAllCostProviders)
+		costProviders.GET("/search", rp.costProviderHandler.SearchCostProviders)
+		costProviders.GET("/:id", rp.costProviderHandler.GetCostProvider)
+		costProviders.PUT("/:id", rp.costProviderHandler.UpdateCostProvider)
+		costProviders.DELETE("/:id", rp.costProviderHandler.DeleteCostProvider)
+	}
+}
+
+// GetPrefix returns the route prefix for client management endpoints
+func (rp *RouteProvider) GetPrefix() string {
+	return ""
+}
+
+// GetMiddleware returns middleware to apply to all routes
+func (rp *RouteProvider) GetMiddleware() []gin.HandlerFunc {
+	return []gin.HandlerFunc{
+		// Authentication middleware will be applied at the group level
+	}
+}
+
+// GetSwaggerTags returns swagger tags for the routes
+func (rp *RouteProvider) GetSwaggerTags() []string {
+	return []string{"clients", "cost-providers"}
+}

@@ -83,7 +83,7 @@ func main() {
 	port := getEnv("DB_PORT", "5432")
 	user := getEnv("DB_USER", "postgres")
 	password := getEnv("DB_PASSWORD", "pass")
-	dbname := getEnv("DB_NAME", "ae_base_server_test")
+	dbname := getEnv("DB_NAME", "ae_saas_basic_test")
 	sslmode := getEnv("DB_SSL_MODE", "disable")
 
 	dsn := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=%s",

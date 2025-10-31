@@ -7,10 +7,10 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/ae-base-server/internal/config"
 	"github.com/ae-base-server/internal/eventbus"
 	"github.com/ae-base-server/internal/models"
 	"github.com/ae-base-server/pkg/auth"
+	"github.com/ae-base-server/pkg/config"
 	"github.com/ae-base-server/pkg/utils"
 	"github.com/ae-base-server/services"
 	"github.com/gin-gonic/gin"

@@ -1,5 +1,4 @@
 package main
-package main
 
 import (
 	"encoding/json"
@@ -71,15 +70,15 @@ func main() {
 
 	// Generate approval codes and dates
 	prefixes := []string{"PROV", "APP", "AUTH", "CERT", "APPR"}
-	
+
 	for i := range seedData.Clients {
 		client := &seedData.Clients[i]
-		
+
 		// Generate provider approval code
 		prefix := prefixes[rand.Intn(len(prefixes))]
 		code := fmt.Sprintf("%s-%d%04d", prefix, 2025, rand.Intn(10000))
 		client.ProviderApprovalCode = code
-		
+
 		// Generate provider approval date (within last 2 years for active clients)
 		if client.Status == "active" {
 			// Random date within last 2 years
@@ -95,8 +94,8 @@ func main() {
 			approvalDate := time.Now().AddDate(0, 0, -days)
 			client.ProviderApprovalDate = approvalDate.Format("2006-01-02T15:04:05Z")
 		}
-		
-		fmt.Printf("✅ Updated client %s %s: Code=%s, Date=%s\n", 
+
+		fmt.Printf("✅ Updated client %s %s: Code=%s, Date=%s\n",
 			client.FirstName, client.LastName, client.ProviderApprovalCode, client.ProviderApprovalDate)
 	}
 
@@ -113,12 +112,12 @@ func main() {
 	}
 
 	fmt.Println("Successfully updated seed_app_data.json with provider approval codes and dates!")
-	
+
 	// Show some examples
 	fmt.Println("\nExample provider approval data assigned:")
 	for i, client := range seedData.Clients[:5] {
-		fmt.Printf("  %d. %s %s (%s): %s - %s\n", 
-			i+1, client.FirstName, client.LastName, client.Status, 
+		fmt.Printf("  %d. %s %s (%s): %s - %s\n",
+			i+1, client.FirstName, client.LastName, client.Status,
 			client.ProviderApprovalCode, client.ProviderApprovalDate)
 	}
 }

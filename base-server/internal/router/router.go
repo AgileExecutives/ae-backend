@@ -1,10 +1,10 @@
 package router
 
 import (
-	"github.com/ae-base-server/internal/config"
 	"github.com/ae-base-server/internal/handlers"
 	"github.com/ae-base-server/internal/middleware"
 	internalServices "github.com/ae-base-server/internal/services"
+	"github.com/ae-base-server/pkg/config"
 	"github.com/ae-base-server/services"
 	"github.com/gin-gonic/gin"
 	swaggerFiles "github.com/swaggo/files"
@@ -22,9 +22,7 @@ func SetupRouter(db *gorm.DB, cfg config.Config) *gin.Engine {
 	// Swagger documentation endpoint
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
-	// Serve JSON files from statics directory
-	router.GET("/static", handlers.ListStaticJSON)
-	router.GET("/static/:filename", handlers.ServeStaticJSON)
+	// Serve favicon
 	router.StaticFile("/favicon.ico", "./statics/images/favicon.ico")
 
 	// Initialize handlers
@@ -51,6 +49,10 @@ func SetupRouter(db *gorm.DB, cfg config.Config) *gin.Engine {
 		// Health checks
 		public.GET("/health", healthHandler.Health)
 		public.GET("/ping", healthHandler.Ping)
+
+		// Serve JSON files from statics/json directory
+		public.GET("/static", handlers.ListStaticJSON)
+		public.GET("/static/:filename", handlers.ServeStaticJSON)
 
 		// Authentication (with rate limiting)
 		// Login: 5 attempts per 15 minutes per IP

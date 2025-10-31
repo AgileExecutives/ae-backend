@@ -5,12 +5,13 @@ import (
 	"log"
 
 	_ "github.com/ae-base-server/docs" // swagger docs
-	"github.com/ae-base-server/internal/config"
 	"github.com/ae-base-server/modules/base"
 	"github.com/ae-base-server/modules/customer"
 	"github.com/ae-base-server/modules/email"
 	"github.com/ae-base-server/modules/pdf"
+	"github.com/ae-base-server/modules/static"
 	"github.com/ae-base-server/pkg/bootstrap"
+	"github.com/ae-base-server/pkg/config"
 	"github.com/ae-base-server/pkg/core"
 	"github.com/joho/godotenv"
 )
@@ -65,6 +66,9 @@ import (
 // @tag.name health
 // @tag.description [System] Application health checks, system status, and monitoring endpoints
 
+// @tag.name static
+// @tag.description [Static Module] Secure JSON file serving from statics directory with enhanced security validation
+
 // @tag.name modules
 // @tag.description [System] Module registry, discovery, and runtime information endpoints
 
@@ -86,6 +90,7 @@ func main() {
 		customer.NewCustomerModule(), // Customer and plan management
 		email.NewEmailModule(),       // Email management and notifications
 		pdf.NewPDFModule(),           // PDF generation services
+		static.NewStaticModule(),     // Static JSON file serving
 	}
 
 	for _, module := range modules {

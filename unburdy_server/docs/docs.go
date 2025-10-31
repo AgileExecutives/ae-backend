@@ -9,11 +9,11 @@ const docTemplate = `{
     "info": {
         "description": "{{escape .Description}}",
         "title": "{{.Title}}",
-        "termsOfService": "https://unburdy.com/terms",
+        "termsOfService": "https://ae-base-server.com/terms",
         "contact": {
             "name": "API Support",
-            "url": "https://unburdy.com/support",
-            "email": "support@unburdy.com"
+            "url": "https://ae-base-server.com/support",
+            "email": "support@ae-base-server.com"
         },
         "license": {
             "name": "MIT",
@@ -24,408 +24,6 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/admin/modules": {
-            "get": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "Get information about all registered modules in the system",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "modules"
-                ],
-                "summary": "Get registered modules",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/models.APIResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "type": "array",
-                                            "items": {
-                                                "$ref": "#/definitions/github_com_ae-saas-basic_ae-saas-basic_internal_modules.ModuleInfo"
-                                            }
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "$ref": "#/definitions/models.ErrorResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/admin/modules/{name}": {
-            "get": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "Get detailed information about a specific module by name",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "modules"
-                ],
-                "summary": "Get module details",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Module name",
-                        "name": "name",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/models.APIResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/github_com_ae-saas-basic_ae-saas-basic_internal_modules.ModuleInfo"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "$ref": "#/definitions/models.ErrorResponse"
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "$ref": "#/definitions/models.ErrorResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/v1/modules/demo/demo": {
-            "get": {
-                "description": "Get information about the demo module",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "demo"
-                ],
-                "summary": "Get demo information",
-                "responses": {
-                    "200": {
-                        "description": "Demo information",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": true
-                        }
-                    }
-                }
-            }
-        },
-        "/api/v1/modules/demo/items": {
-            "get": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "Retrieve all demo items from the demo module",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "demo"
-                ],
-                "summary": "Get all demo items",
-                "responses": {
-                    "200": {
-                        "description": "List of demo items",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": true
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    }
-                }
-            },
-            "post": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "Create a new demo item in the demo module",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "demo"
-                ],
-                "summary": "Create a new demo item",
-                "parameters": [
-                    {
-                        "description": "Demo item data",
-                        "name": "item",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": true
-                        }
-                    }
-                ],
-                "responses": {
-                    "201": {
-                        "description": "Created demo item",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": true
-                        }
-                    },
-                    "400": {
-                        "description": "Bad request",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/api/v1/modules/demo/items/{id}": {
-            "get": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "Retrieve a specific demo item by its ID",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "demo"
-                ],
-                "summary": "Get demo item by ID",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "Demo Item ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Demo item details",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": true
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "404": {
-                        "description": "Demo item not found",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    }
-                }
-            },
-            "put": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "Update an existing demo item by ID",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "demo"
-                ],
-                "summary": "Update a demo item",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "Demo Item ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "Updated demo item data",
-                        "name": "item",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": true
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Updated demo item",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": true
-                        }
-                    },
-                    "400": {
-                        "description": "Bad request",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "404": {
-                        "description": "Demo item not found",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    }
-                }
-            },
-            "delete": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "Delete a demo item by ID",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "demo"
-                ],
-                "summary": "Delete a demo item",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "Demo Item ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Deletion confirmation",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "404": {
-                        "description": "Demo item not found",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    }
-                }
-            }
-        },
         "/api/v1/pdf/create": {
             "post": {
                 "security": [
@@ -451,7 +49,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/handlers.PDFGenerateRequest"
+                            "$ref": "#/definitions/github_com_ae-base-server_modules_pdf_handlers.PDFGenerateRequest"
                         }
                     }
                 ],
@@ -459,98 +57,19 @@ const docTemplate = `{
                     "200": {
                         "description": "PDF generated successfully",
                         "schema": {
-                            "$ref": "#/definitions/handlers.PDFGenerateResponse"
+                            "$ref": "#/definitions/github_com_ae-base-server_modules_pdf_handlers.PDFGenerateResponse"
                         }
                     },
                     "400": {
                         "description": "Invalid request",
                         "schema": {
-                            "$ref": "#/definitions/handlers.ErrorResponse"
+                            "$ref": "#/definitions/github_com_ae-base-server_modules_pdf_handlers.ErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Failed to generate PDF",
                         "schema": {
-                            "$ref": "#/definitions/handlers.ErrorResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/v1/ping": {
-            "get": {
-                "description": "Simple ping endpoint",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "health"
-                ],
-                "summary": "Ping check",
-                "responses": {
-                    "200": {
-                        "description": "pong",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/auth/change-password": {
-            "post": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "Change user password",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "auth"
-                ],
-                "summary": "Change password",
-                "parameters": [
-                    {
-                        "description": "Password change data",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "type": "object",
-                            "properties": {
-                                "current_password": {
-                                    "type": "string"
-                                },
-                                "new_password": {
-                                    "type": "string"
-                                }
-                            }
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/models.APIResponse"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/models.ErrorResponse"
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "$ref": "#/definitions/models.ErrorResponse"
+                            "$ref": "#/definitions/github_com_ae-base-server_modules_pdf_handlers.ErrorResponse"
                         }
                     }
                 }
@@ -558,7 +77,7 @@ const docTemplate = `{
         },
         "/auth/forgot-password": {
             "post": {
-                "description": "Send password reset link to user email",
+                "description": "Send password reset email to user",
                 "consumes": [
                     "application/json"
                 ],
@@ -566,22 +85,17 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "auth"
+                    "authentication"
                 ],
                 "summary": "Request password reset",
                 "parameters": [
                     {
-                        "description": "User email",
+                        "description": "Password reset request",
                         "name": "request",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "type": "object",
-                            "properties": {
-                                "email": {
-                                    "type": "string"
-                                }
-                            }
+                            "$ref": "#/definitions/models.ForgotPasswordRequest"
                         }
                     }
                 ],
@@ -589,79 +103,13 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/models.APIResponse"
+                            "$ref": "#/definitions/github_com_ae-base-server_modules_base_models.APIResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/models.ErrorResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/auth/generate-signup-token": {
-            "post": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "Generate a token for inviting users to join a specific tenant",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "auth"
-                ],
-                "summary": "Generate user signup token",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/models.APIResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "type": "object",
-                                            "properties": {
-                                                "expires_in": {
-                                                    "type": "string"
-                                                },
-                                                "token": {
-                                                    "type": "string"
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/models.ErrorResponse"
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "$ref": "#/definitions/models.ErrorResponse"
-                        }
-                    },
-                    "403": {
-                        "description": "Forbidden",
-                        "schema": {
-                            "$ref": "#/definitions/models.ErrorResponse"
+                            "$ref": "#/definitions/github_com_ae-base-server_modules_base_models.ErrorResponse"
                         }
                     }
                 }
@@ -677,17 +125,17 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "auth"
+                    "authentication"
                 ],
-                "summary": "Login user",
+                "summary": "User login",
                 "parameters": [
                     {
                         "description": "Login credentials",
-                        "name": "request",
+                        "name": "credentials",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/models.LoginRequest"
+                            "$ref": "#/definitions/github_com_ae-base-server_modules_base_models.LoginRequest"
                         }
                     }
                 ],
@@ -697,13 +145,13 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/models.APIResponse"
+                                    "$ref": "#/definitions/github_com_ae-base-server_modules_base_models.APIResponse"
                                 },
                                 {
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/models.LoginResponse"
+                                            "$ref": "#/definitions/github_com_ae-base-server_modules_base_models.LoginResponse"
                                         }
                                     }
                                 }
@@ -713,13 +161,13 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/models.ErrorResponse"
+                            "$ref": "#/definitions/github_com_ae-base-server_modules_base_models.ErrorResponse"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/models.ErrorResponse"
+                            "$ref": "#/definitions/github_com_ae-base-server_modules_base_models.ErrorResponse"
                         }
                     }
                 }
@@ -732,7 +180,7 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "Blacklist the current JWT token",
+                "description": "Logout user and invalidate token",
                 "consumes": [
                     "application/json"
                 ],
@@ -740,39 +188,39 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "auth"
+                    "authentication"
                 ],
-                "summary": "Logout user",
+                "summary": "User logout",
                 "responses": {
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/models.APIResponse"
+                            "$ref": "#/definitions/github_com_ae-base-server_modules_base_models.APIResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/models.ErrorResponse"
+                            "$ref": "#/definitions/github_com_ae-base-server_modules_base_models.ErrorResponse"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/models.ErrorResponse"
+                            "$ref": "#/definitions/github_com_ae-base-server_modules_base_models.ErrorResponse"
                         }
                     }
                 }
             }
         },
-        "/auth/me": {
-            "get": {
+        "/auth/refresh": {
+            "post": {
                 "security": [
                     {
                         "BearerAuth": []
                     }
                 ],
-                "description": "Get current authenticated user information",
+                "description": "Refresh user access token",
                 "consumes": [
                     "application/json"
                 ],
@@ -780,107 +228,38 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "auth"
+                    "authentication"
                 ],
-                "summary": "Get current user",
+                "summary": "Refresh access token",
                 "responses": {
                     "200": {
                         "description": "OK",
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/models.APIResponse"
+                                    "$ref": "#/definitions/github_com_ae-base-server_modules_base_models.APIResponse"
                                 },
                                 {
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/models.UserResponse"
+                                            "$ref": "#/definitions/github_com_ae-base-server_modules_base_models.LoginResponse"
                                         }
                                     }
                                 }
                             ]
                         }
                     },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "$ref": "#/definitions/models.ErrorResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/auth/new-password/{token}": {
-            "post": {
-                "description": "Reset user password with reset token",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "auth"
-                ],
-                "summary": "Reset password",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Reset token",
-                        "name": "token",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "New password",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "type": "object",
-                            "properties": {
-                                "new_password": {
-                                    "type": "string"
-                                }
-                            }
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/models.APIResponse"
-                        }
-                    },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/models.ErrorResponse"
+                            "$ref": "#/definitions/github_com_ae-base-server_modules_base_models.ErrorResponse"
                         }
-                    }
-                }
-            }
-        },
-        "/auth/password-security": {
-            "get": {
-                "description": "Returns the current password security requirements including minimum length and character requirements",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "auth"
-                ],
-                "summary": "Get password security requirements",
-                "responses": {
-                    "200": {
-                        "description": "OK",
+                    },
+                    "401": {
+                        "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/utils.PasswordRequirements"
+                            "$ref": "#/definitions/github_com_ae-base-server_modules_base_models.ErrorResponse"
                         }
                     }
                 }
@@ -888,7 +267,7 @@ const docTemplate = `{
         },
         "/auth/register": {
             "post": {
-                "description": "Create a new user account. If a user-signup token is provided in Authorization header, user will join that tenant. Otherwise, company_name is required to create new tenant.",
+                "description": "Register a new user account",
                 "consumes": [
                     "application/json"
                 ],
@@ -896,23 +275,17 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "auth"
+                    "authentication"
                 ],
-                "summary": "Register new user",
+                "summary": "User registration",
                 "parameters": [
                     {
-                        "type": "string",
-                        "description": "Bearer token for user signup invitation",
-                        "name": "Authorization",
-                        "in": "header"
-                    },
-                    {
                         "description": "User registration data",
-                        "name": "request",
+                        "name": "user",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/models.UserCreateRequest"
+                            "$ref": "#/definitions/github_com_ae-base-server_modules_base_models.UserCreateRequest"
                         }
                     }
                 ],
@@ -922,13 +295,13 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/models.APIResponse"
+                                    "$ref": "#/definitions/github_com_ae-base-server_modules_base_models.APIResponse"
                                 },
                                 {
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/models.UserResponse"
+                                            "$ref": "#/definitions/github_com_ae-base-server_modules_base_models.LoginResponse"
                                         }
                                     }
                                 }
@@ -938,21 +311,21 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/models.ErrorResponse"
+                            "$ref": "#/definitions/github_com_ae-base-server_modules_base_models.ErrorResponse"
                         }
                     },
                     "409": {
                         "description": "Conflict",
                         "schema": {
-                            "$ref": "#/definitions/models.ErrorResponse"
+                            "$ref": "#/definitions/github_com_ae-base-server_modules_base_models.ErrorResponse"
                         }
                     }
                 }
             }
         },
-        "/auth/verify-email/{token}": {
-            "get": {
-                "description": "Verify user email address with token from verification email",
+        "/auth/reset-password": {
+            "post": {
+                "description": "Reset user password with reset token",
                 "consumes": [
                     "application/json"
                 ],
@@ -960,7 +333,47 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "auth"
+                    "authentication"
+                ],
+                "summary": "Reset password",
+                "parameters": [
+                    {
+                        "description": "Password reset data",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.ResetPasswordRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_ae-base-server_modules_base_models.APIResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_ae-base-server_modules_base_models.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/auth/verify-email": {
+            "get": {
+                "description": "Verify user email address with verification token",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "authentication"
                 ],
                 "summary": "Verify email address",
                 "parameters": [
@@ -968,7 +381,7 @@ const docTemplate = `{
                         "type": "string",
                         "description": "Verification token",
                         "name": "token",
-                        "in": "path",
+                        "in": "query",
                         "required": true
                     }
                 ],
@@ -976,13 +389,13 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/models.APIResponse"
+                            "$ref": "#/definitions/github_com_ae-base-server_modules_base_models.APIResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/models.ErrorResponse"
+                            "$ref": "#/definitions/github_com_ae-base-server_modules_base_models.ErrorResponse"
                         }
                     }
                 }
@@ -995,10 +408,7 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "Get a paginated list of all clients",
-                "consumes": [
-                    "application/json"
-                ],
+                "description": "Retrieve all clients with optional pagination",
                 "produces": [
                     "application/json"
                 ],
@@ -1017,24 +427,35 @@ const docTemplate = `{
                     {
                         "type": "integer",
                         "default": 10,
-                        "description": "Items per page",
+                        "description": "Number of clients per page",
                         "name": "limit",
                         "in": "query"
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "data: array of ClientResponse, total: int, page: int, limit: int",
+                        "description": "Clients retrieved successfully",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
                         }
                     },
-                    "500": {
-                        "description": "error: string",
+                    "401": {
+                        "description": "Unauthorized",
                         "schema": {
                             "type": "object",
-                            "additionalProperties": true
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
                         }
                     }
                 }
@@ -1045,7 +466,7 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "Create a new client with first name, last name, and date of birth",
+                "description": "Create a new client with the provided information",
                 "consumes": [
                     "application/json"
                 ],
@@ -1058,34 +479,47 @@ const docTemplate = `{
                 "summary": "Create a new client",
                 "parameters": [
                     {
-                        "description": "Client data",
+                        "description": "Client information",
                         "name": "client",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/models.CreateClientRequest"
+                            "$ref": "#/definitions/entities.CreateClientRequest"
                         }
                     }
                 ],
                 "responses": {
                     "201": {
-                        "description": "Created",
+                        "description": "Created client",
                         "schema": {
-                            "$ref": "#/definitions/models.ClientResponse"
+                            "$ref": "#/definitions/entities.ClientResponse"
                         }
                     },
                     "400": {
-                        "description": "Bad Request",
+                        "description": "Bad request",
                         "schema": {
                             "type": "object",
-                            "additionalProperties": true
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
                         }
                     },
                     "500": {
-                        "description": "Internal Server Error",
+                        "description": "Internal server error",
                         "schema": {
                             "type": "object",
-                            "additionalProperties": true
+                            "additionalProperties": {
+                                "type": "string"
+                            }
                         }
                     }
                 }
@@ -1124,31 +558,44 @@ const docTemplate = `{
                     {
                         "type": "integer",
                         "default": 10,
-                        "description": "Items per page",
+                        "description": "Number of clients per page",
                         "name": "limit",
                         "in": "query"
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "Search results",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
                         }
                     },
                     "400": {
-                        "description": "Bad Request",
+                        "description": "Bad request",
                         "schema": {
                             "type": "object",
-                            "additionalProperties": true
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
                         }
                     },
                     "500": {
-                        "description": "Internal Server Error",
+                        "description": "Internal server error",
                         "schema": {
                             "type": "object",
-                            "additionalProperties": true
+                            "additionalProperties": {
+                                "type": "string"
+                            }
                         }
                     }
                 }
@@ -1180,30 +627,45 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "Client found",
                         "schema": {
-                            "$ref": "#/definitions/models.ClientResponse"
+                            "$ref": "#/definitions/entities.ClientResponse"
                         }
                     },
                     "400": {
-                        "description": "Bad Request",
+                        "description": "Bad request",
                         "schema": {
                             "type": "object",
-                            "additionalProperties": true
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
                         }
                     },
                     "404": {
-                        "description": "Not Found",
+                        "description": "Client not found",
                         "schema": {
                             "type": "object",
-                            "additionalProperties": true
+                            "additionalProperties": {
+                                "type": "string"
+                            }
                         }
                     },
                     "500": {
-                        "description": "Internal Server Error",
+                        "description": "Internal server error",
                         "schema": {
                             "type": "object",
-                            "additionalProperties": true
+                            "additionalProperties": {
+                                "type": "string"
+                            }
                         }
                     }
                 }
@@ -1214,7 +676,7 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "Update an existing client's information",
+                "description": "Update a client's information",
                 "consumes": [
                     "application/json"
                 ],
@@ -1234,41 +696,56 @@ const docTemplate = `{
                         "required": true
                     },
                     {
-                        "description": "Client update data",
+                        "description": "Updated client information",
                         "name": "client",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/models.UpdateClientRequest"
+                            "$ref": "#/definitions/entities.UpdateClientRequest"
                         }
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "Updated client",
                         "schema": {
-                            "$ref": "#/definitions/models.ClientResponse"
+                            "$ref": "#/definitions/entities.ClientResponse"
                         }
                     },
                     "400": {
-                        "description": "Bad Request",
+                        "description": "Bad request",
                         "schema": {
                             "type": "object",
-                            "additionalProperties": true
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
                         }
                     },
                     "404": {
-                        "description": "Not Found",
+                        "description": "Client not found",
                         "schema": {
                             "type": "object",
-                            "additionalProperties": true
+                            "additionalProperties": {
+                                "type": "string"
+                            }
                         }
                     },
                     "500": {
-                        "description": "Internal Server Error",
+                        "description": "Internal server error",
                         "schema": {
                             "type": "object",
-                            "additionalProperties": true
+                            "additionalProperties": {
+                                "type": "string"
+                            }
                         }
                     }
                 }
@@ -1297,28 +774,49 @@ const docTemplate = `{
                     }
                 ],
                 "responses": {
-                    "204": {
-                        "description": "No Content"
-                    },
-                    "400": {
-                        "description": "Bad Request",
+                    "200": {
+                        "description": "Client deleted successfully",
                         "schema": {
                             "type": "object",
-                            "additionalProperties": true
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
                         }
                     },
                     "404": {
-                        "description": "Not Found",
+                        "description": "Client not found",
                         "schema": {
                             "type": "object",
-                            "additionalProperties": true
+                            "additionalProperties": {
+                                "type": "string"
+                            }
                         }
                     },
                     "500": {
-                        "description": "Internal Server Error",
+                        "description": "Internal server error",
                         "schema": {
                             "type": "object",
-                            "additionalProperties": true
+                            "additionalProperties": {
+                                "type": "string"
+                            }
                         }
                     }
                 }
@@ -1334,7 +832,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "contact"
+                    "contact-form"
                 ],
                 "summary": "Submit contact form",
                 "parameters": [
@@ -1344,7 +842,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/github_com_ae-saas-basic_ae-saas-basic_internal_models.ContactFormRequest"
+                            "$ref": "#/definitions/github_com_ae-base-server_modules_base_models.ContactFormRequest"
                         }
                     }
                 ],
@@ -1352,19 +850,19 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/github_com_ae-saas-basic_ae-saas-basic_internal_models.ContactFormResponse"
+                            "$ref": "#/definitions/github_com_ae-base-server_modules_base_models.ContactFormResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/models.ErrorResponse"
+                            "$ref": "#/definitions/github_com_ae-base-server_modules_base_models.ErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/models.ErrorResponse"
+                            "$ref": "#/definitions/github_com_ae-base-server_modules_base_models.ErrorResponse"
                         }
                     }
                 }
@@ -1385,7 +883,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "contact"
+                    "newsletter"
                 ],
                 "summary": "Get newsletter subscriptions",
                 "responses": {
@@ -1394,14 +892,14 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/github_com_ae-saas-basic_ae-saas-basic_internal_models.Newsletter"
+                                "$ref": "#/definitions/github_com_ae-base-server_modules_base_models.Newsletter"
                             }
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/models.ErrorResponse"
+                            "$ref": "#/definitions/github_com_ae-base-server_modules_base_models.ErrorResponse"
                         }
                     }
                 }
@@ -1409,6 +907,11 @@ const docTemplate = `{
         },
         "/contact/newsletter/unsubscribe": {
             "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Unsubscribe an email from the newsletter",
                 "consumes": [
                     "application/json"
@@ -1417,7 +920,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "contact"
+                    "newsletter"
                 ],
                 "summary": "Unsubscribe from newsletter",
                 "parameters": [
@@ -1442,39 +945,33 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/models.ErrorResponse"
+                            "$ref": "#/definitions/github_com_ae-base-server_modules_base_models.ErrorResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/models.ErrorResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/models.ErrorResponse"
+                            "$ref": "#/definitions/github_com_ae-base-server_modules_base_models.ErrorResponse"
                         }
                     }
                 }
             }
         },
-        "/contacts": {
+        "/cost-providers": {
             "get": {
                 "security": [
                     {
                         "BearerAuth": []
                     }
                 ],
-                "description": "Get a paginated list of all contacts",
+                "description": "Retrieve all cost providers with optional pagination",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "contacts"
+                    "cost-providers"
                 ],
-                "summary": "Get all contacts",
+                "summary": "Get all cost providers",
                 "parameters": [
                     {
                         "type": "integer",
@@ -1486,46 +983,35 @@ const docTemplate = `{
                     {
                         "type": "integer",
                         "default": 10,
-                        "description": "Items per page",
+                        "description": "Number of cost providers per page",
                         "name": "limit",
-                        "in": "query"
-                    },
-                    {
-                        "type": "boolean",
-                        "description": "Filter by active status",
-                        "name": "active",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "description": "Filter by contact type",
-                        "name": "type",
                         "in": "query"
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "Cost providers retrieved successfully",
                         "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/models.APIResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/models.ListResponse"
-                                        }
-                                    }
-                                }
-                            ]
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
                         }
                     },
                     "500": {
-                        "description": "Internal Server Error",
+                        "description": "Internal server error",
                         "schema": {
-                            "$ref": "#/definitions/models.ErrorResponse"
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
                         }
                     }
                 }
@@ -1536,7 +1022,7 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "Create a new contact",
+                "description": "Create a new cost provider with the provided information",
                 "consumes": [
                     "application/json"
                 ],
@@ -1544,67 +1030,152 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "contacts"
+                    "cost-providers"
                 ],
-                "summary": "Create a new contact",
+                "summary": "Create a new cost provider",
                 "parameters": [
                     {
-                        "description": "Contact creation data",
-                        "name": "request",
+                        "description": "Cost provider information",
+                        "name": "cost_provider",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/models.ContactCreateRequest"
+                            "$ref": "#/definitions/entities.CreateCostProviderRequest"
                         }
                     }
                 ],
                 "responses": {
                     "201": {
-                        "description": "Created",
+                        "description": "Created cost provider",
                         "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/models.APIResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/models.ContactResponse"
-                                        }
-                                    }
-                                }
-                            ]
+                            "$ref": "#/definitions/entities.CostProviderResponse"
                         }
                     },
                     "400": {
-                        "description": "Bad Request",
+                        "description": "Bad request",
                         "schema": {
-                            "$ref": "#/definitions/models.ErrorResponse"
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
                         }
                     }
                 }
             }
         },
-        "/contacts/{id}": {
+        "/cost-providers/search": {
             "get": {
                 "security": [
                     {
                         "BearerAuth": []
                     }
                 ],
-                "description": "Get a specific contact by its ID",
+                "description": "Search cost providers by organization name or contact name",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "contacts"
+                    "cost-providers"
                 ],
-                "summary": "Get contact by ID",
+                "summary": "Search cost providers",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Search query",
+                        "name": "q",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "default": 1,
+                        "description": "Page number",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 10,
+                        "description": "Number of cost providers per page",
+                        "name": "limit",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Search results",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/cost-providers/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Retrieve a specific cost provider by their ID",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "cost-providers"
+                ],
+                "summary": "Get a cost provider by ID",
                 "parameters": [
                     {
                         "type": "integer",
-                        "description": "Contact ID",
+                        "description": "Cost Provider ID",
                         "name": "id",
                         "in": "path",
                         "required": true
@@ -1612,33 +1183,45 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "Cost provider found",
                         "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/models.APIResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/models.ContactResponse"
-                                        }
-                                    }
-                                }
-                            ]
+                            "$ref": "#/definitions/entities.CostProviderResponse"
                         }
                     },
                     "400": {
-                        "description": "Bad Request",
+                        "description": "Bad request",
                         "schema": {
-                            "$ref": "#/definitions/models.ErrorResponse"
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
                         }
                     },
                     "404": {
-                        "description": "Not Found",
+                        "description": "Cost provider not found",
                         "schema": {
-                            "$ref": "#/definitions/models.ErrorResponse"
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
                         }
                     }
                 }
@@ -1649,7 +1232,7 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "Update an existing contact by ID",
+                "description": "Update a cost provider's information",
                 "consumes": [
                     "application/json"
                 ],
@@ -1657,56 +1240,68 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "contacts"
+                    "cost-providers"
                 ],
-                "summary": "Update a contact",
+                "summary": "Update a cost provider",
                 "parameters": [
                     {
                         "type": "integer",
-                        "description": "Contact ID",
+                        "description": "Cost Provider ID",
                         "name": "id",
                         "in": "path",
                         "required": true
                     },
                     {
-                        "description": "Contact update data",
-                        "name": "request",
+                        "description": "Updated cost provider information",
+                        "name": "cost_provider",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/models.ContactUpdateRequest"
+                            "$ref": "#/definitions/entities.UpdateCostProviderRequest"
                         }
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "Updated cost provider",
                         "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/models.APIResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/models.ContactResponse"
-                                        }
-                                    }
-                                }
-                            ]
+                            "$ref": "#/definitions/entities.CostProviderResponse"
                         }
                     },
                     "400": {
-                        "description": "Bad Request",
+                        "description": "Bad request",
                         "schema": {
-                            "$ref": "#/definitions/models.ErrorResponse"
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
                         }
                     },
                     "404": {
-                        "description": "Not Found",
+                        "description": "Cost provider not found",
                         "schema": {
-                            "$ref": "#/definitions/models.ErrorResponse"
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
                         }
                     }
                 }
@@ -1717,18 +1312,18 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "Soft delete a contact by ID",
+                "description": "Soft delete a cost provider by ID",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "contacts"
+                    "cost-providers"
                 ],
-                "summary": "Delete a contact",
+                "summary": "Delete a cost provider",
                 "parameters": [
                     {
                         "type": "integer",
-                        "description": "Contact ID",
+                        "description": "Cost Provider ID",
                         "name": "id",
                         "in": "path",
                         "required": true
@@ -1736,21 +1331,48 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "Cost provider deleted successfully",
                         "schema": {
-                            "$ref": "#/definitions/models.APIResponse"
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
                         }
                     },
                     "400": {
-                        "description": "Bad Request",
+                        "description": "Bad request",
                         "schema": {
-                            "$ref": "#/definitions/models.ErrorResponse"
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
                         }
                     },
                     "404": {
-                        "description": "Not Found",
+                        "description": "Cost provider not found",
                         "schema": {
-                            "$ref": "#/definitions/models.ErrorResponse"
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
                         }
                     }
                 }
@@ -1763,7 +1385,7 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "Get a paginated list of customers for the authenticated tenant",
+                "description": "Get a paginated list of all customers",
                 "produces": [
                     "application/json"
                 ],
@@ -1785,12 +1407,6 @@ const docTemplate = `{
                         "description": "Items per page",
                         "name": "limit",
                         "in": "query"
-                    },
-                    {
-                        "type": "boolean",
-                        "description": "Filter by active status",
-                        "name": "active",
-                        "in": "query"
                     }
                 ],
                 "responses": {
@@ -1799,23 +1415,23 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/models.APIResponse"
+                                    "$ref": "#/definitions/github_com_ae-base-server_modules_base_models.APIResponse"
                                 },
                                 {
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/models.ListResponse"
+                                            "$ref": "#/definitions/github_com_ae-base-server_modules_base_models.ListResponse"
                                         }
                                     }
                                 }
                             ]
                         }
                     },
-                    "500": {
-                        "description": "Internal Server Error",
+                    "400": {
+                        "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/models.ErrorResponse"
+                            "$ref": "#/definitions/github_com_ae-base-server_modules_base_models.ErrorResponse"
                         }
                     }
                 }
@@ -1826,7 +1442,7 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "Create a new customer within the authenticated tenant",
+                "description": "Create a new customer",
                 "consumes": [
                     "application/json"
                 ],
@@ -1839,12 +1455,12 @@ const docTemplate = `{
                 "summary": "Create a new customer",
                 "parameters": [
                     {
-                        "description": "Customer creation data",
-                        "name": "request",
+                        "description": "Customer data",
+                        "name": "customer",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/models.CustomerCreateRequest"
+                            "$ref": "#/definitions/models.CustomerRequest"
                         }
                     }
                 ],
@@ -1854,13 +1470,13 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/models.APIResponse"
+                                    "$ref": "#/definitions/github_com_ae-base-server_modules_base_models.APIResponse"
                                 },
                                 {
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/models.CustomerResponse"
+                                            "$ref": "#/definitions/github_com_ae-base-server_modules_base_models.CustomerResponse"
                                         }
                                     }
                                 }
@@ -1870,7 +1486,7 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/models.ErrorResponse"
+                            "$ref": "#/definitions/github_com_ae-base-server_modules_base_models.ErrorResponse"
                         }
                     }
                 }
@@ -1883,7 +1499,7 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "Get a specific customer by its ID within the authenticated tenant",
+                "description": "Get a specific customer by its ID",
                 "produces": [
                     "application/json"
                 ],
@@ -1906,13 +1522,13 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/models.APIResponse"
+                                    "$ref": "#/definitions/github_com_ae-base-server_modules_base_models.APIResponse"
                                 },
                                 {
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/models.CustomerResponse"
+                                            "$ref": "#/definitions/github_com_ae-base-server_modules_base_models.CustomerResponse"
                                         }
                                     }
                                 }
@@ -1922,13 +1538,13 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/models.ErrorResponse"
+                            "$ref": "#/definitions/github_com_ae-base-server_modules_base_models.ErrorResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/models.ErrorResponse"
+                            "$ref": "#/definitions/github_com_ae-base-server_modules_base_models.ErrorResponse"
                         }
                     }
                 }
@@ -1939,7 +1555,7 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "Update an existing customer by ID within the authenticated tenant",
+                "description": "Update an existing customer by ID",
                 "consumes": [
                     "application/json"
                 ],
@@ -1959,12 +1575,12 @@ const docTemplate = `{
                         "required": true
                     },
                     {
-                        "description": "Customer update data",
-                        "name": "request",
+                        "description": "Updated customer data",
+                        "name": "customer",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/models.CustomerUpdateRequest"
+                            "$ref": "#/definitions/models.CustomerRequest"
                         }
                     }
                 ],
@@ -1974,13 +1590,13 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/models.APIResponse"
+                                    "$ref": "#/definitions/github_com_ae-base-server_modules_base_models.APIResponse"
                                 },
                                 {
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/models.CustomerResponse"
+                                            "$ref": "#/definitions/github_com_ae-base-server_modules_base_models.CustomerResponse"
                                         }
                                     }
                                 }
@@ -1990,13 +1606,13 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/models.ErrorResponse"
+                            "$ref": "#/definitions/github_com_ae-base-server_modules_base_models.ErrorResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/models.ErrorResponse"
+                            "$ref": "#/definitions/github_com_ae-base-server_modules_base_models.ErrorResponse"
                         }
                     }
                 }
@@ -2007,7 +1623,7 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "Soft delete a customer by ID within the authenticated tenant",
+                "description": "Soft delete a customer by ID",
                 "produces": [
                     "application/json"
                 ],
@@ -2028,19 +1644,19 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/models.APIResponse"
+                            "$ref": "#/definitions/github_com_ae-base-server_modules_base_models.APIResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/models.ErrorResponse"
+                            "$ref": "#/definitions/github_com_ae-base-server_modules_base_models.ErrorResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/models.ErrorResponse"
+                            "$ref": "#/definitions/github_com_ae-base-server_modules_base_models.ErrorResponse"
                         }
                     }
                 }
@@ -2089,13 +1705,13 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/models.APIResponse"
+                                    "$ref": "#/definitions/github_com_ae-base-server_internal_models.APIResponse"
                                 },
                                 {
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/models.ListResponse"
+                                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ListResponse"
                                         }
                                     }
                                 }
@@ -2105,7 +1721,7 @@ const docTemplate = `{
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/models.ErrorResponse"
+                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
                         }
                     }
                 }
@@ -2136,7 +1752,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/models.EmailSendRequest"
+                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.EmailSendRequest"
                         }
                     }
                 ],
@@ -2146,13 +1762,13 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/models.APIResponse"
+                                    "$ref": "#/definitions/github_com_ae-base-server_internal_models.APIResponse"
                                 },
                                 {
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/models.EmailResponse"
+                                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.EmailResponse"
                                         }
                                     }
                                 }
@@ -2162,7 +1778,7 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/models.ErrorResponse"
+                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
                         }
                     }
                 }
@@ -2189,7 +1805,7 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/models.APIResponse"
+                                    "$ref": "#/definitions/github_com_ae-base-server_internal_models.APIResponse"
                                 },
                                 {
                                     "type": "object",
@@ -2205,7 +1821,7 @@ const docTemplate = `{
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/models.ErrorResponse"
+                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
                         }
                     }
                 }
@@ -2241,13 +1857,13 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/models.APIResponse"
+                                    "$ref": "#/definitions/github_com_ae-base-server_internal_models.APIResponse"
                                 },
                                 {
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/models.EmailResponse"
+                                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.EmailResponse"
                                         }
                                     }
                                 }
@@ -2257,13 +1873,13 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/models.ErrorResponse"
+                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/models.ErrorResponse"
+                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
                         }
                     }
                 }
@@ -2283,13 +1899,33 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/models.HealthResponse"
+                            "$ref": "#/definitions/github_com_ae-base-server_modules_base_models.HealthResponse"
                         }
                     },
                     "503": {
                         "description": "Service Unavailable",
                         "schema": {
-                            "$ref": "#/definitions/models.ErrorResponse"
+                            "$ref": "#/definitions/github_com_ae-base-server_modules_base_models.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/ping": {
+            "get": {
+                "description": "Simple ping endpoint",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "health"
+                ],
+                "summary": "Ping check",
+                "responses": {
+                    "200": {
+                        "description": "pong",
+                        "schema": {
+                            "type": "string"
                         }
                     }
                 }
@@ -2297,7 +1933,7 @@ const docTemplate = `{
         },
         "/plans": {
             "get": {
-                "description": "Get a paginated list of all plans",
+                "description": "Get a list of all available subscription plans",
                 "produces": [
                     "application/json"
                 ],
@@ -2305,51 +1941,20 @@ const docTemplate = `{
                     "plans"
                 ],
                 "summary": "Get all plans",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "default": 1,
-                        "description": "Page number",
-                        "name": "page",
-                        "in": "query"
-                    },
-                    {
-                        "type": "integer",
-                        "default": 10,
-                        "description": "Items per page",
-                        "name": "limit",
-                        "in": "query"
-                    },
-                    {
-                        "type": "boolean",
-                        "description": "Filter by active status",
-                        "name": "active",
-                        "in": "query"
-                    }
-                ],
                 "responses": {
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/models.APIResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/models.ListResponse"
-                                        }
-                                    }
-                                }
-                            ]
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/github_com_ae-base-server_modules_base_models.Plan"
+                            }
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/models.ErrorResponse"
+                            "$ref": "#/definitions/github_com_ae-base-server_modules_base_models.ErrorResponse"
                         }
                     }
                 }
@@ -2360,7 +1965,7 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "Create a new subscription plan",
+                "description": "Create a new subscription plan (admin only)",
                 "consumes": [
                     "application/json"
                 ],
@@ -2373,12 +1978,12 @@ const docTemplate = `{
                 "summary": "Create a new plan",
                 "parameters": [
                     {
-                        "description": "Plan creation data",
-                        "name": "request",
+                        "description": "Plan data",
+                        "name": "plan",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/models.PlanCreateRequest"
+                            "$ref": "#/definitions/models.PlanRequest"
                         }
                     }
                 ],
@@ -2388,13 +1993,13 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/models.APIResponse"
+                                    "$ref": "#/definitions/github_com_ae-base-server_modules_base_models.APIResponse"
                                 },
                                 {
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/models.PlanResponse"
+                                            "$ref": "#/definitions/github_com_ae-base-server_modules_base_models.Plan"
                                         }
                                     }
                                 }
@@ -2404,13 +2009,7 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/models.ErrorResponse"
-                        }
-                    },
-                    "409": {
-                        "description": "Conflict",
-                        "schema": {
-                            "$ref": "#/definitions/models.ErrorResponse"
+                            "$ref": "#/definitions/github_com_ae-base-server_modules_base_models.ErrorResponse"
                         }
                     }
                 }
@@ -2418,7 +2017,7 @@ const docTemplate = `{
         },
         "/plans/{id}": {
             "get": {
-                "description": "Get a specific plan by its ID",
+                "description": "Get a specific subscription plan by its ID",
                 "produces": [
                     "application/json"
                 ],
@@ -2441,13 +2040,13 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/models.APIResponse"
+                                    "$ref": "#/definitions/github_com_ae-base-server_modules_base_models.APIResponse"
                                 },
                                 {
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/models.PlanResponse"
+                                            "$ref": "#/definitions/github_com_ae-base-server_modules_base_models.Plan"
                                         }
                                     }
                                 }
@@ -2457,13 +2056,13 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/models.ErrorResponse"
+                            "$ref": "#/definitions/github_com_ae-base-server_modules_base_models.ErrorResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/models.ErrorResponse"
+                            "$ref": "#/definitions/github_com_ae-base-server_modules_base_models.ErrorResponse"
                         }
                     }
                 }
@@ -2474,7 +2073,7 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "Update an existing plan by ID",
+                "description": "Update an existing subscription plan (admin only)",
                 "consumes": [
                     "application/json"
                 ],
@@ -2494,12 +2093,12 @@ const docTemplate = `{
                         "required": true
                     },
                     {
-                        "description": "Plan update data",
-                        "name": "request",
+                        "description": "Updated plan data",
+                        "name": "plan",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/models.PlanUpdateRequest"
+                            "$ref": "#/definitions/models.PlanRequest"
                         }
                     }
                 ],
@@ -2509,13 +2108,13 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/models.APIResponse"
+                                    "$ref": "#/definitions/github_com_ae-base-server_modules_base_models.APIResponse"
                                 },
                                 {
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/models.PlanResponse"
+                                            "$ref": "#/definitions/github_com_ae-base-server_modules_base_models.Plan"
                                         }
                                     }
                                 }
@@ -2525,13 +2124,13 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/models.ErrorResponse"
+                            "$ref": "#/definitions/github_com_ae-base-server_modules_base_models.ErrorResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/models.ErrorResponse"
+                            "$ref": "#/definitions/github_com_ae-base-server_modules_base_models.ErrorResponse"
                         }
                     }
                 }
@@ -2542,7 +2141,7 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "Soft delete a plan by ID",
+                "description": "Delete a subscription plan (admin only)",
                 "produces": [
                     "application/json"
                 ],
@@ -2563,254 +2162,19 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/models.APIResponse"
+                            "$ref": "#/definitions/github_com_ae-base-server_modules_base_models.APIResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/models.ErrorResponse"
+                            "$ref": "#/definitions/github_com_ae-base-server_modules_base_models.ErrorResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/models.ErrorResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/static": {
-            "get": {
-                "description": "Get a list of all JSON files available in the statics/json directory",
-                "tags": [
-                    "static"
-                ],
-                "summary": "List available static JSON files",
-                "responses": {
-                    "200": {
-                        "description": "List of available JSON files",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": true
-                        }
-                    },
-                    "500": {
-                        "description": "Failed to read directory",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/static/{filename}": {
-            "get": {
-                "description": "Dynamically serve any JSON data file from the statics/json directory. Just drop a .json file in the directory and it becomes available at /static/{filename}",
-                "tags": [
-                    "static"
-                ],
-                "summary": "Serve static JSON files",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "example": "\"bundeslaender\"",
-                        "description": "JSON filename (without .json extension)",
-                        "name": "filename",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "JSON file content",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": true
-                        }
-                    },
-                    "400": {
-                        "description": "Invalid file name",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "404": {
-                        "description": "File not found",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Failed to read file",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/user-settings": {
-            "get": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "Get the authenticated user's settings",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "user-settings"
-                ],
-                "summary": "Get user settings",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/models.APIResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/models.UserSettingsResponse"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "$ref": "#/definitions/models.ErrorResponse"
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "$ref": "#/definitions/models.ErrorResponse"
-                        }
-                    }
-                }
-            },
-            "put": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "Update the authenticated user's settings",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "user-settings"
-                ],
-                "summary": "Update user settings",
-                "parameters": [
-                    {
-                        "description": "User settings update data",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/models.UserSettingsUpdateRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/models.APIResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/models.UserSettingsResponse"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/models.ErrorResponse"
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "$ref": "#/definitions/models.ErrorResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/user-settings/reset": {
-            "post": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "Reset the authenticated user's settings to default values",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "user-settings"
-                ],
-                "summary": "Reset user settings",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/models.APIResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/models.UserSettingsResponse"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "$ref": "#/definitions/models.ErrorResponse"
+                            "$ref": "#/definitions/github_com_ae-base-server_modules_base_models.ErrorResponse"
                         }
                     }
                 }
@@ -2818,190 +2182,7 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "github_com_ae-saas-basic_ae-saas-basic_internal_models.ContactFormRequest": {
-            "description": "Contact form submission request",
-            "type": "object",
-            "required": [
-                "email",
-                "message",
-                "name",
-                "source",
-                "subject"
-            ],
-            "properties": {
-                "email": {
-                    "type": "string",
-                    "example": "john.doe@example.com"
-                },
-                "message": {
-                    "type": "string",
-                    "example": "I am interested in learning more about your therapy services."
-                },
-                "name": {
-                    "type": "string",
-                    "example": "John Doe"
-                },
-                "newsletter": {
-                    "type": "boolean",
-                    "example": true
-                },
-                "source": {
-                    "type": "string",
-                    "example": "website"
-                },
-                "subject": {
-                    "type": "string",
-                    "example": "Inquiry about therapy services"
-                },
-                "timestamp": {
-                    "type": "string",
-                    "example": "2025-08-03T10:00:00Z"
-                }
-            }
-        },
-        "github_com_ae-saas-basic_ae-saas-basic_internal_models.ContactFormResponse": {
-            "description": "Contact form submission response",
-            "type": "object",
-            "properties": {
-                "message": {
-                    "type": "string",
-                    "example": "Contact form submitted successfully"
-                },
-                "newsletterAdded": {
-                    "type": "boolean",
-                    "example": true
-                },
-                "newsletterMessage": {
-                    "type": "string",
-                    "example": "Successfully subscribed to newsletter"
-                }
-            }
-        },
-        "github_com_ae-saas-basic_ae-saas-basic_internal_models.Newsletter": {
-            "type": "object",
-            "properties": {
-                "createdAt": {
-                    "type": "string",
-                    "example": "2025-08-03T10:00:00Z"
-                },
-                "email": {
-                    "type": "string",
-                    "example": "john.doe@example.com"
-                },
-                "id": {
-                    "type": "integer",
-                    "example": 1
-                },
-                "interest": {
-                    "type": "string",
-                    "example": "mental_health"
-                },
-                "lastContact": {
-                    "type": "string",
-                    "example": "2025-08-03T10:00:00Z"
-                },
-                "name": {
-                    "type": "string",
-                    "example": "John Doe"
-                },
-                "source": {
-                    "type": "string",
-                    "example": "website"
-                },
-                "updatedAt": {
-                    "type": "string",
-                    "example": "2025-08-03T10:00:00Z"
-                }
-            }
-        },
-        "github_com_ae-saas-basic_ae-saas-basic_internal_modules.ModuleInfo": {
-            "type": "object",
-            "properties": {
-                "author": {
-                    "type": "string"
-                },
-                "description": {
-                    "type": "string"
-                },
-                "enabled": {
-                    "type": "boolean"
-                },
-                "name": {
-                    "type": "string"
-                },
-                "version": {
-                    "type": "string"
-                }
-            }
-        },
-        "handlers.ErrorResponse": {
-            "type": "object",
-            "properties": {
-                "details": {
-                    "type": "string",
-                    "example": "Additional error details"
-                },
-                "error": {
-                    "type": "string",
-                    "example": "Template name is required"
-                }
-            }
-        },
-        "handlers.PDFGenerateRequest": {
-            "type": "object",
-            "required": [
-                "data",
-                "fileName",
-                "templateName"
-            ],
-            "properties": {
-                "data": {
-                    "type": "object",
-                    "additionalProperties": true
-                },
-                "fileName": {
-                    "type": "string",
-                    "example": "generated-report"
-                },
-                "templateName": {
-                    "type": "string",
-                    "example": "report.html"
-                }
-            }
-        },
-        "handlers.PDFGenerateResponse": {
-            "type": "object",
-            "properties": {
-                "filename": {
-                    "type": "string",
-                    "example": "generated-report.pdf"
-                },
-                "message": {
-                    "type": "string",
-                    "example": "PDF generated successfully"
-                },
-                "success": {
-                    "type": "boolean",
-                    "example": true
-                }
-            }
-        },
-        "models.APIResponse": {
-            "type": "object",
-            "properties": {
-                "data": {},
-                "error": {
-                    "type": "string"
-                },
-                "message": {
-                    "type": "string"
-                },
-                "success": {
-                    "type": "boolean"
-                }
-            }
-        },
-        "models.ClientResponse": {
+        "entities.ClientResponse": {
             "type": "object",
             "properties": {
                 "admission_date": {
@@ -3033,6 +2214,12 @@ const docTemplate = `{
                 },
                 "contact_phone": {
                     "type": "string"
+                },
+                "cost_provider": {
+                    "$ref": "#/definitions/entities.CostProviderResponse"
+                },
+                "cost_provider_id": {
+                    "type": "integer"
                 },
                 "created_at": {
                     "type": "string"
@@ -3070,6 +2257,9 @@ const docTemplate = `{
                 "provider_approval_code": {
                     "type": "string"
                 },
+                "provider_approval_date": {
+                    "type": "string"
+                },
                 "referral_source": {
                     "type": "string"
                 },
@@ -3078,6 +2268,9 @@ const docTemplate = `{
                 },
                 "street_address": {
                     "type": "string"
+                },
+                "tenant_id": {
+                    "type": "integer"
                 },
                 "therapy_title": {
                     "type": "string"
@@ -3093,105 +2286,878 @@ const docTemplate = `{
                 }
             }
         },
-        "models.ContactCreateRequest": {
+        "entities.CostProviderResponse": {
+            "type": "object",
+            "properties": {
+                "city": {
+                    "type": "string"
+                },
+                "contact_name": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "department": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "organization": {
+                    "type": "string"
+                },
+                "street_address": {
+                    "type": "string"
+                },
+                "tenant_id": {
+                    "type": "integer"
+                },
+                "updated_at": {
+                    "type": "string"
+                },
+                "zip": {
+                    "type": "string"
+                }
+            }
+        },
+        "entities.CreateClientRequest": {
             "type": "object",
             "required": [
                 "first_name",
                 "last_name"
             ],
             "properties": {
-                "city": {
-                    "type": "string"
+                "admission_date": {
+                    "type": "string",
+                    "example": "2025-01-01"
                 },
-                "country": {
-                    "type": "string"
+                "alternative_email": {
+                    "type": "string",
+                    "example": "johnny.d@example.com"
+                },
+                "alternative_first_name": {
+                    "type": "string",
+                    "example": "Johnny"
+                },
+                "alternative_last_name": {
+                    "type": "string",
+                    "example": "D"
+                },
+                "alternative_phone": {
+                    "type": "string",
+                    "example": "+0987654321"
+                },
+                "city": {
+                    "type": "string",
+                    "example": "New York"
+                },
+                "contact_email": {
+                    "type": "string",
+                    "example": "jane.smith@example.com"
+                },
+                "contact_first_name": {
+                    "type": "string",
+                    "example": "Jane"
+                },
+                "contact_last_name": {
+                    "type": "string",
+                    "example": "Smith"
+                },
+                "contact_phone": {
+                    "type": "string",
+                    "example": "+1234567890"
+                },
+                "cost_provider_id": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "date_of_birth": {
+                    "type": "string",
+                    "example": "1990-01-15"
                 },
                 "email": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "john.doe@example.com"
                 },
                 "first_name": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "John"
+                },
+                "gender": {
+                    "type": "string",
+                    "example": "male"
+                },
+                "invoiced_individually": {
+                    "type": "boolean",
+                    "example": false
                 },
                 "last_name": {
-                    "type": "string"
-                },
-                "mobile": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "Doe"
                 },
                 "notes": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "Additional notes about the client"
                 },
                 "phone": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "+1234567890"
                 },
-                "street": {
-                    "type": "string"
+                "primary_language": {
+                    "type": "string",
+                    "example": "English"
                 },
-                "type": {
-                    "type": "string"
+                "provider_approval_code": {
+                    "type": "string",
+                    "example": "PROV123456"
+                },
+                "provider_approval_date": {
+                    "type": "string",
+                    "example": "2025-01-15"
+                },
+                "referral_source": {
+                    "type": "string",
+                    "example": "Doctor Smith"
+                },
+                "status": {
+                    "type": "string",
+                    "example": "waiting"
+                },
+                "street_address": {
+                    "type": "string",
+                    "example": "123 Main Street"
+                },
+                "therapy_title": {
+                    "type": "string",
+                    "example": "Cognitive Behavioral Therapy"
+                },
+                "unit_price": {
+                    "type": "number",
+                    "example": 150
                 },
                 "zip": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "12345"
                 }
             }
         },
-        "models.ContactResponse": {
+        "entities.CreateCostProviderRequest": {
+            "type": "object",
+            "required": [
+                "organization"
+            ],
+            "properties": {
+                "city": {
+                    "type": "string",
+                    "example": "New York"
+                },
+                "contact_name": {
+                    "type": "string",
+                    "example": "Jane Smith"
+                },
+                "department": {
+                    "type": "string",
+                    "example": "Mental Health Division"
+                },
+                "organization": {
+                    "type": "string",
+                    "example": "Health Insurance Corp"
+                },
+                "street_address": {
+                    "type": "string",
+                    "example": "456 Insurance Blvd"
+                },
+                "zip": {
+                    "type": "string",
+                    "example": "12345"
+                }
+            }
+        },
+        "entities.UpdateClientRequest": {
             "type": "object",
             "properties": {
-                "active": {
-                    "type": "boolean"
+                "admission_date": {
+                    "type": "string",
+                    "example": "2025-01-01"
+                },
+                "alternative_email": {
+                    "type": "string",
+                    "example": "johnny.d@example.com"
+                },
+                "alternative_first_name": {
+                    "type": "string",
+                    "example": "Johnny"
+                },
+                "alternative_last_name": {
+                    "type": "string",
+                    "example": "D"
+                },
+                "alternative_phone": {
+                    "type": "string",
+                    "example": "+0987654321"
                 },
                 "city": {
+                    "type": "string",
+                    "example": "New York"
+                },
+                "contact_email": {
+                    "type": "string",
+                    "example": "jane.smith@example.com"
+                },
+                "contact_first_name": {
+                    "type": "string",
+                    "example": "Jane"
+                },
+                "contact_last_name": {
+                    "type": "string",
+                    "example": "Smith"
+                },
+                "contact_phone": {
+                    "type": "string",
+                    "example": "+1234567890"
+                },
+                "cost_provider_id": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "date_of_birth": {
+                    "type": "string",
+                    "example": "1990-01-15"
+                },
+                "email": {
+                    "type": "string",
+                    "example": "john.doe@example.com"
+                },
+                "first_name": {
+                    "type": "string",
+                    "example": "John"
+                },
+                "gender": {
+                    "type": "string",
+                    "example": "male"
+                },
+                "invoiced_individually": {
+                    "type": "boolean",
+                    "example": false
+                },
+                "last_name": {
+                    "type": "string",
+                    "example": "Doe"
+                },
+                "notes": {
+                    "type": "string",
+                    "example": "Additional notes about the client"
+                },
+                "phone": {
+                    "type": "string",
+                    "example": "+1234567890"
+                },
+                "primary_language": {
+                    "type": "string",
+                    "example": "English"
+                },
+                "provider_approval_code": {
+                    "type": "string",
+                    "example": "PROV123456"
+                },
+                "provider_approval_date": {
+                    "type": "string",
+                    "example": "2025-01-15"
+                },
+                "referral_source": {
+                    "type": "string",
+                    "example": "Doctor Smith"
+                },
+                "status": {
+                    "type": "string",
+                    "example": "active"
+                },
+                "street_address": {
+                    "type": "string",
+                    "example": "123 Main Street"
+                },
+                "therapy_title": {
+                    "type": "string",
+                    "example": "Cognitive Behavioral Therapy"
+                },
+                "unit_price": {
+                    "type": "number",
+                    "example": 150
+                },
+                "zip": {
+                    "type": "string",
+                    "example": "12345"
+                }
+            }
+        },
+        "entities.UpdateCostProviderRequest": {
+            "type": "object",
+            "properties": {
+                "city": {
+                    "type": "string",
+                    "example": "New York"
+                },
+                "contact_name": {
+                    "type": "string",
+                    "example": "Jane Smith"
+                },
+                "department": {
+                    "type": "string",
+                    "example": "Mental Health Division"
+                },
+                "organization": {
+                    "type": "string",
+                    "example": "Health Insurance Corp"
+                },
+                "street_address": {
+                    "type": "string",
+                    "example": "456 Insurance Blvd"
+                },
+                "zip": {
+                    "type": "string",
+                    "example": "12345"
+                }
+            }
+        },
+        "github_com_ae-base-server_internal_models.APIResponse": {
+            "type": "object",
+            "properties": {
+                "data": {},
+                "error": {
                     "type": "string"
                 },
-                "country": {
+                "message": {
                     "type": "string"
                 },
+                "success": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "github_com_ae-base-server_internal_models.EmailResponse": {
+            "type": "object",
+            "properties": {
                 "created_at": {
                     "type": "string"
                 },
-                "email": {
+                "delivered_at": {
                     "type": "string"
                 },
-                "first_name": {
+                "error_message": {
+                    "type": "string"
+                },
+                "from": {
                     "type": "string"
                 },
                 "id": {
                     "type": "integer"
                 },
-                "last_name": {
+                "sent_at": {
                     "type": "string"
                 },
-                "mobile": {
+                "status": {
                     "type": "string"
                 },
-                "notes": {
+                "subject": {
                     "type": "string"
                 },
-                "phone": {
-                    "type": "string"
-                },
-                "street": {
-                    "type": "string"
-                },
-                "type": {
-                    "type": "string"
-                },
-                "zip": {
+                "to": {
                     "type": "string"
                 }
             }
         },
-        "models.ContactUpdateRequest": {
+        "github_com_ae-base-server_internal_models.EmailSendRequest": {
+            "type": "object",
+            "required": [
+                "body",
+                "from",
+                "subject",
+                "to"
+            ],
+            "properties": {
+                "body": {
+                    "type": "string"
+                },
+                "from": {
+                    "type": "string"
+                },
+                "html_body": {
+                    "type": "string"
+                },
+                "subject": {
+                    "type": "string"
+                },
+                "to": {
+                    "type": "string"
+                }
+            }
+        },
+        "github_com_ae-base-server_internal_models.ErrorResponse": {
             "type": "object",
             "properties": {
-                "active": {
+                "code": {
+                    "type": "integer"
+                },
+                "details": {
+                    "type": "string"
+                },
+                "error": {
+                    "type": "string"
+                }
+            }
+        },
+        "github_com_ae-base-server_internal_models.ListResponse": {
+            "type": "object",
+            "properties": {
+                "data": {},
+                "pagination": {
+                    "$ref": "#/definitions/github_com_ae-base-server_internal_models.PaginationResponse"
+                }
+            }
+        },
+        "github_com_ae-base-server_internal_models.PaginationResponse": {
+            "type": "object",
+            "properties": {
+                "limit": {
+                    "type": "integer"
+                },
+                "page": {
+                    "type": "integer"
+                },
+                "total": {
+                    "type": "integer"
+                },
+                "total_pages": {
+                    "type": "integer"
+                }
+            }
+        },
+        "github_com_ae-base-server_modules_base_models.APIResponse": {
+            "type": "object",
+            "properties": {
+                "data": {},
+                "error": {
+                    "type": "string"
+                },
+                "message": {
+                    "type": "string"
+                },
+                "success": {
                     "type": "boolean"
+                }
+            }
+        },
+        "github_com_ae-base-server_modules_base_models.ContactFormRequest": {
+            "type": "object",
+            "required": [
+                "email",
+                "message",
+                "name",
+                "subject"
+            ],
+            "properties": {
+                "email": {
+                    "type": "string",
+                    "example": "john@example.com"
+                },
+                "message": {
+                    "type": "string",
+                    "example": "I would like to know more about your services."
+                },
+                "name": {
+                    "type": "string",
+                    "example": "John Doe"
+                },
+                "subject": {
+                    "type": "string",
+                    "example": "Inquiry about services"
+                }
+            }
+        },
+        "github_com_ae-base-server_modules_base_models.ContactFormResponse": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "message": {
+                    "type": "string",
+                    "example": "Thank you for your message! We will get back to you soon."
+                }
+            }
+        },
+        "github_com_ae-base-server_modules_base_models.CustomerResponse": {
+            "type": "object",
+            "properties": {
+                "company_name": {
+                    "type": "string",
+                    "example": "Acme Corp"
+                },
+                "created_at": {
+                    "type": "string",
+                    "example": "2023-01-01T00:00:00Z"
+                },
+                "email": {
+                    "type": "string",
+                    "example": "john@example.com"
+                },
+                "id": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "name": {
+                    "type": "string",
+                    "example": "John Doe"
+                },
+                "phone": {
+                    "type": "string",
+                    "example": "+1-555-123-4567"
+                },
+                "updated_at": {
+                    "type": "string",
+                    "example": "2023-01-01T00:00:00Z"
+                }
+            }
+        },
+        "github_com_ae-base-server_modules_base_models.ErrorResponse": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "integer"
+                },
+                "details": {
+                    "type": "string"
+                },
+                "error": {
+                    "type": "string"
+                }
+            }
+        },
+        "github_com_ae-base-server_modules_base_models.HealthResponse": {
+            "type": "object",
+            "properties": {
+                "database": {
+                    "type": "string"
+                },
+                "environment": {
+                    "type": "object",
+                    "additionalProperties": true
+                },
+                "status": {
+                    "type": "string"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "version": {
+                    "type": "string"
+                }
+            }
+        },
+        "github_com_ae-base-server_modules_base_models.ListResponse": {
+            "type": "object",
+            "properties": {
+                "data": {},
+                "pagination": {
+                    "$ref": "#/definitions/github_com_ae-base-server_modules_base_models.PaginationResponse"
+                }
+            }
+        },
+        "github_com_ae-base-server_modules_base_models.LoginRequest": {
+            "type": "object",
+            "required": [
+                "email",
+                "password"
+            ],
+            "properties": {
+                "email": {
+                    "type": "string",
+                    "example": "user@example.com"
+                },
+                "password": {
+                    "type": "string",
+                    "minLength": 8,
+                    "example": "password123"
+                }
+            }
+        },
+        "github_com_ae-base-server_modules_base_models.LoginResponse": {
+            "type": "object",
+            "properties": {
+                "refresh_token": {
+                    "type": "string",
+                    "example": "refresh-token-123"
+                },
+                "token": {
+                    "type": "string",
+                    "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+                },
+                "user": {
+                    "$ref": "#/definitions/github_com_ae-base-server_modules_base_models.UserResponse"
+                }
+            }
+        },
+        "github_com_ae-base-server_modules_base_models.Newsletter": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string",
+                    "example": "2023-01-01T00:00:00Z"
+                },
+                "email": {
+                    "type": "string",
+                    "example": "user@example.com"
+                },
+                "id": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "is_active": {
+                    "type": "boolean",
+                    "example": true
+                }
+            }
+        },
+        "github_com_ae-base-server_modules_base_models.PaginationResponse": {
+            "type": "object",
+            "properties": {
+                "limit": {
+                    "type": "integer",
+                    "example": 10
+                },
+                "page": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "total": {
+                    "type": "integer",
+                    "example": 100
+                },
+                "total_pages": {
+                    "type": "integer",
+                    "example": 10
+                }
+            }
+        },
+        "github_com_ae-base-server_modules_base_models.Plan": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string",
+                    "example": "2023-01-01T00:00:00Z"
+                },
+                "currency": {
+                    "type": "string",
+                    "example": "USD"
+                },
+                "description": {
+                    "type": "string",
+                    "example": "Basic subscription plan"
+                },
+                "id": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "is_active": {
+                    "type": "boolean",
+                    "example": true
+                },
+                "name": {
+                    "type": "string",
+                    "example": "Basic Plan"
+                },
+                "price": {
+                    "type": "number",
+                    "example": 29.99
+                },
+                "updated_at": {
+                    "type": "string",
+                    "example": "2023-01-01T00:00:00Z"
+                }
+            }
+        },
+        "github_com_ae-base-server_modules_base_models.TenantResponse": {
+            "type": "object",
+            "properties": {
+                "display_name": {
+                    "type": "string",
+                    "example": "Acme Corp"
+                },
+                "id": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "is_active": {
+                    "type": "boolean",
+                    "example": true
+                },
+                "name": {
+                    "type": "string",
+                    "example": "acme"
+                }
+            }
+        },
+        "github_com_ae-base-server_modules_base_models.UserCreateRequest": {
+            "type": "object",
+            "required": [
+                "email",
+                "first_name",
+                "last_name",
+                "password",
+                "tenant_name"
+            ],
+            "properties": {
+                "company_name": {
+                    "type": "string",
+                    "example": "Acme Corp"
+                },
+                "email": {
+                    "type": "string",
+                    "example": "user@example.com"
+                },
+                "first_name": {
+                    "type": "string",
+                    "example": "John"
+                },
+                "last_name": {
+                    "type": "string",
+                    "example": "Doe"
+                },
+                "password": {
+                    "type": "string",
+                    "minLength": 8,
+                    "example": "password123"
+                },
+                "tenant_name": {
+                    "type": "string",
+                    "example": "acme"
+                }
+            }
+        },
+        "github_com_ae-base-server_modules_base_models.UserResponse": {
+            "type": "object",
+            "properties": {
+                "company_name": {
+                    "type": "string",
+                    "example": "Acme Corp"
+                },
+                "email": {
+                    "type": "string",
+                    "example": "user@example.com"
+                },
+                "first_name": {
+                    "type": "string",
+                    "example": "John"
+                },
+                "id": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "is_active": {
+                    "type": "boolean",
+                    "example": true
+                },
+                "last_name": {
+                    "type": "string",
+                    "example": "Doe"
+                },
+                "tenant": {
+                    "$ref": "#/definitions/github_com_ae-base-server_modules_base_models.TenantResponse"
+                }
+            }
+        },
+        "github_com_ae-base-server_modules_pdf_handlers.ErrorResponse": {
+            "type": "object",
+            "properties": {
+                "details": {
+                    "type": "string",
+                    "example": "Additional error details"
+                },
+                "error": {
+                    "type": "string",
+                    "example": "Template name is required"
+                }
+            }
+        },
+        "github_com_ae-base-server_modules_pdf_handlers.PDFGenerateRequest": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "object",
+                    "additionalProperties": true
+                },
+                "fileName": {
+                    "type": "string",
+                    "example": "generated-report"
+                },
+                "templateName": {
+                    "type": "string",
+                    "example": "report.html"
+                }
+            }
+        },
+        "github_com_ae-base-server_modules_pdf_handlers.PDFGenerateResponse": {
+            "type": "object",
+            "properties": {
+                "filename": {
+                    "type": "string",
+                    "example": "generated-report.pdf"
+                },
+                "message": {
+                    "type": "string",
+                    "example": "PDF generated successfully"
+                },
+                "success": {
+                    "type": "boolean",
+                    "example": true
+                }
+            }
+        },
+        "models.ClientResponse": {
+            "type": "object",
+            "properties": {
+                "admission_date": {
+                    "type": "string"
+                },
+                "alternative_email": {
+                    "type": "string"
+                },
+                "alternative_first_name": {
+                    "type": "string"
+                },
+                "alternative_last_name": {
+                    "type": "string"
+                },
+                "alternative_phone": {
+                    "type": "string"
                 },
                 "city": {
                     "type": "string"
                 },
-                "country": {
+                "contact_email": {
+                    "type": "string"
+                },
+                "contact_first_name": {
+                    "type": "string"
+                },
+                "contact_last_name": {
+                    "type": "string"
+                },
+                "contact_phone": {
+                    "type": "string"
+                },
+                "cost_provider": {
+                    "$ref": "#/definitions/models.CostProviderResponse"
+                },
+                "cost_provider_id": {
+                    "type": "integer"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "date_of_birth": {
                     "type": "string"
                 },
                 "email": {
@@ -3200,10 +3166,16 @@ const docTemplate = `{
                 "first_name": {
                     "type": "string"
                 },
-                "last_name": {
+                "gender": {
                     "type": "string"
                 },
-                "mobile": {
+                "id": {
+                    "type": "integer"
+                },
+                "invoiced_individually": {
+                    "type": "boolean"
+                },
+                "last_name": {
                     "type": "string"
                 },
                 "notes": {
@@ -3212,10 +3184,69 @@ const docTemplate = `{
                 "phone": {
                     "type": "string"
                 },
-                "street": {
+                "primary_language": {
                     "type": "string"
                 },
-                "type": {
+                "provider_approval_code": {
+                    "type": "string"
+                },
+                "provider_approval_date": {
+                    "type": "string"
+                },
+                "referral_source": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "street_address": {
+                    "type": "string"
+                },
+                "tenant_id": {
+                    "type": "integer"
+                },
+                "therapy_title": {
+                    "type": "string"
+                },
+                "unit_price": {
+                    "type": "number"
+                },
+                "updated_at": {
+                    "type": "string"
+                },
+                "zip": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.CostProviderResponse": {
+            "type": "object",
+            "properties": {
+                "city": {
+                    "type": "string"
+                },
+                "contact_name": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "department": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "organization": {
+                    "type": "string"
+                },
+                "street_address": {
+                    "type": "string"
+                },
+                "tenant_id": {
+                    "type": "integer"
+                },
+                "updated_at": {
                     "type": "string"
                 },
                 "zip": {
@@ -3270,6 +3301,10 @@ const docTemplate = `{
                     "type": "string",
                     "example": "+1234567890"
                 },
+                "cost_provider_id": {
+                    "type": "integer",
+                    "example": 1
+                },
                 "date_of_birth": {
                     "type": "string",
                     "example": "1990-01-15"
@@ -3310,6 +3345,10 @@ const docTemplate = `{
                     "type": "string",
                     "example": "PROV123456"
                 },
+                "provider_approval_date": {
+                    "type": "string",
+                    "example": "2025-01-15"
+                },
                 "referral_source": {
                     "type": "string",
                     "example": "Doctor Smith"
@@ -3336,438 +3375,116 @@ const docTemplate = `{
                 }
             }
         },
-        "models.CustomerCreateRequest": {
+        "models.CreateCostProviderRequest": {
+            "type": "object",
+            "required": [
+                "organization"
+            ],
+            "properties": {
+                "city": {
+                    "type": "string",
+                    "example": "New York"
+                },
+                "contact_name": {
+                    "type": "string",
+                    "example": "Jane Smith"
+                },
+                "department": {
+                    "type": "string",
+                    "example": "Mental Health Division"
+                },
+                "organization": {
+                    "type": "string",
+                    "example": "Health Insurance Corp"
+                },
+                "street_address": {
+                    "type": "string",
+                    "example": "456 Insurance Blvd"
+                },
+                "zip": {
+                    "type": "string",
+                    "example": "12345"
+                }
+            }
+        },
+        "models.CustomerRequest": {
             "type": "object",
             "required": [
                 "email",
-                "name",
-                "plan_id",
-                "tenant_id"
+                "name"
             ],
             "properties": {
-                "city": {
-                    "type": "string"
-                },
-                "country": {
-                    "type": "string"
+                "company_name": {
+                    "type": "string",
+                    "example": "Acme Corp"
                 },
                 "email": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "john@example.com"
                 },
                 "name": {
-                    "type": "string"
-                },
-                "payment_method": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "John Doe"
                 },
                 "phone": {
-                    "type": "string"
-                },
-                "plan_id": {
-                    "type": "integer"
-                },
-                "street": {
-                    "type": "string"
-                },
-                "tax_id": {
-                    "type": "string"
-                },
-                "tenant_id": {
-                    "type": "integer"
-                },
-                "vat": {
-                    "type": "string"
-                },
-                "zip": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "+1-555-123-4567"
                 }
             }
         },
-        "models.CustomerResponse": {
-            "type": "object",
-            "properties": {
-                "active": {
-                    "type": "boolean"
-                },
-                "city": {
-                    "type": "string"
-                },
-                "country": {
-                    "type": "string"
-                },
-                "created_at": {
-                    "type": "string"
-                },
-                "email": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "integer"
-                },
-                "name": {
-                    "type": "string"
-                },
-                "payment_method": {
-                    "type": "string"
-                },
-                "phone": {
-                    "type": "string"
-                },
-                "plan": {
-                    "$ref": "#/definitions/models.PlanResponse"
-                },
-                "plan_id": {
-                    "type": "integer"
-                },
-                "status": {
-                    "type": "string"
-                },
-                "street": {
-                    "type": "string"
-                },
-                "tax_id": {
-                    "type": "string"
-                },
-                "tenant": {
-                    "$ref": "#/definitions/models.TenantResponse"
-                },
-                "tenant_id": {
-                    "type": "integer"
-                },
-                "vat": {
-                    "type": "string"
-                },
-                "zip": {
-                    "type": "string"
-                }
-            }
-        },
-        "models.CustomerUpdateRequest": {
-            "type": "object",
-            "properties": {
-                "active": {
-                    "type": "boolean"
-                },
-                "city": {
-                    "type": "string"
-                },
-                "country": {
-                    "type": "string"
-                },
-                "email": {
-                    "type": "string"
-                },
-                "name": {
-                    "type": "string"
-                },
-                "payment_method": {
-                    "type": "string"
-                },
-                "phone": {
-                    "type": "string"
-                },
-                "plan_id": {
-                    "type": "integer"
-                },
-                "status": {
-                    "type": "string"
-                },
-                "street": {
-                    "type": "string"
-                },
-                "tax_id": {
-                    "type": "string"
-                },
-                "vat": {
-                    "type": "string"
-                },
-                "zip": {
-                    "type": "string"
-                }
-            }
-        },
-        "models.EmailResponse": {
-            "type": "object",
-            "properties": {
-                "created_at": {
-                    "type": "string"
-                },
-                "delivered_at": {
-                    "type": "string"
-                },
-                "error_message": {
-                    "type": "string"
-                },
-                "from": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "integer"
-                },
-                "sent_at": {
-                    "type": "string"
-                },
-                "status": {
-                    "type": "string"
-                },
-                "subject": {
-                    "type": "string"
-                },
-                "to": {
-                    "type": "string"
-                }
-            }
-        },
-        "models.EmailSendRequest": {
+        "models.ForgotPasswordRequest": {
             "type": "object",
             "required": [
-                "body",
-                "from",
-                "subject",
-                "to"
+                "email"
             ],
             "properties": {
-                "body": {
-                    "type": "string"
-                },
-                "from": {
-                    "type": "string"
-                },
-                "html_body": {
-                    "type": "string"
-                },
-                "subject": {
-                    "type": "string"
-                },
-                "to": {
-                    "type": "string"
+                "email": {
+                    "type": "string",
+                    "example": "user@example.com"
                 }
             }
         },
-        "models.ErrorResponse": {
+        "models.PlanRequest": {
             "type": "object",
+            "required": [
+                "currency",
+                "name",
+                "price"
+            ],
             "properties": {
-                "code": {
-                    "type": "integer"
+                "currency": {
+                    "type": "string",
+                    "example": "USD"
                 },
-                "details": {
-                    "type": "string"
+                "description": {
+                    "type": "string",
+                    "example": "Basic subscription plan"
                 },
-                "error": {
-                    "type": "string"
+                "name": {
+                    "type": "string",
+                    "example": "Basic Plan"
+                },
+                "price": {
+                    "type": "number",
+                    "example": 29.99
                 }
             }
         },
-        "models.HealthResponse": {
-            "type": "object",
-            "properties": {
-                "database": {
-                    "type": "string"
-                },
-                "settings": {
-                    "$ref": "#/definitions/models.HealthSettingsResponse"
-                },
-                "status": {
-                    "type": "string"
-                },
-                "timestamp": {
-                    "type": "string"
-                },
-                "version": {
-                    "type": "string"
-                }
-            }
-        },
-        "models.HealthSettingsResponse": {
-            "type": "object",
-            "properties": {
-                "mock_email": {
-                    "type": "boolean"
-                },
-                "rate_limit_enabled": {
-                    "type": "boolean"
-                }
-            }
-        },
-        "models.ListResponse": {
-            "type": "object",
-            "properties": {
-                "data": {},
-                "pagination": {
-                    "$ref": "#/definitions/models.PaginationResponse"
-                }
-            }
-        },
-        "models.LoginRequest": {
+        "models.ResetPasswordRequest": {
             "type": "object",
             "required": [
                 "password",
-                "username"
+                "token"
             ],
             "properties": {
                 "password": {
-                    "type": "string"
+                    "type": "string",
+                    "minLength": 8,
+                    "example": "newpassword123"
                 },
-                "username": {
-                    "type": "string"
-                }
-            }
-        },
-        "models.LoginResponse": {
-            "type": "object",
-            "properties": {
                 "token": {
-                    "type": "string"
-                },
-                "user": {
-                    "$ref": "#/definitions/models.UserResponse"
-                }
-            }
-        },
-        "models.PaginationResponse": {
-            "type": "object",
-            "properties": {
-                "limit": {
-                    "type": "integer"
-                },
-                "page": {
-                    "type": "integer"
-                },
-                "total": {
-                    "type": "integer"
-                },
-                "total_pages": {
-                    "type": "integer"
-                }
-            }
-        },
-        "models.PlanCreateRequest": {
-            "type": "object",
-            "required": [
-                "name",
-                "price",
-                "slug"
-            ],
-            "properties": {
-                "active": {
-                    "type": "boolean"
-                },
-                "currency": {
-                    "type": "string"
-                },
-                "description": {
-                    "type": "string"
-                },
-                "features": {
-                    "type": "string"
-                },
-                "invoice_period": {
-                    "type": "string"
-                },
-                "max_clients": {
-                    "type": "integer"
-                },
-                "max_users": {
-                    "type": "integer"
-                },
-                "name": {
-                    "type": "string"
-                },
-                "price": {
-                    "type": "number"
-                },
-                "slug": {
-                    "type": "string"
-                }
-            }
-        },
-        "models.PlanResponse": {
-            "type": "object",
-            "properties": {
-                "active": {
-                    "type": "boolean"
-                },
-                "created_at": {
-                    "type": "string"
-                },
-                "currency": {
-                    "type": "string"
-                },
-                "description": {
-                    "type": "string"
-                },
-                "features": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "integer"
-                },
-                "invoice_period": {
-                    "type": "string"
-                },
-                "max_clients": {
-                    "type": "integer"
-                },
-                "max_users": {
-                    "type": "integer"
-                },
-                "name": {
-                    "type": "string"
-                },
-                "price": {
-                    "type": "number"
-                },
-                "slug": {
-                    "type": "string"
-                }
-            }
-        },
-        "models.PlanUpdateRequest": {
-            "type": "object",
-            "properties": {
-                "active": {
-                    "type": "boolean"
-                },
-                "currency": {
-                    "type": "string"
-                },
-                "description": {
-                    "type": "string"
-                },
-                "features": {
-                    "type": "string"
-                },
-                "invoice_period": {
-                    "type": "string"
-                },
-                "max_clients": {
-                    "type": "integer"
-                },
-                "max_users": {
-                    "type": "integer"
-                },
-                "name": {
-                    "type": "string"
-                },
-                "price": {
-                    "type": "number"
-                }
-            }
-        },
-        "models.TenantResponse": {
-            "type": "object",
-            "properties": {
-                "created_at": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "integer"
-                },
-                "name": {
-                    "type": "string"
-                },
-                "slug": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "reset-token-123"
                 }
             }
         },
@@ -3814,6 +3531,10 @@ const docTemplate = `{
                     "type": "string",
                     "example": "+1234567890"
                 },
+                "cost_provider_id": {
+                    "type": "integer",
+                    "example": 1
+                },
                 "date_of_birth": {
                     "type": "string",
                     "example": "1990-01-15"
@@ -3854,6 +3575,10 @@ const docTemplate = `{
                     "type": "string",
                     "example": "PROV123456"
                 },
+                "provider_approval_date": {
+                    "type": "string",
+                    "example": "2025-01-15"
+                },
                 "referral_source": {
                     "type": "string",
                     "example": "Doctor Smith"
@@ -3880,146 +3605,32 @@ const docTemplate = `{
                 }
             }
         },
-        "models.UserCreateRequest": {
-            "type": "object",
-            "required": [
-                "email",
-                "first_name",
-                "last_name",
-                "password",
-                "username"
-            ],
-            "properties": {
-                "accept_terms": {
-                    "description": "Terms and conditions acceptance",
-                    "type": "boolean"
-                },
-                "company_name": {
-                    "description": "Required unless user-signup token is present",
-                    "type": "string"
-                },
-                "email": {
-                    "type": "string"
-                },
-                "first_name": {
-                    "type": "string"
-                },
-                "last_name": {
-                    "type": "string"
-                },
-                "newsletter_opt_in": {
-                    "description": "Newsletter subscription",
-                    "type": "boolean"
-                },
-                "password": {
-                    "type": "string"
-                },
-                "role": {
-                    "type": "string"
-                },
-                "username": {
-                    "type": "string"
-                }
-            }
-        },
-        "models.UserResponse": {
+        "models.UpdateCostProviderRequest": {
             "type": "object",
             "properties": {
-                "active": {
-                    "type": "boolean"
+                "city": {
+                    "type": "string",
+                    "example": "New York"
                 },
-                "created_at": {
-                    "type": "string"
+                "contact_name": {
+                    "type": "string",
+                    "example": "Jane Smith"
                 },
-                "email": {
-                    "type": "string"
+                "department": {
+                    "type": "string",
+                    "example": "Mental Health Division"
                 },
-                "email_verified": {
-                    "type": "boolean"
+                "organization": {
+                    "type": "string",
+                    "example": "Health Insurance Corp"
                 },
-                "email_verified_at": {
-                    "type": "string"
+                "street_address": {
+                    "type": "string",
+                    "example": "456 Insurance Blvd"
                 },
-                "first_name": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "integer"
-                },
-                "last_name": {
-                    "type": "string"
-                },
-                "role": {
-                    "type": "string"
-                },
-                "tenant": {
-                    "$ref": "#/definitions/models.TenantResponse"
-                },
-                "tenant_id": {
-                    "type": "integer"
-                },
-                "username": {
-                    "type": "string"
-                }
-            }
-        },
-        "models.UserSettingsResponse": {
-            "type": "object",
-            "properties": {
-                "id": {
-                    "type": "integer"
-                },
-                "language": {
-                    "type": "string"
-                },
-                "settings": {
-                    "type": "string"
-                },
-                "theme": {
-                    "type": "string"
-                },
-                "timezone": {
-                    "type": "string"
-                },
-                "updated_at": {
-                    "type": "string"
-                },
-                "user_id": {
-                    "type": "integer"
-                }
-            }
-        },
-        "models.UserSettingsUpdateRequest": {
-            "type": "object",
-            "properties": {
-                "language": {
-                    "type": "string"
-                },
-                "settings": {
-                    "type": "string"
-                },
-                "theme": {
-                    "type": "string"
-                },
-                "timezone": {
-                    "type": "string"
-                }
-            }
-        },
-        "utils.PasswordRequirements": {
-            "type": "object",
-            "properties": {
-                "capital": {
-                    "type": "boolean"
-                },
-                "minLength": {
-                    "type": "integer"
-                },
-                "numbers": {
-                    "type": "boolean"
-                },
-                "special": {
-                    "type": "boolean"
+                "zip": {
+                    "type": "string",
+                    "example": "12345"
                 }
             }
         }
@@ -4034,40 +3645,68 @@ const docTemplate = `{
     },
     "tags": [
         {
-            "description": "Authentication and user management endpoints (from base)",
+            "description": "[Base Module] Authentication and user management endpoints including login, registration, password reset, and token management",
             "name": "authentication"
         },
         {
-            "description": "User management operations (from base)",
+            "description": "[Base Module] User account management operations within tenant context",
             "name": "users"
         },
         {
-            "description": "Customer management operations (from base)",
+            "description": "[Base Module] Multi-tenant organization management and configuration",
+            "name": "tenants"
+        },
+        {
+            "description": "[Base Module] Public contact form submission and processing",
+            "name": "contact-form"
+        },
+        {
+            "description": "[Base Module] Newsletter subscription management and bulk operations",
+            "name": "newsletter"
+        },
+        {
+            "description": "[Customer Module] Customer relationship management and account operations",
             "name": "customers"
         },
         {
-            "description": "Client management operations (extended functionality)",
+            "description": "[Customer Module] Subscription plan management and pricing configuration",
+            "name": "plans"
+        },
+        {
+            "description": "[Email Module] Email sending, tracking, and notification management with SMTP integration",
+            "name": "emails"
+        },
+        {
+            "description": "[PDF Module] Document generation from templates with ChromeDP integration",
+            "name": "pdf"
+        },
+        {
+            "description": "[System] Application health checks, system status, and monitoring endpoints",
+            "name": "health"
+        },
+        {
+            "description": "[System] Module registry, discovery, and runtime information endpoints",
+            "name": "modules"
+        },
+        {
+            "description": "[Client Management Module] Client information management, therapy tracking, and client-specific operations",
             "name": "clients"
         },
         {
-            "description": "Contact management operations (from base)",
-            "name": "contacts"
-        },
-        {
-            "description": "Email management and sending operations (from base)",
-            "name": "emails"
+            "description": "[Client Management Module] Cost provider (insurance) management and approval tracking",
+            "name": "cost-providers"
         }
     ]
 }`
 
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
-	Version:          "1.0",
-	Host:             "localhost:8080",
+	Version:          "2.0",
+	Host:             "localhost:8081",
 	BasePath:         "/api/v1",
 	Schemes:          []string{},
-	Title:            "Unburdy Extended API",
-	Description:      "Extended SaaS backend API built on AE SaaS Basic, adding client management functionality",
+	Title:            "Unburdy Server - Modular API",
+	Description:      "A modular SaaS backend API built with Go and Gin framework. Features a plugin-based architecture with four core modules: Base (authentication, users, tenants, contacts, newsletter), Customer (plans, customer management), Email (SMTP services, notifications), and PDF (document generation). Supports dependency injection, event-driven communication, and automatic module discovery.",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,
 	LeftDelim:        "{{",

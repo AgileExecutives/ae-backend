@@ -4,10 +4,10 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/ae-base-server/internal/config"
 	"github.com/ae-base-server/internal/database"
 	"github.com/ae-base-server/internal/router"
 	"github.com/ae-base-server/pkg/auth"
+	"github.com/ae-base-server/pkg/config"
 	"github.com/gin-gonic/gin"
 )
 
@@ -27,10 +27,9 @@ func main() {
 		log.Fatal("Failed to connect to database:", err)
 	}
 
-	// Run migrations
-	if err := database.Migrate(db); err != nil {
-		log.Fatal("Failed to migrate database:", err)
-	}
+	// Note: Migrations are now handled by the bootstrap system
+	// This legacy server doesn't use the bootstrap system, so no migrations are run
+	log.Println("⚠️  Warning: This legacy server doesn't run migrations. Use the main server with bootstrap system.")
 
 	// Seed database with initial data
 	if err := database.Seed(db); err != nil {
