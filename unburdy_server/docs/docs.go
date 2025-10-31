@@ -401,6 +401,954 @@ const docTemplate = `{
                 }
             }
         },
+        "/calendar": {
+            "get": {
+                "description": "Retrieve all calendars for the authenticated user",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "calendar"
+                ],
+                "summary": "Get all calendars",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "default": 1,
+                        "description": "Page number",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 10,
+                        "description": "Items per page",
+                        "name": "limit",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Create a new calendar for the authenticated user",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "calendar"
+                ],
+                "summary": "Create a new calendar",
+                "parameters": [
+                    {
+                        "description": "Calendar data",
+                        "name": "calendar",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/entities.CreateCalendarRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/entities.CalendarResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/calendar-entries": {
+            "get": {
+                "description": "Retrieve all calendar entries for the authenticated user",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "calendar-entries"
+                ],
+                "summary": "Get all calendar entries",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "default": 1,
+                        "description": "Page number",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 10,
+                        "description": "Items per page",
+                        "name": "limit",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Create a new calendar entry",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "calendar-entries"
+                ],
+                "summary": "Create a new calendar entry",
+                "parameters": [
+                    {
+                        "description": "Calendar entry data",
+                        "name": "entry",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/entities.CreateCalendarEntryRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/entities.CalendarEntryResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/calendar-entries/{id}": {
+            "get": {
+                "description": "Retrieve a calendar entry by its ID",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "calendar-entries"
+                ],
+                "summary": "Get calendar entry by ID",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Calendar Entry ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/entities.CalendarEntryResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            },
+            "put": {
+                "description": "Update an existing calendar entry",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "calendar-entries"
+                ],
+                "summary": "Update calendar entry",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Calendar Entry ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Updated calendar entry data",
+                        "name": "entry",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/entities.UpdateCalendarEntryRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/entities.CalendarEntryResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "Delete a calendar entry by ID",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "calendar-entries"
+                ],
+                "summary": "Delete calendar entry",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Calendar Entry ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/calendar-series": {
+            "get": {
+                "description": "Retrieve all calendar series for the authenticated user",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "calendar-series"
+                ],
+                "summary": "Get all calendar series",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "default": 1,
+                        "description": "Page number",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 10,
+                        "description": "Items per page",
+                        "name": "limit",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Create a new calendar series for recurring events",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "calendar-series"
+                ],
+                "summary": "Create a new calendar series",
+                "parameters": [
+                    {
+                        "description": "Calendar series data",
+                        "name": "series",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/entities.CreateCalendarSeriesRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/entities.CalendarSeriesResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/calendar-series/{id}": {
+            "get": {
+                "description": "Retrieve a calendar series by its ID",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "calendar-series"
+                ],
+                "summary": "Get calendar series by ID",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Calendar Series ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/entities.CalendarSeriesResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            },
+            "put": {
+                "description": "Update an existing calendar series",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "calendar-series"
+                ],
+                "summary": "Update calendar series",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Calendar Series ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Updated calendar series data",
+                        "name": "series",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/entities.UpdateCalendarSeriesRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/entities.CalendarSeriesResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "Delete a calendar series by ID",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "calendar-series"
+                ],
+                "summary": "Delete calendar series",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Calendar Series ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/calendar/free-slots": {
+            "get": {
+                "description": "Find available time slots based on duration, interval, and maximum number",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "calendar-availability"
+                ],
+                "summary": "Get free time slots",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Duration in minutes",
+                        "name": "duration",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Interval between slots in minutes",
+                        "name": "interval",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Maximum number of slots to return",
+                        "name": "number_max",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/entities.FreeSlot"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/calendar/import-holidays": {
+            "post": {
+                "description": "Import holidays for a specific country and year",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "calendar-utilities"
+                ],
+                "summary": "Import holidays",
+                "parameters": [
+                    {
+                        "description": "Import holidays request",
+                        "name": "holidays",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/entities.ImportHolidaysRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/calendar/week": {
+            "get": {
+                "description": "Retrieve calendar entries for a specific week",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "calendar-views"
+                ],
+                "summary": "Get calendar week view",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Date in YYYY-MM-DD format",
+                        "name": "date",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/entities.CalendarEntryResponse"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/calendar/year": {
+            "get": {
+                "description": "Retrieve calendar entries for a specific year",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "calendar-views"
+                ],
+                "summary": "Get calendar year view",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Year",
+                        "name": "year",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/entities.CalendarEntryResponse"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/calendar/{id}": {
+            "get": {
+                "description": "Retrieve a calendar by its ID",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "calendar"
+                ],
+                "summary": "Get calendar by ID",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Calendar ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/entities.CalendarResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            },
+            "put": {
+                "description": "Update an existing calendar",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "calendar"
+                ],
+                "summary": "Update calendar",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Calendar ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Updated calendar data",
+                        "name": "calendar",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/entities.UpdateCalendarRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/entities.CalendarResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "Delete a calendar by ID",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "calendar"
+                ],
+                "summary": "Delete calendar",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Calendar ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
         "/clients": {
             "get": {
                 "security": [
@@ -426,8 +1374,8 @@ const docTemplate = `{
                     },
                     {
                         "type": "integer",
-                        "default": 10,
-                        "description": "Number of clients per page",
+                        "default": 200,
+                        "description": "Number of clients per page (respects DEFAULT_PAGE_LIMIT and MAX_PAGE_LIMIT env vars)",
                         "name": "limit",
                         "in": "query"
                     }
@@ -557,8 +1505,8 @@ const docTemplate = `{
                     },
                     {
                         "type": "integer",
-                        "default": 10,
-                        "description": "Number of clients per page",
+                        "default": 200,
+                        "description": "Number of clients per page (respects DEFAULT_PAGE_LIMIT and MAX_PAGE_LIMIT env vars)",
                         "name": "limit",
                         "in": "query"
                     }
@@ -982,8 +1930,8 @@ const docTemplate = `{
                     },
                     {
                         "type": "integer",
-                        "default": 10,
-                        "description": "Number of cost providers per page",
+                        "default": 200,
+                        "description": "Number of cost providers per page (respects DEFAULT_PAGE_LIMIT and MAX_PAGE_LIMIT env vars)",
                         "name": "limit",
                         "in": "query"
                     }
@@ -1113,8 +2061,8 @@ const docTemplate = `{
                     },
                     {
                         "type": "integer",
-                        "default": 10,
-                        "description": "Number of cost providers per page",
+                        "default": 200,
+                        "description": "Number of cost providers per page (respects DEFAULT_PAGE_LIMIT and MAX_PAGE_LIMIT env vars)",
                         "name": "limit",
                         "in": "query"
                     }
@@ -1885,6 +2833,255 @@ const docTemplate = `{
                 }
             }
         },
+        "/external-calendars": {
+            "get": {
+                "description": "Retrieve all external calendars for the authenticated user",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "external-calendars"
+                ],
+                "summary": "Get all external calendars",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "default": 1,
+                        "description": "Page number",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 10,
+                        "description": "Items per page",
+                        "name": "limit",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Create a new external calendar",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "external-calendars"
+                ],
+                "summary": "Create a new external calendar",
+                "parameters": [
+                    {
+                        "description": "External calendar data",
+                        "name": "external",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/entities.CreateExternalCalendarRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/entities.ExternalCalendarResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/external-calendars/{id}": {
+            "get": {
+                "description": "Retrieve an external calendar by its ID",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "external-calendars"
+                ],
+                "summary": "Get external calendar by ID",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "External Calendar ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/entities.ExternalCalendarResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            },
+            "put": {
+                "description": "Update an existing external calendar",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "external-calendars"
+                ],
+                "summary": "Update external calendar",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "External Calendar ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Updated external calendar data",
+                        "name": "external",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/entities.UpdateExternalCalendarRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/entities.ExternalCalendarResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "Delete an external calendar by ID",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "external-calendars"
+                ],
+                "summary": "Delete external calendar",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "External Calendar ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
         "/health": {
             "get": {
                 "description": "Check the health status of the API and database",
@@ -2179,9 +3376,274 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/static": {
+            "get": {
+                "description": "Get a list of all JSON files available in the statics/json directory",
+                "tags": [
+                    "static"
+                ],
+                "summary": "List available static JSON files",
+                "responses": {
+                    "200": {
+                        "description": "List of available JSON files",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to read directory",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/static/{filename}": {
+            "get": {
+                "description": "Securely serve JSON data files from statics/json directory only. Prevents access to other directories or file types.",
+                "tags": [
+                    "static"
+                ],
+                "summary": "Serve static JSON files (JSON only, security restricted)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "example": "\"bundeslaender\"",
+                        "description": "JSON filename (without .json extension)",
+                        "name": "filename",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "JSON file content",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid file name",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "File not found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to read file",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
+        "entities.CalendarEntryResponse": {
+            "type": "object",
+            "properties": {
+                "calendar_id": {
+                    "type": "integer"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "date_from": {
+                    "type": "string"
+                },
+                "date_to": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "is_all_day": {
+                    "type": "boolean"
+                },
+                "is_exception": {
+                    "type": "boolean"
+                },
+                "location": {
+                    "type": "string"
+                },
+                "participants": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "series_id": {
+                    "type": "integer"
+                },
+                "tenant_id": {
+                    "type": "integer"
+                },
+                "time_from": {
+                    "type": "string"
+                },
+                "time_to": {
+                    "type": "string"
+                },
+                "timezone": {
+                    "type": "string"
+                },
+                "title": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                },
+                "user_id": {
+                    "type": "integer"
+                }
+            }
+        },
+        "entities.CalendarResponse": {
+            "type": "object",
+            "properties": {
+                "calendar_entries": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/entities.CalendarEntryResponse"
+                    }
+                },
+                "calendar_series": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/entities.CalendarSeriesResponse"
+                    }
+                },
+                "calendar_uuid": {
+                    "type": "string"
+                },
+                "color": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "external_calendars": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/entities.ExternalCalendarResponse"
+                    }
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "tenant_id": {
+                    "type": "integer"
+                },
+                "timezone": {
+                    "type": "string"
+                },
+                "title": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                },
+                "user_id": {
+                    "type": "integer"
+                },
+                "weekly_availability": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                }
+            }
+        },
+        "entities.CalendarSeriesResponse": {
+            "type": "object",
+            "properties": {
+                "calendar_id": {
+                    "type": "integer"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "entry_uuid": {
+                    "type": "string"
+                },
+                "external_calendar_uuid": {
+                    "type": "string"
+                },
+                "external_uid": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "interval": {
+                    "type": "integer"
+                },
+                "location": {
+                    "type": "string"
+                },
+                "participants": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "sequence": {
+                    "type": "integer"
+                },
+                "tenant_id": {
+                    "type": "integer"
+                },
+                "time_end": {
+                    "type": "string"
+                },
+                "time_start": {
+                    "type": "string"
+                },
+                "title": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                },
+                "user_id": {
+                    "type": "integer"
+                },
+                "weekday": {
+                    "type": "integer"
+                }
+            }
+        },
         "entities.ClientResponse": {
             "type": "object",
             "properties": {
@@ -2321,126 +3783,17 @@ const docTemplate = `{
                 }
             }
         },
+        "entities.CreateCalendarEntryRequest": {
+            "type": "object"
+        },
+        "entities.CreateCalendarRequest": {
+            "type": "object"
+        },
+        "entities.CreateCalendarSeriesRequest": {
+            "type": "object"
+        },
         "entities.CreateClientRequest": {
-            "type": "object",
-            "required": [
-                "first_name",
-                "last_name"
-            ],
-            "properties": {
-                "admission_date": {
-                    "type": "string",
-                    "example": "2025-01-01"
-                },
-                "alternative_email": {
-                    "type": "string",
-                    "example": "johnny.d@example.com"
-                },
-                "alternative_first_name": {
-                    "type": "string",
-                    "example": "Johnny"
-                },
-                "alternative_last_name": {
-                    "type": "string",
-                    "example": "D"
-                },
-                "alternative_phone": {
-                    "type": "string",
-                    "example": "+0987654321"
-                },
-                "city": {
-                    "type": "string",
-                    "example": "New York"
-                },
-                "contact_email": {
-                    "type": "string",
-                    "example": "jane.smith@example.com"
-                },
-                "contact_first_name": {
-                    "type": "string",
-                    "example": "Jane"
-                },
-                "contact_last_name": {
-                    "type": "string",
-                    "example": "Smith"
-                },
-                "contact_phone": {
-                    "type": "string",
-                    "example": "+1234567890"
-                },
-                "cost_provider_id": {
-                    "type": "integer",
-                    "example": 1
-                },
-                "date_of_birth": {
-                    "type": "string",
-                    "example": "1990-01-15"
-                },
-                "email": {
-                    "type": "string",
-                    "example": "john.doe@example.com"
-                },
-                "first_name": {
-                    "type": "string",
-                    "example": "John"
-                },
-                "gender": {
-                    "type": "string",
-                    "example": "male"
-                },
-                "invoiced_individually": {
-                    "type": "boolean",
-                    "example": false
-                },
-                "last_name": {
-                    "type": "string",
-                    "example": "Doe"
-                },
-                "notes": {
-                    "type": "string",
-                    "example": "Additional notes about the client"
-                },
-                "phone": {
-                    "type": "string",
-                    "example": "+1234567890"
-                },
-                "primary_language": {
-                    "type": "string",
-                    "example": "English"
-                },
-                "provider_approval_code": {
-                    "type": "string",
-                    "example": "PROV123456"
-                },
-                "provider_approval_date": {
-                    "type": "string",
-                    "example": "2025-01-15"
-                },
-                "referral_source": {
-                    "type": "string",
-                    "example": "Doctor Smith"
-                },
-                "status": {
-                    "type": "string",
-                    "example": "waiting"
-                },
-                "street_address": {
-                    "type": "string",
-                    "example": "123 Main Street"
-                },
-                "therapy_title": {
-                    "type": "string",
-                    "example": "Cognitive Behavioral Therapy"
-                },
-                "unit_price": {
-                    "type": "number",
-                    "example": 150
-                },
-                "zip": {
-                    "type": "string",
-                    "example": "12345"
-                }
-            }
+            "type": "object"
         },
         "entities.CreateCostProviderRequest": {
             "type": "object",
@@ -2474,122 +3827,108 @@ const docTemplate = `{
                 }
             }
         },
-        "entities.UpdateClientRequest": {
+        "entities.CreateExternalCalendarRequest": {
+            "type": "object"
+        },
+        "entities.ExternalCalendarResponse": {
             "type": "object",
             "properties": {
-                "admission_date": {
-                    "type": "string",
-                    "example": "2025-01-01"
+                "calendar_id": {
+                    "type": "integer"
                 },
-                "alternative_email": {
-                    "type": "string",
-                    "example": "johnny.d@example.com"
+                "calendar_uuid": {
+                    "type": "string"
                 },
-                "alternative_first_name": {
-                    "type": "string",
-                    "example": "Johnny"
+                "color": {
+                    "type": "string"
                 },
-                "alternative_last_name": {
-                    "type": "string",
-                    "example": "D"
+                "created_at": {
+                    "type": "string"
                 },
-                "alternative_phone": {
-                    "type": "string",
-                    "example": "+0987654321"
+                "id": {
+                    "type": "integer"
                 },
-                "city": {
-                    "type": "string",
-                    "example": "New York"
+                "settings": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
                 },
-                "contact_email": {
-                    "type": "string",
-                    "example": "jane.smith@example.com"
+                "sync_last_run": {
+                    "type": "string"
                 },
-                "contact_first_name": {
-                    "type": "string",
-                    "example": "Jane"
+                "tenant_id": {
+                    "type": "integer"
                 },
-                "contact_last_name": {
-                    "type": "string",
-                    "example": "Smith"
+                "title": {
+                    "type": "string"
                 },
-                "contact_phone": {
-                    "type": "string",
-                    "example": "+1234567890"
+                "updated_at": {
+                    "type": "string"
                 },
-                "cost_provider_id": {
-                    "type": "integer",
-                    "example": 1
+                "url": {
+                    "type": "string"
                 },
-                "date_of_birth": {
-                    "type": "string",
-                    "example": "1990-01-15"
-                },
-                "email": {
-                    "type": "string",
-                    "example": "john.doe@example.com"
-                },
-                "first_name": {
-                    "type": "string",
-                    "example": "John"
-                },
-                "gender": {
-                    "type": "string",
-                    "example": "male"
-                },
-                "invoiced_individually": {
-                    "type": "boolean",
-                    "example": false
-                },
-                "last_name": {
-                    "type": "string",
-                    "example": "Doe"
-                },
-                "notes": {
-                    "type": "string",
-                    "example": "Additional notes about the client"
-                },
-                "phone": {
-                    "type": "string",
-                    "example": "+1234567890"
-                },
-                "primary_language": {
-                    "type": "string",
-                    "example": "English"
-                },
-                "provider_approval_code": {
-                    "type": "string",
-                    "example": "PROV123456"
-                },
-                "provider_approval_date": {
-                    "type": "string",
-                    "example": "2025-01-15"
-                },
-                "referral_source": {
-                    "type": "string",
-                    "example": "Doctor Smith"
-                },
-                "status": {
-                    "type": "string",
-                    "example": "active"
-                },
-                "street_address": {
-                    "type": "string",
-                    "example": "123 Main Street"
-                },
-                "therapy_title": {
-                    "type": "string",
-                    "example": "Cognitive Behavioral Therapy"
-                },
-                "unit_price": {
-                    "type": "number",
-                    "example": 150
-                },
-                "zip": {
-                    "type": "string",
-                    "example": "12345"
+                "user_id": {
+                    "type": "integer"
                 }
             }
+        },
+        "entities.FreeSlot": {
+            "type": "object",
+            "properties": {
+                "duration": {
+                    "type": "integer",
+                    "example": 60
+                },
+                "end_time": {
+                    "type": "string",
+                    "example": "2025-01-15T10:00:00Z"
+                },
+                "start_time": {
+                    "type": "string",
+                    "example": "2025-01-15T09:00:00Z"
+                }
+            }
+        },
+        "entities.ImportHolidaysRequest": {
+            "type": "object",
+            "required": [
+                "country",
+                "year"
+            ],
+            "properties": {
+                "country": {
+                    "type": "string",
+                    "example": "US"
+                },
+                "year": {
+                    "type": "integer",
+                    "maximum": 2100,
+                    "minimum": 1900,
+                    "example": 2025
+                }
+            }
+        },
+        "entities.NullableDate": {
+            "type": "object",
+            "properties": {
+                "time.Time": {
+                    "type": "string"
+                }
+            }
+        },
+        "entities.UpdateCalendarEntryRequest": {
+            "type": "object"
+        },
+        "entities.UpdateCalendarRequest": {
+            "type": "object"
+        },
+        "entities.UpdateCalendarSeriesRequest": {
+            "type": "object"
+        },
+        "entities.UpdateClientRequest": {
+            "type": "object"
         },
         "entities.UpdateCostProviderRequest": {
             "type": "object",
@@ -2619,6 +3958,9 @@ const docTemplate = `{
                     "example": "12345"
                 }
             }
+        },
+        "entities.UpdateExternalCalendarRequest": {
+            "type": "object"
         },
         "github_com_ae-base-server_internal_models.APIResponse": {
             "type": "object",
@@ -3695,6 +5037,34 @@ const docTemplate = `{
         {
             "description": "[Client Management Module] Cost provider (insurance) management and approval tracking",
             "name": "cost-providers"
+        },
+        {
+            "description": "[Calendar Module] Calendar management, scheduling, and event organization",
+            "name": "calendar"
+        },
+        {
+            "description": "[Calendar Module] Individual calendar entries and event management",
+            "name": "calendar-entries"
+        },
+        {
+            "description": "[Calendar Module] Recurring event series and pattern management",
+            "name": "calendar-series"
+        },
+        {
+            "description": "[Calendar Module] External calendar integration and synchronization",
+            "name": "external-calendars"
+        },
+        {
+            "description": "[Calendar Module] Calendar views including week, year, and custom period views",
+            "name": "calendar-views"
+        },
+        {
+            "description": "[Calendar Module] Availability checking and free slot discovery",
+            "name": "calendar-availability"
+        },
+        {
+            "description": "[Calendar Module] Calendar utilities including holiday import and data management",
+            "name": "calendar-utilities"
         }
     ]
 }`
@@ -3702,7 +5072,7 @@ const docTemplate = `{
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
 	Version:          "2.0",
-	Host:             "localhost:8081",
+	Host:             "localhost:8080",
 	BasePath:         "/api/v1",
 	Schemes:          []string{},
 	Title:            "Unburdy Server - Modular API",

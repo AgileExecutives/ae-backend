@@ -24,7 +24,7 @@ func (s *ClientService) CreateClient(req entities.CreateClientRequest, tenantID 
 		CostProviderID:       req.CostProviderID,
 		FirstName:            req.FirstName,
 		LastName:             req.LastName,
-		DateOfBirth:          req.DateOfBirth,
+		DateOfBirth:          req.DateOfBirth.Time,
 		Gender:               req.Gender,
 		PrimaryLanguage:      req.PrimaryLanguage,
 		ContactFirstName:     req.ContactFirstName,
@@ -42,9 +42,10 @@ func (s *ClientService) CreateClient(req entities.CreateClientRequest, tenantID 
 		Phone:                req.Phone,
 		TherapyTitle:         req.TherapyTitle,
 		ProviderApprovalCode: req.ProviderApprovalCode,
+		ProviderApprovalDate: req.ProviderApprovalDate.Time,
 		UnitPrice:            req.UnitPrice,
 		Status:               req.Status,
-		AdmissionDate:        req.AdmissionDate,
+		AdmissionDate:        req.AdmissionDate.Time,
 		ReferralSource:       req.ReferralSource,
 		Notes:                req.Notes,
 	}
@@ -126,7 +127,7 @@ func (s *ClientService) UpdateClient(id, tenantID uint, req entities.UpdateClien
 		client.LastName = *req.LastName
 	}
 	if req.DateOfBirth != nil {
-		client.DateOfBirth = req.DateOfBirth
+		client.DateOfBirth = req.DateOfBirth.Time
 	}
 	if req.Gender != nil {
 		client.Gender = *req.Gender
@@ -183,7 +184,7 @@ func (s *ClientService) UpdateClient(id, tenantID uint, req entities.UpdateClien
 		client.ProviderApprovalCode = *req.ProviderApprovalCode
 	}
 	if req.ProviderApprovalDate != nil {
-		client.ProviderApprovalDate = req.ProviderApprovalDate
+		client.ProviderApprovalDate = req.ProviderApprovalDate.Time
 	}
 	if req.UnitPrice != nil {
 		client.UnitPrice = req.UnitPrice
@@ -192,7 +193,7 @@ func (s *ClientService) UpdateClient(id, tenantID uint, req entities.UpdateClien
 		client.Status = *req.Status
 	}
 	if req.AdmissionDate != nil {
-		client.AdmissionDate = req.AdmissionDate
+		client.AdmissionDate = req.AdmissionDate.Time
 	}
 	if req.ReferralSource != nil {
 		client.ReferralSource = *req.ReferralSource

@@ -1,5 +1,126 @@
 basePath: /api/v1
 definitions:
+  entities.CalendarEntryResponse:
+    properties:
+      calendar_id:
+        type: integer
+      created_at:
+        type: string
+      date_from:
+        type: string
+      date_to:
+        type: string
+      description:
+        type: string
+      id:
+        type: integer
+      is_all_day:
+        type: boolean
+      is_exception:
+        type: boolean
+      location:
+        type: string
+      participants:
+        items:
+          type: integer
+        type: array
+      series_id:
+        type: integer
+      tenant_id:
+        type: integer
+      time_from:
+        type: string
+      time_to:
+        type: string
+      timezone:
+        type: string
+      title:
+        type: string
+      type:
+        type: string
+      updated_at:
+        type: string
+      user_id:
+        type: integer
+    type: object
+  entities.CalendarResponse:
+    properties:
+      calendar_entries:
+        items:
+          $ref: '#/definitions/entities.CalendarEntryResponse'
+        type: array
+      calendar_series:
+        items:
+          $ref: '#/definitions/entities.CalendarSeriesResponse'
+        type: array
+      calendar_uuid:
+        type: string
+      color:
+        type: string
+      created_at:
+        type: string
+      external_calendars:
+        items:
+          $ref: '#/definitions/entities.ExternalCalendarResponse'
+        type: array
+      id:
+        type: integer
+      tenant_id:
+        type: integer
+      timezone:
+        type: string
+      title:
+        type: string
+      updated_at:
+        type: string
+      user_id:
+        type: integer
+      weekly_availability:
+        items:
+          type: integer
+        type: array
+    type: object
+  entities.CalendarSeriesResponse:
+    properties:
+      calendar_id:
+        type: integer
+      created_at:
+        type: string
+      description:
+        type: string
+      entry_uuid:
+        type: string
+      external_calendar_uuid:
+        type: string
+      external_uid:
+        type: string
+      id:
+        type: integer
+      interval:
+        type: integer
+      location:
+        type: string
+      participants:
+        items:
+          type: integer
+        type: array
+      sequence:
+        type: integer
+      tenant_id:
+        type: integer
+      time_end:
+        type: string
+      time_start:
+        type: string
+      title:
+        type: string
+      updated_at:
+        type: string
+      user_id:
+        type: integer
+      weekday:
+        type: integer
+    type: object
   entities.ClientResponse:
     properties:
       admission_date:
@@ -92,95 +213,13 @@ definitions:
       zip:
         type: string
     type: object
+  entities.CreateCalendarEntryRequest:
+    type: object
+  entities.CreateCalendarRequest:
+    type: object
+  entities.CreateCalendarSeriesRequest:
+    type: object
   entities.CreateClientRequest:
-    properties:
-      admission_date:
-        example: "2025-01-01"
-        type: string
-      alternative_email:
-        example: johnny.d@example.com
-        type: string
-      alternative_first_name:
-        example: Johnny
-        type: string
-      alternative_last_name:
-        example: D
-        type: string
-      alternative_phone:
-        example: "+0987654321"
-        type: string
-      city:
-        example: New York
-        type: string
-      contact_email:
-        example: jane.smith@example.com
-        type: string
-      contact_first_name:
-        example: Jane
-        type: string
-      contact_last_name:
-        example: Smith
-        type: string
-      contact_phone:
-        example: "+1234567890"
-        type: string
-      cost_provider_id:
-        example: 1
-        type: integer
-      date_of_birth:
-        example: "1990-01-15"
-        type: string
-      email:
-        example: john.doe@example.com
-        type: string
-      first_name:
-        example: John
-        type: string
-      gender:
-        example: male
-        type: string
-      invoiced_individually:
-        example: false
-        type: boolean
-      last_name:
-        example: Doe
-        type: string
-      notes:
-        example: Additional notes about the client
-        type: string
-      phone:
-        example: "+1234567890"
-        type: string
-      primary_language:
-        example: English
-        type: string
-      provider_approval_code:
-        example: PROV123456
-        type: string
-      provider_approval_date:
-        example: "2025-01-15"
-        type: string
-      referral_source:
-        example: Doctor Smith
-        type: string
-      status:
-        example: waiting
-        type: string
-      street_address:
-        example: 123 Main Street
-        type: string
-      therapy_title:
-        example: Cognitive Behavioral Therapy
-        type: string
-      unit_price:
-        example: 150
-        type: number
-      zip:
-        example: "12345"
-        type: string
-    required:
-    - first_name
-    - last_name
     type: object
   entities.CreateCostProviderRequest:
     properties:
@@ -205,92 +244,75 @@ definitions:
     required:
     - organization
     type: object
-  entities.UpdateClientRequest:
+  entities.CreateExternalCalendarRequest:
+    type: object
+  entities.ExternalCalendarResponse:
     properties:
-      admission_date:
-        example: "2025-01-01"
-        type: string
-      alternative_email:
-        example: johnny.d@example.com
-        type: string
-      alternative_first_name:
-        example: Johnny
-        type: string
-      alternative_last_name:
-        example: D
-        type: string
-      alternative_phone:
-        example: "+0987654321"
-        type: string
-      city:
-        example: New York
-        type: string
-      contact_email:
-        example: jane.smith@example.com
-        type: string
-      contact_first_name:
-        example: Jane
-        type: string
-      contact_last_name:
-        example: Smith
-        type: string
-      contact_phone:
-        example: "+1234567890"
-        type: string
-      cost_provider_id:
-        example: 1
+      calendar_id:
         type: integer
-      date_of_birth:
-        example: "1990-01-15"
+      calendar_uuid:
         type: string
-      email:
-        example: john.doe@example.com
+      color:
         type: string
-      first_name:
-        example: John
+      created_at:
         type: string
-      gender:
-        example: male
+      id:
+        type: integer
+      settings:
+        items:
+          type: integer
+        type: array
+      sync_last_run:
         type: string
-      invoiced_individually:
-        example: false
-        type: boolean
-      last_name:
-        example: Doe
+      tenant_id:
+        type: integer
+      title:
         type: string
-      notes:
-        example: Additional notes about the client
+      updated_at:
         type: string
-      phone:
-        example: "+1234567890"
+      url:
         type: string
-      primary_language:
-        example: English
+      user_id:
+        type: integer
+    type: object
+  entities.FreeSlot:
+    properties:
+      duration:
+        example: 60
+        type: integer
+      end_time:
+        example: "2025-01-15T10:00:00Z"
         type: string
-      provider_approval_code:
-        example: PROV123456
+      start_time:
+        example: "2025-01-15T09:00:00Z"
         type: string
-      provider_approval_date:
-        example: "2025-01-15"
+    type: object
+  entities.ImportHolidaysRequest:
+    properties:
+      country:
+        example: US
         type: string
-      referral_source:
-        example: Doctor Smith
+      year:
+        example: 2025
+        maximum: 2100
+        minimum: 1900
+        type: integer
+    required:
+    - country
+    - year
+    type: object
+  entities.NullableDate:
+    properties:
+      time.Time:
         type: string
-      status:
-        example: active
-        type: string
-      street_address:
-        example: 123 Main Street
-        type: string
-      therapy_title:
-        example: Cognitive Behavioral Therapy
-        type: string
-      unit_price:
-        example: 150
-        type: number
-      zip:
-        example: "12345"
-        type: string
+    type: object
+  entities.UpdateCalendarEntryRequest:
+    type: object
+  entities.UpdateCalendarRequest:
+    type: object
+  entities.UpdateCalendarSeriesRequest:
+    type: object
+  entities.UpdateClientRequest:
     type: object
   entities.UpdateCostProviderRequest:
     properties:
@@ -312,6 +334,8 @@ definitions:
       zip:
         example: "12345"
         type: string
+    type: object
+  entities.UpdateExternalCalendarRequest:
     type: object
   github_com_ae-base-server_internal_models.APIResponse:
     properties:
@@ -1031,7 +1055,7 @@ definitions:
         example: "12345"
         type: string
     type: object
-host: localhost:8081
+host: localhost:8080
 info:
   contact:
     email: support@ae-base-server.com
@@ -1283,6 +1307,653 @@ paths:
       summary: Verify email address
       tags:
       - authentication
+  /calendar:
+    get:
+      description: Retrieve all calendars for the authenticated user
+      parameters:
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 10
+        description: Items per page
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Get all calendars
+      tags:
+      - calendar
+    post:
+      consumes:
+      - application/json
+      description: Create a new calendar for the authenticated user
+      parameters:
+      - description: Calendar data
+        in: body
+        name: calendar
+        required: true
+        schema:
+          $ref: '#/definitions/entities.CreateCalendarRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/entities.CalendarResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Create a new calendar
+      tags:
+      - calendar
+  /calendar-entries:
+    get:
+      description: Retrieve all calendar entries for the authenticated user
+      parameters:
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 10
+        description: Items per page
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Get all calendar entries
+      tags:
+      - calendar-entries
+    post:
+      consumes:
+      - application/json
+      description: Create a new calendar entry
+      parameters:
+      - description: Calendar entry data
+        in: body
+        name: entry
+        required: true
+        schema:
+          $ref: '#/definitions/entities.CreateCalendarEntryRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/entities.CalendarEntryResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Create a new calendar entry
+      tags:
+      - calendar-entries
+  /calendar-entries/{id}:
+    delete:
+      description: Delete a calendar entry by ID
+      parameters:
+      - description: Calendar Entry ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Delete calendar entry
+      tags:
+      - calendar-entries
+    get:
+      description: Retrieve a calendar entry by its ID
+      parameters:
+      - description: Calendar Entry ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/entities.CalendarEntryResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Get calendar entry by ID
+      tags:
+      - calendar-entries
+    put:
+      consumes:
+      - application/json
+      description: Update an existing calendar entry
+      parameters:
+      - description: Calendar Entry ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Updated calendar entry data
+        in: body
+        name: entry
+        required: true
+        schema:
+          $ref: '#/definitions/entities.UpdateCalendarEntryRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/entities.CalendarEntryResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Update calendar entry
+      tags:
+      - calendar-entries
+  /calendar-series:
+    get:
+      description: Retrieve all calendar series for the authenticated user
+      parameters:
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 10
+        description: Items per page
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Get all calendar series
+      tags:
+      - calendar-series
+    post:
+      consumes:
+      - application/json
+      description: Create a new calendar series for recurring events
+      parameters:
+      - description: Calendar series data
+        in: body
+        name: series
+        required: true
+        schema:
+          $ref: '#/definitions/entities.CreateCalendarSeriesRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/entities.CalendarSeriesResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Create a new calendar series
+      tags:
+      - calendar-series
+  /calendar-series/{id}:
+    delete:
+      description: Delete a calendar series by ID
+      parameters:
+      - description: Calendar Series ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Delete calendar series
+      tags:
+      - calendar-series
+    get:
+      description: Retrieve a calendar series by its ID
+      parameters:
+      - description: Calendar Series ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/entities.CalendarSeriesResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Get calendar series by ID
+      tags:
+      - calendar-series
+    put:
+      consumes:
+      - application/json
+      description: Update an existing calendar series
+      parameters:
+      - description: Calendar Series ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Updated calendar series data
+        in: body
+        name: series
+        required: true
+        schema:
+          $ref: '#/definitions/entities.UpdateCalendarSeriesRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/entities.CalendarSeriesResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Update calendar series
+      tags:
+      - calendar-series
+  /calendar/{id}:
+    delete:
+      description: Delete a calendar by ID
+      parameters:
+      - description: Calendar ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Delete calendar
+      tags:
+      - calendar
+    get:
+      description: Retrieve a calendar by its ID
+      parameters:
+      - description: Calendar ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/entities.CalendarResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Get calendar by ID
+      tags:
+      - calendar
+    put:
+      consumes:
+      - application/json
+      description: Update an existing calendar
+      parameters:
+      - description: Calendar ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Updated calendar data
+        in: body
+        name: calendar
+        required: true
+        schema:
+          $ref: '#/definitions/entities.UpdateCalendarRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/entities.CalendarResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Update calendar
+      tags:
+      - calendar
+  /calendar/free-slots:
+    get:
+      description: Find available time slots based on duration, interval, and maximum
+        number
+      parameters:
+      - description: Duration in minutes
+        in: query
+        name: duration
+        required: true
+        type: integer
+      - description: Interval between slots in minutes
+        in: query
+        name: interval
+        required: true
+        type: integer
+      - description: Maximum number of slots to return
+        in: query
+        name: number_max
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/entities.FreeSlot'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Get free time slots
+      tags:
+      - calendar-availability
+  /calendar/import-holidays:
+    post:
+      consumes:
+      - application/json
+      description: Import holidays for a specific country and year
+      parameters:
+      - description: Import holidays request
+        in: body
+        name: holidays
+        required: true
+        schema:
+          $ref: '#/definitions/entities.ImportHolidaysRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Import holidays
+      tags:
+      - calendar-utilities
+  /calendar/week:
+    get:
+      description: Retrieve calendar entries for a specific week
+      parameters:
+      - description: Date in YYYY-MM-DD format
+        in: query
+        name: date
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/entities.CalendarEntryResponse'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Get calendar week view
+      tags:
+      - calendar-views
+  /calendar/year:
+    get:
+      description: Retrieve calendar entries for a specific year
+      parameters:
+      - description: Year
+        in: query
+        name: year
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/entities.CalendarEntryResponse'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Get calendar year view
+      tags:
+      - calendar-views
   /clients:
     get:
       description: Retrieve all clients with optional pagination
@@ -1292,8 +1963,9 @@ paths:
         in: query
         name: page
         type: integer
-      - default: 10
-        description: Number of clients per page
+      - default: 200
+        description: Number of clients per page (respects DEFAULT_PAGE_LIMIT and MAX_PAGE_LIMIT
+          env vars)
         in: query
         name: limit
         type: integer
@@ -1520,8 +2192,9 @@ paths:
         in: query
         name: page
         type: integer
-      - default: 10
-        description: Number of clients per page
+      - default: 200
+        description: Number of clients per page (respects DEFAULT_PAGE_LIMIT and MAX_PAGE_LIMIT
+          env vars)
         in: query
         name: limit
         type: integer
@@ -1651,8 +2324,9 @@ paths:
         in: query
         name: page
         type: integer
-      - default: 10
-        description: Number of cost providers per page
+      - default: 200
+        description: Number of cost providers per page (respects DEFAULT_PAGE_LIMIT
+          and MAX_PAGE_LIMIT env vars)
         in: query
         name: limit
         type: integer
@@ -1879,8 +2553,9 @@ paths:
         in: query
         name: page
         type: integer
-      - default: 10
-        description: Number of cost providers per page
+      - default: 200
+        description: Number of cost providers per page (respects DEFAULT_PAGE_LIMIT
+          and MAX_PAGE_LIMIT env vars)
         in: query
         name: limit
         type: integer
@@ -2215,6 +2890,176 @@ paths:
       summary: Get email statistics
       tags:
       - emails
+  /external-calendars:
+    get:
+      description: Retrieve all external calendars for the authenticated user
+      parameters:
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 10
+        description: Items per page
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Get all external calendars
+      tags:
+      - external-calendars
+    post:
+      consumes:
+      - application/json
+      description: Create a new external calendar
+      parameters:
+      - description: External calendar data
+        in: body
+        name: external
+        required: true
+        schema:
+          $ref: '#/definitions/entities.CreateExternalCalendarRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/entities.ExternalCalendarResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Create a new external calendar
+      tags:
+      - external-calendars
+  /external-calendars/{id}:
+    delete:
+      description: Delete an external calendar by ID
+      parameters:
+      - description: External Calendar ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Delete external calendar
+      tags:
+      - external-calendars
+    get:
+      description: Retrieve an external calendar by its ID
+      parameters:
+      - description: External Calendar ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/entities.ExternalCalendarResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Get external calendar by ID
+      tags:
+      - external-calendars
+    put:
+      consumes:
+      - application/json
+      description: Update an existing external calendar
+      parameters:
+      - description: External Calendar ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Updated external calendar data
+        in: body
+        name: external
+        required: true
+        schema:
+          $ref: '#/definitions/entities.UpdateExternalCalendarRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/entities.ExternalCalendarResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Update external calendar
+      tags:
+      - external-calendars
   /health:
     get:
       description: Check the health status of the API and database
@@ -2397,6 +3242,62 @@ paths:
       summary: Update a plan
       tags:
       - plans
+  /static:
+    get:
+      description: Get a list of all JSON files available in the statics/json directory
+      responses:
+        "200":
+          description: List of available JSON files
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Failed to read directory
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: List available static JSON files
+      tags:
+      - static
+  /static/{filename}:
+    get:
+      description: Securely serve JSON data files from statics/json directory only.
+        Prevents access to other directories or file types.
+      parameters:
+      - description: JSON filename (without .json extension)
+        example: '"bundeslaender"'
+        in: path
+        name: filename
+        required: true
+        type: string
+      responses:
+        "200":
+          description: JSON file content
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Invalid file name
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: File not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Failed to read file
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Serve static JSON files (JSON only, security restricted)
+      tags:
+      - static
 securityDefinitions:
   BearerAuth:
     description: Type "Bearer" followed by a space and JWT token.
@@ -2436,3 +3337,19 @@ tags:
 - description: '[Client Management Module] Cost provider (insurance) management and
     approval tracking'
   name: cost-providers
+- description: '[Calendar Module] Calendar management, scheduling, and event organization'
+  name: calendar
+- description: '[Calendar Module] Individual calendar entries and event management'
+  name: calendar-entries
+- description: '[Calendar Module] Recurring event series and pattern management'
+  name: calendar-series
+- description: '[Calendar Module] External calendar integration and synchronization'
+  name: external-calendars
+- description: '[Calendar Module] Calendar views including week, year, and custom
+    period views'
+  name: calendar-views
+- description: '[Calendar Module] Availability checking and free slot discovery'
+  name: calendar-availability
+- description: '[Calendar Module] Calendar utilities including holiday import and
+    data management'
+  name: calendar-utilities

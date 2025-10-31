@@ -8,6 +8,7 @@ import (
 	"github.com/ae-base-server/pkg/config"
 	"github.com/ae-base-server/pkg/database"
 	"github.com/joho/godotenv"
+	calendar "github.com/unburdy/calendar-module"
 	_ "github.com/unburdy/unburdy-server-api/docs" // swagger docs
 	"github.com/unburdy/unburdy-server-api/modules/client_management"
 )
@@ -71,6 +72,27 @@ import (
 // @tag.name cost-providers
 // @tag.description [Client Management Module] Cost provider (insurance) management and approval tracking
 
+// @tag.name calendar
+// @tag.description [Calendar Module] Calendar management, scheduling, and event organization
+
+// @tag.name calendar-entries
+// @tag.description [Calendar Module] Individual calendar entries and event management
+
+// @tag.name calendar-series
+// @tag.description [Calendar Module] Recurring event series and pattern management
+
+// @tag.name external-calendars
+// @tag.description [Calendar Module] External calendar integration and synchronization
+
+// @tag.name calendar-views
+// @tag.description [Calendar Module] Calendar views including week, year, and custom period views
+
+// @tag.name calendar-availability
+// @tag.description [Calendar Module] Availability checking and free slot discovery
+
+// @tag.name calendar-utilities
+// @tag.description [Calendar Module] Calendar utilities including holiday import and data management
+
 func main() {
 	// Load .env file
 	if err := godotenv.Load(); err != nil {
@@ -87,6 +109,7 @@ func main() {
 	// Create external modules
 	modules := []baseAPI.ModuleRouteProvider{
 		client_management.NewModule(db), // Client management and cost provider tracking
+		calendar.NewModule(db),          // Calendar management with events, series, and external calendars
 	}
 
 	// Setup modular router (includes base server + external modules)

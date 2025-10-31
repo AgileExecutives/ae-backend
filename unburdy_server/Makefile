@@ -89,9 +89,9 @@ lint:
 .PHONY: swagger
 swagger:
 	@echo "$(YELLOW)Generating Swagger documentation...$(RESET)"
-	@echo "$(CYAN)Scanning unburdy handlers and ae-saas-basic handlers...$(RESET)"
-	swag init -g $(MAIN_FILE) -o ./docs --parseDependency --parseInternal --parseDepth 2 -d ./,$(BASE_API_PATH)
-	@echo "$(GREEN)✓ Swagger docs generated with base API endpoints$(RESET)"
+	@echo "$(CYAN)Scanning unburdy handlers, ae-saas-basic handlers, and calendar module...$(RESET)"
+	swag init -g $(MAIN_FILE) -o ./docs --parseDependency --parseInternal --parseDepth 2 -d ./,$(BASE_API_PATH),../modules/calendar
+	@echo "$(GREEN)✓ Swagger docs generated with base API and calendar endpoints$(RESET)"
 
 ## docker-build: Build Docker image
 .PHONY: docker-build
@@ -134,6 +134,14 @@ endpoints:
 	@echo "  GET    /api/v1/clients/:id      - Get client by ID"
 	@echo "  PUT    /api/v1/clients/:id      - Update client"
 	@echo "  DELETE /api/v1/clients/:id      - Delete client"
+	@echo ""
+	@echo "$(YELLOW)Calendar Module Endpoints:$(RESET)"
+	@echo "  GET    /api/v1/calendar         - Get all calendars"
+	@echo "  POST   /api/v1/calendar         - Create new calendar"
+	@echo "  GET    /api/v1/calendar-entries - Get all calendar entries"
+	@echo "  POST   /api/v1/calendar-entries - Create new calendar entry"
+	@echo "  GET    /api/v1/calendar-series  - Get all calendar series"
+	@echo "  POST   /api/v1/calendar-series  - Create new calendar series"
 	@echo ""
 	@echo "$(CYAN)Documentation: http://localhost:8080/swagger/index.html$(RESET)"
 

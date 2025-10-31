@@ -1,10 +1,54 @@
 package entities
 
 import (
+	"encoding/json"
+	"strings"
 	"time"
 
 	"gorm.io/gorm"
 )
+
+// NullableDate is a custom type that handles empty strings by converting them to nil
+type NullableDate struct {
+	*time.Time
+}
+
+// UnmarshalJSON implements custom JSON unmarshaling for date fields
+// Empty strings are converted to nil, otherwise it attempts to parse as a date
+func (nd *NullableDate) UnmarshalJSON(data []byte) error {
+	// Remove quotes from the JSON string
+	str := strings.Trim(string(data), `"`)
+
+	// If empty string or "null", set to nil
+	if str == "" || str == "null" {
+		nd.Time = nil
+		return nil
+	}
+
+	// Try to parse as RFC3339 date format (YYYY-MM-DD or YYYY-MM-DDTHH:MM:SSZ)
+	if t, err := time.Parse("2006-01-02", str); err == nil {
+		nd.Time = &t
+		return nil
+	}
+
+	// Try to parse as full RFC3339 format
+	if t, err := time.Parse(time.RFC3339, str); err == nil {
+		nd.Time = &t
+		return nil
+	}
+
+	// If neither format works, set to nil
+	nd.Time = nil
+	return nil
+}
+
+// MarshalJSON implements custom JSON marshaling for date fields
+func (nd NullableDate) MarshalJSON() ([]byte, error) {
+	if nd.Time == nil {
+		return []byte("null"), nil
+	}
+	return json.Marshal(nd.Time.Format("2006-01-02"))
+}
 
 // Client represents a client entity with comprehensive information
 type Client struct {
@@ -46,66 +90,66 @@ type Client struct {
 
 // CreateClientRequest represents the request payload for creating a client
 type CreateClientRequest struct {
-	CostProviderID       *uint      `json:"cost_provider_id,omitempty" example:"1"`
-	FirstName            string     `json:"first_name" binding:"required" example:"John"`
-	LastName             string     `json:"last_name" binding:"required" example:"Doe"`
-	DateOfBirth          *time.Time `json:"date_of_birth,omitempty" example:"1990-01-15"`
-	Gender               string     `json:"gender,omitempty" example:"male"`
-	PrimaryLanguage      string     `json:"primary_language,omitempty" example:"English"`
-	ContactFirstName     string     `json:"contact_first_name,omitempty" example:"Jane"`
-	ContactLastName      string     `json:"contact_last_name,omitempty" example:"Smith"`
-	ContactEmail         string     `json:"contact_email,omitempty" example:"jane.smith@example.com"`
-	ContactPhone         string     `json:"contact_phone,omitempty" example:"+1234567890"`
-	AlternativeFirstName string     `json:"alternative_first_name,omitempty" example:"Johnny"`
-	AlternativeLastName  string     `json:"alternative_last_name,omitempty" example:"D"`
-	AlternativePhone     string     `json:"alternative_phone,omitempty" example:"+0987654321"`
-	AlternativeEmail     string     `json:"alternative_email,omitempty" example:"johnny.d@example.com"`
-	StreetAddress        string     `json:"street_address,omitempty" example:"123 Main Street"`
-	Zip                  string     `json:"zip,omitempty" example:"12345"`
-	City                 string     `json:"city,omitempty" example:"New York"`
-	Email                string     `json:"email,omitempty" example:"john.doe@example.com"`
-	Phone                string     `json:"phone,omitempty" example:"+1234567890"`
-	InvoicedIndividually *bool      `json:"invoiced_individually,omitempty" example:"false"`
-	TherapyTitle         string     `json:"therapy_title,omitempty" example:"Cognitive Behavioral Therapy"`
-	ProviderApprovalCode string     `json:"provider_approval_code,omitempty" example:"PROV123456"`
-	ProviderApprovalDate *time.Time `json:"provider_approval_date,omitempty" example:"2025-01-15"`
-	UnitPrice            *float64   `json:"unit_price,omitempty" example:"150.00"`
-	Status               string     `json:"status,omitempty" example:"waiting"`
-	AdmissionDate        *time.Time `json:"admission_date,omitempty" example:"2025-01-01"`
-	ReferralSource       string     `json:"referral_source,omitempty" example:"Doctor Smith"`
-	Notes                string     `json:"notes,omitempty" example:"Additional notes about the client"`
+	CostProviderID       *uint        `json:"cost_provider_id,omitempty" example:"1"`
+	FirstName            string       `json:"first_name" binding:"required" example:"John"`
+	LastName             string       `json:"last_name" binding:"required" example:"Doe"`
+	DateOfBirth          NullableDate `json:"date_of_birth,omitempty" example:"1990-01-15"`
+	Gender               string       `json:"gender,omitempty" example:"male"`
+	PrimaryLanguage      string       `json:"primary_language,omitempty" example:"English"`
+	ContactFirstName     string       `json:"contact_first_name,omitempty" example:"Jane"`
+	ContactLastName      string       `json:"contact_last_name,omitempty" example:"Smith"`
+	ContactEmail         string       `json:"contact_email,omitempty" example:"jane.smith@example.com"`
+	ContactPhone         string       `json:"contact_phone,omitempty" example:"+1234567890"`
+	AlternativeFirstName string       `json:"alternative_first_name,omitempty" example:"Johnny"`
+	AlternativeLastName  string       `json:"alternative_last_name,omitempty" example:"D"`
+	AlternativePhone     string       `json:"alternative_phone,omitempty" example:"+0987654321"`
+	AlternativeEmail     string       `json:"alternative_email,omitempty" example:"johnny.d@example.com"`
+	StreetAddress        string       `json:"street_address,omitempty" example:"123 Main Street"`
+	Zip                  string       `json:"zip,omitempty" example:"12345"`
+	City                 string       `json:"city,omitempty" example:"New York"`
+	Email                string       `json:"email,omitempty" example:"john.doe@example.com"`
+	Phone                string       `json:"phone,omitempty" example:"+1234567890"`
+	InvoicedIndividually *bool        `json:"invoiced_individually,omitempty" example:"false"`
+	TherapyTitle         string       `json:"therapy_title,omitempty" example:"Cognitive Behavioral Therapy"`
+	ProviderApprovalCode string       `json:"provider_approval_code,omitempty" example:"PROV123456"`
+	ProviderApprovalDate NullableDate `json:"provider_approval_date,omitempty" example:"2025-01-15"`
+	UnitPrice            *float64     `json:"unit_price,omitempty" example:"150.00"`
+	Status               string       `json:"status,omitempty" example:"waiting"`
+	AdmissionDate        NullableDate `json:"admission_date,omitempty" example:"2025-01-01"`
+	ReferralSource       string       `json:"referral_source,omitempty" example:"Doctor Smith"`
+	Notes                string       `json:"notes,omitempty" example:"Additional notes about the client"`
 }
 
 // UpdateClientRequest represents the request payload for updating a client
 type UpdateClientRequest struct {
-	CostProviderID       *uint      `json:"cost_provider_id,omitempty" example:"1"`
-	FirstName            *string    `json:"first_name,omitempty" example:"John"`
-	LastName             *string    `json:"last_name,omitempty" example:"Doe"`
-	DateOfBirth          *time.Time `json:"date_of_birth,omitempty" example:"1990-01-15"`
-	Gender               *string    `json:"gender,omitempty" example:"male"`
-	PrimaryLanguage      *string    `json:"primary_language,omitempty" example:"English"`
-	ContactFirstName     *string    `json:"contact_first_name,omitempty" example:"Jane"`
-	ContactLastName      *string    `json:"contact_last_name,omitempty" example:"Smith"`
-	ContactEmail         *string    `json:"contact_email,omitempty" example:"jane.smith@example.com"`
-	ContactPhone         *string    `json:"contact_phone,omitempty" example:"+1234567890"`
-	AlternativeFirstName *string    `json:"alternative_first_name,omitempty" example:"Johnny"`
-	AlternativeLastName  *string    `json:"alternative_last_name,omitempty" example:"D"`
-	AlternativePhone     *string    `json:"alternative_phone,omitempty" example:"+0987654321"`
-	AlternativeEmail     *string    `json:"alternative_email,omitempty" example:"johnny.d@example.com"`
-	StreetAddress        *string    `json:"street_address,omitempty" example:"123 Main Street"`
-	Zip                  *string    `json:"zip,omitempty" example:"12345"`
-	City                 *string    `json:"city,omitempty" example:"New York"`
-	Email                *string    `json:"email,omitempty" example:"john.doe@example.com"`
-	Phone                *string    `json:"phone,omitempty" example:"+1234567890"`
-	InvoicedIndividually *bool      `json:"invoiced_individually,omitempty" example:"false"`
-	TherapyTitle         *string    `json:"therapy_title,omitempty" example:"Cognitive Behavioral Therapy"`
-	ProviderApprovalCode *string    `json:"provider_approval_code,omitempty" example:"PROV123456"`
-	ProviderApprovalDate *time.Time `json:"provider_approval_date,omitempty" example:"2025-01-15"`
-	UnitPrice            *float64   `json:"unit_price,omitempty" example:"150.00"`
-	Status               *string    `json:"status,omitempty" example:"active"`
-	AdmissionDate        *time.Time `json:"admission_date,omitempty" example:"2025-01-01"`
-	ReferralSource       *string    `json:"referral_source,omitempty" example:"Doctor Smith"`
-	Notes                *string    `json:"notes,omitempty" example:"Additional notes about the client"`
+	CostProviderID       *uint         `json:"cost_provider_id,omitempty" example:"1"`
+	FirstName            *string       `json:"first_name,omitempty" example:"John"`
+	LastName             *string       `json:"last_name,omitempty" example:"Doe"`
+	DateOfBirth          *NullableDate `json:"date_of_birth,omitempty" example:"1990-01-15"`
+	Gender               *string       `json:"gender,omitempty" example:"male"`
+	PrimaryLanguage      *string       `json:"primary_language,omitempty" example:"English"`
+	ContactFirstName     *string       `json:"contact_first_name,omitempty" example:"Jane"`
+	ContactLastName      *string       `json:"contact_last_name,omitempty" example:"Smith"`
+	ContactEmail         *string       `json:"contact_email,omitempty" example:"jane.smith@example.com"`
+	ContactPhone         *string       `json:"contact_phone,omitempty" example:"+1234567890"`
+	AlternativeFirstName *string       `json:"alternative_first_name,omitempty" example:"Johnny"`
+	AlternativeLastName  *string       `json:"alternative_last_name,omitempty" example:"D"`
+	AlternativePhone     *string       `json:"alternative_phone,omitempty" example:"+0987654321"`
+	AlternativeEmail     *string       `json:"alternative_email,omitempty" example:"johnny.d@example.com"`
+	StreetAddress        *string       `json:"street_address,omitempty" example:"123 Main Street"`
+	Zip                  *string       `json:"zip,omitempty" example:"12345"`
+	City                 *string       `json:"city,omitempty" example:"New York"`
+	Email                *string       `json:"email,omitempty" example:"john.doe@example.com"`
+	Phone                *string       `json:"phone,omitempty" example:"+1234567890"`
+	InvoicedIndividually *bool         `json:"invoiced_individually,omitempty" example:"false"`
+	TherapyTitle         *string       `json:"therapy_title,omitempty" example:"Cognitive Behavioral Therapy"`
+	ProviderApprovalCode *string       `json:"provider_approval_code,omitempty" example:"PROV123456"`
+	ProviderApprovalDate *NullableDate `json:"provider_approval_date,omitempty" example:"2025-01-15"`
+	UnitPrice            *float64      `json:"unit_price,omitempty" example:"150.00"`
+	Status               *string       `json:"status,omitempty" example:"active"`
+	AdmissionDate        *NullableDate `json:"admission_date,omitempty" example:"2025-01-01"`
+	ReferralSource       *string       `json:"referral_source,omitempty" example:"Doctor Smith"`
+	Notes                *string       `json:"notes,omitempty" example:"Additional notes about the client"`
 }
 
 // ClientResponse represents the response format for client data
