@@ -1040,55 +1040,6 @@
                 }
             }
         },
-        "/calendar/import-holidays": {
-            "post": {
-                "description": "Import holidays for a specific country and year",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "calendar-utilities"
-                ],
-                "summary": "Import holidays",
-                "parameters": [
-                    {
-                        "description": "Import holidays request",
-                        "name": "holidays",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/entities.ImportHolidaysRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": true
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": true
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": true
-                        }
-                    }
-                }
-            }
-        },
         "/calendar/week": {
             "get": {
                 "description": "Retrieve calendar entries for a specific week",
@@ -1314,6 +1265,68 @@
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/calendar/{id}/import_holidays": {
+            "post": {
+                "description": "Import school holidays and public holidays into a specific calendar from unburdy format data",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "calendar-utilities"
+                ],
+                "summary": "Import holidays into calendar",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Calendar ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Import holidays request with state, year range, and holidays data",
+                        "name": "holidays",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/entities.ImportHolidaysRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/entities.HolidayImportResult"
                         }
                     },
                     "400": {
@@ -3882,22 +3895,59 @@
                 }
             }
         },
+        "entities.HolidayImportResult": {
+            "type": "object",
+            "properties": {
+                "errors": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "imported_years": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "public_holidays": {
+                    "type": "integer"
+                },
+                "school_holidays": {
+                    "type": "integer"
+                },
+                "total_imported": {
+                    "type": "integer"
+                }
+            }
+        },
         "entities.ImportHolidaysRequest": {
             "type": "object",
             "required": [
-                "country",
-                "year"
+                "holidays",
+                "state",
+                "year_from",
+                "year_to"
             ],
             "properties": {
-                "country": {
-                    "type": "string",
-                    "example": "US"
+                "holidays": {
+                    "$ref": "#/definitions/entities.UnburdyHolidaysData"
                 },
-                "year": {
+                "state": {
+                    "type": "string",
+                    "example": "BW"
+                },
+                "year_from": {
                     "type": "integer",
                     "maximum": 2100,
                     "minimum": 1900,
                     "example": 2025
+                },
+                "year_to": {
+                    "type": "integer",
+                    "maximum": 2100,
+                    "minimum": 1900,
+                    "example": 2027
                 }
             }
         },
@@ -3906,6 +3956,32 @@
             "properties": {
                 "time.Time": {
                     "type": "string"
+                }
+            }
+        },
+        "entities.UnburdyHolidaysData": {
+            "type": "object",
+            "properties": {
+                "public_holidays": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "type": "string"
+                        }
+                    }
+                },
+                "school_holidays": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    }
                 }
             }
         },

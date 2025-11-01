@@ -287,24 +287,67 @@ definitions:
         example: "2025-01-15T09:00:00Z"
         type: string
     type: object
+  entities.HolidayImportResult:
+    properties:
+      errors:
+        items:
+          type: string
+        type: array
+      imported_years:
+        items:
+          type: string
+        type: array
+      public_holidays:
+        type: integer
+      school_holidays:
+        type: integer
+      total_imported:
+        type: integer
+    type: object
   entities.ImportHolidaysRequest:
     properties:
-      country:
-        example: US
+      holidays:
+        $ref: '#/definitions/entities.UnburdyHolidaysData'
+      state:
+        example: BW
         type: string
-      year:
+      year_from:
         example: 2025
         maximum: 2100
         minimum: 1900
         type: integer
+      year_to:
+        example: 2027
+        maximum: 2100
+        minimum: 1900
+        type: integer
     required:
-    - country
-    - year
+    - holidays
+    - state
+    - year_from
+    - year_to
     type: object
   entities.NullableDate:
     properties:
       time.Time:
         type: string
+    type: object
+  entities.UnburdyHolidaysData:
+    properties:
+      public_holidays:
+        additionalProperties:
+          additionalProperties:
+            type: string
+          type: object
+        type: object
+      school_holidays:
+        additionalProperties:
+          additionalProperties:
+            items:
+              type: string
+            type: array
+          type: object
+        type: object
     type: object
   entities.UpdateCalendarEntryRequest:
     type: object
@@ -1816,6 +1859,50 @@ paths:
       summary: Update calendar
       tags:
       - calendar
+  /calendar/{id}/import_holidays:
+    post:
+      consumes:
+      - application/json
+      description: Import school holidays and public holidays into a specific calendar
+        from unburdy format data
+      parameters:
+      - description: Calendar ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Import holidays request with state, year range, and holidays
+          data
+        in: body
+        name: holidays
+        required: true
+        schema:
+          $ref: '#/definitions/entities.ImportHolidaysRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/entities.HolidayImportResult'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Import holidays into calendar
+      tags:
+      - calendar-utilities
   /calendar/free-slots:
     get:
       description: Find available time slots based on duration, interval, and maximum
@@ -1858,39 +1945,6 @@ paths:
       summary: Get free time slots
       tags:
       - calendar-availability
-  /calendar/import-holidays:
-    post:
-      consumes:
-      - application/json
-      description: Import holidays for a specific country and year
-      parameters:
-      - description: Import holidays request
-        in: body
-        name: holidays
-        required: true
-        schema:
-          $ref: '#/definitions/entities.ImportHolidaysRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            additionalProperties: true
-            type: object
-        "400":
-          description: Bad Request
-          schema:
-            additionalProperties: true
-            type: object
-        "500":
-          description: Internal Server Error
-          schema:
-            additionalProperties: true
-            type: object
-      summary: Import holidays
-      tags:
-      - calendar-utilities
   /calendar/week:
     get:
       description: Retrieve calendar entries for a specific week

@@ -118,6 +118,7 @@ func (m *Module) Services() []core.ServiceProvider {
 func (m *Module) SwaggerPaths() []string {
 	return []string{
 		"/calendar",
+		"/calendar/{id}/import_holidays",
 		"/calendar-entries",
 		"/calendar-series",
 		"/external-calendars",

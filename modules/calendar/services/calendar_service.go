@@ -602,55 +602,130 @@ func (s *CalendarService) GetFreeSlots(req entities.FreeSlotRequest, tenantID, u
 	return freeSlots, nil
 }
 
-// ImportHolidays imports holidays for a specific country and year
-func (s *CalendarService) ImportHolidays(req entities.ImportHolidaysRequest, tenantID, userID uint) error {
-	// This is a placeholder implementation
-	// In a real system, you would:
-	// 1. Call a holidays API (like https://date.nager.at/Api)
-	// 2. Parse the holidays data
-	// 3. Create calendar entries for each holiday
-	// 4. Associate them with the user's calendar
-
-	// For now, create a sample holiday entry
-	// You would need to get or create a calendar for holidays first
+// ImportHolidaysToCalendar imports holidays into a specific calendar using unburdy format
+func (s *CalendarService) ImportHolidaysToCalendar(calendarID uint, req entities.ImportHolidaysRequest, tenantID, userID uint) (*entities.HolidayImportResult, error) {
+	// Verify calendar exists and belongs to user
 	var calendar entities.Calendar
-	if err := s.db.Where("tenant_id = ? AND user_id = ? AND title = ?", tenantID, userID, "Holidays").First(&calendar).Error; err != nil {
+	if err := s.db.Where("id = ? AND tenant_id = ? AND user_id = ?", calendarID, tenantID, userID).First(&calendar).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			// Create holidays calendar if it doesn't exist
-			holidayCalendar := entities.Calendar{
-				TenantID:     tenantID,
-				UserID:       userID,
-				Title:        "Holidays",
-				Color:        "#FF0000",
-				CalendarUUID: uuid.New().String(),
-				Timezone:     "UTC",
+			return nil, fmt.Errorf("calendar not found")
+		}
+		return nil, fmt.Errorf("failed to query calendar: %w", err)
+	}
+
+	result := &entities.HolidayImportResult{
+		ImportedYears: []string{},
+		Errors:        []string{},
+	}
+
+	// Process years within the requested range
+	for year := req.YearFrom; year <= req.YearTo; year++ {
+		yearStr := fmt.Sprintf("%d", year)
+		yearImported := false
+
+		// Import school holidays for this year
+		if schoolHolidays, exists := req.Holidays.SchoolHolidays[yearStr]; exists {
+			imported, err := s.importSchoolHolidays(calendar.ID, tenantID, userID, year, schoolHolidays, req.State)
+			if err != nil {
+				result.Errors = append(result.Errors, fmt.Sprintf("School holidays %d: %v", year, err))
+			} else {
+				result.SchoolHolidays += imported
+				result.TotalImported += imported
+				yearImported = true
 			}
-			if err := s.db.Create(&holidayCalendar).Error; err != nil {
-				return fmt.Errorf("failed to create holidays calendar: %w", err)
+		}
+
+		// Import public holidays for this year
+		if publicHolidays, exists := req.Holidays.PublicHolidays[yearStr]; exists {
+			imported, err := s.importPublicHolidays(calendar.ID, tenantID, userID, year, publicHolidays, req.State)
+			if err != nil {
+				result.Errors = append(result.Errors, fmt.Sprintf("Public holidays %d: %v", year, err))
+			} else {
+				result.PublicHolidays += imported
+				result.TotalImported += imported
+				yearImported = true
 			}
-			calendar = holidayCalendar
-		} else {
-			return fmt.Errorf("failed to query holidays calendar: %w", err)
+		}
+
+		if yearImported {
+			result.ImportedYears = append(result.ImportedYears, yearStr)
 		}
 	}
 
-	// Sample holiday entry (in a real implementation, you'd fetch actual holidays)
-	newYear := time.Date(req.Year, 1, 1, 0, 0, 0, 0, time.UTC)
-	holidayEntry := entities.CalendarEntry{
-		TenantID:    tenantID,
-		UserID:      userID,
-		CalendarID:  calendar.ID,
-		Title:       "New Year's Day",
-		DateFrom:    &newYear,
-		DateTo:      &newYear,
-		Type:        "holiday",
-		Description: "New Year's Day",
-		IsAllDay:    true,
+	return result, nil
+}
+
+// importSchoolHolidays imports school holidays for a specific year
+func (s *CalendarService) importSchoolHolidays(calendarID, tenantID, userID uint, year int, holidays map[string][2]string, state string) (int, error) {
+	imported := 0
+
+	for holidayName, dates := range holidays {
+		// Parse start and end dates
+		startDate, err := time.Parse("2006-01-02", dates[0])
+		if err != nil {
+			return imported, fmt.Errorf("invalid start date for %s: %w", holidayName, err)
+		}
+
+		endDate, err := time.Parse("2006-01-02", dates[1])
+		if err != nil {
+			return imported, fmt.Errorf("invalid end date for %s: %w", holidayName, err)
+		}
+
+		// Create calendar entry for the holiday period
+		entry := entities.CalendarEntry{
+			TenantID:    tenantID,
+			UserID:      userID,
+			CalendarID:  calendarID,
+			Title:       holidayName,
+			DateFrom:    &startDate,
+			DateTo:      &endDate,
+			Type:        "school_holiday",
+			Description: fmt.Sprintf("%s - School holidays in %s", holidayName, state),
+			IsAllDay:    true,
+			Location:    state,
+		}
+
+		if err := s.db.Create(&entry).Error; err != nil {
+			return imported, fmt.Errorf("failed to create school holiday entry: %w", err)
+		}
+
+		imported++
 	}
 
-	if err := s.db.Create(&holidayEntry).Error; err != nil {
-		return fmt.Errorf("failed to create holiday entry: %w", err)
+	return imported, nil
+}
+
+// importPublicHolidays imports public holidays for a specific year
+func (s *CalendarService) importPublicHolidays(calendarID, tenantID, userID uint, year int, holidays map[string]string, state string) (int, error) {
+	imported := 0
+
+	for holidayName, dateStr := range holidays {
+		// Parse the holiday date
+		holidayDate, err := time.Parse("2006-01-02", dateStr)
+		if err != nil {
+			return imported, fmt.Errorf("invalid date for %s: %w", holidayName, err)
+		}
+
+		// Create calendar entry for the public holiday
+		entry := entities.CalendarEntry{
+			TenantID:    tenantID,
+			UserID:      userID,
+			CalendarID:  calendarID,
+			Title:       holidayName,
+			DateFrom:    &holidayDate,
+			DateTo:      &holidayDate,
+			Type:        "public_holiday",
+			Description: fmt.Sprintf("%s - Public holiday in %s", holidayName, state),
+			IsAllDay:    true,
+			Location:    state,
+		}
+
+		if err := s.db.Create(&entry).Error; err != nil {
+			return imported, fmt.Errorf("failed to create public holiday entry: %w", err)
+		}
+
+		imported++
 	}
 
-	return nil
+	return imported, nil
 }

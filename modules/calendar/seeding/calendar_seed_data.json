@@ -1,0 +1,303 @@
+{
+  "seed_config": {
+    "description": "Calendar seeding configuration - generates data 2 months back and 6 months forward",
+    "time_range": {
+      "months_back": 2,
+      "months_forward": 6
+    },
+    "density_profile": {
+      "description": "Calendar density profile - busy now/next 4 weeks, less crowded in past",
+      "current_period": {
+        "weeks": 4,
+        "events_per_week": {
+          "min": 15,
+          "max": 25
+        },
+        "recurring_series_count": {
+          "min": 3,
+          "max": 5
+        }
+      },
+      "past_period": {
+        "events_per_week": {
+          "min": 3,
+          "max": 8
+        },
+        "recurring_series_count": {
+          "min": 1,
+          "max": 2
+        }
+      },
+      "future_period": {
+        "events_per_week": {
+          "min": 8,
+          "max": 15
+        },
+        "recurring_series_count": {
+          "min": 2,
+          "max": 4
+        }
+      }
+    }
+  },
+  "calendar_templates": [
+    {
+      "title": "Work Calendar",
+      "color": "#2196F3",
+      "timezone": "Europe/Berlin",
+      "weekly_availability": {
+        "monday": {"start": "08:00", "end": "18:00"},
+        "tuesday": {"start": "08:00", "end": "18:00"},
+        "wednesday": {"start": "08:00", "end": "18:00"},
+        "thursday": {"start": "08:00", "end": "18:00"},
+        "friday": {"start": "08:00", "end": "17:00"},
+        "saturday": {"start": null, "end": null},
+        "sunday": {"start": null, "end": null}
+      }
+    },
+    {
+      "title": "Personal Calendar", 
+      "color": "#4CAF50",
+      "timezone": "Europe/Berlin",
+      "weekly_availability": {
+        "monday": {"start": "09:00", "end": "22:00"},
+        "tuesday": {"start": "09:00", "end": "22:00"},
+        "wednesday": {"start": "09:00", "end": "22:00"},
+        "thursday": {"start": "09:00", "end": "22:00"},
+        "friday": {"start": "09:00", "end": "23:00"},
+        "saturday": {"start": "10:00", "end": "23:00"},
+        "sunday": {"start": "10:00", "end": "22:00"}
+      }
+    }
+  ],
+  "recurring_series_templates": [
+    {
+      "title": "Client Check-in",
+      "description": "Weekly client status update call",
+      "weekday": 3,
+      "interval": 1,
+      "time_start": "14:00",
+      "time_end": "15:00",
+      "location": "Video Call",
+      "type": "client_meeting",
+      "participants": [
+        {"name": "Client Contact", "email": "client@clientcompany.com"},
+        {"name": "Account Manager", "email": "am@company.com"}
+      ],
+      "calendar_type": "work",
+      "probability_current": 0.9,
+      "probability_past": 0.7,
+      "probability_future": 0.85
+    },
+    {
+      "title": "Gym Session",
+      "description": "Regular workout session",
+      "weekday": 2,
+      "interval": 1,
+      "time_start": "18:30",
+      "time_end": "19:30",
+      "location": "Local Gym",
+      "type": "personal",
+      "participants": [],
+      "calendar_type": "personal",
+      "probability_current": 0.8,
+      "probability_past": 0.6,
+      "probability_future": 0.85
+    },
+    {
+      "title": "Family Dinner",
+      "description": "Sunday family gathering",
+      "weekday": 0,
+      "interval": 1,
+      "time_start": "17:00",
+      "time_end": "20:00",
+      "location": "Home",
+      "type": "family",
+      "participants": [
+        {"name": "Family", "email": ""}
+      ],
+      "calendar_type": "personal",
+      "probability_current": 0.9,
+      "probability_past": 0.8,
+      "probability_future": 0.9
+    }
+  ],
+  "event_templates": {
+    "therapy": [
+      {
+        "title": "Individual Therapy Session",
+        "type": "therapy",
+        "duration_minutes": 45,
+        "locations": ["Therapy Room 1", "Therapy Room 2", "Therapy Room 3", "Online Session"],
+        "participants_count": {"min": 1, "max": 2},
+        "descriptions": [
+          "Individual therapy session",
+          "Therapeutic intervention",
+          "Counseling session",
+          "Treatment session"
+        ],
+        "time_slots": ["08:00", "09:00", "10:00", "11:00", "13:00", "14:00", "15:00", "16:00", "17:00"]
+      },
+      {
+        "title": "Extended Therapy Session",
+        "type": "therapy",
+        "duration_minutes": 60,
+        "locations": ["Therapy Room 1", "Therapy Room 2", "Family Room", "Online Session"],
+        "participants_count": {"min": 1, "max": 3},
+        "descriptions": [
+          "Extended therapy session",
+          "In-depth therapeutic work",
+          "Comprehensive treatment session",
+          "Extended counseling session"
+        ],
+        "time_slots": ["09:00", "10:00", "13:00", "14:00", "15:00", "16:00"]
+      }
+    ],
+    "parent": [
+      {
+        "title": "Parent Consultation",
+        "type": "parent",
+        "duration_minutes": 45,
+        "locations": ["Consultation Room", "Meeting Room", "Online Session"],
+        "participants_count": {"min": 1, "max": 2},
+        "descriptions": [
+          "Parent consultation session",
+          "Family guidance meeting",
+          "Parental support session",
+          "Educational consultation"
+        ],
+        "time_slots": ["08:00", "09:00", "10:00", "11:00", "13:00", "14:00", "15:00", "16:00", "17:00", "18:00"]
+      },
+      {
+        "title": "Family Meeting",
+        "type": "parent",
+        "duration_minutes": 60,
+        "locations": ["Family Room", "Conference Room", "Online Session"],
+        "participants_count": {"min": 2, "max": 4},
+        "descriptions": [
+          "Family therapy session",
+          "Parent-child consultation",
+          "Family planning meeting",
+          "Multi-generational session"
+        ],
+        "time_slots": ["09:00", "10:00", "13:00", "14:00", "15:00", "16:00", "17:00"]
+      }
+    ],
+    "information": [
+      {
+        "title": "Information Session",
+        "type": "information",
+        "duration_minutes": 45,
+        "locations": ["Information Room", "Meeting Room", "Online Session"],
+        "participants_count": {"min": 1, "max": 3},
+        "descriptions": [
+          "Information and guidance session",
+          "Educational information meeting",
+          "Orientation session",
+          "Initial consultation"
+        ],
+        "time_slots": ["08:00", "09:00", "10:00", "11:00", "13:00", "14:00", "15:00", "16:00", "17:00"]
+      },
+      {
+        "title": "Extended Information Session",
+        "type": "information",
+        "duration_minutes": 60,
+        "locations": ["Information Room", "Conference Room", "Online Session"],
+        "participants_count": {"min": 1, "max": 4},
+        "descriptions": [
+          "Comprehensive information session",
+          "Detailed consultation meeting",
+          "Extended orientation",
+          "In-depth guidance session"
+        ],
+        "time_slots": ["09:00", "10:00", "13:00", "14:00", "15:00", "16:00"]
+      }
+    ],
+    "generic": [
+      {
+        "title": "Appointment",
+        "type": "generic",
+        "duration_minutes": 30,
+        "locations": ["Office", "Meeting Room", "Online Session"],
+        "participants_count": {"min": 1, "max": 2},
+        "descriptions": [
+          "General appointment",
+          "Follow-up meeting",
+          "Check-in session",
+          "Administrative meeting"
+        ],
+        "time_slots": ["08:00", "08:30", "09:00", "09:30", "10:00", "10:30", "11:00", "11:30", "13:00", "13:30", "14:00", "14:30", "15:00", "15:30", "16:00", "16:30", "17:00", "17:30"]
+      },
+      {
+        "title": "Extended Appointment", 
+        "type": "generic",
+        "duration_minutes": 60,
+        "locations": ["Office", "Meeting Room", "Conference Room", "Online Session"],
+        "participants_count": {"min": 1, "max": 3},
+        "descriptions": [
+          "Extended appointment",
+          "Comprehensive meeting",
+          "Detailed consultation",
+          "Long-form session"
+        ],
+        "time_slots": ["08:00", "09:00", "10:00", "11:00", "13:00", "14:00", "15:00", "16:00", "17:00"]
+      },
+      {
+        "title": "Flexible Appointment",
+        "type": "generic",
+        "duration_minutes": 90,
+        "locations": ["Office", "Conference Room", "Online Session"],
+        "participants_count": {"min": 1, "max": 4},
+        "descriptions": [
+          "Flexible duration appointment",
+          "Comprehensive consultation",
+          "Extended meeting session",
+          "Multi-topic discussion"
+        ],
+        "time_slots": ["09:00", "10:00", "13:00", "14:00", "15:00"]
+      }
+    ]
+  },
+  "external_calendar_templates": [
+    {
+      "title": "Google Calendar Sync",
+      "url": "https://calendar.google.com/calendar/ical/user%40gmail.com/private-key/basic.ics",
+      "color": "#FF9800",
+      "settings": {
+        "sync_interval": "15m",
+        "import_past_events": true,
+        "auto_create_entries": true
+      }
+    },
+    {
+      "title": "Outlook Calendar",
+      "url": "https://outlook.office365.com/calendar/user@company.com/calendar.ics",
+      "color": "#9C27B0",
+      "settings": {
+        "sync_interval": "30m",
+        "import_past_events": false,
+        "auto_create_entries": true
+      }
+    }
+  ],
+  "generation_rules": {
+    "working_hours": {
+      "start": "08:00",
+      "end": "18:00",
+      "lunch_break": {
+        "start": "12:00", 
+        "end": "13:00"
+      }
+    },
+    "personal_hours": {
+      "start": "06:00",
+      "end": "23:00"
+    },
+    "avoid_conflicts": true,
+    "min_gap_between_events": 15,
+    "weekend_work_probability": 0.1,
+    "all_day_event_probability": 0.05,
+    "exception_probability": 0.02,
+    "no_show_probability": 0.05
+  }
+}

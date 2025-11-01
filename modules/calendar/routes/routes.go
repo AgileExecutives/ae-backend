@@ -33,7 +33,7 @@ func (rp *RouteProvider) RegisterRoutes(router *gin.RouterGroup) {
 		calendar.GET("/week", rp.calendarHandler.GetCalendarWeekView)
 		calendar.GET("/year", rp.calendarHandler.GetCalendarYearView)
 		calendar.GET("/free-slots", rp.calendarHandler.GetFreeSlots)
-		calendar.POST("/import-holidays", rp.calendarHandler.ImportHolidays)
+		calendar.POST("/:id/import_holidays", rp.calendarHandler.ImportHolidays)
 	}
 
 	// Calendar Entry CRUD endpoints (authenticated)

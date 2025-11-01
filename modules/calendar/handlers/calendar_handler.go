@@ -1017,21 +1017,39 @@ func (h *CalendarHandler) GetFreeSlots(c *gin.Context) {
 	c.JSON(http.StatusOK, slots)
 }
 
-// ImportHolidays imports holidays for a specific country and year
-// @Summary Import holidays
-// @Description Import holidays for a specific country and year
+// ImportHolidays imports holidays into a specific calendar using unburdy format
+// @Summary Import holidays into calendar
+// @Description Import school holidays and public holidays into a specific calendar from unburdy format data
 // @Tags calendar-utilities
 // @Accept json
 // @Produce json
-// @Param holidays body entities.ImportHolidaysRequest true "Import holidays request"
-// @Success 200 {object} map[string]interface{}
+// @Param id path int true "Calendar ID"
+// @Param holidays body entities.ImportHolidaysRequest true "Import holidays request with state, year range, and holidays data"
+// @Success 200 {object} entities.HolidayImportResult
 // @Failure 400 {object} map[string]interface{}
+// @Failure 401 {object} map[string]interface{}
+// @Failure 404 {object} map[string]interface{}
 // @Failure 500 {object} map[string]interface{}
-// @Router /calendar/import-holidays [post]
+// @Router /calendar/{id}/import_holidays [post]
+// @Security BearerAuth
 func (h *CalendarHandler) ImportHolidays(c *gin.Context) {
+	// Get calendar ID from path parameter
+	idStr := c.Param("id")
+	calendarID, err := strconv.ParseUint(idStr, 10, 32)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid calendar ID"})
+		return
+	}
+
 	var req entities.ImportHolidaysRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Validate year range
+	if req.YearTo < req.YearFrom {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "year_to must be greater than or equal to year_from"})
 		return
 	}
 
@@ -1046,11 +1064,11 @@ func (h *CalendarHandler) ImportHolidays(c *gin.Context) {
 		return
 	}
 
-	err = h.service.ImportHolidays(req, tenantID, userID)
+	result, err := h.service.ImportHolidaysToCalendar(uint(calendarID), req, tenantID, userID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"message": "Holidays imported successfully"})
+	c.JSON(http.StatusOK, result)
 }
