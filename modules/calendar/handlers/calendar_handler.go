@@ -105,27 +105,18 @@ func (h *CalendarHandler) GetCalendar(c *gin.Context) {
 	c.JSON(http.StatusOK, calendar.ToResponse())
 }
 
-// GetAllCalendars retrieves all calendars with pagination
-// @Summary Get all calendars
-// @Description Retrieve all calendars for the authenticated user
+// GetCalendarsWithMetadata retrieves all calendars with 2-level deep preloading
+// @Summary Get calendars with complete metadata
+// @Description Retrieve all calendars for the authenticated user with 2-level deep preloading including entries with their series and series with their entries
 // @Tags calendar
 // @Produce json
-// @Param page query int false "Page number" default(1)
-// @Param limit query int false "Items per page" default(10)
-// @Success 200 {object} map[string]interface{}
-// @Failure 500 {object} map[string]interface{}
+// @Success 200 {object} map[string]interface{} "Returns calendars array with complete metadata including nested relationships"
+// @Success 200 {array} entities.CalendarResponse "Array of calendars with preloaded entries, series, and external calendars"
+// @Failure 401 {object} map[string]interface{} "Unauthorized - invalid or missing JWT token"
+// @Failure 500 {object} map[string]interface{} "Internal server error during calendar retrieval"
 // @Router /calendar [get]
-func (h *CalendarHandler) GetAllCalendars(c *gin.Context) {
-	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
-	limit, _ := strconv.Atoi(c.DefaultQuery("limit", "10"))
-
-	if page < 1 {
-		page = 1
-	}
-	if limit < 1 || limit > 100 {
-		limit = 10
-	}
-
+// @Security BearerAuth
+func (h *CalendarHandler) GetCalendarsWithMetadata(c *gin.Context) {
 	tenantID, err := baseAPI.GetTenantID(c)
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unable to get tenant ID: " + err.Error()})
@@ -137,7 +128,7 @@ func (h *CalendarHandler) GetAllCalendars(c *gin.Context) {
 		return
 	}
 
-	calendars, total, err := h.service.GetAllCalendars(page, limit, tenantID, userID)
+	calendars, err := h.service.GetCalendarsWithDeepPreload(tenantID, userID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -150,11 +141,6 @@ func (h *CalendarHandler) GetAllCalendars(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{
 		"calendars": responses,
-		"pagination": gin.H{
-			"page":  page,
-			"limit": limit,
-			"total": total,
-		},
 	})
 }
 

@@ -11,18 +11,19 @@ This monorepo uses a **modular architecture** where:
 
 ```
 ae-backend/
-├── go.work                   # Go workspace configuration
+├── go.work                   # Go workspace configuration  
 ├── base-server/             # Core SaaS foundation
 │   ├── api/                 # Public API exports
 │   ├── internal/            # Private implementation
 │   └── go.mod
 ├── modules/                 # Reusable business modules
-│   ├── calendar-module/     # Calendar system
-│   ├── billing-module/      # Future: billing system
-│   └── notifications-module/ # Future: notifications
-└── services/                # Application-specific services
-    ├── unburdy_server/      # Unburdy application
-    └── other-services/      # Future applications
+│   └── calendar/            # Calendar system (✅ implemented)
+├── unburdy_server/          # Unburdy application (main service)
+│   ├── main.go             # Application entry point
+│   ├── modules/            # Service-specific modules
+│   │   └── client_management/ # Client and cost provider management
+│   └── docs/               # Generated API documentation
+└── scripts/                 # Development and deployment scripts
 ```
 
 ## Key Benefits of This Architecture
@@ -154,8 +155,10 @@ if err != nil {
 
 ### Tenant Isolation
 ```go
-// All data operations should include organization filter
-db.Where("organization_id = ?", user.OrganizationID).Find(&records)
+// All data operations should include tenant filter
+tenantID, _ := baseAPI.GetTenantID(c)
+userID, _ := baseAPI.GetUserID(c)
+db.Where("tenant_id = ? AND user_id = ?", tenantID, userID).Find(&records)
 ```
 
 ### Role-Based Access
@@ -256,17 +259,19 @@ Each module can become its own service if needed:
 
 ## Next Steps
 
-1. **Test the calendar module integration**:
+1. **Test the calendar module integration** ✅:
    ```bash
-   cd unburdy_server
+   cd unburdy_server  
    go mod tidy
-   go run main_with_modules.go
+   go run main.go
+   # Calendar module is already integrated and working!
    ```
 
-2. **Create more modules**:
-   - Billing module
-   - Notification module
-   - Reporting module
+2. **Create more modules** (Future):
+   - Billing module (planned)
+   - Notification module (planned)  
+   - Reporting module (planned)
+   - Therapy tracking module (planned)
 
 3. **Enhance base-server**:
    - Add more middleware options

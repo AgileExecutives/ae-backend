@@ -24,7 +24,7 @@ func (rp *RouteProvider) RegisterRoutes(router *gin.RouterGroup) {
 	calendar := router.Group("/calendar")
 	{
 		calendar.POST("", rp.calendarHandler.CreateCalendar)
-		calendar.GET("", rp.calendarHandler.GetAllCalendars)
+		calendar.GET("", rp.calendarHandler.GetCalendarsWithMetadata)
 		calendar.GET("/:id", rp.calendarHandler.GetCalendar)
 		calendar.PUT("/:id", rp.calendarHandler.UpdateCalendar)
 		calendar.DELETE("/:id", rp.calendarHandler.DeleteCalendar)

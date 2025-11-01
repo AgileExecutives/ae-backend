@@ -13,10 +13,9 @@ import (
 	"github.com/unburdy/unburdy-server-api/modules/client_management"
 )
 
-// @title Unburdy Server - Modular API
-// @version 2.0
+// @title Unburdy Server API
+// @version 1.0
 // @description A modular SaaS backend API built with Go and Gin framework. Features a plugin-based architecture with four core modules: Base (authentication, users, tenants, contacts, newsletter), Customer (plans, customer management), Email (SMTP services, notifications), and PDF (document generation). Supports dependency injection, event-driven communication, and automatic module discovery.
-// @termsOfService https://ae-base-server.com/terms
 
 // @contact.name API Support
 // @contact.url https://ae-base-server.com/support
@@ -25,7 +24,7 @@ import (
 // @license.name MIT
 // @license.url https://opensource.org/licenses/MIT
 
-// @host localhost:8081
+// @host localhost:8080
 // @BasePath /api/v1
 
 // @securityDefinitions.apikey BearerAuth

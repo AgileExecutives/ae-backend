@@ -2,8 +2,7 @@
     "swagger": "2.0",
     "info": {
         "description": "A modular SaaS backend API built with Go and Gin framework. Features a plugin-based architecture with four core modules: Base (authentication, users, tenants, contacts, newsletter), Customer (plans, customer management), Email (SMTP services, notifications), and PDF (document generation). Supports dependency injection, event-driven communication, and automatic module discovery.",
-        "title": "Unburdy Server - Modular API",
-        "termsOfService": "https://ae-base-server.com/terms",
+        "title": "Unburdy Server API",
         "contact": {
             "name": "API Support",
             "url": "https://ae-base-server.com/support",
@@ -13,7 +12,7 @@
             "name": "MIT",
             "url": "https://opensource.org/licenses/MIT"
         },
-        "version": "2.0"
+        "version": "1.0"
     },
     "host": "localhost:8080",
     "basePath": "/api/v1",
@@ -397,40 +396,38 @@
         },
         "/calendar": {
             "get": {
-                "description": "Retrieve all calendars for the authenticated user",
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Retrieve all calendars for the authenticated user with 2-level deep preloading including entries with their series and series with their entries",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "calendar"
                 ],
-                "summary": "Get all calendars",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "default": 1,
-                        "description": "Page number",
-                        "name": "page",
-                        "in": "query"
-                    },
-                    {
-                        "type": "integer",
-                        "default": 10,
-                        "description": "Items per page",
-                        "name": "limit",
-                        "in": "query"
-                    }
-                ],
+                "summary": "Get calendars with complete metadata",
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "Array of calendars with preloaded entries, series, and external calendars",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/entities.CalendarResponse"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized - invalid or missing JWT token",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
                         }
                     },
                     "500": {
-                        "description": "Internal Server Error",
+                        "description": "Internal server error during calendar retrieval",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true

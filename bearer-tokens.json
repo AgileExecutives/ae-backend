@@ -1,0 +1,28 @@
+{
+  "generated_at": "2025-11-01T07:14:36Z",
+  "server_host": "http://localhost:8080",
+  "tokens": [
+    {
+      "username": "admin@unburdy.de",
+      "email": "admin@unburdy.de",
+      "role": "super-admin",
+      "tenant_slug": "admin",
+      "user_id": 1,
+      "tenant_id": 1,
+      "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoxLCJ0ZW5hbnRfaWQiOjEsInJvbGUiOiJzdXBlci1hZG1pbiIsInRva2VuX3R5cGUiOiJhdXRoIiwiZXhwIjoxNzYyMDY3Njc2LCJuYmYiOjE3NjE5ODEyNzYsImlhdCI6MTc2MTk4MTI3NiwianRpIjoiMV8xNzYxOTgxMjc2In0.W1tU96cvB7CvJFoDTj0B2awIvKBdtVzU8PYb4YfmkaA",
+      "curl_example": "curl -H 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoxLCJ0ZW5hbnRfaWQiOjEsInJvbGUiOiJzdXBlci1hZG1pbiIsInRva2VuX3R5cGUiOiJhdXRoIiwiZXhwIjoxNzYyMDY3Njc2LCJuYmYiOjE3NjE5ODEyNzYsImlhdCI6MTc2MTk4MTI3NiwianRpIjoiMV8xNzYxOTgxMjc2In0.W1tU96cvB7CvJFoDTj0B2awIvKBdtVzU8PYb4YfmkaA' http://localhost:8080/api/v1/health"
+    }
+,
+    {
+      "username": "testuser@unburdy.de",
+      "email": "testuser@unburdy.de",
+      "role": "admin",
+      "tenant_slug": "default-tenant",
+      "user_id": 2,
+      "tenant_id": 2,
+      "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoyLCJ0ZW5hbnRfaWQiOjIsInJvbGUiOiJhZG1pbiIsInRva2VuX3R5cGUiOiJhdXRoIiwiZXhwIjoxNzYyMDY3Njc2LCJuYmYiOjE3NjE5ODEyNzYsImlhdCI6MTc2MTk4MTI3NiwianRpIjoiMl8xNzYxOTgxMjc2In0.kXN_fRAicdzDJLvxlnThnmI90jpqwN2PlBI8fc0jWns",
+      "curl_example": "curl -H 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoyLCJ0ZW5hbnRfaWQiOjIsInJvbGUiOiJhZG1pbiIsInRva2VuX3R5cGUiOiJhdXRoIiwiZXhwIjoxNzYyMDY3Njc2LCJuYmYiOjE3NjE5ODEyNzYsImlhdCI6MTc2MTk4MTI3NiwianRpIjoiMl8xNzYxOTgxMjc2In0.kXN_fRAicdzDJLvxlnThnmI90jpqwN2PlBI8fc0jWns' http://localhost:8080/api/v1/health"
+    }
+
+  ]
+}

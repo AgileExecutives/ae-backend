@@ -1069,9 +1069,8 @@ info:
   license:
     name: MIT
     url: https://opensource.org/licenses/MIT
-  termsOfService: https://ae-base-server.com/terms
-  title: Unburdy Server - Modular API
-  version: "2.0"
+  title: Unburdy Server API
+  version: "1.0"
 paths:
   /api/v1/pdf/create:
     post:
@@ -1309,32 +1308,32 @@ paths:
       - authentication
   /calendar:
     get:
-      description: Retrieve all calendars for the authenticated user
-      parameters:
-      - default: 1
-        description: Page number
-        in: query
-        name: page
-        type: integer
-      - default: 10
-        description: Items per page
-        in: query
-        name: limit
-        type: integer
+      description: Retrieve all calendars for the authenticated user with 2-level
+        deep preloading including entries with their series and series with their
+        entries
       produces:
       - application/json
       responses:
         "200":
-          description: OK
+          description: Array of calendars with preloaded entries, series, and external
+            calendars
+          schema:
+            items:
+              $ref: '#/definitions/entities.CalendarResponse'
+            type: array
+        "401":
+          description: Unauthorized - invalid or missing JWT token
           schema:
             additionalProperties: true
             type: object
         "500":
-          description: Internal Server Error
+          description: Internal server error during calendar retrieval
           schema:
             additionalProperties: true
             type: object
-      summary: Get all calendars
+      security:
+      - BearerAuth: []
+      summary: Get calendars with complete metadata
       tags:
       - calendar
     post:

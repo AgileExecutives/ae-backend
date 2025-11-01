@@ -54,7 +54,8 @@ func (s *CalendarService) GetCalendarByID(id, tenantID, userID uint) (*entities.
 	return &calendar, nil
 }
 
-// GetAllCalendars returns all calendars for a user with pagination
+// GetAllCalendars returns all calendars for a user with pagination and 2-level deep preloading
+// Preloads: CalendarEntries with their Series, CalendarSeries with their CalendarEntries, ExternalCalendars
 func (s *CalendarService) GetAllCalendars(page, limit int, tenantID, userID uint) ([]entities.Calendar, int, error) {
 	var calendars []entities.Calendar
 	var total int64
@@ -66,13 +67,43 @@ func (s *CalendarService) GetAllCalendars(page, limit int, tenantID, userID uint
 		return nil, 0, fmt.Errorf("failed to count calendars: %w", err)
 	}
 
-	// Get paginated records with preloaded relationships
-	if err := s.db.Preload("CalendarSeries").Preload("CalendarEntries").Preload("ExternalCalendars").
-		Where("tenant_id = ? AND user_id = ?", tenantID, userID).Offset(offset).Limit(limit).Find(&calendars).Error; err != nil {
+	// Get paginated records with 2-level deep preloaded relationships
+	// Level 1: Direct relationships
+	// Level 2: Nested relationships (entries->series, series->entries)
+	if err := s.db.
+		Preload("CalendarEntries").                // Load all calendar entries
+		Preload("CalendarEntries.Series").         // Load series for each entry (2nd level)
+		Preload("CalendarSeries").                 // Load all calendar series
+		Preload("CalendarSeries.CalendarEntries"). // Load entries for each series (2nd level)
+		Preload("ExternalCalendars").              // Load external calendars
+		Where("tenant_id = ? AND user_id = ?", tenantID, userID).
+		Offset(offset).Limit(limit).Find(&calendars).Error; err != nil {
 		return nil, 0, fmt.Errorf("failed to fetch calendars: %w", err)
 	}
 
 	return calendars, int(total), nil
+}
+
+// GetCalendarsWithDeepPreload returns all calendars for a user with 2-level deep preloading (no pagination)
+// This method is optimized for the /calendar endpoint that returns all calendar metadata
+func (s *CalendarService) GetCalendarsWithDeepPreload(tenantID, userID uint) ([]entities.Calendar, error) {
+	var calendars []entities.Calendar
+
+	// Get all records with 2-level deep preloaded relationships
+	// Level 1: Direct relationships (CalendarEntries, CalendarSeries, ExternalCalendars)
+	// Level 2: Nested relationships (entries->series, series->entries)
+	if err := s.db.
+		Preload("CalendarEntries").                // Load all calendar entries
+		Preload("CalendarEntries.Series").         // Load series for each entry (2nd level)
+		Preload("CalendarSeries").                 // Load all calendar series
+		Preload("CalendarSeries.CalendarEntries"). // Load entries for each series (2nd level)
+		Preload("ExternalCalendars").              // Load external calendars
+		Where("tenant_id = ? AND user_id = ?", tenantID, userID).
+		Find(&calendars).Error; err != nil {
+		return nil, fmt.Errorf("failed to fetch calendars with deep preload: %w", err)
+	}
+
+	return calendars, nil
 }
 
 // UpdateCalendar updates an existing calendar within a tenant and user
@@ -521,7 +552,7 @@ func (s *CalendarService) GetCalendarWeekView(date time.Time, tenantID, userID u
 	if err := s.db.Preload("Calendar").Preload("Series").
 		Where("tenant_id = ? AND user_id = ? AND date_from <= ? AND date_to >= ?",
 			tenantID, userID, endOfWeek, startOfWeek).
-		Find(&entries).Error; err != nil {	
+		Find(&entries).Error; err != nil {
 		return nil, fmt.Errorf("failed to fetch week view: %w", err)
 	}
 

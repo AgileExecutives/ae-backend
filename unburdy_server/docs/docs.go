@@ -9,7 +9,6 @@ const docTemplate = `{
     "info": {
         "description": "{{escape .Description}}",
         "title": "{{.Title}}",
-        "termsOfService": "https://ae-base-server.com/terms",
         "contact": {
             "name": "API Support",
             "url": "https://ae-base-server.com/support",
@@ -403,40 +402,38 @@ const docTemplate = `{
         },
         "/calendar": {
             "get": {
-                "description": "Retrieve all calendars for the authenticated user",
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Retrieve all calendars for the authenticated user with 2-level deep preloading including entries with their series and series with their entries",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "calendar"
                 ],
-                "summary": "Get all calendars",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "default": 1,
-                        "description": "Page number",
-                        "name": "page",
-                        "in": "query"
-                    },
-                    {
-                        "type": "integer",
-                        "default": 10,
-                        "description": "Items per page",
-                        "name": "limit",
-                        "in": "query"
-                    }
-                ],
+                "summary": "Get calendars with complete metadata",
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "Array of calendars with preloaded entries, series, and external calendars",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/entities.CalendarResponse"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized - invalid or missing JWT token",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
                         }
                     },
                     "500": {
-                        "description": "Internal Server Error",
+                        "description": "Internal server error during calendar retrieval",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
@@ -5071,11 +5068,11 @@ const docTemplate = `{
 
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
-	Version:          "2.0",
+	Version:          "1.0",
 	Host:             "localhost:8080",
 	BasePath:         "/api/v1",
 	Schemes:          []string{},
-	Title:            "Unburdy Server - Modular API",
+	Title:            "Unburdy Server API",
 	Description:      "A modular SaaS backend API built with Go and Gin framework. Features a plugin-based architecture with four core modules: Base (authentication, users, tenants, contacts, newsletter), Customer (plans, customer management), Email (SMTP services, notifications), and PDF (document generation). Supports dependency injection, event-driven communication, and automatic module discovery.",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,
