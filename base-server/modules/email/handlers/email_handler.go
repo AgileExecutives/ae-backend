@@ -3,6 +3,7 @@ package handlers
 import (
 	"net/http"
 
+	"github.com/ae-base-server/internal/middleware"
 	"github.com/ae-base-server/internal/models"
 	_ "github.com/ae-base-server/modules/base/models" // Import models for swagger
 	"github.com/ae-base-server/modules/email/services"
@@ -39,13 +40,13 @@ func (h *EmailHandler) RegisterRoutes(router *gin.RouterGroup, ctx core.ModuleCo
 
 // GetPrefix returns the route prefix
 func (h *EmailHandler) GetPrefix() string {
-	return "/api/v1"
+	return ""
 }
 
 // GetMiddleware returns route middleware
 func (h *EmailHandler) GetMiddleware() []gin.HandlerFunc {
 	return []gin.HandlerFunc{
-		// TODO: Add auth middleware
+		middleware.AuthMiddleware(h.db),
 	}
 }
 

@@ -14,7 +14,7 @@
         },
         "version": "1.0"
     },
-    "host": "localhost:8080",
+    "host": "localhost:8081",
     "basePath": "/api/v1",
     "paths": {
         "/api/v1/pdf/create": {
@@ -1293,6 +1293,11 @@
         },
         "/calendar/{id}/import_holidays": {
             "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Import school holidays and public holidays into a specific calendar from unburdy format data",
                 "consumes": [
                     "application/json"
@@ -1331,6 +1336,13 @@
                     },
                     "400": {
                         "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true

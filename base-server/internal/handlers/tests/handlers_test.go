@@ -7,10 +7,10 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/ae-base-server/internal/database"
 	"github.com/ae-base-server/internal/models"
 	"github.com/ae-base-server/internal/router"
 	"github.com/ae-base-server/pkg/config"
+	"github.com/ae-base-server/pkg/database"
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
 	"gorm.io/driver/sqlite"

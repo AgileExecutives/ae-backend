@@ -4,32 +4,32 @@ package api
 import (
 	"fmt"
 
-	"github.com/ae-base-server/internal/database"
+	internalDB "github.com/ae-base-server/internal/database"
 	"github.com/ae-base-server/modules/base"
 	"github.com/ae-base-server/modules/customer"
 	"github.com/ae-base-server/modules/email"
 	"github.com/ae-base-server/modules/pdf"
 	"github.com/ae-base-server/pkg/core"
-	pkgDB "github.com/ae-base-server/pkg/database"
+	"github.com/ae-base-server/pkg/database"
 	"gorm.io/gorm"
 )
 
 // DatabaseConfig exports the database configuration type
-type DatabaseConfig = pkgDB.Config
+type DatabaseConfig = database.Config
 
 // ConnectDatabase connects to the database using the provided configuration
 func ConnectDatabase(config DatabaseConfig) (*gorm.DB, error) {
-	return pkgDB.Connect(config)
+	return database.Connect(config)
 }
 
 // ConnectDatabaseWithAutoCreate connects and creates the database if needed
 func ConnectDatabaseWithAutoCreate(config DatabaseConfig) (*gorm.DB, error) {
-	return pkgDB.ConnectWithAutoCreate(config)
+	return database.ConnectWithAutoCreate(config)
 }
 
 // SeedBaseData loads and seeds data from seed-data.json
 func SeedBaseData(db *gorm.DB) error {
-	return database.Seed(db)
+	return internalDB.Seed(db)
 }
 
 // MigrateBaseEntities migrates all base-server entities (users, tenants, etc.)
@@ -62,24 +62,4 @@ func MigrateBaseEntities(db *gorm.DB) error {
 	}
 
 	return nil
-}
-
-// SetupDatabase is deprecated - use bootstrap system for complete database setup
-// This function only connects and seeds data. Migrations are handled by the bootstrap system.
-func SetupDatabase(config DatabaseConfig) (*gorm.DB, error) {
-	// Connect with auto-create
-	db, err := pkgDB.ConnectWithAutoCreate(config)
-	if err != nil {
-		return nil, err
-	}
-
-	// Note: Migrations are now handled by the bootstrap system when modules are registered
-	// This function only handles seeding for backward compatibility
-
-	// Seed data
-	if err := database.Seed(db); err != nil {
-		return nil, err
-	}
-
-	return db, nil
 }

@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/ae-base-server/internal/models"
-	"github.com/ae-base-server/internal/services"
+	emailServices "github.com/ae-base-server/modules/email/services"
 	"github.com/ae-base-server/pkg/utils"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
@@ -13,14 +13,14 @@ import (
 
 type ContactHandler struct {
 	db           *gorm.DB
-	emailService *services.EmailService
+	emailService *emailServices.EmailService
 }
 
 // NewContactHandler creates a new contact handler
 func NewContactHandler(db *gorm.DB) *ContactHandler {
 	return &ContactHandler{
 		db:           db,
-		emailService: services.NewEmailService(),
+		emailService: emailServices.NewEmailService(),
 	}
 }
 

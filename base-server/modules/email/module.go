@@ -86,8 +86,7 @@ func (m *EmailModule) Entities() []core.Entity {
 // Routes returns the module route providers
 func (m *EmailModule) Routes() []core.RouteProvider {
 	return []core.RouteProvider{
-		// Temporarily disabled - using internal handlers instead
-		// m.emailHandler,
+		m.emailHandler,
 	}
 }
 

@@ -1,10 +1,41 @@
 package config
 
 import (
+	"fmt"
 	"os"
 	"strconv"
+	"strings"
 
-	"github.com/ae-base-server/internal/database"
+	"github.com/ae-base-server/pkg/database"
+)
+
+// ValidationError represents a configuration validation error
+type ValidationError struct {
+	Field   string
+	Message string
+}
+
+func (e ValidationError) Error() string {
+	return fmt.Sprintf("%s: %s", e.Field, e.Message)
+}
+
+// ValidationErrors represents multiple validation errors
+type ValidationErrors []ValidationError
+
+func (e ValidationErrors) Error() string {
+	var messages []string
+	for _, err := range e {
+		messages = append(messages, err.Error())
+	}
+	return strings.Join(messages, "; ")
+}
+
+// ValidationMode represents the strictness of validation
+type ValidationMode string
+
+const (
+	ValidationModeDevelopment ValidationMode = "development"
+	ValidationModeProduction  ValidationMode = "production"
 )
 
 // Config holds all configuration for the application
@@ -155,4 +186,144 @@ func getEnvAsFloat64(key string, defaultVal float64) float64 {
 		return value
 	}
 	return defaultVal
+}
+
+// Validate validates the configuration based on the environment mode
+func (c Config) Validate() error {
+	mode := ValidationModeDevelopment
+	if c.Server.Mode == "release" || os.Getenv("GIN_MODE") == "release" {
+		mode = ValidationModeProduction
+	}
+
+	return c.ValidateWithMode(mode)
+}
+
+// ValidateWithMode validates configuration with specific validation mode
+func (c Config) ValidateWithMode(mode ValidationMode) error {
+	var errors ValidationErrors
+
+	// Validate JWT Secret (critical in production)
+	if mode == ValidationModeProduction {
+		if c.JWT.Secret == "" || c.JWT.Secret == "your-super-secret-jwt-key-change-in-production" {
+			errors = append(errors, ValidationError{
+				Field:   "JWT_SECRET",
+				Message: "must be set to a secure value in production (not default)",
+			})
+		}
+		if len(c.JWT.Secret) < 32 {
+			errors = append(errors, ValidationError{
+				Field:   "JWT_SECRET",
+				Message: "must be at least 32 characters long for security",
+			})
+		}
+	}
+
+	// Validate Database Configuration
+	if c.Database.Host == "" {
+		errors = append(errors, ValidationError{
+			Field:   "DB_HOST",
+			Message: "database host is required",
+		})
+	}
+	if c.Database.User == "" {
+		errors = append(errors, ValidationError{
+			Field:   "DB_USER",
+			Message: "database user is required",
+		})
+	}
+	if c.Database.DBName == "" {
+		errors = append(errors, ValidationError{
+			Field:   "DB_NAME",
+			Message: "database name is required",
+		})
+	}
+
+	// Validate Database Password (warn in production)
+	if mode == ValidationModeProduction && c.Database.Password == "password" {
+		errors = append(errors, ValidationError{
+			Field:   "DB_PASSWORD",
+			Message: "should not use default password in production",
+		})
+	}
+
+	// Validate Email Configuration (if not mocked)
+	if !c.Email.MockEmail && mode == ValidationModeProduction {
+		if c.Email.SMTPHost == "" || c.Email.SMTPHost == "localhost" {
+			errors = append(errors, ValidationError{
+				Field:   "SMTP_HOST",
+				Message: "valid SMTP host required when email is not mocked in production",
+			})
+		}
+		if c.Email.FromEmail == "" {
+			errors = append(errors, ValidationError{
+				Field:   "FROM_EMAIL",
+				Message: "from email address is required",
+			})
+		}
+	}
+
+	// Validate Server Configuration
+	if c.Server.Port == "" {
+		errors = append(errors, ValidationError{
+			Field:   "PORT",
+			Message: "server port is required",
+		})
+	}
+
+	if len(errors) > 0 {
+		return errors
+	}
+
+	return nil
+}
+
+// ValidateRequired validates that critical environment variables are set
+func ValidateRequired() error {
+	var errors ValidationErrors
+	mode := ValidationModeDevelopment
+
+	if os.Getenv("GIN_MODE") == "release" {
+		mode = ValidationModeProduction
+	}
+
+	// Critical variables that must be set in production
+	if mode == ValidationModeProduction {
+		requiredVars := map[string]string{
+			"JWT_SECRET": "JWT secret key for token signing",
+			"DB_HOST":    "Database host address",
+			"DB_USER":    "Database user",
+			"DB_NAME":    "Database name",
+		}
+
+		for varName, description := range requiredVars {
+			value := os.Getenv(varName)
+			if value == "" {
+				errors = append(errors, ValidationError{
+					Field:   varName,
+					Message: fmt.Sprintf("%s must be set in production", description),
+				})
+			}
+		}
+
+		// Check for default/insecure values
+		if jwtSecret := os.Getenv("JWT_SECRET"); jwtSecret == "your-super-secret-jwt-key-change-in-production" {
+			errors = append(errors, ValidationError{
+				Field:   "JWT_SECRET",
+				Message: "must not use default value in production",
+			})
+		}
+
+		if dbPassword := os.Getenv("DB_PASSWORD"); dbPassword == "password" || dbPassword == "" {
+			errors = append(errors, ValidationError{
+				Field:   "DB_PASSWORD",
+				Message: "must be set to a secure value in production",
+			})
+		}
+	}
+
+	if len(errors) > 0 {
+		return errors
+	}
+
+	return nil
 }

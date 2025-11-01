@@ -920,27 +920,6 @@ func (cs *CalendarSeeder) getCalendarTypeFromTitle(title string) string {
 	return "mixed"
 }
 
-func (cs *CalendarSeeder) generateParticipants(count int) []map[string]interface{} {
-	if count == 0 {
-		return []map[string]interface{}{}
-	}
-
-	participants := make([]map[string]interface{}, count)
-	names := []string{"Alice Smith", "Bob Johnson", "Carol Williams", "David Brown", "Eva Davis"}
-
-	for i := 0; i < count && i < len(names); i++ {
-		name := names[i]
-		email := strings.ToLower(strings.ReplaceAll(name, " ", ".")) + "@company.com"
-
-		participants[i] = map[string]interface{}{
-			"name":  name,
-			"email": email,
-		}
-	}
-
-	return participants
-}
-
 // loadUnburdyClients loads client data from unburdy_server seed file
 func loadUnburdyClients() []UnburdyClient {
 	// For now, return a subset of the clients with therapy_title data

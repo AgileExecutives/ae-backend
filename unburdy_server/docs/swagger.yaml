@@ -1098,7 +1098,7 @@ definitions:
         example: "12345"
         type: string
     type: object
-host: localhost:8080
+host: localhost:8081
 info:
   contact:
     email: support@ae-base-server.com
@@ -1890,6 +1890,11 @@ paths:
           schema:
             additionalProperties: true
             type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
         "404":
           description: Not Found
           schema:
@@ -1900,6 +1905,8 @@ paths:
           schema:
             additionalProperties: true
             type: object
+      security:
+      - BearerAuth: []
       summary: Import holidays into calendar
       tags:
       - calendar-utilities

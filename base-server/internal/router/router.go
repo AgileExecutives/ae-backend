@@ -4,6 +4,8 @@ import (
 	"github.com/ae-base-server/internal/handlers"
 	"github.com/ae-base-server/internal/middleware"
 	internalServices "github.com/ae-base-server/internal/services"
+	emailHandlers "github.com/ae-base-server/modules/email/handlers"
+	emailServices "github.com/ae-base-server/modules/email/services"
 	"github.com/ae-base-server/pkg/config"
 	"github.com/ae-base-server/services"
 	"github.com/gin-gonic/gin"
@@ -31,9 +33,12 @@ func SetupRouter(db *gorm.DB, cfg config.Config) *gin.Engine {
 	planHandler := handlers.NewPlanHandler(db)
 	customerHandler := handlers.NewCustomerHandler(db)
 	contactHandler := handlers.NewContactHandler(db)
-	emailHandler := handlers.NewEmailHandler(db)
 	userSettingsHandler := handlers.NewUserSettingsHandler(db)
 	// staticHandler := handlers.NewStaticHandler("./statics")
+
+	// Initialize email service and handler from modular system
+	emailService := emailServices.NewEmailService()
+	emailHandler := emailHandlers.NewEmailHandler(db, emailService)
 
 	// Initialize PDF service and handler
 	pdfService := services.NewPDFGenerator()
@@ -146,7 +151,7 @@ func SetupRouter(db *gorm.DB, cfg config.Config) *gin.Engine {
 			newsletter.DELETE("/newsletter/unsubscribe", contactHandler.UnsubscribeFromNewsletter)
 		}
 
-		// Email routes
+		// Email routes (using modular email handler)
 		emails := protected.Group("/emails")
 		{
 			emails.GET("", emailHandler.GetEmails)

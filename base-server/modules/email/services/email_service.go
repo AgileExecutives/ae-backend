@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"html/template"
 	"log"
+	"net"
 	"net/smtp"
 	"os"
 	"path/filepath"
@@ -300,19 +301,25 @@ func (e *EmailService) sendSMTP(to, subject, htmlBody, textBody string) error {
 	smtpUser := utils.GetEnv("SMTP_USER", "")
 	smtpPassword := utils.GetEnv("SMTP_PASSWORD", "")
 	smtpFrom := utils.GetEnv("SMTP_FROM", smtpUser)
+	authEnabled := strings.ToLower(utils.GetEnv("SMTP_AUTH_ENABLED", "true")) == "true"
 
 	if smtpHost == "" {
 		return fmt.Errorf("SMTP configuration missing")
 	}
 
-	auth := smtp.PlainAuth("", smtpUser, smtpPassword, smtpHost)
+	var auth smtp.Auth
+	if authEnabled && smtpUser != "" && smtpPassword != "" {
+		auth = smtp.PlainAuth("", smtpUser, smtpPassword, smtpHost)
+	}
 
 	message := e.composeMessage(to, subject, htmlBody, textBody)
 
 	addr := fmt.Sprintf("%s:%s", smtpHost, smtpPort)
 
-	// Use TLS for port 587
+	// Use STARTTLS for port 587, direct TLS for port 465, plain for other ports
 	if smtpPort == "587" {
+		return e.sendSMTPSTARTTLS(addr, auth, smtpFrom, []string{to}, []byte(message))
+	} else if smtpPort == "465" {
 		return e.sendSMTPTLS(addr, auth, smtpFrom, []string{to}, []byte(message))
 	}
 
@@ -321,6 +328,13 @@ func (e *EmailService) sendSMTP(to, subject, htmlBody, textBody string) error {
 
 // sendSMTPTLS sends email via SMTP with TLS
 func (e *EmailService) sendSMTPTLS(addr string, auth smtp.Auth, from string, to []string, msg []byte) error {
+	tlsEnabled := strings.ToLower(utils.GetEnv("SMTP_TLS_ENABLED", "true")) == "true"
+
+	if !tlsEnabled {
+		// Fall back to plain SMTP if TLS is disabled
+		return smtp.SendMail(addr, auth, from, to, msg)
+	}
+
 	// Create TLS connection
 	tlsConfig := &tls.Config{
 		InsecureSkipVerify: false,
@@ -355,6 +369,78 @@ func (e *EmailService) sendSMTPTLS(addr string, auth smtp.Auth, from string, to 
 		}
 	}
 
+	writer, err := client.Data()
+	if err != nil {
+		return fmt.Errorf("failed to get data writer: %v", err)
+	}
+
+	_, err = writer.Write(msg)
+	if err != nil {
+		return fmt.Errorf("failed to write message: %v", err)
+	}
+
+	err = writer.Close()
+	if err != nil {
+		return fmt.Errorf("failed to close writer: %v", err)
+	}
+
+	return nil
+}
+
+// sendSMTPSTARTTLS sends email via SMTP with STARTTLS (for port 587)
+func (e *EmailService) sendSMTPSTARTTLS(addr string, auth smtp.Auth, from string, to []string, msg []byte) error {
+	tlsEnabled := strings.ToLower(utils.GetEnv("SMTP_TLS_ENABLED", "true")) == "true"
+
+	if !tlsEnabled {
+		// Fall back to plain SMTP if TLS is disabled
+		return smtp.SendMail(addr, auth, from, to, msg)
+	}
+
+	// Connect to SMTP server without TLS
+	conn, err := net.Dial("tcp", addr)
+	if err != nil {
+		return fmt.Errorf("failed to connect to SMTP server: %v", err)
+	}
+	defer conn.Close()
+
+	// Create SMTP client
+	host := strings.Split(addr, ":")[0]
+	client, err := smtp.NewClient(conn, host)
+	if err != nil {
+		return fmt.Errorf("failed to create SMTP client: %v", err)
+	}
+	defer client.Quit()
+
+	// Start TLS
+	tlsConfig := &tls.Config{
+		InsecureSkipVerify: false,
+		ServerName:         host,
+	}
+
+	if err = client.StartTLS(tlsConfig); err != nil {
+		return fmt.Errorf("failed to start TLS: %v", err)
+	}
+
+	// Authenticate
+	if auth != nil {
+		if err = client.Auth(auth); err != nil {
+			return fmt.Errorf("SMTP authentication failed: %v", err)
+		}
+	}
+
+	// Set sender
+	if err = client.Mail(from); err != nil {
+		return fmt.Errorf("failed to set sender: %v", err)
+	}
+
+	// Set recipients
+	for _, addr := range to {
+		if err = client.Rcpt(addr); err != nil {
+			return fmt.Errorf("failed to set recipient %s: %v", addr, err)
+		}
+	}
+
+	// Send message
 	writer, err := client.Data()
 	if err != nil {
 		return fmt.Errorf("failed to get data writer: %v", err)
@@ -467,7 +553,16 @@ func (e *EmailService) extractLink(htmlBody string, keywords []string) string {
 
 // composeMessage creates the full email message with headers
 func (e *EmailService) composeMessage(to, subject, htmlBody, textBody string) string {
-	from := utils.GetEnv("SMTP_FROM", "no-reply@unburdy.de")
+	fromEmail := utils.GetEnv("SMTP_FROM", "no-reply@unburdy.de")
+	fromName := utils.GetEnv("SMTP_FROM_NAME", "")
+
+	// Format the From header with name if provided
+	var from string
+	if fromName != "" {
+		from = fmt.Sprintf("%s <%s>", fromName, fromEmail)
+	} else {
+		from = fromEmail
+	}
 
 	var buf bytes.Buffer
 

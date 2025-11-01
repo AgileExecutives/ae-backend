@@ -1299,6 +1299,11 @@ const docTemplate = `{
         },
         "/calendar/{id}/import_holidays": {
             "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Import school holidays and public holidays into a specific calendar from unburdy format data",
                 "consumes": [
                     "application/json"
@@ -1337,6 +1342,13 @@ const docTemplate = `{
                     },
                     "400": {
                         "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
@@ -5145,7 +5157,7 @@ const docTemplate = `{
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
 	Version:          "1.0",
-	Host:             "localhost:8080",
+	Host:             "localhost:8081",
 	BasePath:         "/api/v1",
 	Schemes:          []string{},
 	Title:            "Unburdy Server API",

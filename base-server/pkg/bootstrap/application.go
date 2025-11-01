@@ -9,13 +9,13 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/ae-base-server/internal/database"
+	internalDB "github.com/ae-base-server/internal/database"
 	internalHandlers "github.com/ae-base-server/internal/handlers"
 	internalMiddleware "github.com/ae-base-server/internal/middleware"
 	"github.com/ae-base-server/pkg/auth"
 	"github.com/ae-base-server/pkg/config"
 	"github.com/ae-base-server/pkg/core"
-	pkgDB "github.com/ae-base-server/pkg/database"
+	"github.com/ae-base-server/pkg/database"
 	"github.com/ae-base-server/services"
 	"github.com/gin-gonic/gin"
 	swaggerFiles "github.com/swaggo/files"
@@ -164,7 +164,7 @@ func (app *Application) initializeCoreServices() error {
 	auth.SetJWTSecret(app.config.JWT.Secret)
 
 	// Database
-	db, err := pkgDB.ConnectWithAutoCreate(app.config.Database)
+	db, err := database.ConnectWithAutoCreate(app.config.Database)
 	if err != nil {
 		return fmt.Errorf("failed to connect to database: %w", err)
 	}
@@ -250,7 +250,6 @@ func (app *Application) setupInternalAuthRoutes(router *gin.Engine, db *gorm.DB,
 	planHandler := internalHandlers.NewPlanHandler(db)
 	customerHandler := internalHandlers.NewCustomerHandler(db)
 	contactHandler := internalHandlers.NewContactHandler(db)
-	emailHandler := internalHandlers.NewEmailHandler(db)
 	userSettingsHandler := internalHandlers.NewUserSettingsHandler(db)
 
 	// Initialize PDF service and handler
@@ -294,15 +293,6 @@ func (app *Application) setupInternalAuthRoutes(router *gin.Engine, db *gorm.DB,
 		contacts.POST("", contactHandler.CreateContact)
 		contacts.PUT("/:id", contactHandler.UpdateContact)
 		contacts.DELETE("/:id", contactHandler.DeleteContact)
-	}
-
-	// Email routes
-	emails := protected.Group("/emails")
-	{
-		emails.GET("", emailHandler.GetEmails)
-		emails.GET("/:id", emailHandler.GetEmail)
-		emails.POST("/send", emailHandler.SendEmail)
-		emails.GET("/stats", emailHandler.GetEmailStats)
 	}
 
 	// User settings routes
@@ -353,7 +343,7 @@ func (app *Application) runMigrations() error {
 // seedDatabase seeds the database with initial data
 func (app *Application) seedDatabase() error {
 	// Use the existing seed function for now
-	return database.Seed(app.context.DB)
+	return internalDB.Seed(app.context.DB)
 }
 
 // corsMiddleware adds CORS headers
@@ -381,6 +371,12 @@ func (app *Application) securityMiddleware() gin.HandlerFunc {
 		c.Header("X-XSS-Protection", "1; mode=block")
 		c.Next()
 	})
+}
+
+// setupStaticMiscRoutes sets up routes for static miscellaneous files (favicon, robots.txt, etc.)
+func (app *Application) setupStaticMiscRoutes(router *gin.Engine) {
+	// Serve favicon
+	router.StaticFile("/favicon.ico", "./statics/images/favicon.ico")
 }
 
 // setupGracefulShutdown sets up graceful shutdown handling

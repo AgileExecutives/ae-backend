@@ -1,15 +1,20 @@
 package main
 
 import (
+	"context"
 	"log"
-	"net/http"
 
-	baseAPI "github.com/ae-base-server/api"
+	"github.com/ae-base-server/modules/base"
+	"github.com/ae-base-server/modules/customer"
+	"github.com/ae-base-server/modules/email"
+	"github.com/ae-base-server/modules/pdf"
+	"github.com/ae-base-server/modules/static"
+	"github.com/ae-base-server/pkg/bootstrap"
 	"github.com/ae-base-server/pkg/config"
-	"github.com/ae-base-server/pkg/database"
+	"github.com/ae-base-server/pkg/core"
 	"github.com/joho/godotenv"
 	calendar "github.com/unburdy/calendar-module"
-	_ "github.com/unburdy/unburdy-server-api/docs" // swagger docs
+	_ "github.com/unburdy/unburdy-server-api/docs" // swagger docs - unburdy-specific
 	"github.com/unburdy/unburdy-server-api/modules/client_management"
 )
 
@@ -24,7 +29,7 @@ import (
 // @license.name MIT
 // @license.url https://opensource.org/licenses/MIT
 
-// @host localhost:8080
+// @host localhost:8081
 // @BasePath /api/v1
 
 // @securityDefinitions.apikey BearerAuth
@@ -98,40 +103,50 @@ func main() {
 		log.Println("Warning: .env file not found, using environment variables")
 	}
 
-	// Load configuration and connect to database
+	// Validate required environment variables
+	if err := config.ValidateRequired(); err != nil {
+		log.Fatalf("❌ Configuration validation failed:\n%v", err)
+	}
+
+	// Load configuration
 	cfg := config.Load()
-	db, err := database.ConnectWithAutoCreate(cfg.Database)
-	if err != nil {
-		log.Fatal("Failed to connect to database:", err)
+
+	// Validate loaded configuration
+	if err := cfg.Validate(); err != nil {
+		log.Printf("⚠️  Configuration warnings:\n%v", err)
+		// Don't fatal in development, just warn
 	}
 
-	// Setup base-server tables and seed data
-	log.Println("🔧 Migrating base-server entities (users, tenants, customers, etc.)...")
-	if err := baseAPI.MigrateBaseEntities(db); err != nil {
-		log.Printf("⚠️  Warning: Failed to migrate base entities: %v", err)
+	log.Println("✅ Configuration validated successfully")
+
+	// Create application
+	app := bootstrap.NewApplication(cfg)
+
+	// Register modules in dependency order
+	modules := []core.Module{
+		base.NewBaseModule(),              // Base authentication and user management
+		customer.NewCustomerModule(),      // Customer and plan management
+		email.NewEmailModule(),            // Email management and notifications
+		pdf.NewPDFModule(),                // PDF generation services
+		static.NewStaticModule(),          // Static JSON file serving
+		client_management.NewCoreModule(), // Client management (unburdy-specific)
+		calendar.NewCoreModule(),          // Calendar management (unburdy-specific)
 	}
 
-	log.Println("🔧 Setting up base-server seed data...")
-	if err := baseAPI.SeedBaseData(db); err != nil {
-		log.Printf("⚠️  Warning: Failed to seed base data: %v", err)
+	for _, module := range modules {
+		if err := app.RegisterModule(module); err != nil {
+			log.Fatalf("Failed to register module %s: %v", module.Name(), err)
+		}
 	}
 
-	// Create external modules with auto-migration
-	modules := []baseAPI.ModuleRouteProvider{
-		client_management.NewModule(db), // Client management and cost provider tracking
-		calendar.NewModule(db),          // Calendar management with auto-migration support
+	// Initialize application
+	if err := app.Initialize(); err != nil {
+		log.Fatal("Failed to initialize application:", err)
 	}
 
-	// Setup modular router (includes base server + external modules with auto-migration)
-	router := baseAPI.SetupModularRouter(db, modules)
-
-	// Start server
-	addr := cfg.Server.Host + ":" + cfg.Server.Port
-	log.Printf("Server starting on %s", addr)
-	log.Printf("Health check available at http://%s/api/v1/health", addr)
-	log.Printf("API documentation at http://%s/swagger/index.html", addr)
-
-	if err := http.ListenAndServe(addr, router); err != nil {
-		log.Fatal("Failed to start server:", err)
+	// Start application
+	ctx := context.Background()
+	if err := app.Start(ctx); err != nil {
+		log.Fatal("Failed to start application:", err)
 	}
 }

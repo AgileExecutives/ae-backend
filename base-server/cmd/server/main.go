@@ -4,10 +4,11 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/ae-base-server/internal/database"
+	internalDB "github.com/ae-base-server/internal/database"
 	"github.com/ae-base-server/internal/router"
 	"github.com/ae-base-server/pkg/auth"
 	"github.com/ae-base-server/pkg/config"
+	"github.com/ae-base-server/pkg/database"
 	"github.com/gin-gonic/gin"
 )
 
@@ -32,7 +33,7 @@ func main() {
 	log.Println("⚠️  Warning: This legacy server doesn't run migrations. Use the main server with bootstrap system.")
 
 	// Seed database with initial data
-	if err := database.Seed(db); err != nil {
+	if err := internalDB.Seed(db); err != nil {
 		log.Fatal("Failed to seed database:", err)
 	}
 

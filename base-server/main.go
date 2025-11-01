@@ -78,8 +78,22 @@ func main() {
 		log.Println("Warning: .env file not found, using environment variables")
 	}
 
+	// Validate required environment variables
+	if err := config.ValidateRequired(); err != nil {
+		log.Fatalf("❌ Configuration validation failed:\n%v", err)
+	}
+
 	// Load configuration
 	cfg := config.Load()
+
+	// Validate loaded configuration
+	if err := cfg.Validate(); err != nil {
+		log.Printf("⚠️  Configuration warnings:\n%v", err)
+		// Don't fatal in development, just warn
+		// In production, this will fail ValidateRequired() above
+	}
+
+	log.Println("✅ Configuration validated successfully")
 
 	// Create application
 	app := bootstrap.NewApplication(cfg)

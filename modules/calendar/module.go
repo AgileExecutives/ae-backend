@@ -21,6 +21,12 @@ type Module struct {
 	calendarHandler *handlers.CalendarHandler
 }
 
+// NewCoreModule creates a new calendar module for the bootstrap system
+// Initialization happens during the Initialize() lifecycle method
+func NewCoreModule() *Module {
+	return &Module{}
+}
+
 // NewModuleWithAutoMigration creates a new calendar module with auto-migration support
 func NewModuleWithAutoMigration(db *gorm.DB) *Module {
 	// Initialize services
@@ -57,7 +63,21 @@ func (m *Module) Dependencies() []string {
 
 // Initialize initializes the module
 func (m *Module) Initialize(ctx core.ModuleContext) error {
-	// Any initialization logic here
+	ctx.Logger.Info("Initializing calendar module...")
+
+	// Store database reference
+	m.db = ctx.DB
+
+	// Initialize services
+	m.calendarService = services.NewCalendarService(ctx.DB)
+
+	// Initialize handlers
+	m.calendarHandler = handlers.NewCalendarHandler(m.calendarService)
+
+	// Initialize route provider
+	m.routeProvider = routes.NewRouteProvider(m.calendarHandler)
+
+	ctx.Logger.Info("Calendar module initialized successfully")
 	return nil
 }
 
@@ -95,8 +115,12 @@ func (m *Module) GetEntitiesForMigration() []interface{} {
 
 // Routes returns route providers
 func (m *Module) Routes() []core.RouteProvider {
-	// For now, return empty slice as we use the simple interface
-	return []core.RouteProvider{}
+	if m.routeProvider == nil {
+		return []core.RouteProvider{}
+	}
+	return []core.RouteProvider{
+		&calendarRouteAdapter{provider: m.routeProvider},
+	}
 }
 
 // EventHandlers returns event handlers
@@ -135,4 +159,25 @@ func (m *Module) RegisterRoutes(router *gin.RouterGroup) {
 // GetPrefix implements compatibility with baseAPI.ModuleRouteProvider
 func (m *Module) GetPrefix() string {
 	return m.routeProvider.GetPrefix()
+}
+
+// calendarRouteAdapter adapts the calendar routes.RouteProvider to core.RouteProvider
+type calendarRouteAdapter struct {
+	provider *routes.RouteProvider
+}
+
+func (a *calendarRouteAdapter) RegisterRoutes(router *gin.RouterGroup, ctx core.ModuleContext) {
+	a.provider.RegisterRoutes(router)
+}
+
+func (a *calendarRouteAdapter) GetPrefix() string {
+	return a.provider.GetPrefix()
+}
+
+func (a *calendarRouteAdapter) GetMiddleware() []gin.HandlerFunc {
+	return a.provider.GetMiddleware()
+}
+
+func (a *calendarRouteAdapter) GetSwaggerTags() []string {
+	return a.provider.GetSwaggerTags()
 }

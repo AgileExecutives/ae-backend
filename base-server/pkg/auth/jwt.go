@@ -2,6 +2,7 @@ package auth
 
 import (
 	"fmt"
+	"os"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -17,7 +18,18 @@ type JWTClaims struct {
 	jwt.RegisteredClaims
 }
 
-var jwtSecret = []byte("your-secret-key") // TODO: Move to config
+var jwtSecret []byte
+
+func init() {
+	// Load JWT secret from environment variable
+	secret := os.Getenv("JWT_SECRET")
+	if secret == "" {
+		// Fallback to default for development only
+		// In production, JWT_SECRET must be set
+		secret = "your-super-secret-jwt-key-change-in-production"
+	}
+	jwtSecret = []byte(secret)
+}
 
 // GenerateJWT generates a JWT token for the user
 func GenerateJWT(userID, tenantID uint, role string) (string, error) {
