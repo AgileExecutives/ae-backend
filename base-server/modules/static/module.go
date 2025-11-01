@@ -5,11 +5,13 @@ import (
 
 	"github.com/ae-base-server/modules/static/handlers"
 	"github.com/ae-base-server/pkg/core"
+	"gorm.io/gorm"
 )
 
 // StaticModule provides secure JSON file serving functionality
 type StaticModule struct {
 	staticHandlers *handlers.StaticHandlers
+	db             *gorm.DB
 }
 
 // NewStaticModule creates a new static module instance
@@ -31,6 +33,9 @@ func (m *StaticModule) Dependencies() []string {
 
 func (m *StaticModule) Initialize(ctx core.ModuleContext) error {
 	ctx.Logger.Info("Initializing static module...")
+
+	// Store database reference
+	m.db = ctx.DB
 
 	// Initialize handlers
 	m.staticHandlers = handlers.NewStaticHandlers(ctx.Logger)
@@ -56,7 +61,7 @@ func (m *StaticModule) Entities() []core.Entity {
 
 func (m *StaticModule) Routes() []core.RouteProvider {
 	return []core.RouteProvider{
-		handlers.NewStaticRoutes(m.staticHandlers),
+		handlers.NewStaticRoutes(m.staticHandlers, m.db),
 	}
 }
 

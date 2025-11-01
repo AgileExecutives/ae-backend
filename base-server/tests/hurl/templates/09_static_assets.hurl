@@ -1,8 +1,22 @@
 # Static JSON API Tests
 # Test secure JSON file serving with enhanced security validation
+# Note: Static endpoints now require authentication
+
+# Setup fresh auth session
+POST {{HOST}}/api/v1/auth/login
+Content-Type: application/json
+{
+  "username": "testuser",
+  "password": "newpass123"
+}
+
+HTTP 200
+[Captures]
+auth_token: jsonpath "$.data.token"
 
 # Test listing available JSON files
 GET {{HOST}}/api/v1/static
+Authorization: Bearer {{auth_token}}
 
 HTTP 200
 [Asserts]
@@ -15,6 +29,7 @@ jsonpath "$.security_note" exists
 
 # Test serving legitimate JSON file - diagnostic_std
 GET {{HOST}}/api/v1/static/diagnostic_std
+Authorization: Bearer {{auth_token}}
 
 HTTP 200
 [Asserts]
@@ -24,6 +39,7 @@ body contains "category"
 
 # Test serving legitimate JSON file - bundeslaender
 GET {{HOST}}/api/v1/static/bundeslaender
+Authorization: Bearer {{auth_token}}
 
 HTTP 200
 [Asserts]
@@ -31,6 +47,7 @@ header "Content-Type" contains "application/json"
 
 # Test serving legitimate JSON file - enumerations
 GET {{HOST}}/api/v1/static/enumerations
+Authorization: Bearer {{auth_token}}
 
 HTTP 200
 [Asserts]
@@ -38,6 +55,7 @@ header "Content-Type" contains "application/json"
 
 # Test serving legitimate JSON file - holidays
 GET {{HOST}}/api/v1/static/holidays
+Authorization: Bearer {{auth_token}}
 
 HTTP 200
 [Asserts]
@@ -45,6 +63,7 @@ header "Content-Type" contains "application/json"
 
 # Test serving legitimate JSON file - jugendaemter
 GET {{HOST}}/api/v1/static/jugendaemter
+Authorization: Bearer {{auth_token}}
 
 HTTP 200
 [Asserts]
@@ -52,6 +71,7 @@ header "Content-Type" contains "application/json"
 
 # Test serving legitimate JSON file - potential_customers
 GET {{HOST}}/api/v1/static/potential_customers
+Authorization: Bearer {{auth_token}}
 
 HTTP 200
 [Asserts]
@@ -61,6 +81,7 @@ header "Content-Type" contains "application/json"
 
 # Test path traversal protection - parent directory access
 GET {{HOST}}/api/v1/static/../email_templates/welcome
+Authorization: Bearer {{auth_token}}
 
 HTTP 404
 [Asserts]
@@ -68,13 +89,15 @@ body contains "404 page not found"
 
 # Test path traversal with URL encoding
 GET {{HOST}}/api/v1/static/..%2Femail_templates%2Fwelcome
+Authorization: Bearer {{auth_token}}
 
 HTTP 404
 [Asserts]
 body contains "404 page not found"
 
 # Test accessing non-existent JSON file
-GET {{HOST}}/api/v1/static/nonexistent_{{UNIQUE_ID}}
+GET {{HOST}}/api/v1/static/nonexistent_file
+Authorization: Bearer {{auth_token}}
 
 HTTP 404
 [Asserts]
@@ -82,6 +105,7 @@ body contains "File not found"
 
 # Test invalid characters - dot in filename
 GET {{HOST}}/api/v1/static/test.json
+Authorization: Bearer {{auth_token}}
 
 HTTP 400
 [Asserts]
@@ -89,6 +113,7 @@ body contains "Invalid file name"
 
 # Test invalid characters - special characters
 GET {{HOST}}/api/v1/static/test@file
+Authorization: Bearer {{auth_token}}
 
 HTTP 400
 [Asserts]
@@ -96,6 +121,7 @@ body contains "Invalid file name"
 
 # Test invalid characters - slash in filename
 GET {{HOST}}/api/v1/static/test/file
+Authorization: Bearer {{auth_token}}
 
 HTTP 404
 [Asserts]
@@ -103,6 +129,7 @@ body contains "404 page not found"
 
 # Test invalid characters - space in filename
 GET {{HOST}}/api/v1/static/test%20file
+Authorization: Bearer {{auth_token}}
 
 HTTP 400
 [Asserts]
@@ -110,6 +137,7 @@ body contains "Invalid file name"
 
 # Test invalid characters - backslash
 GET {{HOST}}/api/v1/static/test%5Cfile
+Authorization: Bearer {{auth_token}}
 
 HTTP 400
 [Asserts]
@@ -117,6 +145,7 @@ body contains "Invalid file name"
 
 # Test case sensitivity - uppercase should work for valid files
 GET {{HOST}}/api/v1/static/DIAGNOSTIC_STD
+Authorization: Bearer {{auth_token}}
 
 HTTP 404
 [Asserts]
@@ -124,12 +153,14 @@ body contains "File not found"
 
 # Test system file access attempts
 GET {{HOST}}/api/v1/static/.env
+Authorization: Bearer {{auth_token}}
 
 HTTP 404
 [Asserts]
 body contains "File not found"
 
 GET {{HOST}}/api/v1/static/.git
+Authorization: Bearer {{auth_token}}
 
 HTTP 404
 [Asserts]
@@ -137,6 +168,7 @@ body contains "File not found"
 
 # Test double path traversal
 GET {{HOST}}/api/v1/static/../../etc/passwd
+Authorization: Bearer {{auth_token}}
 
 HTTP 404
 [Asserts]
@@ -144,6 +176,7 @@ body contains "404 page not found"
 
 # Test null byte injection
 GET {{HOST}}/api/v1/static/diagnostic_std%00.html
+Authorization: Bearer {{auth_token}}
 
 HTTP 404
 [Asserts]
@@ -154,6 +187,7 @@ body contains "File not found"
 
 # Test hyphen (should work)
 GET {{HOST}}/api/v1/static/holidays
+Authorization: Bearer {{auth_token}}
 
 HTTP 200
 [Asserts]
@@ -161,6 +195,7 @@ header "Content-Type" contains "application/json"
 
 # Test underscore (should work)
 GET {{HOST}}/api/v1/static/potential_customers
+Authorization: Bearer {{auth_token}}
 
 HTTP 200
 [Asserts]
@@ -168,7 +203,21 @@ header "Content-Type" contains "application/json"
 
 # Test mixed alphanumeric (should work)
 GET {{HOST}}/api/v1/static/diagnostic_std
+Authorization: Bearer {{auth_token}}
 
 HTTP 200
 [Asserts]
 header "Content-Type" contains "application/json"
+
+# Test unauthenticated access - should return 401
+GET {{HOST}}/api/v1/static
+
+HTTP 401
+[Asserts]
+body contains "Authorization required"
+
+GET {{HOST}}/api/v1/static/diagnostic_std
+
+HTTP 401
+[Asserts]
+body contains "Authorization required"

@@ -55,10 +55,6 @@ func SetupRouter(db *gorm.DB, cfg config.Config) *gin.Engine {
 		public.GET("/health", healthHandler.Health)
 		public.GET("/ping", healthHandler.Ping)
 
-		// Serve JSON files from statics/json directory
-		public.GET("/static", handlers.ListStaticJSON)
-		public.GET("/static/:filename", handlers.ServeStaticJSON)
-
 		// Authentication (with rate limiting)
 		// Login: 5 attempts per 15 minutes per IP
 		public.POST("/auth/login",
@@ -115,6 +111,10 @@ func SetupRouter(db *gorm.DB, cfg config.Config) *gin.Engine {
 	protected := router.Group("/api/v1")
 	protected.Use(middleware.AuthMiddleware(db))
 	{
+		// Static files (requires authentication)
+		protected.GET("/static", handlers.ListStaticJSON)
+		protected.GET("/static/:filename", handlers.ServeStaticJSON)
+
 		// Auth routes for authenticated users
 		auth := protected.Group("/auth")
 		{
