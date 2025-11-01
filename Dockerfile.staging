@@ -10,10 +10,13 @@ WORKDIR /app
 # Copy base-server first (required for replace directive)
 COPY base-server/ /base-server/
 
+# Copy modules directory (required for calendar module)
+COPY modules/ /modules/
+
 # Copy unburdy_server go mod files
 COPY unburdy_server/go.mod unburdy_server/go.sum ./
 
-# Download dependencies (now base-server is available)
+# Download dependencies (now base-server and modules are available)
 RUN go mod download
 
 # Copy unburdy_server source code

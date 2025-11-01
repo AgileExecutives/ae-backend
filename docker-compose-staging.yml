@@ -9,15 +9,16 @@ volumes:
     driver: local
 
 services:
-  # PostgreSQL Database for Unburdy Server Staging
+  # PostgreSQL Database for Staging (matching base-server config)
   unburdy-db-staging:
     image: postgres:15-alpine
     container_name: unburdy-db-staging
     restart: unless-stopped
     environment:
-      POSTGRES_DB: unburdy_staging
+      POSTGRES_DB: ae_saas_basic_test
       POSTGRES_USER: unburdy_user
       POSTGRES_PASSWORD: unburdy_staging_password
+      POSTGRES_HOST_AUTH_METHOD: trust
       POSTGRES_INITDB_ARGS: "--encoding=UTF8 --locale=C"
       # Performance tuning for development/staging
       POSTGRES_SHARED_BUFFERS: 256MB
@@ -58,7 +59,7 @@ services:
       DB_PORT: 5432
       DB_USER: unburdy_user
       DB_PASSWORD: unburdy_staging_password
-      DB_NAME: unburdy_staging
+      DB_NAME: ae_saas_basic_test
       DB_SSL_MODE: disable
       DB_MAX_IDLE_CONNS: 10
       DB_MAX_OPEN_CONNS: 100
