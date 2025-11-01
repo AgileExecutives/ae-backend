@@ -54,9 +54,9 @@ type UnburdySeedData struct {
 
 // HolidayData represents the structure of holidays.json
 type HolidayData struct {
-	State           string                            `json:"state"`
-	SchoolHolidays  map[string]map[string][2]string   `json:"school_holidays"`
-	PublicHolidays  map[string]map[string]string      `json:"public_holidays"`
+	State          string                          `json:"state"`
+	SchoolHolidays map[string]map[string][2]string `json:"school_holidays"`
+	PublicHolidays map[string]map[string]string    `json:"public_holidays"`
 }
 
 // SeedConfig represents the seeding configuration
@@ -757,10 +757,10 @@ func (cs *CalendarSeeder) createHolidayEntries(calendar *entities.Calendar, star
 func (cs *CalendarSeeder) loadHolidaysData() ([]HolidayData, error) {
 	// Try different possible locations for the holidays.json file
 	possiblePaths := []string{
-		"../statics/json/holidays.json",                     // From seed directory
-		"./statics/json/holidays.json",                      // From project root
-		"../../base-server/statics/json/holidays.json",     // From seed to base-server
-		"../../../base-server/statics/json/holidays.json",  // From deeper nested
+		"../statics/json/holidays.json",                   // From seed directory
+		"./statics/json/holidays.json",                    // From project root
+		"../../base-server/statics/json/holidays.json",    // From seed to base-server
+		"../../../base-server/statics/json/holidays.json", // From deeper nested
 	}
 
 	var data []byte

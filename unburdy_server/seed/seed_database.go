@@ -88,7 +88,7 @@ type ClientSeedData struct {
 func main() {
 	// Check for calendar-only mode from environment or command line
 	calendarOnly := getEnv("SEED_CALENDAR_ONLY", "false") == "true"
-	
+
 	if calendarOnly {
 		log.Println("📅 Unburdy Server - Calendar-Only Seeding")
 		log.Println("========================================")
@@ -489,24 +489,24 @@ func seedCalendarData(db *gorm.DB) error {
 	successCount := 0
 	for _, user := range users {
 		log.Printf("🗓️  Seeding calendar data for user %d: %s", user.ID, user.Email)
-		
+
 		if err := seeder.SeedCalendarData(user.TenantID, user.ID); err != nil {
 			log.Printf("❌ Failed to seed calendar for user %d (%s): %v", user.ID, user.Email, err)
 			continue
 		}
-		
+
 		successCount++
 		log.Printf("✅ Successfully seeded calendar data for user %d (%s)", user.ID, user.Email)
 	}
 
 	log.Printf("🎉 Calendar seeding completed! Successfully seeded %d out of %d users.", successCount, len(users))
-	
+
 	// Show calendar seeding statistics
 	showCalendarStatistics(db)
 	return nil
 }
 
-// showCalendarStatistics displays calendar seeding results  
+// showCalendarStatistics displays calendar seeding results
 func showCalendarStatistics(db *gorm.DB) {
 	log.Println("\n📅 Calendar Seeding Statistics")
 	log.Println("===============================")
@@ -518,7 +518,7 @@ func showCalendarStatistics(db *gorm.DB) {
 		UserID   uint
 		Title    string
 	}
-	
+
 	type CalendarEntry struct {
 		ID         uint `gorm:"primarykey"`
 		TenantID   uint
@@ -527,7 +527,7 @@ func showCalendarStatistics(db *gorm.DB) {
 		Title      string
 		Type       string
 	}
-	
+
 	type CalendarSeries struct {
 		ID         uint `gorm:"primarykey"`
 		TenantID   uint
@@ -552,7 +552,7 @@ func showCalendarStatistics(db *gorm.DB) {
 		UserID uint
 		Count  int64
 	}
-	
+
 	db.Model(&Calendar{}).
 		Select("user_id, COUNT(*) as count").
 		Group("user_id").
