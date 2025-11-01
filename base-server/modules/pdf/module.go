@@ -48,8 +48,8 @@ func (m *PDFModule) Initialize(ctx core.ModuleContext) error {
 	// Initialize services
 	m.pdfService = services.NewPDFGenerator()
 
-	// Initialize handlers
-	m.pdfHandler = handlers.NewPDFHandler(m.pdfService)
+	// Initialize handlers with database for auth middleware
+	m.pdfHandler = handlers.NewPDFHandler(m.pdfService, ctx.DB)
 
 	// Initialize event handlers
 	m.eventHandlers = []core.EventHandler{

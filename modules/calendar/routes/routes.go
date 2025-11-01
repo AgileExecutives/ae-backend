@@ -1,7 +1,9 @@
 package routes
 
 import (
+	"github.com/ae-base-server/pkg/middleware"
 	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
 
 	"github.com/unburdy/calendar-module/handlers"
 )
@@ -9,12 +11,14 @@ import (
 // RouteProvider provides routing functionality for calendar management
 type RouteProvider struct {
 	calendarHandler *handlers.CalendarHandler
+	db              *gorm.DB
 }
 
 // NewRouteProvider creates a new route provider
-func NewRouteProvider(calendarHandler *handlers.CalendarHandler) *RouteProvider {
+func NewRouteProvider(calendarHandler *handlers.CalendarHandler, db *gorm.DB) *RouteProvider {
 	return &RouteProvider{
 		calendarHandler: calendarHandler,
+		db:              db,
 	}
 }
 
@@ -75,7 +79,7 @@ func (rp *RouteProvider) GetPrefix() string {
 // GetMiddleware returns middleware to apply to all routes
 func (rp *RouteProvider) GetMiddleware() []gin.HandlerFunc {
 	return []gin.HandlerFunc{
-		// Authentication middleware will be applied at the group level
+		middleware.AuthMiddleware(rp.db), // Require authentication for all calendar routes
 	}
 }
 

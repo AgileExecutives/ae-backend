@@ -5,17 +5,23 @@ import (
 
 	"github.com/ae-base-server/modules/pdf/services"
 	"github.com/ae-base-server/pkg/core"
+	"github.com/ae-base-server/pkg/middleware"
 	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
 )
 
 // PDFHandler handles PDF generation requests
 type PDFHandler struct {
 	pdfService *services.PDFGenerator
+	db         *gorm.DB
 }
 
 // NewPDFHandler creates a new PDF handler
-func NewPDFHandler(pdfService *services.PDFGenerator) *PDFHandler {
-	return &PDFHandler{pdfService: pdfService}
+func NewPDFHandler(pdfService *services.PDFGenerator, db *gorm.DB) *PDFHandler {
+	return &PDFHandler{
+		pdfService: pdfService,
+		db:         db,
+	}
 }
 
 // RegisterRoutes registers PDF-related routes
@@ -34,7 +40,7 @@ func (h *PDFHandler) GetPrefix() string {
 // GetMiddleware returns route middleware
 func (h *PDFHandler) GetMiddleware() []gin.HandlerFunc {
 	return []gin.HandlerFunc{
-		// TODO: Add auth middleware
+		middleware.AuthMiddleware(h.db), // Require authentication for PDF generation
 	}
 }
 

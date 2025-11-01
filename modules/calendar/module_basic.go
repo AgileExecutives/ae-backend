@@ -23,8 +23,8 @@ func NewBasicModule(db *gorm.DB) baseAPI.ModuleRouteProvider {
 	// Initialize handlers
 	calendarHandler := handlers.NewCalendarHandler(calendarService)
 
-	// Initialize route provider
-	routeProvider := routes.NewRouteProvider(calendarHandler)
+	// Initialize route provider with database for auth middleware
+	routeProvider := routes.NewRouteProvider(calendarHandler, db)
 
 	return &BasicModule{
 		routeProvider: routeProvider,

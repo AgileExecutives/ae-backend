@@ -1,7 +1,9 @@
 package routes
 
 import (
+	"github.com/ae-base-server/pkg/middleware"
 	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
 
 	"github.com/unburdy/unburdy-server-api/modules/client_management/handlers"
 )
@@ -10,13 +12,15 @@ import (
 type RouteProvider struct {
 	clientHandler       *handlers.ClientHandler
 	costProviderHandler *handlers.CostProviderHandler
+	db                  *gorm.DB
 }
 
 // NewRouteProvider creates a new route provider
-func NewRouteProvider(clientHandler *handlers.ClientHandler, costProviderHandler *handlers.CostProviderHandler) *RouteProvider {
+func NewRouteProvider(clientHandler *handlers.ClientHandler, costProviderHandler *handlers.CostProviderHandler, db *gorm.DB) *RouteProvider {
 	return &RouteProvider{
 		clientHandler:       clientHandler,
 		costProviderHandler: costProviderHandler,
+		db:                  db,
 	}
 }
 
@@ -54,7 +58,7 @@ func (rp *RouteProvider) GetPrefix() string {
 // GetMiddleware returns middleware to apply to all routes
 func (rp *RouteProvider) GetMiddleware() []gin.HandlerFunc {
 	return []gin.HandlerFunc{
-		// Authentication middleware will be applied at the group level
+		middleware.AuthMiddleware(rp.db), // Require authentication for all client management routes
 	}
 }
 

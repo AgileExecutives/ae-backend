@@ -35,8 +35,8 @@ func NewModuleWithAutoMigration(db *gorm.DB) *Module {
 	// Initialize handlers
 	calendarHandler := handlers.NewCalendarHandler(calendarService)
 
-	// Initialize route provider
-	routeProvider := routes.NewRouteProvider(calendarHandler)
+	// Initialize route provider with database for auth middleware
+	routeProvider := routes.NewRouteProvider(calendarHandler, db)
 
 	return &Module{
 		db:              db,
@@ -74,8 +74,8 @@ func (m *Module) Initialize(ctx core.ModuleContext) error {
 	// Initialize handlers
 	m.calendarHandler = handlers.NewCalendarHandler(m.calendarService)
 
-	// Initialize route provider
-	m.routeProvider = routes.NewRouteProvider(m.calendarHandler)
+	// Initialize route provider with database for auth middleware
+	m.routeProvider = routes.NewRouteProvider(m.calendarHandler, ctx.DB)
 
 	ctx.Logger.Info("Calendar module initialized successfully")
 	return nil
@@ -119,7 +119,10 @@ func (m *Module) Routes() []core.RouteProvider {
 		return []core.RouteProvider{}
 	}
 	return []core.RouteProvider{
-		&calendarRouteAdapter{provider: m.routeProvider},
+		&calendarRouteAdapter{
+			provider: m.routeProvider,
+			// ctx will be nil here but set during Initialize
+		},
 	}
 }
 
@@ -175,6 +178,7 @@ func (a *calendarRouteAdapter) GetPrefix() string {
 }
 
 func (a *calendarRouteAdapter) GetMiddleware() []gin.HandlerFunc {
+	// Middleware is handled by the route provider itself
 	return a.provider.GetMiddleware()
 }
 

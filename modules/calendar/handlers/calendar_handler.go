@@ -32,9 +32,11 @@ func NewCalendarHandler(service *services.CalendarService) *CalendarHandler {
 // @Tags calendar
 // @Accept json
 // @Produce json
+// @Security BearerAuth
 // @Param calendar body entities.CreateCalendarRequest true "Calendar data"
 // @Success 201 {object} entities.CalendarResponse
 // @Failure 400 {object} map[string]interface{}
+// @Failure 401 {object} map[string]interface{}
 // @Failure 500 {object} map[string]interface{}
 // @Router /calendar [post]
 func (h *CalendarHandler) CreateCalendar(c *gin.Context) {
@@ -71,9 +73,11 @@ func (h *CalendarHandler) CreateCalendar(c *gin.Context) {
 // @Description Retrieve a calendar by its ID
 // @Tags calendar
 // @Produce json
+// @Security BearerAuth
 // @Param id path int true "Calendar ID"
 // @Success 200 {object} entities.CalendarResponse
 // @Failure 400 {object} map[string]interface{}
+// @Failure 401 {object} map[string]interface{}
 // @Failure 404 {object} map[string]interface{}
 // @Failure 500 {object} map[string]interface{}
 // @Router /calendar/{id} [get]

@@ -29,8 +29,8 @@ func NewModule(db *gorm.DB) baseAPI.ModuleRouteProvider {
 	clientHandler := handlers.NewClientHandler(clientService)
 	costProviderHandler := handlers.NewCostProviderHandler(costProviderService)
 
-	// Initialize route provider
-	routeProvider := routes.NewRouteProvider(clientHandler, costProviderHandler)
+	// Initialize route provider with database for auth middleware
+	routeProvider := routes.NewRouteProvider(clientHandler, costProviderHandler, db)
 
 	return &Module{
 		routeProvider: routeProvider,
@@ -61,6 +61,7 @@ type CoreModule struct {
 	db                  *gorm.DB
 	clientHandlers      *handlers.ClientHandler
 	costProviderHandler *handlers.CostProviderHandler
+	routeProvider       *routes.RouteProvider
 }
 
 // NewCoreModule creates a new client management module compatible with bootstrap system
@@ -92,6 +93,9 @@ func (m *CoreModule) Initialize(ctx core.ModuleContext) error {
 	m.clientHandlers = handlers.NewClientHandler(clientService)
 	m.costProviderHandler = handlers.NewCostProviderHandler(costProviderService)
 
+	// Initialize route provider with database for auth middleware
+	m.routeProvider = routes.NewRouteProvider(m.clientHandlers, m.costProviderHandler, ctx.DB)
+
 	ctx.Logger.Info("Client management module initialized successfully")
 	return nil
 }
@@ -114,8 +118,12 @@ func (m *CoreModule) Entities() []core.Entity {
 }
 
 func (m *CoreModule) Routes() []core.RouteProvider {
-	// Return empty for now - routes will be handled by legacy system
-	return []core.RouteProvider{}
+	if m.routeProvider == nil {
+		return []core.RouteProvider{}
+	}
+	return []core.RouteProvider{
+		&clientManagementRouteAdapter{provider: m.routeProvider},
+	}
 }
 
 func (m *CoreModule) EventHandlers() []core.EventHandler {
@@ -135,4 +143,25 @@ func (m *CoreModule) SwaggerPaths() []string {
 		"/clients",
 		"/cost-providers",
 	}
+}
+
+// clientManagementRouteAdapter adapts the client management routes.RouteProvider to core.RouteProvider
+type clientManagementRouteAdapter struct {
+	provider *routes.RouteProvider
+}
+
+func (a *clientManagementRouteAdapter) RegisterRoutes(router *gin.RouterGroup, ctx core.ModuleContext) {
+	a.provider.RegisterRoutes(router)
+}
+
+func (a *clientManagementRouteAdapter) GetPrefix() string {
+	return a.provider.GetPrefix()
+}
+
+func (a *clientManagementRouteAdapter) GetMiddleware() []gin.HandlerFunc {
+	return a.provider.GetMiddleware()
+}
+
+func (a *clientManagementRouteAdapter) GetSwaggerTags() []string {
+	return a.provider.GetSwaggerTags()
 }
