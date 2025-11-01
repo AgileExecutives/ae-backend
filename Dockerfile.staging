@@ -36,6 +36,8 @@ RUN apk --no-cache add \
     ca-certificates \
     postgresql-client \
     curl \
+    chromium \
+    chromium-chromedriver \
     && update-ca-certificates
 
 # Create non-root user for security
@@ -52,6 +54,9 @@ COPY --from=builder /app/statics ./statics
 COPY --from=builder /app/seed-data.json .
 COPY --from=builder /app/seed_app_data.json .
 
+# Set Chrome binary path for PDF generation
+ENV CHROME_BIN=/usr/bin/chromium-browser
+
 # Create environment file for staging
 RUN cat > .env << 'EOF'
 # Staging Environment Configuration
@@ -64,7 +69,7 @@ DB_HOST=unburdy-db-staging
 DB_PORT=5432
 DB_USER=unburdy_user
 DB_PASSWORD=unburdy_staging_password
-DB_NAME=unburdy_staging
+DB_NAME=ae_saas_basic_test
 DB_SSL_MODE=disable
 
 # JWT Configuration

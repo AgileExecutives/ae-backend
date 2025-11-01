@@ -1,0 +1,172 @@
+networks:
+  unburdy-staging:
+    driver: bridge
+
+volumes:
+  unburdy_staging_data:
+    driver: local
+
+services:
+  # PostgreSQL Database for Staging (matching base-server config)
+  unburdy-db-staging:
+    image: postgres:15-alpine
+    container_name: unburdy-db-staging
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ae_saas_basic_test
+      POSTGRES_USER: unburdy_user
+      POSTGRES_PASSWORD: unburdy_staging_password
+      POSTGRES_HOST_AUTH_METHOD: trust
+      POSTGRES_INITDB_ARGS: "--encoding=UTF8 --locale=C"
+      # Performance tuning for development/staging
+      POSTGRES_SHARED_BUFFERS: 256MB
+      POSTGRES_EFFECTIVE_CACHE_SIZE: 1GB
+    volumes:
+      - unburdy_staging_data:/var/lib/postgresql/data
+      # Initialize database with custom scripts if needed
+      - ../../unburdy_server/scripts/init-staging-db.sql:/docker-entrypoint-initdb.d/01-init.sql:ro
+    ports:
+      - "5433:5432"  # Expose on different port to avoid conflicts
+    networks:
+      - unburdy-staging
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U unburdy_user -d ae_saas_basic_test"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  # Unburdy Server Application
+  unburdy-server-staging:
+    build:
+      context: ../../
+      dockerfile: environments/staging/Dockerfile.staging
+    container_name: unburdy-server-staging
+    restart: unless-stopped
+    depends_on:
+      unburdy-db-staging:
+        condition: service_healthy
+    environment:
+      # Server Configuration
+      GIN_MODE: release
+      SERVER_HOST: 0.0.0.0
+      SERVER_PORT: 8080
+      
+      # Database Configuration
+      DB_HOST: unburdy-db-staging
+      DB_PORT: 5432
+      DB_USER: unburdy_user
+      DB_PASSWORD: unburdy_staging_password
+      DB_NAME: ae_saas_basic_test
+      DB_SSL_MODE: disable
+      DB_MAX_IDLE_CONNS: 10
+      DB_MAX_OPEN_CONNS: 100
+      DB_CONN_MAX_LIFETIME: 1h
+      
+      # JWT Configuration
+      JWT_SECRET: unburdy-staging-jwt-secret-key-change-in-production
+      JWT_EXPIRY: 24h
+      
+      # Email Configuration (using Mailtrap for staging)
+      SMTP_HOST: smtp.mailtrap.io
+      SMTP_PORT: 587
+      SMTP_USERNAME: your_mailtrap_username
+      SMTP_PASSWORD: your_mailtrap_password
+      FROM_EMAIL: noreply@unburdy-staging.com
+      FROM_NAME: "Unburdy Staging"
+      
+      # Application Configuration
+      LOG_LEVEL: info
+      CORS_ALLOWED_ORIGINS: "*"
+      RATE_LIMIT_ENABLED: "true"
+      
+      # Feature Flags
+      ENABLE_SWAGGER: "true"
+      ENABLE_METRICS: "true"
+      ENABLE_DEBUG_ROUTES: "true"
+      
+      # File Upload Configuration
+      MAX_UPLOAD_SIZE: 10MB
+      UPLOAD_DIR: /app/uploads
+      
+      # Cache Configuration (if using Redis in future)
+      CACHE_ENABLED: "false"
+      
+      # Monitoring
+      HEALTH_CHECK_ENABLED: "true"
+      
+    ports:
+      - "8080:8080"  # Expose Unburdy Server on port 8080
+    networks:
+      - unburdy-staging
+    volumes:
+      - ../../unburdy_server/logs:/app/logs
+      - ../../unburdy_server/uploads:/app/uploads
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/api/v1/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    labels:
+      - "traefik.enable=false"  # Disable Traefik if running
+      - "com.unburdy.environment=staging"
+      - "com.unburdy.service=unburdy-server"
+      - "com.unburdy.version=1.0.0"
+
+  # PostgreSQL Admin Tool (pgAdmin) - Optional for database management
+  pgadmin-staging:
+    image: dpage/pgadmin4:latest
+    container_name: pgadmin-staging
+    restart: unless-stopped
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@unburdy-staging.com
+      PGADMIN_DEFAULT_PASSWORD: pgadmin_staging_password
+      PGADMIN_CONFIG_SERVER_MODE: "False"
+      PGADMIN_CONFIG_MASTER_PASSWORD_REQUIRED: "False"
+    ports:
+      - "5050:80"  # Expose pgAdmin on port 5050
+    networks:
+      - unburdy-staging
+    depends_on:
+      - unburdy-db-staging
+    volumes:
+      - ../../docker/pgadmin/servers.json:/pgadmin4/servers.json:ro
+      - ../../docker/pgadmin/pgpass:/pgpass:ro
+    profiles:
+      - "tools"  # Only start when specifically requested with --profile tools
+
+# Additional services that can be enabled with profiles
+
+  # Redis for caching (optional)
+  redis-staging:
+    image: redis:7-alpine
+    container_name: redis-staging
+    restart: unless-stopped
+    command: redis-server --requirepass redis_staging_password
+    ports:
+      - "6379:6379"
+    networks:
+      - unburdy-staging
+    volumes:
+      - ../../docker/redis/redis.conf:/usr/local/etc/redis/redis.conf:ro
+    profiles:
+      - "cache"
+
+  # Nginx reverse proxy (optional)
+  nginx-staging:
+    image: nginx:alpine
+    container_name: nginx-staging
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ../../docker/nginx/staging.conf:/etc/nginx/nginx.conf:ro
+      - ../../docker/nginx/ssl:/etc/nginx/ssl:ro
+    networks:
+      - unburdy-staging
+    depends_on:
+      - unburdy-server-staging
+    profiles:
+      - "proxy"

@@ -5,7 +5,7 @@ services:
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: pass
-      POSTGRES_DB: ae_base_server
+      POSTGRES_DB: ae_saas_basic_test
       POSTGRES_HOST_AUTH_METHOD: trust
     ports:
       - "5432:5432"

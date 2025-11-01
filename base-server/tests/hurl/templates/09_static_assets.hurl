@@ -20,7 +20,7 @@ HTTP 200
 [Asserts]
 header "Content-Type" contains "application/json"
 body contains "icd10"
-body contains "kategorie"
+body contains "category"
 
 # Test serving legitimate JSON file - bundeslaender
 GET {{HOST}}/api/v1/static/bundeslaender
@@ -36,8 +36,8 @@ HTTP 200
 [Asserts]
 header "Content-Type" contains "application/json"
 
-# Test serving legitimate JSON file - ferien-feiertage
-GET {{HOST}}/api/v1/static/ferien-feiertage
+# Test serving legitimate JSON file - holidays
+GET {{HOST}}/api/v1/static/holidays
 
 HTTP 200
 [Asserts]
@@ -153,7 +153,7 @@ body contains "File not found"
 # Only alphanumeric, hyphens, and underscores are allowed
 
 # Test hyphen (should work)
-GET {{HOST}}/api/v1/static/ferien-feiertage
+GET {{HOST}}/api/v1/static/holidays
 
 HTTP 200
 [Asserts]

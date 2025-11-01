@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"time"
 
 	baseAPI "github.com/ae-base-server/api"
 	"github.com/unburdy/unburdy-server-api/internal/models"
@@ -28,9 +29,23 @@ func SetupExtendedDatabase() (*gorm.DB, error) {
 	log.Printf("📡 Connecting to PostgreSQL: %s:%s/%s", dbConfig.Host, dbConfig.Port, dbConfig.DBName)
 
 	// Connect with auto-create (creates database if it doesn't exist)
-	db, err := baseAPI.ConnectDatabaseWithAutoCreate(dbConfig)
-	if err != nil {
-		return nil, fmt.Errorf("failed to connect to PostgreSQL: %w", err)
+	// Retry connection with exponential backoff for database startup
+	var db *gorm.DB
+	var err error
+	maxRetries := 30
+	for i := 0; i < maxRetries; i++ {
+		db, err = baseAPI.ConnectDatabaseWithAutoCreate(dbConfig)
+		if err == nil {
+			break
+		}
+
+		if i == maxRetries-1 {
+			return nil, fmt.Errorf("failed to connect to PostgreSQL after %d retries: %w", maxRetries, err)
+		}
+
+		waitTime := time.Duration(i+1) * time.Second
+		log.Printf("🔄 Database connection failed (attempt %d/%d), retrying in %v... Error: %v", i+1, maxRetries, waitTime, err)
+		time.Sleep(waitTime)
 	}
 
 	// Note: ae-base-server migrations are now handled by the bootstrap system

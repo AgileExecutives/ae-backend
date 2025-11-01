@@ -105,13 +105,24 @@ func main() {
 		log.Fatal("Failed to connect to database:", err)
 	}
 
-	// Create external modules
+	// Setup base-server tables and seed data
+	log.Println("🔧 Migrating base-server entities (users, tenants, customers, etc.)...")
+	if err := baseAPI.MigrateBaseEntities(db); err != nil {
+		log.Printf("⚠️  Warning: Failed to migrate base entities: %v", err)
+	}
+
+	log.Println("🔧 Setting up base-server seed data...")
+	if err := baseAPI.SeedBaseData(db); err != nil {
+		log.Printf("⚠️  Warning: Failed to seed base data: %v", err)
+	}
+
+	// Create external modules with auto-migration
 	modules := []baseAPI.ModuleRouteProvider{
 		client_management.NewModule(db), // Client management and cost provider tracking
 		calendar.NewModule(db),          // Calendar management with auto-migration support
 	}
 
-	// Setup modular router (includes base server + external modules)
+	// Setup modular router (includes base server + external modules with auto-migration)
 	router := baseAPI.SetupModularRouter(db, modules)
 
 	// Start server

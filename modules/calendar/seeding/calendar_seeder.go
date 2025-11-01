@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"math/rand"
+	"os"
 	"strings"
 	"time"
 
@@ -49,6 +50,13 @@ type UnburdyClient struct {
 // UnburdySeedData represents the structure of unburdy_server/seed_app_data.json
 type UnburdySeedData struct {
 	Clients []UnburdyClient `json:"clients"`
+}
+
+// HolidayData represents the structure of holidays.json
+type HolidayData struct {
+	State           string                            `json:"state"`
+	SchoolHolidays  map[string]map[string][2]string   `json:"school_holidays"`
+	PublicHolidays  map[string]map[string]string      `json:"public_holidays"`
 }
 
 // SeedConfig represents the seeding configuration
@@ -300,6 +308,16 @@ func (cs *CalendarSeeder) SeedCalendarData(tenantID, userID uint) error {
 	for _, calendar := range calendars {
 		if err := cs.createIndividualEvents(calendar, startDate, endDate, now); err != nil {
 			return fmt.Errorf("failed to create individual events: %w", err)
+		}
+	}
+
+	// Create holiday entries for each calendar
+	for _, calendar := range calendars {
+		fmt.Printf("Creating holidays for calendar %d (%s)\n", calendar.ID, calendar.Title)
+		if err := cs.createHolidayEntries(calendar, startDate, endDate); err != nil {
+			fmt.Printf("Warning: Failed to create holidays for calendar %d (%s): %v\n", calendar.ID, calendar.Title, err)
+		} else {
+			fmt.Printf("Successfully created holidays for calendar %d (%s)\n", calendar.ID, calendar.Title)
 		}
 	}
 
@@ -705,6 +723,185 @@ func (cs *CalendarSeeder) generateAppointmentDescription(template EventTemplate,
 	}
 
 	return description
+}
+
+// createHolidayEntries creates holiday calendar entries from holidays.json
+func (cs *CalendarSeeder) createHolidayEntries(calendar *entities.Calendar, startDate, endDate time.Time) error {
+	// Load holidays data
+	holidays, err := cs.loadHolidaysData()
+	if err != nil {
+		return fmt.Errorf("failed to load holidays data: %w", err)
+	}
+
+	if len(holidays) == 0 {
+		return fmt.Errorf("no holiday data found")
+	}
+
+	// Use the first (BW) holidays data
+	holidayData := holidays[0]
+
+	// Create public holiday entries
+	if err := cs.createPublicHolidayEntries(calendar, holidayData, startDate, endDate); err != nil {
+		return fmt.Errorf("failed to create public holidays: %w", err)
+	}
+
+	// Create school holiday entries
+	if err := cs.createSchoolHolidayEntries(calendar, holidayData, startDate, endDate); err != nil {
+		return fmt.Errorf("failed to create school holidays: %w", err)
+	}
+
+	return nil
+}
+
+// loadHolidaysData loads holiday data from the holidays.json file
+func (cs *CalendarSeeder) loadHolidaysData() ([]HolidayData, error) {
+	// Try different possible locations for the holidays.json file
+	possiblePaths := []string{
+		"../statics/json/holidays.json",                     // From seed directory
+		"./statics/json/holidays.json",                      // From project root
+		"../../base-server/statics/json/holidays.json",     // From seed to base-server
+		"../../../base-server/statics/json/holidays.json",  // From deeper nested
+	}
+
+	var data []byte
+	var err error
+	var usedPath string
+
+	for _, path := range possiblePaths {
+		data, err = os.ReadFile(path)
+		if err == nil {
+			usedPath = path
+			break
+		}
+	}
+
+	if err != nil {
+		return nil, fmt.Errorf("holidays.json not found in any expected location: %w", err)
+	}
+
+	fmt.Printf("Loading holidays data from: %s\n", usedPath)
+
+	var holidays []HolidayData
+	if err := json.Unmarshal(data, &holidays); err != nil {
+		return nil, fmt.Errorf("failed to parse holidays.json: %w", err)
+	}
+
+	return holidays, nil
+}
+
+// createPublicHolidayEntries creates calendar entries for public holidays
+func (cs *CalendarSeeder) createPublicHolidayEntries(calendar *entities.Calendar, holidayData HolidayData, startDate, endDate time.Time) error {
+	publicHolidayCount := 0
+	for year, holidays := range holidayData.PublicHolidays {
+		for name, dateStr := range holidays {
+			// Parse holiday date
+			holidayDate, err := time.Parse("2006-01-02", dateStr)
+			if err != nil {
+				fmt.Printf("Warning: Failed to parse holiday date %s: %v\n", dateStr, err)
+				continue
+			}
+
+			// Check if holiday is within our seeding range
+			if holidayDate.Before(startDate) || holidayDate.After(endDate) {
+				continue
+			}
+
+			// Create all-day holiday entry
+			entry := &entities.CalendarEntry{
+				TenantID:     calendar.TenantID,
+				UserID:       calendar.UserID,
+				CalendarID:   calendar.ID,
+				Title:        fmt.Sprintf("🎉 %s", name),
+				IsException:  false,
+				Participants: json.RawMessage("[]"),
+				DateFrom:     &holidayDate,
+				DateTo:       &holidayDate,
+				TimeFrom:     nil, // All-day events have no specific time
+				TimeTo:       nil,
+				Timezone:     "Europe/Berlin",
+				Type:         "public_holiday",
+				Description:  fmt.Sprintf("Gesetzlicher Feiertag in Baden-Württemberg (%s %s)", name, year),
+				Location:     "",
+				IsAllDay:     true,
+			}
+
+			if err := cs.db.Create(entry).Error; err != nil {
+				fmt.Printf("Warning: Failed to create public holiday entry for %s: %v\n", name, err)
+			} else {
+				publicHolidayCount++
+			}
+		}
+	}
+
+	fmt.Printf("Created %d public holidays for calendar %d (%s)\n", publicHolidayCount, calendar.ID, calendar.Title)
+	return nil
+}
+
+// createSchoolHolidayEntries creates calendar entries for school holidays
+func (cs *CalendarSeeder) createSchoolHolidayEntries(calendar *entities.Calendar, holidayData HolidayData, startDate, endDate time.Time) error {
+	schoolHolidayCount := 0
+	for year, holidays := range holidayData.SchoolHolidays {
+		for name, dateRange := range holidays {
+			if len(dateRange) != 2 {
+				fmt.Printf("Warning: Invalid date range for school holiday %s\n", name)
+				continue
+			}
+
+			// Parse start and end dates
+			startHoliday, err := time.Parse("2006-01-02", dateRange[0])
+			if err != nil {
+				fmt.Printf("Warning: Failed to parse holiday start date %s: %v\n", dateRange[0], err)
+				continue
+			}
+
+			endHoliday, err := time.Parse("2006-01-02", dateRange[1])
+			if err != nil {
+				fmt.Printf("Warning: Failed to parse holiday end date %s: %v\n", dateRange[1], err)
+				continue
+			}
+
+			// Check if holiday period overlaps with our seeding range
+			if endHoliday.Before(startDate) || startHoliday.After(endDate) {
+				continue
+			}
+
+			// Adjust dates to fit within seeding range
+			if startHoliday.Before(startDate) {
+				startHoliday = startDate
+			}
+			if endHoliday.After(endDate) {
+				endHoliday = endDate
+			}
+
+			// Create multi-day holiday entry
+			entry := &entities.CalendarEntry{
+				TenantID:     calendar.TenantID,
+				UserID:       calendar.UserID,
+				CalendarID:   calendar.ID,
+				Title:        fmt.Sprintf("🏫 %s", name),
+				IsException:  false,
+				Participants: json.RawMessage("[]"),
+				DateFrom:     &startHoliday,
+				DateTo:       &endHoliday,
+				TimeFrom:     nil, // All-day events have no specific time
+				TimeTo:       nil,
+				Timezone:     "Europe/Berlin",
+				Type:         "school_holiday",
+				Description:  fmt.Sprintf("Schulferien in Baden-Württemberg (%s %s) - %s bis %s", name, year, startHoliday.Format("02.01.2006"), endHoliday.Format("02.01.2006")),
+				Location:     "",
+				IsAllDay:     true,
+			}
+
+			if err := cs.db.Create(entry).Error; err != nil {
+				fmt.Printf("Warning: Failed to create school holiday entry for %s: %v\n", name, err)
+			} else {
+				schoolHolidayCount++
+			}
+		}
+	}
+
+	fmt.Printf("Created %d school holidays for calendar %d (%s)\n", schoolHolidayCount, calendar.ID, calendar.Title)
+	return nil
 }
 
 // Helper functions
