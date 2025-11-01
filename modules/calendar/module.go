@@ -13,16 +13,16 @@ import (
 	"github.com/unburdy/calendar-module/services"
 )
 
-// FullModule implements the complete core.Module interface for auto-migration support
-type FullModule struct {
+// Module implements the complete core.Module interface for auto-migration support
+type Module struct {
 	db              *gorm.DB
 	routeProvider   *routes.RouteProvider
 	calendarService *services.CalendarService
 	calendarHandler *handlers.CalendarHandler
 }
 
-// NewFullModule creates a new calendar module with auto-migration support
-func NewFullModule(db *gorm.DB) *FullModule {
+// NewModuleWithAutoMigration creates a new calendar module with auto-migration support
+func NewModuleWithAutoMigration(db *gorm.DB) *Module {
 	// Initialize services
 	calendarService := services.NewCalendarService(db)
 
@@ -32,7 +32,7 @@ func NewFullModule(db *gorm.DB) *FullModule {
 	// Initialize route provider
 	routeProvider := routes.NewRouteProvider(calendarHandler)
 
-	return &FullModule{
+	return &Module{
 		db:              db,
 		routeProvider:   routeProvider,
 		calendarService: calendarService,
@@ -41,40 +41,40 @@ func NewFullModule(db *gorm.DB) *FullModule {
 }
 
 // Name returns the module name
-func (m *FullModule) Name() string {
+func (m *Module) Name() string {
 	return "calendar"
 }
 
 // Version returns the module version
-func (m *FullModule) Version() string {
+func (m *Module) Version() string {
 	return "1.0.0"
 }
 
 // Dependencies returns module dependencies
-func (m *FullModule) Dependencies() []string {
+func (m *Module) Dependencies() []string {
 	return []string{"base"} // Depends on base module for users/tenants
 }
 
 // Initialize initializes the module
-func (m *FullModule) Initialize(ctx core.ModuleContext) error {
+func (m *Module) Initialize(ctx core.ModuleContext) error {
 	// Any initialization logic here
 	return nil
 }
 
 // Start starts the module
-func (m *FullModule) Start(ctx context.Context) error {
+func (m *Module) Start(ctx context.Context) error {
 	// Any startup logic here
 	return nil
 }
 
 // Stop stops the module
-func (m *FullModule) Stop(ctx context.Context) error {
+func (m *Module) Stop(ctx context.Context) error {
 	// Any cleanup logic here
 	return nil
 }
 
 // Entities returns database entities for auto-migration
-func (m *FullModule) Entities() []core.Entity {
+func (m *Module) Entities() []core.Entity {
 	return []core.Entity{
 		entities.NewCalendarEntity(),
 		entities.NewCalendarEntryEntity(),
@@ -84,7 +84,7 @@ func (m *FullModule) Entities() []core.Entity {
 }
 
 // GetEntitiesForMigration returns GORM models for auto-migration (implements ModuleWithEntities interface)
-func (m *FullModule) GetEntitiesForMigration() []interface{} {
+func (m *Module) GetEntitiesForMigration() []interface{} {
 	coreEntities := m.Entities() // Get core entities
 	entities := make([]interface{}, len(coreEntities))
 	for i, entity := range coreEntities {
@@ -94,28 +94,28 @@ func (m *FullModule) GetEntitiesForMigration() []interface{} {
 }
 
 // Routes returns route providers
-func (m *FullModule) Routes() []core.RouteProvider {
+func (m *Module) Routes() []core.RouteProvider {
 	// For now, return empty slice as we use the simple interface
 	return []core.RouteProvider{}
 }
 
 // EventHandlers returns event handlers
-func (m *FullModule) EventHandlers() []core.EventHandler {
+func (m *Module) EventHandlers() []core.EventHandler {
 	return []core.EventHandler{}
 }
 
 // Middleware returns middleware providers
-func (m *FullModule) Middleware() []core.MiddlewareProvider {
+func (m *Module) Middleware() []core.MiddlewareProvider {
 	return []core.MiddlewareProvider{}
 }
 
 // Services returns service providers
-func (m *FullModule) Services() []core.ServiceProvider {
+func (m *Module) Services() []core.ServiceProvider {
 	return []core.ServiceProvider{}
 }
 
 // SwaggerPaths returns Swagger documentation paths
-func (m *FullModule) SwaggerPaths() []string {
+func (m *Module) SwaggerPaths() []string {
 	return []string{
 		"/calendar",
 		"/calendar-entries",
@@ -127,11 +127,11 @@ func (m *FullModule) SwaggerPaths() []string {
 // Legacy support methods for compatibility with existing baseAPI.ModuleRouteProvider interface
 
 // RegisterRoutes implements compatibility with baseAPI.ModuleRouteProvider
-func (m *FullModule) RegisterRoutes(router *gin.RouterGroup) {
+func (m *Module) RegisterRoutes(router *gin.RouterGroup) {
 	m.routeProvider.RegisterRoutes(router)
 }
 
 // GetPrefix implements compatibility with baseAPI.ModuleRouteProvider
-func (m *FullModule) GetPrefix() string {
+func (m *Module) GetPrefix() string {
 	return m.routeProvider.GetPrefix()
 }

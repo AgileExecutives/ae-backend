@@ -108,7 +108,7 @@ func main() {
 	// Create external modules
 	modules := []baseAPI.ModuleRouteProvider{
 		client_management.NewModule(db), // Client management and cost provider tracking
-		calendar.NewModule(db),          // Calendar management with events, series, and external calendars
+		calendar.NewModule(db),          // Calendar management with auto-migration support
 	}
 
 	// Setup modular router (includes base server + external modules)

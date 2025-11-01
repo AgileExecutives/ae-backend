@@ -42,8 +42,8 @@ func (m *BasicModule) GetPrefix() string {
 	return m.routeProvider.GetPrefix()
 }
 
-// NewModule creates a new calendar module (legacy compatibility - calls NewBasicModule)
-// Deprecated: Use NewBasicModule for basic routing or NewFullModule for auto-migration
+// NewModule creates a new calendar module with auto-migration support (now the default)
+// For basic module without auto-migration, use NewBasicModule instead
 func NewModule(db *gorm.DB) baseAPI.ModuleRouteProvider {
-	return NewBasicModule(db)
+	return NewModuleWithAutoMigration(db)
 }
