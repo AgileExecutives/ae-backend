@@ -1,0 +1,78 @@
+package handlers
+
+import (
+	"net/http"
+	"time"
+
+	"github.com/ae-base-server/internal/models"
+	_ "github.com/ae-base-server/modules/base/models" // Import models for swagger
+	emailServices "github.com/ae-base-server/modules/email/services"
+	"github.com/ae-base-server/pkg/core"
+	"github.com/ae-base-server/pkg/utils"
+	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
+)
+
+// ContactHandlers provides contact and newsletter management handlers
+type ContactHandlers struct {
+	db           *gorm.DB
+	logger       core.Logger
+	emailService *emailServices.EmailService
+}
+
+// NewContactHandlers creates new contact handlers
+func NewContactHandlers(db *gorm.DB, logger core.Logger) *ContactHandlers {
+	return &ContactHandlers{
+		db:           db,
+		logger:       logger,
+		emailService: emailServices.NewEmailService(),
+	}
+}
+
+// SubmitContactForm handles contact form submissions
+// @Summary Submit contact form
+// @Description Submit a contact form and optionally subscribe to newsletter
+// @Tags contact-form
+// @Accept json
+// @Produce json
+// @Param contactForm body models.ContactFormRequest true "Contact form data"
+// @Success 200 {object} models.ContactFormResponse
+// @Failure 400 {object} models.ErrorResponse
+// @Failure 500 {object} models.ErrorResponse
+// @Router /contact/form [post]
+func (h *ContactHandlers) SubmitContactForm(c *gin.Context) {
+	// Implementation will be moved from internal/handlers/contact.go
+	c.JSON(http.StatusNotImplemented, gin.H{"message": "SubmitContactForm handler to be implemented"})
+}
+
+// GetNewsletterSubscriptions gets all newsletter subscriptions (admin only)
+// @Summary Get newsletter subscriptions
+// @Description Get all newsletter subscriptions for admin users
+// @Tags newsletter
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Success 200 {array} models.Newsletter
+// @Failure 500 {object} models.ErrorResponse
+// @Router /contact/newsletter [get]
+func (h *ContactHandlers) GetNewsletterSubscriptions(c *gin.Context) {
+	// Implementation will be moved from internal/handlers/contact.go
+	c.JSON(http.StatusNotImplemented, gin.H{"message": "GetNewsletterSubscriptions handler to be implemented"})
+}
+
+// UnsubscribeFromNewsletter handles newsletter unsubscription
+// @Summary Unsubscribe from newsletter
+// @Description Unsubscribe an email from the newsletter
+// @Tags newsletter
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param email query string true "Email to unsubscribe"
+// @Success 200 {object} map[string]string
+// @Failure 400 {object} models.ErrorResponse
+// @Failure 404 {object} models.ErrorResponse
+// @Router /contact/newsletter/unsubscribe [delete]
+func (h *ContactHandlers) UnsubscribeFromNewsletter(c *gin.Context) {
+	// Implementation will be moved from internal/handlers/contact.go
+	c.JSON(http.StatusNotImplemented, gin.H{"message": "UnsubscribeFromNewsletter handler to be implemented"})
+}

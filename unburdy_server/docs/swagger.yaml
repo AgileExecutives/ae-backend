@@ -121,75 +121,6 @@ definitions:
       weekday:
         type: integer
     type: object
-  entities.ClientResponse:
-    properties:
-      admission_date:
-        type: string
-      alternative_email:
-        type: string
-      alternative_first_name:
-        type: string
-      alternative_last_name:
-        type: string
-      alternative_phone:
-        type: string
-      city:
-        type: string
-      contact_email:
-        type: string
-      contact_first_name:
-        type: string
-      contact_last_name:
-        type: string
-      contact_phone:
-        type: string
-      cost_provider:
-        $ref: '#/definitions/entities.CostProviderResponse'
-      cost_provider_id:
-        type: integer
-      created_at:
-        type: string
-      date_of_birth:
-        type: string
-      email:
-        type: string
-      first_name:
-        type: string
-      gender:
-        type: string
-      id:
-        type: integer
-      invoiced_individually:
-        type: boolean
-      last_name:
-        type: string
-      notes:
-        type: string
-      phone:
-        type: string
-      primary_language:
-        type: string
-      provider_approval_code:
-        type: string
-      provider_approval_date:
-        type: string
-      referral_source:
-        type: string
-      status:
-        type: string
-      street_address:
-        type: string
-      tenant_id:
-        type: integer
-      therapy_title:
-        type: string
-      unit_price:
-        type: number
-      updated_at:
-        type: string
-      zip:
-        type: string
-    type: object
   entities.CostProviderResponse:
     properties:
       city:
@@ -218,8 +149,6 @@ definitions:
   entities.CreateCalendarRequest:
     type: object
   entities.CreateCalendarSeriesRequest:
-    type: object
-  entities.CreateClientRequest:
     type: object
   entities.CreateCostProviderRequest:
     properties:
@@ -327,11 +256,6 @@ definitions:
     - year_from
     - year_to
     type: object
-  entities.NullableDate:
-    properties:
-      time.Time:
-        type: string
-    type: object
   entities.UnburdyHolidaysData:
     properties:
       public_holidays:
@@ -354,8 +278,6 @@ definitions:
   entities.UpdateCalendarRequest:
     type: object
   entities.UpdateCalendarSeriesRequest:
-    type: object
-  entities.UpdateClientRequest:
     type: object
   entities.UpdateCostProviderRequest:
     properties:
@@ -389,6 +311,76 @@ definitions:
         type: string
       success:
         type: boolean
+    type: object
+  github_com_ae-base-server_internal_models.ContactFormRequest:
+    description: Contact form submission request
+    properties:
+      email:
+        example: john.doe@example.com
+        type: string
+      message:
+        example: I am interested in learning more about your therapy services.
+        type: string
+      name:
+        example: John Doe
+        type: string
+      newsletter:
+        example: true
+        type: boolean
+      source:
+        example: website
+        type: string
+      subject:
+        example: Inquiry about therapy services
+        type: string
+      timestamp:
+        example: "2025-08-03T10:00:00Z"
+        type: string
+    required:
+    - email
+    - message
+    - name
+    - source
+    - subject
+    type: object
+  github_com_ae-base-server_internal_models.CustomerResponse:
+    properties:
+      active:
+        type: boolean
+      city:
+        type: string
+      country:
+        type: string
+      created_at:
+        type: string
+      email:
+        type: string
+      id:
+        type: integer
+      name:
+        type: string
+      payment_method:
+        type: string
+      phone:
+        type: string
+      plan:
+        $ref: '#/definitions/models.PlanResponse'
+      plan_id:
+        type: integer
+      status:
+        type: string
+      street:
+        type: string
+      tax_id:
+        type: string
+      tenant:
+        $ref: '#/definitions/github_com_ae-base-server_internal_models.TenantResponse'
+      tenant_id:
+        type: integer
+      vat:
+        type: string
+      zip:
+        type: string
     type: object
   github_com_ae-base-server_internal_models.EmailResponse:
     properties:
@@ -444,6 +436,50 @@ definitions:
       pagination:
         $ref: '#/definitions/github_com_ae-base-server_internal_models.PaginationResponse'
     type: object
+  github_com_ae-base-server_internal_models.LoginRequest:
+    properties:
+      password:
+        type: string
+      username:
+        type: string
+    required:
+    - password
+    - username
+    type: object
+  github_com_ae-base-server_internal_models.LoginResponse:
+    properties:
+      token:
+        type: string
+      user:
+        $ref: '#/definitions/github_com_ae-base-server_internal_models.UserResponse'
+    type: object
+  github_com_ae-base-server_internal_models.Newsletter:
+    properties:
+      createdAt:
+        example: "2025-08-03T10:00:00Z"
+        type: string
+      email:
+        example: john.doe@example.com
+        type: string
+      id:
+        example: 1
+        type: integer
+      interest:
+        example: mental_health
+        type: string
+      lastContact:
+        example: "2025-08-03T10:00:00Z"
+        type: string
+      name:
+        example: John Doe
+        type: string
+      source:
+        example: website
+        type: string
+      updatedAt:
+        example: "2025-08-03T10:00:00Z"
+        type: string
+    type: object
   github_com_ae-base-server_internal_models.PaginationResponse:
     properties:
       limit:
@@ -455,67 +491,107 @@ definitions:
       total_pages:
         type: integer
     type: object
-  github_com_ae-base-server_modules_base_models.APIResponse:
+  github_com_ae-base-server_internal_models.Plan:
     properties:
-      data: {}
-      error:
-        type: string
-      message:
-        type: string
-      success:
+      active:
         type: boolean
-    type: object
-  github_com_ae-base-server_modules_base_models.ContactFormRequest:
-    properties:
-      email:
-        example: john@example.com
+      created_at:
         type: string
-      message:
-        example: I would like to know more about your services.
+      currency:
         type: string
+      deleted_at:
+        $ref: '#/definitions/gorm.DeletedAt'
+      description:
+        type: string
+      features:
+        type: string
+      id:
+        type: integer
+      invoice_period:
+        type: string
+      max_clients:
+        type: integer
+      max_users:
+        type: integer
       name:
-        example: John Doe
         type: string
-      subject:
-        example: Inquiry about services
+      price:
+        type: number
+      slug:
+        type: string
+      updated_at:
+        type: string
+    required:
+    - name
+    - price
+    - slug
+    type: object
+  github_com_ae-base-server_internal_models.TenantResponse:
+    properties:
+      created_at:
+        type: string
+      id:
+        type: integer
+      name:
+        type: string
+      slug:
+        type: string
+    type: object
+  github_com_ae-base-server_internal_models.UserCreateRequest:
+    properties:
+      accept_terms:
+        description: Terms and conditions acceptance
+        type: boolean
+      company_name:
+        description: Required unless user-signup token is present
+        type: string
+      email:
+        type: string
+      first_name:
+        type: string
+      last_name:
+        type: string
+      newsletter_opt_in:
+        description: Newsletter subscription
+        type: boolean
+      password:
+        type: string
+      role:
+        type: string
+      username:
         type: string
     required:
     - email
-    - message
-    - name
-    - subject
+    - first_name
+    - last_name
+    - password
+    - username
     type: object
-  github_com_ae-base-server_modules_base_models.ContactFormResponse:
+  github_com_ae-base-server_internal_models.UserResponse:
     properties:
-      id:
-        example: 1
-        type: integer
-      message:
-        example: Thank you for your message! We will get back to you soon.
-        type: string
-    type: object
-  github_com_ae-base-server_modules_base_models.CustomerResponse:
-    properties:
-      company_name:
-        example: Acme Corp
-        type: string
+      active:
+        type: boolean
       created_at:
-        example: "2023-01-01T00:00:00Z"
         type: string
       email:
-        example: john@example.com
+        type: string
+      email_verified:
+        type: boolean
+      email_verified_at:
+        type: string
+      first_name:
         type: string
       id:
-        example: 1
         type: integer
-      name:
-        example: John Doe
+      last_name:
         type: string
-      phone:
-        example: +1-555-123-4567
+      role:
         type: string
-      updated_at:
-        example: "2023-01-01T00:00:00Z"
+      tenant:
+        $ref: '#/definitions/github_com_ae-base-server_internal_models.TenantResponse'
+      tenant_id:
+        type: integer
+      username:
         type: string
     type: object
   github_com_ae-base-server_modules_base_models.ErrorResponse:
@@ -540,159 +616,6 @@ definitions:
         type: string
       version:
         type: string
-    type: object
-  github_com_ae-base-server_modules_base_models.ListResponse:
-    properties:
-      data: {}
-      pagination:
-        $ref: '#/definitions/github_com_ae-base-server_modules_base_models.PaginationResponse'
-    type: object
-  github_com_ae-base-server_modules_base_models.LoginRequest:
-    properties:
-      email:
-        example: user@example.com
-        type: string
-      password:
-        example: password123
-        minLength: 8
-        type: string
-    required:
-    - email
-    - password
-    type: object
-  github_com_ae-base-server_modules_base_models.LoginResponse:
-    properties:
-      refresh_token:
-        example: refresh-token-123
-        type: string
-      token:
-        example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
-        type: string
-      user:
-        $ref: '#/definitions/github_com_ae-base-server_modules_base_models.UserResponse'
-    type: object
-  github_com_ae-base-server_modules_base_models.Newsletter:
-    properties:
-      created_at:
-        example: "2023-01-01T00:00:00Z"
-        type: string
-      email:
-        example: user@example.com
-        type: string
-      id:
-        example: 1
-        type: integer
-      is_active:
-        example: true
-        type: boolean
-    type: object
-  github_com_ae-base-server_modules_base_models.PaginationResponse:
-    properties:
-      limit:
-        example: 10
-        type: integer
-      page:
-        example: 1
-        type: integer
-      total:
-        example: 100
-        type: integer
-      total_pages:
-        example: 10
-        type: integer
-    type: object
-  github_com_ae-base-server_modules_base_models.Plan:
-    properties:
-      created_at:
-        example: "2023-01-01T00:00:00Z"
-        type: string
-      currency:
-        example: USD
-        type: string
-      description:
-        example: Basic subscription plan
-        type: string
-      id:
-        example: 1
-        type: integer
-      is_active:
-        example: true
-        type: boolean
-      name:
-        example: Basic Plan
-        type: string
-      price:
-        example: 29.99
-        type: number
-      updated_at:
-        example: "2023-01-01T00:00:00Z"
-        type: string
-    type: object
-  github_com_ae-base-server_modules_base_models.TenantResponse:
-    properties:
-      display_name:
-        example: Acme Corp
-        type: string
-      id:
-        example: 1
-        type: integer
-      is_active:
-        example: true
-        type: boolean
-      name:
-        example: acme
-        type: string
-    type: object
-  github_com_ae-base-server_modules_base_models.UserCreateRequest:
-    properties:
-      company_name:
-        example: Acme Corp
-        type: string
-      email:
-        example: user@example.com
-        type: string
-      first_name:
-        example: John
-        type: string
-      last_name:
-        example: Doe
-        type: string
-      password:
-        example: password123
-        minLength: 8
-        type: string
-      tenant_name:
-        example: acme
-        type: string
-    required:
-    - email
-    - first_name
-    - last_name
-    - password
-    - tenant_name
-    type: object
-  github_com_ae-base-server_modules_base_models.UserResponse:
-    properties:
-      company_name:
-        example: Acme Corp
-        type: string
-      email:
-        example: user@example.com
-        type: string
-      first_name:
-        example: John
-        type: string
-      id:
-        example: 1
-        type: integer
-      is_active:
-        example: true
-        type: boolean
-      last_name:
-        example: Doe
-        type: string
-      tenant:
-        $ref: '#/definitions/github_com_ae-base-server_modules_base_models.TenantResponse'
     type: object
   github_com_ae-base-server_modules_pdf_handlers.ErrorResponse:
     properties:
@@ -725,6 +648,24 @@ definitions:
         type: string
       success:
         example: true
+        type: boolean
+    type: object
+  github_com_unburdy_unburdy-server-api_internal_models.APIResponse:
+    properties:
+      data: {}
+      error:
+        type: string
+      message:
+        type: string
+      success:
+        type: boolean
+    type: object
+  gorm.DeletedAt:
+    properties:
+      time:
+        type: string
+      valid:
+        description: Valid is true if Time is not NULL
         type: boolean
     type: object
   models.ClientResponse:
@@ -792,6 +733,130 @@ definitions:
       unit_price:
         type: number
       updated_at:
+        type: string
+      zip:
+        type: string
+    type: object
+  models.Contact:
+    properties:
+      active:
+        type: boolean
+      city:
+        type: string
+      country:
+        type: string
+      created_at:
+        type: string
+      deleted_at:
+        $ref: '#/definitions/gorm.DeletedAt'
+      email:
+        type: string
+      first_name:
+        type: string
+      id:
+        type: integer
+      last_name:
+        type: string
+      mobile:
+        type: string
+      notes:
+        type: string
+      phone:
+        type: string
+      street:
+        type: string
+      type:
+        type: string
+      updated_at:
+        type: string
+      zip:
+        type: string
+    required:
+    - first_name
+    - last_name
+    type: object
+  models.ContactCreateRequest:
+    properties:
+      city:
+        type: string
+      country:
+        type: string
+      email:
+        type: string
+      first_name:
+        type: string
+      last_name:
+        type: string
+      mobile:
+        type: string
+      notes:
+        type: string
+      phone:
+        type: string
+      street:
+        type: string
+      type:
+        type: string
+      zip:
+        type: string
+    required:
+    - first_name
+    - last_name
+    type: object
+  models.ContactResponse:
+    properties:
+      active:
+        type: boolean
+      city:
+        type: string
+      country:
+        type: string
+      created_at:
+        type: string
+      email:
+        type: string
+      first_name:
+        type: string
+      id:
+        type: integer
+      last_name:
+        type: string
+      mobile:
+        type: string
+      notes:
+        type: string
+      phone:
+        type: string
+      street:
+        type: string
+      type:
+        type: string
+      zip:
+        type: string
+    type: object
+  models.ContactUpdateRequest:
+    properties:
+      active:
+        type: boolean
+      city:
+        type: string
+      country:
+        type: string
+      email:
+        type: string
+      first_name:
+        type: string
+      last_name:
+        type: string
+      mobile:
+        type: string
+      notes:
+        type: string
+      phone:
+        type: string
+      street:
+        type: string
+      type:
         type: string
       zip:
         type: string
@@ -950,14 +1015,6 @@ definitions:
     - email
     - name
     type: object
-  models.ForgotPasswordRequest:
-    properties:
-      email:
-        example: user@example.com
-        type: string
-    required:
-    - email
-    type: object
   models.PlanRequest:
     properties:
       currency:
@@ -977,18 +1034,32 @@ definitions:
     - name
     - price
     type: object
-  models.ResetPasswordRequest:
+  models.PlanResponse:
     properties:
-      password:
-        example: newpassword123
-        minLength: 8
+      active:
+        type: boolean
+      created_at:
         type: string
-      token:
-        example: reset-token-123
+      currency:
         type: string
-    required:
-    - password
-    - token
+      description:
+        type: string
+      features:
+        type: string
+      id:
+        type: integer
+      invoice_period:
+        type: string
+      max_clients:
+        type: integer
+      max_users:
+        type: integer
+      name:
+        type: string
+      price:
+        type: number
+      slug:
+        type: string
     type: object
   models.UpdateClientRequest:
     properties:
@@ -1098,6 +1169,42 @@ definitions:
         example: "12345"
         type: string
     type: object
+  models.UserSettings:
+    properties:
+      created_at:
+        type: string
+      deleted_at:
+        $ref: '#/definitions/gorm.DeletedAt'
+      id:
+        type: integer
+      language:
+        description: User      User           `gorm:"foreignKey:UserID" json:"user,omitempty"`
+          // Disabled for migration
+        type: string
+      settings:
+        type: string
+      theme:
+        type: string
+      timezone:
+        type: string
+      updated_at:
+        type: string
+      user_id:
+        type: integer
+    required:
+    - user_id
+    type: object
+  models.UserSettingsUpdateRequest:
+    properties:
+      language:
+        type: string
+      settings:
+        type: string
+      theme:
+        type: string
+      timezone:
+        type: string
+    type: object
 host: localhost:8081
 info:
   contact:
@@ -1115,11 +1222,920 @@ info:
   title: Unburdy Server API
   version: "1.0"
 paths:
+  /api/v1/auth/change-password:
+    post:
+      consumes:
+      - application/json
+      description: Change password for authenticated user
+      operationId: changePassword
+      parameters:
+      - description: Password change request
+        in: body
+        name: request
+        required: true
+        schema:
+          properties:
+            current_password:
+              type: string
+            new_password:
+              type: string
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_ae-base-server_internal_models.APIResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_ae-base-server_internal_models.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_ae-base-server_internal_models.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Change password
+      tags:
+      - authentication
+  /api/v1/auth/forgot-password:
+    post:
+      consumes:
+      - application/json
+      description: Send password reset email to user
+      operationId: forgotPassword
+      parameters:
+      - description: User email
+        in: body
+        name: request
+        required: true
+        schema:
+          properties:
+            email:
+              type: string
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_ae-base-server_internal_models.APIResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_ae-base-server_internal_models.ErrorResponse'
+      summary: Request password reset
+      tags:
+      - authentication
+  /api/v1/auth/login:
+    post:
+      consumes:
+      - application/json
+      description: Authenticate user with username/email and password
+      operationId: login
+      parameters:
+      - description: Login credentials
+        in: body
+        name: credentials
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_ae-base-server_internal_models.LoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_ae-base-server_internal_models.APIResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_ae-base-server_internal_models.LoginResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_ae-base-server_internal_models.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_ae-base-server_internal_models.ErrorResponse'
+      summary: User login
+      tags:
+      - authentication
+  /api/v1/auth/logout:
+    post:
+      consumes:
+      - application/json
+      description: Logout user and invalidate token
+      operationId: logout
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_ae-base-server_internal_models.APIResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_ae-base-server_internal_models.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_ae-base-server_internal_models.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: User logout
+      tags:
+      - authentication
+  /api/v1/auth/me:
+    get:
+      consumes:
+      - application/json
+      description: Get current authenticated user information
+      operationId: getCurrentUser
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_ae-base-server_internal_models.APIResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_ae-base-server_internal_models.UserResponse'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_ae-base-server_internal_models.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get current user
+      tags:
+      - authentication
+  /api/v1/auth/new-password/{token}:
+    post:
+      consumes:
+      - application/json
+      description: Reset user password with reset token
+      operationId: resetPassword
+      parameters:
+      - description: Reset token
+        in: path
+        name: token
+        required: true
+        type: string
+      - description: New password
+        in: body
+        name: request
+        required: true
+        schema:
+          properties:
+            new_password:
+              type: string
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_ae-base-server_internal_models.APIResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_ae-base-server_internal_models.ErrorResponse'
+      summary: Reset password
+      tags:
+      - authentication
+  /api/v1/auth/refresh:
+    post:
+      consumes:
+      - application/json
+      description: Refresh user access token
+      operationId: refreshToken
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_ae-base-server_internal_models.APIResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_ae-base-server_internal_models.LoginResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_ae-base-server_internal_models.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_ae-base-server_internal_models.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Refresh access token
+      tags:
+      - authentication
+  /api/v1/auth/register:
+    post:
+      consumes:
+      - application/json
+      description: Register a new user account
+      operationId: register
+      parameters:
+      - description: User registration data
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_ae-base-server_internal_models.UserCreateRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_ae-base-server_internal_models.APIResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_ae-base-server_internal_models.LoginResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_ae-base-server_internal_models.ErrorResponse'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/github_com_ae-base-server_internal_models.ErrorResponse'
+      summary: User registration
+      tags:
+      - authentication
+  /api/v1/auth/verify-email/{token}:
+    get:
+      consumes:
+      - application/json
+      description: Verify user email address with verification token
+      operationId: verifyEmail
+      parameters:
+      - description: Verification token
+        in: path
+        name: token
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_ae-base-server_internal_models.APIResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_ae-base-server_internal_models.ErrorResponse'
+      summary: Verify email address
+      tags:
+      - authentication
+  /api/v1/contacts:
+    get:
+      consumes:
+      - application/json
+      description: Get paginated list of contacts with optional filters
+      operationId: getContacts
+      parameters:
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 20
+        description: Items per page
+        in: query
+        name: limit
+        type: integer
+      - description: Filter by active status
+        in: query
+        name: active
+        type: boolean
+      - description: Filter by contact type (business, personal, etc)
+        in: query
+        name: type
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_ae-base-server_internal_models.APIResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_ae-base-server_internal_models.ListResponse'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_ae-base-server_internal_models.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get all contacts
+      tags:
+      - contacts
+    post:
+      consumes:
+      - application/json
+      description: Create a new contact for the authenticated user
+      operationId: createContact
+      parameters:
+      - description: Contact data
+        in: body
+        name: contact
+        required: true
+        schema:
+          $ref: '#/definitions/models.ContactCreateRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_ae-base-server_internal_models.APIResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/models.ContactResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_ae-base-server_internal_models.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_ae-base-server_internal_models.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Create new contact
+      tags:
+      - contacts
+  /api/v1/contacts/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Soft delete a contact by ID
+      operationId: deleteContact
+      parameters:
+      - description: Contact ID (UUID)
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_ae-base-server_internal_models.APIResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_ae-base-server_internal_models.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_ae-base-server_internal_models.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_ae-base-server_internal_models.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Delete contact
+      tags:
+      - contacts
+    get:
+      consumes:
+      - application/json
+      description: Get a specific contact by ID
+      operationId: getContactById
+      parameters:
+      - description: Contact ID (UUID)
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_ae-base-server_internal_models.APIResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/models.Contact'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_ae-base-server_internal_models.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_ae-base-server_internal_models.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_ae-base-server_internal_models.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get contact by ID
+      tags:
+      - contacts
+    put:
+      consumes:
+      - application/json
+      description: Update an existing contact by ID
+      operationId: updateContact
+      parameters:
+      - description: Contact ID (UUID)
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Updated contact data
+        in: body
+        name: contact
+        required: true
+        schema:
+          $ref: '#/definitions/models.ContactUpdateRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_ae-base-server_internal_models.APIResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/models.ContactResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_ae-base-server_internal_models.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_ae-base-server_internal_models.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_ae-base-server_internal_models.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Update contact
+      tags:
+      - contacts
+  /api/v1/contacts/form:
+    post:
+      consumes:
+      - application/json
+      description: Public endpoint to submit a contact form (no authentication required)
+      operationId: submitContactForm
+      parameters:
+      - description: Contact form data
+        in: body
+        name: form
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_ae-base-server_internal_models.ContactFormRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_ae-base-server_internal_models.APIResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_ae-base-server_internal_models.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_ae-base-server_internal_models.ErrorResponse'
+      summary: Submit contact form
+      tags:
+      - contacts
+  /api/v1/contacts/newsletter:
+    get:
+      consumes:
+      - application/json
+      description: Get all newsletter subscriptions
+      operationId: getNewsletterSubscriptions
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/github_com_ae-base-server_internal_models.Newsletter'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_ae-base-server_internal_models.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get newsletter subscriptions
+      tags:
+      - contacts
+  /api/v1/contacts/newsletter/{email}:
+    delete:
+      consumes:
+      - application/json
+      description: Unsubscribe an email address from the newsletter
+      operationId: unsubscribeFromNewsletter
+      parameters:
+      - description: Email address to unsubscribe
+        in: path
+        name: email
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_ae-base-server_internal_models.APIResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_ae-base-server_internal_models.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_ae-base-server_internal_models.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_ae-base-server_internal_models.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Unsubscribe from newsletter
+      tags:
+      - contacts
+  /api/v1/customers:
+    get:
+      description: Get a paginated list of all customers
+      operationId: getCustomers
+      parameters:
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 10
+        description: Items per page
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_ae-base-server_internal_models.APIResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_ae-base-server_internal_models.ListResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_ae-base-server_internal_models.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get all customers
+      tags:
+      - customers
+    post:
+      consumes:
+      - application/json
+      description: Create a new customer
+      operationId: createCustomer
+      parameters:
+      - description: Customer data
+        in: body
+        name: customer
+        required: true
+        schema:
+          $ref: '#/definitions/models.CustomerRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_ae-base-server_internal_models.APIResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_ae-base-server_internal_models.CustomerResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_ae-base-server_internal_models.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Create a new customer
+      tags:
+      - customers
+  /api/v1/customers/{id}:
+    delete:
+      description: Soft delete a customer by ID
+      operationId: deleteCustomer
+      parameters:
+      - description: Customer ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_ae-base-server_internal_models.APIResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_ae-base-server_internal_models.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_ae-base-server_internal_models.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Delete a customer
+      tags:
+      - customers
+    get:
+      description: Get a specific customer by its ID
+      operationId: getCustomerById
+      parameters:
+      - description: Customer ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_ae-base-server_internal_models.APIResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_ae-base-server_internal_models.CustomerResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_ae-base-server_internal_models.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_ae-base-server_internal_models.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get customer by ID
+      tags:
+      - customers
+    put:
+      consumes:
+      - application/json
+      description: Update an existing customer by ID
+      operationId: updateCustomer
+      parameters:
+      - description: Customer ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Updated customer data
+        in: body
+        name: customer
+        required: true
+        schema:
+          $ref: '#/definitions/models.CustomerRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_ae-base-server_internal_models.APIResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_ae-base-server_internal_models.CustomerResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_ae-base-server_internal_models.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_ae-base-server_internal_models.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Update a customer
+      tags:
+      - customers
+  /api/v1/emails:
+    get:
+      description: Get a paginated list of all emails
+      operationId: getEmails
+      parameters:
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 10
+        description: Items per page
+        in: query
+        name: limit
+        type: integer
+      - description: Filter by email status
+        in: query
+        name: status
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_ae-base-server_internal_models.APIResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_ae-base-server_internal_models.ListResponse'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_ae-base-server_internal_models.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get all emails
+      tags:
+      - emails
+  /api/v1/emails/{id}:
+    get:
+      description: Get a specific email by its ID
+      operationId: getEmailById
+      parameters:
+      - description: Email ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_ae-base-server_internal_models.APIResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_ae-base-server_internal_models.EmailResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_ae-base-server_internal_models.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_ae-base-server_internal_models.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get email by ID
+      tags:
+      - emails
+  /api/v1/emails/send:
+    post:
+      consumes:
+      - application/json
+      description: Create and queue an email for sending
+      operationId: sendEmail
+      parameters:
+      - description: Email send data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_ae-base-server_internal_models.EmailSendRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_ae-base-server_internal_models.APIResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_ae-base-server_internal_models.EmailResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_ae-base-server_internal_models.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Send an email
+      tags:
+      - emails
+  /api/v1/emails/stats:
+    get:
+      description: Get email statistics including counts by status
+      operationId: getEmailStats
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_ae-base-server_internal_models.APIResponse'
+            - properties:
+                data:
+                  type: object
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_ae-base-server_internal_models.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get email statistics
+      tags:
+      - emails
+  /api/v1/health:
+    get:
+      description: Check the health status of the API and database
+      operationId: healthCheck
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_ae-base-server_modules_base_models.HealthResponse'
+        "503":
+          description: Service Unavailable
+          schema:
+            $ref: '#/definitions/github_com_ae-base-server_modules_base_models.ErrorResponse'
+      summary: Health check
+      tags:
+      - health
   /api/v1/pdf/create:
     post:
       consumes:
       - application/json
       description: Generate a PDF document based on a specified template and data
+      operationId: createPdf
       parameters:
       - description: PDF generation request
         in: body
@@ -1147,134 +2163,52 @@ paths:
       summary: Generate PDF from template
       tags:
       - pdf
-  /auth/forgot-password:
+  /api/v1/ping:
+    get:
+      description: Simple ping endpoint
+      operationId: ping
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: pong
+          schema:
+            type: string
+      summary: Ping check
+      tags:
+      - health
+  /api/v1/plans:
+    get:
+      description: Get a list of all available subscription plans
+      operationId: getPlans
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/github_com_ae-base-server_internal_models.Plan'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_ae-base-server_internal_models.ErrorResponse'
+      summary: Get all plans
+      tags:
+      - plans
     post:
       consumes:
       - application/json
-      description: Send password reset email to user
+      description: Create a new subscription plan (admin only)
+      operationId: createPlan
       parameters:
-      - description: Password reset request
+      - description: Plan data
         in: body
-        name: request
+        name: plan
         required: true
         schema:
-          $ref: '#/definitions/models.ForgotPasswordRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/github_com_ae-base-server_modules_base_models.APIResponse'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/github_com_ae-base-server_modules_base_models.ErrorResponse'
-      summary: Request password reset
-      tags:
-      - authentication
-  /auth/login:
-    post:
-      consumes:
-      - application/json
-      description: Authenticate user with username/email and password
-      parameters:
-      - description: Login credentials
-        in: body
-        name: credentials
-        required: true
-        schema:
-          $ref: '#/definitions/github_com_ae-base-server_modules_base_models.LoginRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            allOf:
-            - $ref: '#/definitions/github_com_ae-base-server_modules_base_models.APIResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/github_com_ae-base-server_modules_base_models.LoginResponse'
-              type: object
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/github_com_ae-base-server_modules_base_models.ErrorResponse'
-        "401":
-          description: Unauthorized
-          schema:
-            $ref: '#/definitions/github_com_ae-base-server_modules_base_models.ErrorResponse'
-      summary: User login
-      tags:
-      - authentication
-  /auth/logout:
-    post:
-      consumes:
-      - application/json
-      description: Logout user and invalidate token
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/github_com_ae-base-server_modules_base_models.APIResponse'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/github_com_ae-base-server_modules_base_models.ErrorResponse'
-        "401":
-          description: Unauthorized
-          schema:
-            $ref: '#/definitions/github_com_ae-base-server_modules_base_models.ErrorResponse'
-      security:
-      - BearerAuth: []
-      summary: User logout
-      tags:
-      - authentication
-  /auth/refresh:
-    post:
-      consumes:
-      - application/json
-      description: Refresh user access token
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            allOf:
-            - $ref: '#/definitions/github_com_ae-base-server_modules_base_models.APIResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/github_com_ae-base-server_modules_base_models.LoginResponse'
-              type: object
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/github_com_ae-base-server_modules_base_models.ErrorResponse'
-        "401":
-          description: Unauthorized
-          schema:
-            $ref: '#/definitions/github_com_ae-base-server_modules_base_models.ErrorResponse'
-      security:
-      - BearerAuth: []
-      summary: Refresh access token
-      tags:
-      - authentication
-  /auth/register:
-    post:
-      consumes:
-      - application/json
-      description: Register a new user account
-      parameters:
-      - description: User registration data
-        in: body
-        name: user
-        required: true
-        schema:
-          $ref: '#/definitions/github_com_ae-base-server_modules_base_models.UserCreateRequest'
+          $ref: '#/definitions/models.PlanRequest'
       produces:
       - application/json
       responses:
@@ -1282,78 +2216,310 @@ paths:
           description: Created
           schema:
             allOf:
-            - $ref: '#/definitions/github_com_ae-base-server_modules_base_models.APIResponse'
+            - $ref: '#/definitions/github_com_ae-base-server_internal_models.APIResponse'
             - properties:
                 data:
-                  $ref: '#/definitions/github_com_ae-base-server_modules_base_models.LoginResponse'
+                  $ref: '#/definitions/github_com_ae-base-server_internal_models.Plan'
               type: object
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/github_com_ae-base-server_modules_base_models.ErrorResponse'
-        "409":
-          description: Conflict
-          schema:
-            $ref: '#/definitions/github_com_ae-base-server_modules_base_models.ErrorResponse'
-      summary: User registration
+            $ref: '#/definitions/github_com_ae-base-server_internal_models.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Create a new plan
       tags:
-      - authentication
-  /auth/reset-password:
-    post:
-      consumes:
-      - application/json
-      description: Reset user password with reset token
+      - plans
+  /api/v1/plans/{id}:
+    delete:
+      description: Delete a subscription plan (admin only)
+      operationId: deletePlan
       parameters:
-      - description: Password reset data
-        in: body
-        name: request
+      - description: Plan ID
+        in: path
+        name: id
         required: true
-        schema:
-          $ref: '#/definitions/models.ResetPasswordRequest'
+        type: integer
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/github_com_ae-base-server_modules_base_models.APIResponse'
+            $ref: '#/definitions/github_com_ae-base-server_internal_models.APIResponse'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/github_com_ae-base-server_modules_base_models.ErrorResponse'
-      summary: Reset password
+            $ref: '#/definitions/github_com_ae-base-server_internal_models.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_ae-base-server_internal_models.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Delete a plan
       tags:
-      - authentication
-  /auth/verify-email:
+      - plans
+    get:
+      description: Get a specific subscription plan by its ID
+      operationId: getPlanById
+      parameters:
+      - description: Plan ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_ae-base-server_internal_models.APIResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_ae-base-server_internal_models.Plan'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_ae-base-server_internal_models.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_ae-base-server_internal_models.ErrorResponse'
+      summary: Get plan by ID
+      tags:
+      - plans
+    put:
+      consumes:
+      - application/json
+      description: Update an existing subscription plan (admin only)
+      operationId: updatePlan
+      parameters:
+      - description: Plan ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Updated plan data
+        in: body
+        name: plan
+        required: true
+        schema:
+          $ref: '#/definitions/models.PlanRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_ae-base-server_internal_models.APIResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_ae-base-server_internal_models.Plan'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_ae-base-server_internal_models.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_ae-base-server_internal_models.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Update a plan
+      tags:
+      - plans
+  /api/v1/static:
+    get:
+      description: Get a list of all JSON files available in the statics/json directory
+      operationId: listStaticFiles
+      responses:
+        "200":
+          description: List of available JSON files
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Failed to read directory
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: List available static JSON files
+      tags:
+      - static
+  /api/v1/static/{filename}:
+    get:
+      description: Securely serve JSON data files from statics/json directory only.
+        Prevents access to other directories or file types.
+      operationId: getStaticFile
+      parameters:
+      - description: JSON filename (without .json extension)
+        example: '"bundeslaender"'
+        in: path
+        name: filename
+        required: true
+        type: string
+      responses:
+        "200":
+          description: JSON file content
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Invalid file name
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: File not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Failed to read file
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Serve static JSON files (JSON only, security restricted)
+      tags:
+      - static
+  /api/v1/user-settings:
     get:
       consumes:
       - application/json
-      description: Verify user email address with verification token
-      parameters:
-      - description: Verification token
-        in: query
-        name: token
-        required: true
-        type: string
+      description: Get settings for the authenticated user (creates default if not
+        found)
+      operationId: getUserSettings
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/github_com_ae-base-server_modules_base_models.APIResponse'
+            allOf:
+            - $ref: '#/definitions/github_com_ae-base-server_internal_models.APIResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/models.UserSettings'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_ae-base-server_internal_models.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_ae-base-server_internal_models.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get user settings
+      tags:
+      - user-settings
+    put:
+      consumes:
+      - application/json
+      description: Update settings for the authenticated user
+      operationId: updateUserSettings
+      parameters:
+      - description: Updated settings
+        in: body
+        name: settings
+        required: true
+        schema:
+          $ref: '#/definitions/models.UserSettingsUpdateRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_ae-base-server_internal_models.APIResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/models.UserSettings'
+              type: object
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/github_com_ae-base-server_modules_base_models.ErrorResponse'
-      summary: Verify email address
+            $ref: '#/definitions/github_com_ae-base-server_internal_models.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_ae-base-server_internal_models.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_ae-base-server_internal_models.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Update user settings
       tags:
-      - authentication
+      - user-settings
+  /api/v1/user-settings/reset:
+    post:
+      consumes:
+      - application/json
+      description: Reset user settings to default values
+      operationId: resetUserSettings
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_ae-base-server_internal_models.APIResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/models.UserSettings'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_ae-base-server_internal_models.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_ae-base-server_internal_models.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_ae-base-server_internal_models.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Reset user settings
+      tags:
+      - user-settings
   /calendar:
     get:
       description: Retrieve all calendars for the authenticated user with 2-level
         deep preloading including entries with their series and series with their
         entries
+      operationId: getCalendars
       produces:
       - application/json
       responses:
@@ -1383,6 +2549,7 @@ paths:
       consumes:
       - application/json
       description: Create a new calendar for the authenticated user
+      operationId: createCalendar
       parameters:
       - description: Calendar data
         in: body
@@ -1420,6 +2587,7 @@ paths:
   /calendar-entries:
     get:
       description: Retrieve all calendar entries for the authenticated user
+      operationId: getCalendarEntries
       parameters:
       - default: 1
         description: Page number
@@ -1458,6 +2626,7 @@ paths:
       consumes:
       - application/json
       description: Create a new calendar entry
+      operationId: createCalendarEntry
       parameters:
       - description: Calendar entry data
         in: body
@@ -1495,6 +2664,7 @@ paths:
   /calendar-entries/{id}:
     delete:
       description: Delete a calendar entry by ID
+      operationId: deleteCalendarEntry
       parameters:
       - description: Calendar Entry ID
         in: path
@@ -1536,6 +2706,7 @@ paths:
       - calendar-entries
     get:
       description: Retrieve a calendar entry by its ID
+      operationId: getCalendarEntryById
       parameters:
       - description: Calendar Entry ID
         in: path
@@ -1578,6 +2749,7 @@ paths:
       consumes:
       - application/json
       description: Update an existing calendar entry
+      operationId: updateCalendarEntry
       parameters:
       - description: Calendar Entry ID
         in: path
@@ -1625,6 +2797,7 @@ paths:
   /calendar-series:
     get:
       description: Retrieve all calendar series for the authenticated user
+      operationId: getCalendarSeries
       parameters:
       - default: 1
         description: Page number
@@ -1663,6 +2836,7 @@ paths:
       consumes:
       - application/json
       description: Create a new calendar series for recurring events
+      operationId: createCalendarSeries
       parameters:
       - description: Calendar series data
         in: body
@@ -1700,6 +2874,7 @@ paths:
   /calendar-series/{id}:
     delete:
       description: Delete a calendar series by ID
+      operationId: deleteCalendarSeries
       parameters:
       - description: Calendar Series ID
         in: path
@@ -1741,6 +2916,7 @@ paths:
       - calendar-series
     get:
       description: Retrieve a calendar series by its ID
+      operationId: getCalendarSeriesById
       parameters:
       - description: Calendar Series ID
         in: path
@@ -1783,6 +2959,7 @@ paths:
       consumes:
       - application/json
       description: Update an existing calendar series
+      operationId: updateCalendarSeries
       parameters:
       - description: Calendar Series ID
         in: path
@@ -1830,6 +3007,7 @@ paths:
   /calendar/{id}:
     delete:
       description: Delete a calendar by ID
+      operationId: deleteCalendar
       parameters:
       - description: Calendar ID
         in: path
@@ -1871,6 +3049,7 @@ paths:
       - calendar
     get:
       description: Retrieve a calendar by its ID
+      operationId: getCalendarById
       parameters:
       - description: Calendar ID
         in: path
@@ -1913,6 +3092,7 @@ paths:
       consumes:
       - application/json
       description: Update an existing calendar
+      operationId: updateCalendar
       parameters:
       - description: Calendar ID
         in: path
@@ -1963,6 +3143,7 @@ paths:
       - application/json
       description: Import school holidays and public holidays into a specific calendar
         from unburdy format data
+      operationId: importHolidays
       parameters:
       - description: Calendar ID
         in: path
@@ -2012,6 +3193,7 @@ paths:
     get:
       description: Find available time slots based on duration, interval, and maximum
         number
+      operationId: getFreeSlots
       parameters:
       - description: Duration in minutes
         in: query
@@ -2060,6 +3242,7 @@ paths:
   /calendar/week:
     get:
       description: Retrieve calendar entries for a specific week
+      operationId: getCalendarWeek
       parameters:
       - description: Date in YYYY-MM-DD format
         in: query
@@ -2098,6 +3281,7 @@ paths:
   /calendar/year:
     get:
       description: Retrieve calendar entries for a specific year
+      operationId: getCalendarYear
       parameters:
       - description: Year
         in: query
@@ -2136,6 +3320,7 @@ paths:
   /clients:
     get:
       description: Retrieve all clients with optional pagination
+      operationId: getClients
       parameters:
       - default: 1
         description: Page number
@@ -2177,20 +3362,26 @@ paths:
       consumes:
       - application/json
       description: Create a new client with the provided information
+      operationId: createClient
       parameters:
       - description: Client information
         in: body
         name: client
         required: true
         schema:
-          $ref: '#/definitions/entities.CreateClientRequest'
+          $ref: '#/definitions/models.CreateClientRequest'
       produces:
       - application/json
       responses:
         "201":
-          description: Created client
+          description: Client created successfully
           schema:
-            $ref: '#/definitions/entities.ClientResponse'
+            allOf:
+            - $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.APIResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/models.ClientResponse'
+              type: object
         "400":
           description: Bad request
           schema:
@@ -2217,6 +3408,7 @@ paths:
   /clients/{id}:
     delete:
       description: Soft delete a client by ID
+      operationId: deleteClient
       parameters:
       - description: Client ID
         in: path
@@ -2263,6 +3455,7 @@ paths:
       - clients
     get:
       description: Retrieve a specific client by their ID
+      operationId: getClientById
       parameters:
       - description: Client ID
         in: path
@@ -2275,7 +3468,12 @@ paths:
         "200":
           description: Client found
           schema:
-            $ref: '#/definitions/entities.ClientResponse'
+            allOf:
+            - $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.APIResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/models.ClientResponse'
+              type: object
         "400":
           description: Bad request
           schema:
@@ -2309,6 +3507,7 @@ paths:
       consumes:
       - application/json
       description: Update a client's information
+      operationId: updateClient
       parameters:
       - description: Client ID
         in: path
@@ -2320,14 +3519,19 @@ paths:
         name: client
         required: true
         schema:
-          $ref: '#/definitions/entities.UpdateClientRequest'
+          $ref: '#/definitions/models.UpdateClientRequest'
       produces:
       - application/json
       responses:
         "200":
           description: Updated client
           schema:
-            $ref: '#/definitions/entities.ClientResponse'
+            allOf:
+            - $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.APIResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/models.ClientResponse'
+              type: object
         "400":
           description: Bad request
           schema:
@@ -2360,6 +3564,7 @@ paths:
   /clients/search:
     get:
       description: Search clients by first name or last name
+      operationId: searchClients
       parameters:
       - description: Search query
         in: query
@@ -2408,95 +3613,10 @@ paths:
       summary: Search clients
       tags:
       - clients
-  /contact/form:
-    post:
-      consumes:
-      - application/json
-      description: Submit a contact form and optionally subscribe to newsletter
-      parameters:
-      - description: Contact form data
-        in: body
-        name: contactForm
-        required: true
-        schema:
-          $ref: '#/definitions/github_com_ae-base-server_modules_base_models.ContactFormRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/github_com_ae-base-server_modules_base_models.ContactFormResponse'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/github_com_ae-base-server_modules_base_models.ErrorResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/github_com_ae-base-server_modules_base_models.ErrorResponse'
-      summary: Submit contact form
-      tags:
-      - contact-form
-  /contact/newsletter:
-    get:
-      consumes:
-      - application/json
-      description: Get all newsletter subscriptions for admin users
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            items:
-              $ref: '#/definitions/github_com_ae-base-server_modules_base_models.Newsletter'
-            type: array
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/github_com_ae-base-server_modules_base_models.ErrorResponse'
-      security:
-      - BearerAuth: []
-      summary: Get newsletter subscriptions
-      tags:
-      - newsletter
-  /contact/newsletter/unsubscribe:
-    delete:
-      consumes:
-      - application/json
-      description: Unsubscribe an email from the newsletter
-      parameters:
-      - description: Email to unsubscribe
-        in: query
-        name: email
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/github_com_ae-base-server_modules_base_models.ErrorResponse'
-        "404":
-          description: Not Found
-          schema:
-            $ref: '#/definitions/github_com_ae-base-server_modules_base_models.ErrorResponse'
-      security:
-      - BearerAuth: []
-      summary: Unsubscribe from newsletter
-      tags:
-      - newsletter
   /cost-providers:
     get:
       description: Retrieve all cost providers with optional pagination
+      operationId: getCostProviders
       parameters:
       - default: 1
         description: Page number
@@ -2538,6 +3658,7 @@ paths:
       consumes:
       - application/json
       description: Create a new cost provider with the provided information
+      operationId: createCostProvider
       parameters:
       - description: Cost provider information
         in: body
@@ -2578,6 +3699,7 @@ paths:
   /cost-providers/{id}:
     delete:
       description: Soft delete a cost provider by ID
+      operationId: deleteCostProvider
       parameters:
       - description: Cost Provider ID
         in: path
@@ -2624,6 +3746,7 @@ paths:
       - cost-providers
     get:
       description: Retrieve a specific cost provider by their ID
+      operationId: getCostProviderById
       parameters:
       - description: Cost Provider ID
         in: path
@@ -2670,6 +3793,7 @@ paths:
       consumes:
       - application/json
       description: Update a cost provider's information
+      operationId: updateCostProvider
       parameters:
       - description: Cost Provider ID
         in: path
@@ -2721,6 +3845,7 @@ paths:
   /cost-providers/search:
     get:
       description: Search cost providers by organization name or contact name
+      operationId: searchCostProviders
       parameters:
       - description: Search query
         in: query
@@ -2769,309 +3894,10 @@ paths:
       summary: Search cost providers
       tags:
       - cost-providers
-  /customers:
-    get:
-      description: Get a paginated list of all customers
-      parameters:
-      - default: 1
-        description: Page number
-        in: query
-        name: page
-        type: integer
-      - default: 10
-        description: Items per page
-        in: query
-        name: limit
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            allOf:
-            - $ref: '#/definitions/github_com_ae-base-server_modules_base_models.APIResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/github_com_ae-base-server_modules_base_models.ListResponse'
-              type: object
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/github_com_ae-base-server_modules_base_models.ErrorResponse'
-      security:
-      - BearerAuth: []
-      summary: Get all customers
-      tags:
-      - customers
-    post:
-      consumes:
-      - application/json
-      description: Create a new customer
-      parameters:
-      - description: Customer data
-        in: body
-        name: customer
-        required: true
-        schema:
-          $ref: '#/definitions/models.CustomerRequest'
-      produces:
-      - application/json
-      responses:
-        "201":
-          description: Created
-          schema:
-            allOf:
-            - $ref: '#/definitions/github_com_ae-base-server_modules_base_models.APIResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/github_com_ae-base-server_modules_base_models.CustomerResponse'
-              type: object
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/github_com_ae-base-server_modules_base_models.ErrorResponse'
-      security:
-      - BearerAuth: []
-      summary: Create a new customer
-      tags:
-      - customers
-  /customers/{id}:
-    delete:
-      description: Soft delete a customer by ID
-      parameters:
-      - description: Customer ID
-        in: path
-        name: id
-        required: true
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/github_com_ae-base-server_modules_base_models.APIResponse'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/github_com_ae-base-server_modules_base_models.ErrorResponse'
-        "404":
-          description: Not Found
-          schema:
-            $ref: '#/definitions/github_com_ae-base-server_modules_base_models.ErrorResponse'
-      security:
-      - BearerAuth: []
-      summary: Delete a customer
-      tags:
-      - customers
-    get:
-      description: Get a specific customer by its ID
-      parameters:
-      - description: Customer ID
-        in: path
-        name: id
-        required: true
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            allOf:
-            - $ref: '#/definitions/github_com_ae-base-server_modules_base_models.APIResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/github_com_ae-base-server_modules_base_models.CustomerResponse'
-              type: object
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/github_com_ae-base-server_modules_base_models.ErrorResponse'
-        "404":
-          description: Not Found
-          schema:
-            $ref: '#/definitions/github_com_ae-base-server_modules_base_models.ErrorResponse'
-      security:
-      - BearerAuth: []
-      summary: Get customer by ID
-      tags:
-      - customers
-    put:
-      consumes:
-      - application/json
-      description: Update an existing customer by ID
-      parameters:
-      - description: Customer ID
-        in: path
-        name: id
-        required: true
-        type: integer
-      - description: Updated customer data
-        in: body
-        name: customer
-        required: true
-        schema:
-          $ref: '#/definitions/models.CustomerRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            allOf:
-            - $ref: '#/definitions/github_com_ae-base-server_modules_base_models.APIResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/github_com_ae-base-server_modules_base_models.CustomerResponse'
-              type: object
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/github_com_ae-base-server_modules_base_models.ErrorResponse'
-        "404":
-          description: Not Found
-          schema:
-            $ref: '#/definitions/github_com_ae-base-server_modules_base_models.ErrorResponse'
-      security:
-      - BearerAuth: []
-      summary: Update a customer
-      tags:
-      - customers
-  /emails:
-    get:
-      description: Get a paginated list of all emails
-      parameters:
-      - default: 1
-        description: Page number
-        in: query
-        name: page
-        type: integer
-      - default: 10
-        description: Items per page
-        in: query
-        name: limit
-        type: integer
-      - description: Filter by email status
-        in: query
-        name: status
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            allOf:
-            - $ref: '#/definitions/github_com_ae-base-server_internal_models.APIResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/github_com_ae-base-server_internal_models.ListResponse'
-              type: object
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/github_com_ae-base-server_internal_models.ErrorResponse'
-      security:
-      - BearerAuth: []
-      summary: Get all emails
-      tags:
-      - emails
-  /emails/{id}:
-    get:
-      description: Get a specific email by its ID
-      parameters:
-      - description: Email ID
-        in: path
-        name: id
-        required: true
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            allOf:
-            - $ref: '#/definitions/github_com_ae-base-server_internal_models.APIResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/github_com_ae-base-server_internal_models.EmailResponse'
-              type: object
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/github_com_ae-base-server_internal_models.ErrorResponse'
-        "404":
-          description: Not Found
-          schema:
-            $ref: '#/definitions/github_com_ae-base-server_internal_models.ErrorResponse'
-      security:
-      - BearerAuth: []
-      summary: Get email by ID
-      tags:
-      - emails
-  /emails/send:
-    post:
-      consumes:
-      - application/json
-      description: Create and queue an email for sending
-      parameters:
-      - description: Email send data
-        in: body
-        name: request
-        required: true
-        schema:
-          $ref: '#/definitions/github_com_ae-base-server_internal_models.EmailSendRequest'
-      produces:
-      - application/json
-      responses:
-        "201":
-          description: Created
-          schema:
-            allOf:
-            - $ref: '#/definitions/github_com_ae-base-server_internal_models.APIResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/github_com_ae-base-server_internal_models.EmailResponse'
-              type: object
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/github_com_ae-base-server_internal_models.ErrorResponse'
-      security:
-      - BearerAuth: []
-      summary: Send an email
-      tags:
-      - emails
-  /emails/stats:
-    get:
-      description: Get email statistics including counts by status
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            allOf:
-            - $ref: '#/definitions/github_com_ae-base-server_internal_models.APIResponse'
-            - properties:
-                data:
-                  type: object
-              type: object
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/github_com_ae-base-server_internal_models.ErrorResponse'
-      security:
-      - BearerAuth: []
-      summary: Get email statistics
-      tags:
-      - emails
   /external-calendars:
     get:
       description: Retrieve all external calendars for the authenticated user
+      operationId: getExternalCalendars
       parameters:
       - default: 1
         description: Page number
@@ -3110,6 +3936,7 @@ paths:
       consumes:
       - application/json
       description: Create a new external calendar
+      operationId: createExternalCalendar
       parameters:
       - description: External calendar data
         in: body
@@ -3147,6 +3974,7 @@ paths:
   /external-calendars/{id}:
     delete:
       description: Delete an external calendar by ID
+      operationId: deleteExternalCalendar
       parameters:
       - description: External Calendar ID
         in: path
@@ -3188,6 +4016,7 @@ paths:
       - external-calendars
     get:
       description: Retrieve an external calendar by its ID
+      operationId: getExternalCalendarById
       parameters:
       - description: External Calendar ID
         in: path
@@ -3230,6 +4059,7 @@ paths:
       consumes:
       - application/json
       description: Update an existing external calendar
+      operationId: updateExternalCalendar
       parameters:
       - description: External Calendar ID
         in: path
@@ -3274,258 +4104,6 @@ paths:
       summary: Update external calendar
       tags:
       - external-calendars
-  /health:
-    get:
-      description: Check the health status of the API and database
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/github_com_ae-base-server_modules_base_models.HealthResponse'
-        "503":
-          description: Service Unavailable
-          schema:
-            $ref: '#/definitions/github_com_ae-base-server_modules_base_models.ErrorResponse'
-      summary: Health check
-      tags:
-      - health
-  /ping:
-    get:
-      description: Simple ping endpoint
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: pong
-          schema:
-            type: string
-      summary: Ping check
-      tags:
-      - health
-  /plans:
-    get:
-      description: Get a list of all available subscription plans
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            items:
-              $ref: '#/definitions/github_com_ae-base-server_modules_base_models.Plan'
-            type: array
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/github_com_ae-base-server_modules_base_models.ErrorResponse'
-      summary: Get all plans
-      tags:
-      - plans
-    post:
-      consumes:
-      - application/json
-      description: Create a new subscription plan (admin only)
-      parameters:
-      - description: Plan data
-        in: body
-        name: plan
-        required: true
-        schema:
-          $ref: '#/definitions/models.PlanRequest'
-      produces:
-      - application/json
-      responses:
-        "201":
-          description: Created
-          schema:
-            allOf:
-            - $ref: '#/definitions/github_com_ae-base-server_modules_base_models.APIResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/github_com_ae-base-server_modules_base_models.Plan'
-              type: object
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/github_com_ae-base-server_modules_base_models.ErrorResponse'
-      security:
-      - BearerAuth: []
-      summary: Create a new plan
-      tags:
-      - plans
-  /plans/{id}:
-    delete:
-      description: Delete a subscription plan (admin only)
-      parameters:
-      - description: Plan ID
-        in: path
-        name: id
-        required: true
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/github_com_ae-base-server_modules_base_models.APIResponse'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/github_com_ae-base-server_modules_base_models.ErrorResponse'
-        "404":
-          description: Not Found
-          schema:
-            $ref: '#/definitions/github_com_ae-base-server_modules_base_models.ErrorResponse'
-      security:
-      - BearerAuth: []
-      summary: Delete a plan
-      tags:
-      - plans
-    get:
-      description: Get a specific subscription plan by its ID
-      parameters:
-      - description: Plan ID
-        in: path
-        name: id
-        required: true
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            allOf:
-            - $ref: '#/definitions/github_com_ae-base-server_modules_base_models.APIResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/github_com_ae-base-server_modules_base_models.Plan'
-              type: object
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/github_com_ae-base-server_modules_base_models.ErrorResponse'
-        "404":
-          description: Not Found
-          schema:
-            $ref: '#/definitions/github_com_ae-base-server_modules_base_models.ErrorResponse'
-      summary: Get plan by ID
-      tags:
-      - plans
-    put:
-      consumes:
-      - application/json
-      description: Update an existing subscription plan (admin only)
-      parameters:
-      - description: Plan ID
-        in: path
-        name: id
-        required: true
-        type: integer
-      - description: Updated plan data
-        in: body
-        name: plan
-        required: true
-        schema:
-          $ref: '#/definitions/models.PlanRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            allOf:
-            - $ref: '#/definitions/github_com_ae-base-server_modules_base_models.APIResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/github_com_ae-base-server_modules_base_models.Plan'
-              type: object
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/github_com_ae-base-server_modules_base_models.ErrorResponse'
-        "404":
-          description: Not Found
-          schema:
-            $ref: '#/definitions/github_com_ae-base-server_modules_base_models.ErrorResponse'
-      security:
-      - BearerAuth: []
-      summary: Update a plan
-      tags:
-      - plans
-  /static:
-    get:
-      description: Get a list of all JSON files available in the statics/json directory
-      responses:
-        "200":
-          description: List of available JSON files
-          schema:
-            additionalProperties: true
-            type: object
-        "401":
-          description: Unauthorized
-          schema:
-            additionalProperties: true
-            type: object
-        "500":
-          description: Failed to read directory
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-      security:
-      - BearerAuth: []
-      summary: List available static JSON files
-      tags:
-      - static
-  /static/{filename}:
-    get:
-      description: Securely serve JSON data files from statics/json directory only.
-        Prevents access to other directories or file types.
-      parameters:
-      - description: JSON filename (without .json extension)
-        example: '"bundeslaender"'
-        in: path
-        name: filename
-        required: true
-        type: string
-      responses:
-        "200":
-          description: JSON file content
-          schema:
-            additionalProperties: true
-            type: object
-        "400":
-          description: Invalid file name
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-        "401":
-          description: Unauthorized
-          schema:
-            additionalProperties: true
-            type: object
-        "404":
-          description: File not found
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-        "500":
-          description: Failed to read file
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-      security:
-      - BearerAuth: []
-      summary: Serve static JSON files (JSON only, security restricted)
-      tags:
-      - static
 securityDefinitions:
   BearerAuth:
     description: Type "Bearer" followed by a space and JWT token.

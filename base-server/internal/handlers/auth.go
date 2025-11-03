@@ -9,10 +9,8 @@ import (
 
 	"github.com/ae-base-server/internal/eventbus"
 	"github.com/ae-base-server/internal/models"
-	_ "github.com/ae-base-server/modules/base/models" // Import models for swagger
 	"github.com/ae-base-server/pkg/auth"
 	"github.com/ae-base-server/pkg/config"
-	"github.com/ae-base-server/pkg/core"
 	"github.com/ae-base-server/pkg/utils"
 	"github.com/ae-base-server/services"
 	"github.com/gin-gonic/gin"
@@ -20,35 +18,31 @@ import (
 	"gorm.io/gorm"
 )
 
-// AuthHandlers provides authentication related handlers
-type AuthHandlers struct {
-	db     *gorm.DB
-	logger core.Logger
-	cfg    config.Config
+type AuthHandler struct {
+	db  *gorm.DB
+	cfg config.Config
 }
 
-// NewAuthHandlers creates new auth handlers
-func NewAuthHandlers(db *gorm.DB, logger core.Logger) *AuthHandlers {
-	return &AuthHandlers{
-		db:     db,
-		logger: logger,
-		cfg:    config.Load(),
+// NewAuthHandler creates a new auth handler
+func NewAuthHandler(db *gorm.DB) *AuthHandler {
+	return &AuthHandler{
+		db:  db,
+		cfg: config.Load(),
 	}
 }
 
-// Login handles user authentication
-// @Summary User login
-// @ID login
-// @Description Authenticate user with username/email and password
-// @Tags authentication
-// @Accept json
-// @Produce json
-// @Param credentials body models.LoginRequest true "Login credentials"
-// @Success 200 {object} models.APIResponse{data=models.LoginResponse}
-// @Failure 400 {object} models.ErrorResponse
-// @Failure 401 {object} models.ErrorResponse
-// @Router /api/v1/auth/login [post]
-func (h *AuthHandlers) Login(c *gin.Context) {
+// Login authenticates a user and returns a JWT token
+// DISABLED-SWAGGER: @Summary Login user
+// DISABLED-SWAGGER: @Description Authenticate user with username/email and password
+// DISABLED-SWAGGER: @Tags auth
+// DISABLED-SWAGGER: @Accept json
+// DISABLED-SWAGGER: @Produce json
+// DISABLED-SWAGGER: @Param request body models.LoginRequest true "Login credentials"
+// DISABLED-SWAGGER: @Success 200 {object} models.APIResponse{data=models.LoginResponse}
+// DISABLED-SWAGGER: @Failure 400 {object} models.ErrorResponse
+// DISABLED-SWAGGER: @Failure 401 {object} models.ErrorResponse
+// DISABLED-SWAGGER: @Router /auth/login [post]
+func (h *AuthHandler) Login(c *gin.Context) {
 	var req models.LoginRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, models.ErrorResponseFunc("Invalid request", err.Error()))
@@ -95,19 +89,70 @@ func (h *AuthHandlers) Login(c *gin.Context) {
 	c.JSON(http.StatusOK, models.SuccessResponse("Login successful", response))
 }
 
-// Register handles user registration
-// @Summary User registration
-// @ID register
-// @Description Register a new user account
-// @Tags authentication
-// @Accept json
-// @Produce json
-// @Param user body models.UserCreateRequest true "User registration data"
-// @Success 201 {object} models.APIResponse{data=models.LoginResponse}
-// @Failure 400 {object} models.ErrorResponse
-// @Failure 409 {object} models.ErrorResponse
-// @Router /api/v1/auth/register [post]
-func (h *AuthHandlers) Register(c *gin.Context) {
+// Logout blacklists the current JWT token
+// DISABLED-SWAGGER: @Summary Logout user
+// DISABLED-SWAGGER: @Description Blacklist the current JWT token
+// DISABLED-SWAGGER: @Tags auth
+// DISABLED-SWAGGER: @Accept json
+// DISABLED-SWAGGER: @Produce json
+// DISABLED-SWAGGER: @Security BearerAuth
+// DISABLED-SWAGGER: @Success 200 {object} models.APIResponse
+// DISABLED-SWAGGER: @Failure 400 {object} models.ErrorResponse
+// DISABLED-SWAGGER: @Failure 401 {object} models.ErrorResponse
+// DISABLED-SWAGGER: @Router /auth/logout [post]
+func (h *AuthHandler) Logout(c *gin.Context) {
+	// Get token from context (set by auth middleware)
+	tokenString, exists := c.Get("token")
+	if !exists {
+		c.JSON(http.StatusBadRequest, models.ErrorResponseFunc("No token found", "Token not provided"))
+		return
+	}
+
+	// Get user from context
+	userInterface, exists := c.Get("user")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, models.ErrorResponseFunc("User not found", "User not authenticated"))
+		return
+	}
+
+	user := userInterface.(*models.User)
+
+	// Parse token to get JTI and expiration
+	tokenID, expiresAt, err := auth.ParseTokenClaims(tokenString.(string))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, models.ErrorResponseFunc("Invalid token", err.Error()))
+		return
+	}
+
+	// Add token to blacklist
+	blacklistEntry := models.TokenBlacklist{
+		TokenID:   tokenID,
+		UserID:    user.ID,
+		ExpiresAt: expiresAt,
+		Reason:    "User logout",
+	}
+
+	if err := h.db.Create(&blacklistEntry).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, models.ErrorResponseFunc("Failed to logout", err.Error()))
+		return
+	}
+
+	c.JSON(http.StatusOK, models.SuccessResponse("Logout successful", nil))
+}
+
+// Register creates a new user account
+// DISABLED-SWAGGER: @Summary Register new user
+// DISABLED-SWAGGER: @Description Create a new user account. If a user-signup token is provided in Authorization header, user will join that tenant. Otherwise, company_name is required to create new tenant.
+// DISABLED-SWAGGER: @Tags auth
+// DISABLED-SWAGGER: @Accept json
+// DISABLED-SWAGGER: @Produce json
+// DISABLED-SWAGGER: @Param Authorization header string false "Bearer token for user signup invitation"
+// DISABLED-SWAGGER: @Param request body models.UserCreateRequest true "User registration data"
+// DISABLED-SWAGGER: @Success 201 {object} models.APIResponse{data=models.UserResponse}
+// DISABLED-SWAGGER: @Failure 400 {object} models.ErrorResponse
+// DISABLED-SWAGGER: @Failure 409 {object} models.ErrorResponse
+// DISABLED-SWAGGER: @Router /auth/register [post]
+func (h *AuthHandler) Register(c *gin.Context) {
 	var req models.UserCreateRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, models.ErrorResponseFunc("Invalid request", err.Error()))
@@ -164,6 +209,8 @@ func (h *AuthHandlers) Register(c *gin.Context) {
 				c.JSON(http.StatusBadRequest, models.ErrorResponseFunc("Company name required", "Company name is required to create a new tenant"))
 				return
 			}
+
+			// Create new tenant - logic will be handled below
 		}
 	} else {
 		// No token provided, company_name is required to create new tenant
@@ -263,6 +310,7 @@ func (h *AuthHandlers) Register(c *gin.Context) {
 
 		if err := h.db.Create(&newsletter).Error; err != nil {
 			log.Printf("⚠️ Register: Failed to create newsletter subscription: %v (continuing anyway)", err)
+			// Don't fail registration if newsletter subscription fails
 		} else {
 			log.Printf("✅ Newsletter subscription created for %s", req.Email)
 		}
@@ -281,7 +329,7 @@ func (h *AuthHandlers) Register(c *gin.Context) {
 		// Send verification email
 		frontendURL := os.Getenv("FRONTEND_URL")
 		if frontendURL == "" {
-			frontendURL = "http://localhost:5173"
+			frontendURL = "http://localhost:5173" // Default for development
 		}
 		verificationURL := frontendURL + "/verify-email?token=" + verificationToken
 
@@ -289,6 +337,7 @@ func (h *AuthHandlers) Register(c *gin.Context) {
 		err = emailService.SendVerificationEmail(user.Email, user.FirstName, verificationURL)
 		if err != nil {
 			log.Printf("⚠️ Register: Failed to send verification email: %v (continuing anyway)", err)
+			// Don't fail registration if email fails, user can request resend
 		}
 	}
 
@@ -309,136 +358,19 @@ func (h *AuthHandlers) Register(c *gin.Context) {
 	c.JSON(http.StatusCreated, models.SuccessResponse("User created successfully. Please check your email to verify your account.", response))
 }
 
-// Logout handles user logout
-// @Summary User logout
-// @ID logout
-// @Description Logout user and invalidate token
-// @Tags authentication
-// @Accept json
-// @Produce json
-// @Security BearerAuth
-// @Success 200 {object} models.APIResponse
-// @Failure 400 {object} models.ErrorResponse
-// @Failure 401 {object} models.ErrorResponse
-// @Router /api/v1/auth/logout [post]
-func (h *AuthHandlers) Logout(c *gin.Context) {
-	// Get token from context (set by auth middleware)
-	tokenString, exists := c.Get("token")
-	if !exists {
-		c.JSON(http.StatusBadRequest, models.ErrorResponseFunc("No token found", "Token not provided"))
-		return
-	}
-
-	// Get user from context
-	userInterface, exists := c.Get("user")
-	if !exists {
-		c.JSON(http.StatusUnauthorized, models.ErrorResponseFunc("User not found", "User not authenticated"))
-		return
-	}
-
-	user := userInterface.(*models.User)
-
-	// Parse token to get JTI and expiration
-	tokenID, expiresAt, err := auth.ParseTokenClaims(tokenString.(string))
-	if err != nil {
-		c.JSON(http.StatusBadRequest, models.ErrorResponseFunc("Invalid token", err.Error()))
-		return
-	}
-
-	// Add token to blacklist
-	blacklistEntry := models.TokenBlacklist{
-		TokenID:   tokenID,
-		UserID:    user.ID,
-		ExpiresAt: expiresAt,
-		Reason:    "User logout",
-	}
-
-	if err := h.db.Create(&blacklistEntry).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, models.ErrorResponseFunc("Failed to logout", err.Error()))
-		return
-	}
-
-	c.JSON(http.StatusOK, models.SuccessResponse("Logout successful", nil))
-}
-
-// RefreshToken handles token refresh
-// @Summary Refresh access token
-// @ID refreshToken
-// @Description Refresh user access token
-// @Tags authentication
-// @Accept json
-// @Produce json
-// @Security BearerAuth
-// @Success 200 {object} models.APIResponse{data=models.LoginResponse}
-// @Failure 400 {object} models.ErrorResponse
-// @Failure 401 {object} models.ErrorResponse
-// @Router /api/v1/auth/refresh [post]
-func (h *AuthHandlers) RefreshToken(c *gin.Context) {
-	// Get user from context
-	userInterface, exists := c.Get("user")
-	if !exists {
-		c.JSON(http.StatusUnauthorized, models.ErrorResponseFunc("User not found", "User not authenticated"))
-		return
-	}
-
-	user := userInterface.(*models.User)
-
-	// Generate new JWT token
-	token, err := auth.GenerateJWT(user.ID, user.TenantID, user.Role)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, models.ErrorResponseFunc("Failed to generate token", err.Error()))
-		return
-	}
-
-	response := models.LoginResponse{
-		Token: token,
-		User:  user.ToResponse(),
-	}
-
-	c.JSON(http.StatusOK, models.SuccessResponse("Token refreshed successfully", response))
-}
-
-// Me returns the current user information
-// @Summary Get current user
-// @ID getCurrentUser
-// @Description Get current authenticated user information
-// @Tags authentication
-// @Accept json
-// @Produce json
-// @Security BearerAuth
-// @Success 200 {object} models.APIResponse{data=models.UserResponse}
-// @Failure 401 {object} models.ErrorResponse
-// @Router /api/v1/auth/me [get]
-func (h *AuthHandlers) Me(c *gin.Context) {
-	// Get user from context
-	userInterface, exists := c.Get("user")
-	if !exists {
-		c.JSON(http.StatusUnauthorized, models.ErrorResponseFunc("User not found", "User not authenticated"))
-		return
-	}
-
-	user := userInterface.(*models.User)
-
-	// Note: Tenant relation temporarily disabled due to GORM relation issues
-	// h.db.Preload("Tenant").First(user, user.ID)
-
-	c.JSON(http.StatusOK, models.SuccessResponse("User retrieved successfully", user.ToResponse()))
-}
-
-// ChangePassword changes the password for the current user
-// @Summary Change password
-// @ID changePassword
-// @Description Change password for authenticated user
-// @Tags authentication
-// @Accept json
-// @Produce json
-// @Security BearerAuth
-// @Param request body object{current_password=string,new_password=string} true "Password change request"
-// @Success 200 {object} models.APIResponse
-// @Failure 400 {object} models.ErrorResponse
-// @Failure 401 {object} models.ErrorResponse
-// @Router /api/v1/auth/change-password [post]
-func (h *AuthHandlers) ChangePassword(c *gin.Context) {
+// ChangePassword changes the user's password
+// DISABLED-SWAGGER: @Summary Change password
+// DISABLED-SWAGGER: @Description Change user password
+// DISABLED-SWAGGER: @Tags auth
+// DISABLED-SWAGGER: @Accept json
+// DISABLED-SWAGGER: @Produce json
+// DISABLED-SWAGGER: @Security BearerAuth
+// DISABLED-SWAGGER: @Param request body object{current_password=string,new_password=string} true "Password change data"
+// DISABLED-SWAGGER: @Success 200 {object} models.APIResponse
+// DISABLED-SWAGGER: @Failure 400 {object} models.ErrorResponse
+// DISABLED-SWAGGER: @Failure 401 {object} models.ErrorResponse
+// DISABLED-SWAGGER: @Router /auth/change-password [post]
+func (h *AuthHandler) ChangePassword(c *gin.Context) {
 	var req struct {
 		CurrentPassword string `json:"current_password" binding:"required"`
 		NewPassword     string `json:"new_password" binding:"required"`
@@ -490,70 +422,43 @@ func (h *AuthHandlers) ChangePassword(c *gin.Context) {
 	c.JSON(http.StatusOK, models.SuccessResponse("Password changed successfully", nil))
 }
 
-// VerifyEmail handles email verification
-// @Summary Verify email address
-// @ID verifyEmail
-// @Description Verify user email address with verification token
-// @Tags authentication
-// @Accept json
-// @Produce json
-// @Param token path string true "Verification token"
-// @Success 200 {object} models.APIResponse
-// @Failure 400 {object} models.ErrorResponse
-// @Router /api/v1/auth/verify-email/{token} [get]
-func (h *AuthHandlers) VerifyEmail(c *gin.Context) {
-	token := c.Param("token")
-	if token == "" {
-		c.JSON(http.StatusBadRequest, models.ErrorResponseFunc("Missing token", "Verification token is required"))
+// Me returns the current user information
+// DISABLED-SWAGGER: @Summary Get current user
+// DISABLED-SWAGGER: @Description Get current authenticated user information
+// DISABLED-SWAGGER: @Tags auth
+// DISABLED-SWAGGER: @Accept json
+// DISABLED-SWAGGER: @Produce json
+// DISABLED-SWAGGER: @Security BearerAuth
+// DISABLED-SWAGGER: @Success 200 {object} models.APIResponse{data=models.UserResponse}
+// DISABLED-SWAGGER: @Failure 401 {object} models.ErrorResponse
+// DISABLED-SWAGGER: @Router /auth/me [get]
+func (h *AuthHandler) Me(c *gin.Context) {
+	// Get user from context
+	userInterface, exists := c.Get("user")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, models.ErrorResponseFunc("User not found", "User not authenticated"))
 		return
 	}
 
-	// Validate verification token
-	userID, email, err := auth.ValidateVerificationToken(token)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, models.ErrorResponseFunc("Invalid or expired token", err.Error()))
-		return
-	}
+	user := userInterface.(*models.User)
 
-	// Find user by ID and email (both must match)
-	var user models.User
-	if err := h.db.Where("id = ? AND email = ?", userID, email).First(&user).Error; err != nil {
-		c.JSON(http.StatusBadRequest, models.ErrorResponseFunc("User not found", "Invalid verification token"))
-		return
-	}
+	// Note: Tenant relation temporarily disabled due to GORM relation issues
+	// h.db.Preload("Tenant").First(user, user.ID)
 
-	// Check if already verified
-	if user.EmailVerified {
-		c.JSON(http.StatusOK, models.SuccessResponse("Email already verified", nil))
-		return
-	}
-
-	// Update user's email verification status
-	now := time.Now()
-	user.EmailVerified = true
-	user.EmailVerifiedAt = &now
-
-	if err := h.db.Save(&user).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, models.ErrorResponseFunc("Failed to verify email", err.Error()))
-		return
-	}
-
-	log.Printf("✅ Email verified for user %d (%s)", user.ID, user.Email)
-	c.JSON(http.StatusOK, models.SuccessResponse("Email verified successfully. You can now log in.", nil))
+	c.JSON(http.StatusOK, models.SuccessResponse("User retrieved successfully", user.ToResponse()))
 }
 
-// ForgotPassword handles password reset request
-// @Summary Request password reset
-// @ID forgotPassword
-// @Description Send password reset email to user
-// @Tags authentication
-// @Accept json
-// @Produce json
-// @Param request body object{email=string} true "User email"
-// @Success 200 {object} models.APIResponse
-// @Failure 400 {object} models.ErrorResponse
-// @Router /api/v1/auth/forgot-password [post]
-func (h *AuthHandlers) ForgotPassword(c *gin.Context) {
+// ForgotPassword sends a password reset link to the user's email
+// DISABLED-SWAGGER: @Summary Request password reset
+// DISABLED-SWAGGER: @Description Send password reset link to user email
+// DISABLED-SWAGGER: @Tags auth
+// DISABLED-SWAGGER: @Accept json
+// DISABLED-SWAGGER: @Produce json
+// DISABLED-SWAGGER: @Param request body object{email=string} true "User email"
+// DISABLED-SWAGGER: @Success 200 {object} models.APIResponse
+// DISABLED-SWAGGER: @Failure 400 {object} models.ErrorResponse
+// DISABLED-SWAGGER: @Router /auth/forgot-password [post]
+func (h *AuthHandler) ForgotPassword(c *gin.Context) {
 	var req struct {
 		Email string `json:"email" binding:"required,email"`
 	}
@@ -600,6 +505,7 @@ func (h *AuthHandlers) ForgotPassword(c *gin.Context) {
 		frontendURL = "http://localhost:3000"
 	}
 
+	// Get reset route slug from env (default: /auth/new-password/)
 	resetRouteSlug := os.Getenv("RESET_PASSWORD_ROUTE")
 	if resetRouteSlug == "" {
 		resetRouteSlug = "/auth/new-password/"
@@ -622,19 +528,18 @@ func (h *AuthHandlers) ForgotPassword(c *gin.Context) {
 	c.JSON(http.StatusOK, models.SuccessResponse("Password reset link has been sent to your email", nil))
 }
 
-// ResetPassword handles password reset with token
-// @Summary Reset password
-// @ID resetPassword
-// @Description Reset user password with reset token
-// @Tags authentication
-// @Accept json
-// @Produce json
-// @Param token path string true "Reset token"
-// @Param request body object{new_password=string} true "New password"
-// @Success 200 {object} models.APIResponse
-// @Failure 400 {object} models.ErrorResponse
-// @Router /api/v1/auth/new-password/{token} [post]
-func (h *AuthHandlers) ResetPassword(c *gin.Context) {
+// ResetPassword resets the user's password using a reset token
+// DISABLED-SWAGGER: @Summary Reset password
+// DISABLED-SWAGGER: @Description Reset user password with reset token
+// DISABLED-SWAGGER: @Tags auth
+// DISABLED-SWAGGER: @Accept json
+// DISABLED-SWAGGER: @Produce json
+// DISABLED-SWAGGER: @Param token path string true "Reset token"
+// DISABLED-SWAGGER: @Param request body object{new_password=string} true "New password"
+// DISABLED-SWAGGER: @Success 200 {object} models.APIResponse
+// DISABLED-SWAGGER: @Failure 400 {object} models.ErrorResponse
+// DISABLED-SWAGGER: @Router /auth/new-password/{token} [post]
+func (h *AuthHandler) ResetPassword(c *gin.Context) {
 	token := c.Param("token")
 	if token == "" {
 		c.JSON(http.StatusBadRequest, models.ErrorResponseFunc("Invalid request", "Reset token is required"))
@@ -690,4 +595,115 @@ func (h *AuthHandlers) ResetPassword(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, models.SuccessResponse("Password has been reset successfully", nil))
+}
+
+// GetPasswordSecurity godoc
+// DISABLED-SWAGGER: @Summary Get password security requirements
+// DISABLED-SWAGGER: @Description Returns the current password security requirements including minimum length and character requirements
+// DISABLED-SWAGGER: @Tags auth
+// DISABLED-SWAGGER: @Accept json
+// DISABLED-SWAGGER: @Produce json
+// DISABLED-SWAGGER: @Success 200 {object} utils.PasswordRequirements
+// DISABLED-SWAGGER: @Router /auth/password-security [get]
+func (h *AuthHandler) GetPasswordSecurity(c *gin.Context) {
+	requirements := utils.GetPasswordRequirements()
+	c.JSON(http.StatusOK, requirements)
+}
+
+// VerifyEmail verifies a user's email address using the verification token
+// DISABLED-SWAGGER: @Summary Verify email address
+// DISABLED-SWAGGER: @Description Verify user email address with token from verification email
+// DISABLED-SWAGGER: @Tags auth
+// DISABLED-SWAGGER: @Accept json
+// DISABLED-SWAGGER: @Produce json
+// DISABLED-SWAGGER: @Param token path string true "Verification token"
+// DISABLED-SWAGGER: @Success 200 {object} models.APIResponse
+// DISABLED-SWAGGER: @Failure 400 {object} models.ErrorResponse
+// DISABLED-SWAGGER: @Router /auth/verify-email/{token} [get]
+func (h *AuthHandler) VerifyEmail(c *gin.Context) {
+	token := c.Param("token")
+	if token == "" {
+		c.JSON(http.StatusBadRequest, models.ErrorResponseFunc("Missing token", "Verification token is required"))
+		return
+	}
+
+	// Validate verification token
+	userID, email, err := auth.ValidateVerificationToken(token)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, models.ErrorResponseFunc("Invalid or expired token", err.Error()))
+		return
+	}
+
+	// Find user by ID and email (both must match)
+	var user models.User
+	if err := h.db.Where("id = ? AND email = ?", userID, email).First(&user).Error; err != nil {
+		c.JSON(http.StatusBadRequest, models.ErrorResponseFunc("User not found", "Invalid verification token"))
+		return
+	}
+
+	// Check if already verified
+	if user.EmailVerified {
+		c.JSON(http.StatusOK, models.SuccessResponse("Email already verified", nil))
+		return
+	}
+
+	// Update user's email verification status
+	now := time.Now()
+	user.EmailVerified = true
+	user.EmailVerifiedAt = &now
+
+	if err := h.db.Save(&user).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, models.ErrorResponseFunc("Failed to verify email", err.Error()))
+		return
+	}
+
+	log.Printf("✅ Email verified for user %d (%s)", user.ID, user.Email)
+	c.JSON(http.StatusOK, models.SuccessResponse("Email verified successfully. You can now log in.", nil))
+}
+
+// GenerateSignupToken generates a signup token for inviting users to a tenant
+// DISABLED-SWAGGER: @Summary Generate user signup token
+// DISABLED-SWAGGER: @Description Generate a token for inviting users to join a specific tenant
+// DISABLED-SWAGGER: @Tags auth
+// DISABLED-SWAGGER: @Accept json
+// DISABLED-SWAGGER: @Produce json
+// DISABLED-SWAGGER: @Security BearerAuth
+// DISABLED-SWAGGER: @Success 200 {object} models.APIResponse{data=object{token=string,expires_in=string}}
+// DISABLED-SWAGGER: @Failure 400 {object} models.ErrorResponse
+// DISABLED-SWAGGER: @Failure 401 {object} models.ErrorResponse
+// DISABLED-SWAGGER: @Failure 403 {object} models.ErrorResponse
+// DISABLED-SWAGGER: @Router /auth/generate-signup-token [post]
+func (h *AuthHandler) GenerateSignupToken(c *gin.Context) {
+	// Get user from context
+	userInterface, exists := c.Get("user")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, models.ErrorResponseFunc("User not found", "User not authenticated"))
+		return
+	}
+
+	user := userInterface.(*models.User)
+
+	// Check if user has permission to invite others (admin, owner, or super-admin)
+	if user.Role != "admin" && user.Role != "owner" && user.Role != "super-admin" {
+		c.JSON(http.StatusForbidden, models.ErrorResponseFunc("Permission denied", "Only admins and owners can generate signup tokens"))
+		return
+	}
+
+	// Generate signup token for the user's tenant
+	token, err := auth.GenerateUserSignupToken(user.TenantID, user.Email)
+	if err != nil {
+		log.Printf("❌ GenerateSignupToken: Failed to generate token: %v", err)
+		c.JSON(http.StatusInternalServerError, models.ErrorResponseFunc("Failed to generate token", err.Error()))
+		return
+	}
+
+	response := map[string]interface{}{
+		"token":      token,
+		"expires_in": "7 days",
+		"tenant_id":  user.TenantID,
+		"usage":      "Include this token in the Authorization header (Bearer token) when registering new users to add them to your tenant",
+	}
+
+	log.Printf("✅ Generated signup token for tenant %d by user %d (%s)", user.TenantID, user.ID, user.Email)
+	c.JSON(http.StatusOK, models.SuccessResponse("Signup token generated successfully", response))
 }

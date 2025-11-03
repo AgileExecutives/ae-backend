@@ -71,9 +71,8 @@ func (m *CustomerModule) Entities() []core.Entity {
 
 func (m *CustomerModule) Routes() []core.RouteProvider {
 	return []core.RouteProvider{
-		// Temporarily disabled - using internal handlers instead
-		// handlers.NewCustomerRoutes(m.customerHandlers),
-		// handlers.NewPlanRoutes(m.planHandlers),
+		handlers.NewCustomerRoutes(m.customerHandlers),
+		handlers.NewPlanRoutes(m.planHandlers),
 	}
 }
 

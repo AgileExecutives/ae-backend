@@ -26,6 +26,7 @@ func NewCostProviderHandler(costProviderService *services.CostProviderService) *
 
 // CreateCostProvider handles creating a new cost provider
 // @Summary Create a new cost provider
+// @ID createCostProvider
 // @Description Create a new cost provider with the provided information
 // @Tags cost-providers
 // @Accept json
@@ -61,6 +62,7 @@ func (h *CostProviderHandler) CreateCostProvider(c *gin.Context) {
 
 // GetCostProvider handles retrieving a cost provider by ID
 // @Summary Get a cost provider by ID
+// @ID getCostProviderById
 // @Description Retrieve a specific cost provider by their ID
 // @Tags cost-providers
 // @Produce json
@@ -96,6 +98,7 @@ func (h *CostProviderHandler) GetCostProvider(c *gin.Context) {
 
 // GetAllCostProviders handles retrieving all cost providers with pagination
 // @Summary Get all cost providers
+// @ID getCostProviders
 // @Description Retrieve all cost providers with optional pagination
 // @Tags cost-providers
 // @Produce json
@@ -139,6 +142,7 @@ func (h *CostProviderHandler) GetAllCostProviders(c *gin.Context) {
 
 // UpdateCostProvider handles updating a cost provider
 // @Summary Update a cost provider
+// @ID updateCostProvider
 // @Description Update a cost provider's information
 // @Tags cost-providers
 // @Accept json
@@ -182,6 +186,7 @@ func (h *CostProviderHandler) UpdateCostProvider(c *gin.Context) {
 
 // DeleteCostProvider handles deleting a cost provider
 // @Summary Delete a cost provider
+// @ID deleteCostProvider
 // @Description Soft delete a cost provider by ID
 // @Tags cost-providers
 // @Produce json
@@ -217,6 +222,7 @@ func (h *CostProviderHandler) DeleteCostProvider(c *gin.Context) {
 
 // SearchCostProviders handles searching cost providers
 // @Summary Search cost providers
+// @ID searchCostProviders
 // @Description Search cost providers by organization name or contact name
 // @Tags cost-providers
 // @Produce json

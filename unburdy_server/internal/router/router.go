@@ -7,9 +7,12 @@ import (
 	// Import ae-saas-basic public API
 	baseAPI "github.com/ae-base-server/api"
 
-	// Import unburdy-specific modules
-	"github.com/unburdy/unburdy-server-api/internal/handlers"
+	// Import unburdy-specific modular handlers
+	"github.com/unburdy/unburdy-server-api/modules/client_management/handlers"
+
+	// Import services
 	"github.com/unburdy/unburdy-server-api/internal/services"
+	moduleServices "github.com/unburdy/unburdy-server-api/modules/client_management/services"
 )
 
 // SetupExtendedRouter creates a router with ALL base endpoints PLUS client management
@@ -18,11 +21,12 @@ func SetupExtendedRouter(db *gorm.DB) *gin.Engine {
 	// Start with the complete base router that has all the endpoints
 	r := baseAPI.SetupBaseRouterWithConfig(db)
 
-	// Initialize unburdy-specific services and handlers
+	// Initialize unburdy-specific services
 	clientService := services.NewClientService(db)
-	clientHandler := handlers.NewClientHandler(clientService)
+	costProviderService := moduleServices.NewCostProviderService(db)
 
-	costProviderService := services.NewCostProviderService(db)
+	// Initialize modular handlers
+	clientHandler := handlers.NewClientHandler(clientService)
 	costProviderHandler := handlers.NewCostProviderHandler(costProviderService)
 
 	// Add unburdy-specific protected routes to the existing router

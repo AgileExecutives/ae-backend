@@ -34,9 +34,11 @@ func (r *AuthRoutes) RegisterRoutes(router *gin.RouterGroup, ctx core.ModuleCont
 	router.POST("/register", r.handlers.Register)
 	router.POST("/logout", ctx.Auth.RequireAuth(), r.handlers.Logout)
 	router.POST("/refresh", ctx.Auth.RequireAuth(), r.handlers.RefreshToken)
-	router.GET("/verify-email", r.handlers.VerifyEmail)
+	router.GET("/me", ctx.Auth.RequireAuth(), r.handlers.Me)
+	router.POST("/change-password", ctx.Auth.RequireAuth(), r.handlers.ChangePassword)
+	router.GET("/verify-email/:token", r.handlers.VerifyEmail)
 	router.POST("/forgot-password", r.handlers.ForgotPassword)
-	router.POST("/reset-password", r.handlers.ResetPassword)
+	router.POST("/new-password/:token", r.handlers.ResetPassword)
 }
 
 // ContactRoutes provides contact and newsletter routes
@@ -52,7 +54,7 @@ func NewContactRoutes(handlers *ContactHandlers) core.RouteProvider {
 }
 
 func (r *ContactRoutes) GetPrefix() string {
-	return "/contact"
+	return "/contacts"
 }
 
 func (r *ContactRoutes) GetMiddleware() []gin.HandlerFunc {
@@ -67,7 +69,45 @@ func (r *ContactRoutes) RegisterRoutes(router *gin.RouterGroup, ctx core.ModuleC
 	// Public contact form - no auth required
 	router.POST("/form", r.handlers.SubmitContactForm)
 
+	// Contact CRUD endpoints - require auth
+	router.GET("", ctx.Auth.RequireAuth(), r.handlers.GetContacts)
+	router.GET("/:id", ctx.Auth.RequireAuth(), r.handlers.GetContact)
+	router.POST("", ctx.Auth.RequireAuth(), r.handlers.CreateContact)
+	router.PUT("/:id", ctx.Auth.RequireAuth(), r.handlers.UpdateContact)
+	router.DELETE("/:id", ctx.Auth.RequireAuth(), r.handlers.DeleteContact)
+
 	// Newsletter management - requires auth
 	router.GET("/newsletter", ctx.Auth.RequireAuth(), r.handlers.GetNewsletterSubscriptions)
 	router.DELETE("/newsletter/unsubscribe", ctx.Auth.RequireAuth(), r.handlers.UnsubscribeFromNewsletter)
+}
+
+// UserSettingsRoutes provides user settings routes
+type UserSettingsRoutes struct {
+	handlers *UserSettingsHandlers
+}
+
+// NewUserSettingsRoutes creates new user settings route provider
+func NewUserSettingsRoutes(handlers *UserSettingsHandlers) core.RouteProvider {
+	return &UserSettingsRoutes{
+		handlers: handlers,
+	}
+}
+
+func (r *UserSettingsRoutes) GetPrefix() string {
+	return "/user-settings"
+}
+
+func (r *UserSettingsRoutes) GetMiddleware() []gin.HandlerFunc {
+	return []gin.HandlerFunc{}
+}
+
+func (r *UserSettingsRoutes) GetSwaggerTags() []string {
+	return []string{"user-settings"}
+}
+
+func (r *UserSettingsRoutes) RegisterRoutes(router *gin.RouterGroup, ctx core.ModuleContext) {
+	// All user settings endpoints require authentication
+	router.GET("", ctx.Auth.RequireAuth(), r.handlers.GetUserSettings)
+	router.PUT("", ctx.Auth.RequireAuth(), r.handlers.UpdateUserSettings)
+	router.POST("/reset", ctx.Auth.RequireAuth(), r.handlers.ResetUserSettings)
 }

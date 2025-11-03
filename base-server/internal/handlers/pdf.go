@@ -3,44 +3,18 @@ package handlers
 import (
 	"net/http"
 
-	"github.com/ae-base-server/modules/pdf/services"
-	"github.com/ae-base-server/pkg/core"
+	"github.com/ae-base-server/services"
 	"github.com/gin-gonic/gin"
-	"gorm.io/gorm"
 )
 
-// PDFHandler handles PDF generation requests
-type PDFHandler struct {
+// PdfHandler handles PDF generation requests
+type PdfHandler struct {
 	pdfService *services.PDFGenerator
-	db         *gorm.DB
 }
 
 // NewPDFHandler creates a new PDF handler
-func NewPDFHandler(pdfService *services.PDFGenerator, db *gorm.DB) *PDFHandler {
-	return &PDFHandler{
-		pdfService: pdfService,
-		db:         db,
-	}
-}
-
-// RegisterRoutes registers PDF-related routes
-func (h *PDFHandler) RegisterRoutes(router *gin.RouterGroup, ctx core.ModuleContext) {
-	router.POST("/create", ctx.Auth.RequireAuth(), h.GeneratePDFFromTemplate)
-}
-
-// GetPrefix returns the route prefix
-func (h *PDFHandler) GetPrefix() string {
-	return "/pdf"
-}
-
-// GetMiddleware returns route middleware
-func (h *PDFHandler) GetMiddleware() []gin.HandlerFunc {
-	return []gin.HandlerFunc{}
-}
-
-// GetSwaggerTags returns swagger tags for documentation
-func (h *PDFHandler) GetSwaggerTags() []string {
-	return []string{"pdf"}
+func NewPDFHandler(pdfService *services.PDFGenerator) *PdfHandler {
+	return &PdfHandler{pdfService: pdfService}
 }
 
 // PDFGenerateRequest represents the request structure for PDF generation
@@ -64,19 +38,18 @@ type ErrorResponse struct {
 }
 
 // GeneratePDFFromTemplate generates a PDF from a specified template and data
-// @Summary Generate PDF from template
-// @ID createPdf
-// @Description Generate a PDF document based on a specified template and data
-// @Tags pdf
-// @Accept json
-// @Produce application/json
-// @Security BearerAuth
-// @Param request body PDFGenerateRequest true "PDF generation request"
-// @Success 200 {object} PDFGenerateResponse "PDF generated successfully"
-// @Failure 400 {object} ErrorResponse "Invalid request"
-// @Failure 500 {object} ErrorResponse "Failed to generate PDF"
-// @Router /api/v1/pdf/create [post]
-func (h *PDFHandler) GeneratePDFFromTemplate(c *gin.Context) {
+// DISABLED-SWAGGER: @Summary Generate PDF from template
+// DISABLED-SWAGGER: @Description Generate a PDF document based on a specified template and data
+// DISABLED-SWAGGER: @Tags pdf
+// DISABLED-SWAGGER: @Accept json
+// DISABLED-SWAGGER: @Produce application/json
+// DISABLED-SWAGGER: @Security BearerAuth
+// DISABLED-SWAGGER: @Param request body PDFGenerateRequest true "PDF generation request"
+// DISABLED-SWAGGER: @Success 200 {object} PDFGenerateResponse "PDF generated successfully"
+// DISABLED-SWAGGER: @Failure 400 {object} ErrorResponse "Invalid request"
+// DISABLED-SWAGGER: @Failure 500 {object} ErrorResponse "Failed to generate PDF"
+// DISABLED-SWAGGER: @Router /api/v1/pdf/create [post]
+func (h *PdfHandler) GeneratePDFFromTemplate(c *gin.Context) {
 	var requestBody PDFGenerateRequest
 
 	if err := c.ShouldBindJSON(&requestBody); err != nil {

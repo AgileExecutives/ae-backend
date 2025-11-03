@@ -8,10 +8,11 @@ import (
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 
+	"github.com/unburdy/unburdy-server-api/internal/services"
 	"github.com/unburdy/unburdy-server-api/modules/client_management/entities"
 	"github.com/unburdy/unburdy-server-api/modules/client_management/handlers"
 	"github.com/unburdy/unburdy-server-api/modules/client_management/routes"
-	"github.com/unburdy/unburdy-server-api/modules/client_management/services"
+	moduleServices "github.com/unburdy/unburdy-server-api/modules/client_management/services"
 )
 
 // Module implements the baseAPI.ModuleRouteProvider interface
@@ -21,9 +22,9 @@ type Module struct {
 
 // NewModule creates a new client management module
 func NewModule(db *gorm.DB) baseAPI.ModuleRouteProvider {
-	// Initialize services
+	// Initialize services (using internal for client, modular for cost provider)
 	clientService := services.NewClientService(db)
-	costProviderService := services.NewCostProviderService(db)
+	costProviderService := moduleServices.NewCostProviderService(db)
 
 	// Initialize handlers
 	clientHandler := handlers.NewClientHandler(clientService)
@@ -85,9 +86,9 @@ func (m *CoreModule) Initialize(ctx core.ModuleContext) error {
 	ctx.Logger.Info("Initializing client management module...")
 	m.db = ctx.DB
 
-	// Initialize services
+	// Initialize services (using internal for client, modular for cost provider)
 	clientService := services.NewClientService(ctx.DB)
-	costProviderService := services.NewCostProviderService(ctx.DB)
+	costProviderService := moduleServices.NewCostProviderService(ctx.DB)
 
 	// Initialize handlers
 	m.clientHandlers = handlers.NewClientHandler(clientService)

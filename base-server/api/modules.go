@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/ae-base-server/internal/middleware"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 )
@@ -20,6 +21,35 @@ type ModuleRouteProvider interface {
 type ModuleWithEntities interface {
 	ModuleRouteProvider
 	GetEntitiesForMigration() []interface{} // Returns GORM models for auto-migration
+}
+
+// CreateProtectedRouterGroup creates a router group with authentication middleware
+func CreateProtectedRouterGroup(baseRouter *gin.Engine, db *gorm.DB, prefix string) *gin.RouterGroup {
+	group := baseRouter.Group(prefix)
+	group.Use(middleware.AuthMiddleware(db))
+	return group
+}
+
+// SetupBaseRouterWithConfig creates a basic Gin router with common middleware
+func SetupBaseRouterWithConfig(db *gorm.DB) *gin.Engine {
+	router := gin.Default()
+
+	// Add CORS middleware
+	router.Use(func(c *gin.Context) {
+		c.Header("Access-Control-Allow-Origin", "*")
+		c.Header("Access-Control-Allow-Credentials", "true")
+		c.Header("Access-Control-Allow-Headers", "Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization, accept, origin, Cache-Control, X-Requested-With")
+		c.Header("Access-Control-Allow-Methods", "POST, OPTIONS, GET, PUT, DELETE, PATCH")
+
+		if c.Request.Method == "OPTIONS" {
+			c.AbortWithStatus(204)
+			return
+		}
+
+		c.Next()
+	})
+
+	return router
 }
 
 // RegisterModuleRoutes registers routes for an external module with authentication

@@ -7,9 +7,8 @@ import (
 	baseAPI "github.com/ae-base-server/api"
 	"github.com/ae-base-server/pkg/utils"
 	"github.com/gin-gonic/gin"
-
-	"github.com/unburdy/unburdy-server-api/modules/client_management/entities"
-	"github.com/unburdy/unburdy-server-api/modules/client_management/services"
+	"github.com/unburdy/unburdy-server-api/internal/models"
+	"github.com/unburdy/unburdy-server-api/internal/services"
 )
 
 // ClientHandler handles client-related HTTP requests
@@ -28,17 +27,18 @@ func NewClientHandler(clientService *services.ClientService) *ClientHandler {
 // @Summary Create a new client
 // @Description Create a new client with the provided information
 // @Tags clients
+// @ID createClient
 // @Accept json
 // @Produce json
-// @Param client body entities.CreateClientRequest true "Client information"
-// @Success 201 {object} entities.ClientResponse "Created client"
+// @Param client body models.CreateClientRequest true "Client information"
+// @Success 201 {object} models.APIResponse{data=models.ClientResponse} "Client created successfully"
 // @Failure 400 {object} map[string]string "Bad request"
 // @Failure 401 {object} map[string]string "Unauthorized"
 // @Failure 500 {object} map[string]string "Internal server error"
 // @Security BearerAuth
 // @Router /clients [post]
 func (h *ClientHandler) CreateClient(c *gin.Context) {
-	var req entities.CreateClientRequest
+	var req models.CreateClientRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -56,16 +56,17 @@ func (h *ClientHandler) CreateClient(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusCreated, client.ToResponse())
+	c.JSON(http.StatusCreated, models.SuccessResponse("Client created successfully", client.ToResponse()))
 }
 
 // GetClient handles retrieving a client by ID
 // @Summary Get a client by ID
 // @Description Retrieve a specific client by their ID
 // @Tags clients
+// @ID getClientById
 // @Produce json
 // @Param id path int true "Client ID"
-// @Success 200 {object} entities.ClientResponse "Client found"
+// @Success 200 {object} models.APIResponse{data=models.ClientResponse} "Client found"
 // @Failure 400 {object} map[string]string "Bad request"
 // @Failure 401 {object} map[string]string "Unauthorized"
 // @Failure 404 {object} map[string]string "Client not found"
@@ -91,13 +92,14 @@ func (h *ClientHandler) GetClient(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, client.ToResponse())
+	c.JSON(http.StatusOK, models.SuccessResponse("Client retrieved successfully", client.ToResponse()))
 }
 
 // GetAllClients handles retrieving all clients with pagination
 // @Summary Get all clients
 // @Description Retrieve all clients with optional pagination
 // @Tags clients
+// @ID getClients
 // @Produce json
 // @Param page query int false "Page number" default(1)
 // @Param limit query int false "Number of clients per page (respects DEFAULT_PAGE_LIMIT and MAX_PAGE_LIMIT env vars)" default(200)
@@ -121,7 +123,7 @@ func (h *ClientHandler) GetAllClients(c *gin.Context) {
 		return
 	}
 
-	responses := make([]entities.ClientResponse, len(clients))
+	responses := make([]models.ClientResponse, len(clients))
 	for i, client := range clients {
 		responses[i] = client.ToResponse()
 	}
@@ -141,11 +143,12 @@ func (h *ClientHandler) GetAllClients(c *gin.Context) {
 // @Summary Update a client
 // @Description Update a client's information
 // @Tags clients
+// @ID updateClient
 // @Accept json
 // @Produce json
 // @Param id path int true "Client ID"
-// @Param client body entities.UpdateClientRequest true "Updated client information"
-// @Success 200 {object} entities.ClientResponse "Updated client"
+// @Param client body models.UpdateClientRequest true "Updated client information"
+// @Success 200 {object} models.APIResponse{data=models.ClientResponse} "Updated client"
 // @Failure 400 {object} map[string]string "Bad request"
 // @Failure 401 {object} map[string]string "Unauthorized"
 // @Failure 404 {object} map[string]string "Client not found"
@@ -159,7 +162,7 @@ func (h *ClientHandler) UpdateClient(c *gin.Context) {
 		return
 	}
 
-	var req entities.UpdateClientRequest
+	var req models.UpdateClientRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -177,13 +180,14 @@ func (h *ClientHandler) UpdateClient(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, client.ToResponse())
+	c.JSON(http.StatusOK, models.SuccessResponse("Client updated successfully", client.ToResponse()))
 }
 
 // DeleteClient handles deleting a client
 // @Summary Delete a client
 // @Description Soft delete a client by ID
 // @Tags clients
+// @ID deleteClient
 // @Produce json
 // @Param id path int true "Client ID"
 // @Success 200 {object} map[string]string "Client deleted successfully"
@@ -219,6 +223,7 @@ func (h *ClientHandler) DeleteClient(c *gin.Context) {
 // @Summary Search clients
 // @Description Search clients by first name or last name
 // @Tags clients
+// @ID searchClients
 // @Produce json
 // @Param q query string true "Search query"
 // @Param page query int false "Page number" default(1)
@@ -250,7 +255,7 @@ func (h *ClientHandler) SearchClients(c *gin.Context) {
 		return
 	}
 
-	responses := make([]entities.ClientResponse, len(clients))
+	responses := make([]models.ClientResponse, len(clients))
 	for i, client := range clients {
 		responses[i] = client.ToResponse()
 	}

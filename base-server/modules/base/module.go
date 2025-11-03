@@ -13,12 +13,13 @@ import (
 
 // BaseModule provides core authentication, user management, and contact functionality
 type BaseModule struct {
-	authHandlers    *handlers.AuthHandlers
-	contactHandlers *handlers.ContactHandlers
-	healthHandlers  *handlers.HealthHandlers
-	authService     *services.AuthService
-	eventHandlers   *events.BaseEventHandlers
-	authMiddleware  *middleware.AuthMiddleware
+	authHandlers         *handlers.AuthHandlers
+	contactHandlers      *handlers.ContactHandlers
+	healthHandlers       *handlers.HealthHandlers
+	userSettingsHandlers *handlers.UserSettingsHandlers
+	authService          *services.AuthService
+	eventHandlers        *events.BaseEventHandlers
+	authMiddleware       *middleware.AuthMiddleware
 }
 
 // NewBaseModule creates a new base module instance
@@ -48,6 +49,7 @@ func (m *BaseModule) Initialize(ctx core.ModuleContext) error {
 	m.authHandlers = handlers.NewAuthHandlers(ctx.DB, ctx.Logger)
 	m.contactHandlers = handlers.NewContactHandlers(ctx.DB, ctx.Logger)
 	m.healthHandlers = handlers.NewHealthHandlers(ctx.DB, ctx.Logger)
+	m.userSettingsHandlers = handlers.NewUserSettingsHandlers(ctx.DB, ctx.Logger)
 
 	// Initialize event handlers
 	m.eventHandlers = events.NewBaseEventHandlers(ctx.EventBus, ctx.Logger)
@@ -82,9 +84,9 @@ func (m *BaseModule) Entities() []core.Entity {
 
 func (m *BaseModule) Routes() []core.RouteProvider {
 	return []core.RouteProvider{
-		// Temporarily disabled - using internal handlers instead
-		// handlers.NewAuthRoutes(m.authHandlers),
-		// handlers.NewContactRoutes(m.contactHandlers),
+		handlers.NewAuthRoutes(m.authHandlers),
+		handlers.NewContactRoutes(m.contactHandlers),
+		handlers.NewUserSettingsRoutes(m.userSettingsHandlers),
 		handlers.NewHealthRoutes(m.healthHandlers),
 	}
 }

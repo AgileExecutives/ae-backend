@@ -71,6 +71,7 @@ func AuthMiddleware(db *gorm.DB) gin.HandlerFunc {
 
 		// Set user and token in context
 		c.Set("user", &user)
+		c.Set("userID", user.ID)
 		c.Set("token", tokenString)
 		c.Set("claims", claims)
 

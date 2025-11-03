@@ -28,6 +28,7 @@ func NewCalendarHandler(service *services.CalendarService) *CalendarHandler {
 
 // CreateCalendar creates a new calendar
 // @Summary Create a new calendar
+// @ID createCalendar
 // @Description Create a new calendar for the authenticated user
 // @Tags calendar
 // @Accept json
@@ -70,6 +71,7 @@ func (h *CalendarHandler) CreateCalendar(c *gin.Context) {
 
 // GetCalendar retrieves a specific calendar
 // @Summary Get calendar by ID
+// @ID getCalendarById
 // @Description Retrieve a calendar by its ID
 // @Tags calendar
 // @Produce json
@@ -111,6 +113,7 @@ func (h *CalendarHandler) GetCalendar(c *gin.Context) {
 
 // GetCalendarsWithMetadata retrieves all calendars with 2-level deep preloading
 // @Summary Get calendars with complete metadata
+// @ID getCalendars
 // @Description Retrieve all calendars for the authenticated user with 2-level deep preloading including entries with their series and series with their entries
 // @Tags calendar
 // @Produce json
@@ -150,6 +153,7 @@ func (h *CalendarHandler) GetCalendarsWithMetadata(c *gin.Context) {
 
 // UpdateCalendar updates an existing calendar
 // @Summary Update calendar
+// @ID updateCalendar
 // @Description Update an existing calendar
 // @Tags calendar
 // @Accept json
@@ -199,6 +203,7 @@ func (h *CalendarHandler) UpdateCalendar(c *gin.Context) {
 
 // DeleteCalendar deletes a calendar
 // @Summary Delete calendar
+// @ID deleteCalendar
 // @Description Delete a calendar by ID
 // @Tags calendar
 // @Produce json
@@ -242,6 +247,7 @@ func (h *CalendarHandler) DeleteCalendar(c *gin.Context) {
 
 // CreateCalendarEntry creates a new calendar entry
 // @Summary Create a new calendar entry
+// @ID createCalendarEntry
 // @Description Create a new calendar entry
 // @Tags calendar-entries
 // @Accept json
@@ -282,6 +288,7 @@ func (h *CalendarHandler) CreateCalendarEntry(c *gin.Context) {
 
 // GetCalendarEntry retrieves a specific calendar entry
 // @Summary Get calendar entry by ID
+// @ID getCalendarEntryById
 // @Description Retrieve a calendar entry by its ID
 // @Tags calendar-entries
 // @Produce json
@@ -323,6 +330,7 @@ func (h *CalendarHandler) GetCalendarEntry(c *gin.Context) {
 
 // GetAllCalendarEntries retrieves all calendar entries with pagination
 // @Summary Get all calendar entries
+// @ID getCalendarEntries
 // @Description Retrieve all calendar entries for the authenticated user
 // @Tags calendar-entries
 // @Produce json
@@ -379,6 +387,7 @@ func (h *CalendarHandler) GetAllCalendarEntries(c *gin.Context) {
 
 // UpdateCalendarEntry updates an existing calendar entry
 // @Summary Update calendar entry
+// @ID updateCalendarEntry
 // @Description Update an existing calendar entry
 // @Tags calendar-entries
 // @Accept json
@@ -428,6 +437,7 @@ func (h *CalendarHandler) UpdateCalendarEntry(c *gin.Context) {
 
 // DeleteCalendarEntry deletes a calendar entry
 // @Summary Delete calendar entry
+// @ID deleteCalendarEntry
 // @Description Delete a calendar entry by ID
 // @Tags calendar-entries
 // @Produce json
@@ -471,6 +481,7 @@ func (h *CalendarHandler) DeleteCalendarEntry(c *gin.Context) {
 
 // CreateCalendarSeries creates a new calendar series
 // @Summary Create a new calendar series
+// @ID createCalendarSeries
 // @Description Create a new calendar series for recurring events
 // @Tags calendar-series
 // @Accept json
@@ -511,6 +522,7 @@ func (h *CalendarHandler) CreateCalendarSeries(c *gin.Context) {
 
 // GetCalendarSeries retrieves a specific calendar series
 // @Summary Get calendar series by ID
+// @ID getCalendarSeriesById
 // @Description Retrieve a calendar series by its ID
 // @Tags calendar-series
 // @Produce json
@@ -552,6 +564,7 @@ func (h *CalendarHandler) GetCalendarSeries(c *gin.Context) {
 
 // GetAllCalendarSeries retrieves all calendar series with pagination
 // @Summary Get all calendar series
+// @ID getCalendarSeries
 // @Description Retrieve all calendar series for the authenticated user
 // @Tags calendar-series
 // @Produce json
@@ -607,6 +620,7 @@ func (h *CalendarHandler) GetAllCalendarSeries(c *gin.Context) {
 
 // UpdateCalendarSeries updates an existing calendar series
 // @Summary Update calendar series
+// @ID updateCalendarSeries
 // @Description Update an existing calendar series
 // @Tags calendar-series
 // @Accept json
@@ -656,6 +670,7 @@ func (h *CalendarHandler) UpdateCalendarSeries(c *gin.Context) {
 
 // DeleteCalendarSeries deletes a calendar series
 // @Summary Delete calendar series
+// @ID deleteCalendarSeries
 // @Description Delete a calendar series by ID
 // @Tags calendar-series
 // @Produce json
@@ -699,6 +714,7 @@ func (h *CalendarHandler) DeleteCalendarSeries(c *gin.Context) {
 
 // CreateExternalCalendar creates a new external calendar
 // @Summary Create a new external calendar
+// @ID createExternalCalendar
 // @Description Create a new external calendar
 // @Tags external-calendars
 // @Accept json
@@ -739,6 +755,7 @@ func (h *CalendarHandler) CreateExternalCalendar(c *gin.Context) {
 
 // GetExternalCalendar retrieves a specific external calendar
 // @Summary Get external calendar by ID
+// @ID getExternalCalendarById
 // @Description Retrieve an external calendar by its ID
 // @Tags external-calendars
 // @Produce json
@@ -780,6 +797,7 @@ func (h *CalendarHandler) GetExternalCalendar(c *gin.Context) {
 
 // GetAllExternalCalendars retrieves all external calendars with pagination
 // @Summary Get all external calendars
+// @ID getExternalCalendars
 // @Description Retrieve all external calendars for the authenticated user
 // @Tags external-calendars
 // @Produce json
@@ -835,6 +853,7 @@ func (h *CalendarHandler) GetAllExternalCalendars(c *gin.Context) {
 
 // UpdateExternalCalendar updates an existing external calendar
 // @Summary Update external calendar
+// @ID updateExternalCalendar
 // @Description Update an existing external calendar
 // @Tags external-calendars
 // @Accept json
@@ -884,6 +903,7 @@ func (h *CalendarHandler) UpdateExternalCalendar(c *gin.Context) {
 
 // DeleteExternalCalendar deletes an external calendar
 // @Summary Delete external calendar
+// @ID deleteExternalCalendar
 // @Description Delete an external calendar by ID
 // @Tags external-calendars
 // @Produce json
@@ -927,6 +947,7 @@ func (h *CalendarHandler) DeleteExternalCalendar(c *gin.Context) {
 
 // GetCalendarWeekView retrieves calendar entries for a specific week
 // @Summary Get calendar week view
+// @ID getCalendarWeek
 // @Description Retrieve calendar entries for a specific week
 // @Tags calendar-views
 // @Produce json
@@ -978,6 +999,7 @@ func (h *CalendarHandler) GetCalendarWeekView(c *gin.Context) {
 
 // GetCalendarYearView retrieves calendar entries for a specific year
 // @Summary Get calendar year view
+// @ID getCalendarYear
 // @Description Retrieve calendar entries for a specific year
 // @Tags calendar-views
 // @Produce json
@@ -1022,6 +1044,7 @@ func (h *CalendarHandler) GetCalendarYearView(c *gin.Context) {
 
 // GetFreeSlots finds available time slots
 // @Summary Get free time slots
+// @ID getFreeSlots
 // @Description Find available time slots based on duration, interval, and maximum number
 // @Tags calendar-availability
 // @Produce json
@@ -1063,6 +1086,7 @@ func (h *CalendarHandler) GetFreeSlots(c *gin.Context) {
 
 // ImportHolidays imports holidays into a specific calendar using unburdy format
 // @Summary Import holidays into calendar
+// @ID importHolidays
 // @Description Import school holidays and public holidays into a specific calendar from unburdy format data
 // @Tags calendar-utilities
 // @Accept json

@@ -40,12 +40,13 @@ func getEnvAsBool(key string, defaultVal bool) bool {
 
 // HealthCheck performs a health check
 // @Summary Health check
+// @ID healthCheck
 // @Description Check the health status of the API and database
 // @Tags health
 // @Produce json
 // @Success 200 {object} models.HealthResponse
 // @Failure 503 {object} models.ErrorResponse
-// @Router /health [get]
+// @Router /api/v1/health [get]
 func (h *HealthHandlers) HealthCheck(c *gin.Context) {
 	response := gin.H{
 		"status":    "healthy",
@@ -80,11 +81,12 @@ func (h *HealthHandlers) HealthCheck(c *gin.Context) {
 
 // Ping simple ping endpoint
 // @Summary Ping check
+// @ID ping
 // @Description Simple ping endpoint
 // @Tags health
 // @Produce json
 // @Success 200 {string} string "pong"
-// @Router /ping [get]
+// @Router /api/v1/ping [get]
 func (h *HealthHandlers) Ping(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "pong"})
 }

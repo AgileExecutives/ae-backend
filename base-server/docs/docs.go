@@ -24,14 +24,14 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/api/v1/pdf/create": {
+        "/api/v1/auth/change-password": {
             "post": {
                 "security": [
                     {
                         "BearerAuth": []
                     }
                 ],
-                "description": "Generate a PDF document based on a specified template and data",
+                "description": "Change password for authenticated user",
                 "consumes": [
                     "application/json"
                 ],
@@ -39,43 +39,52 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "pdf"
+                    "authentication"
                 ],
-                "summary": "Generate PDF from template",
+                "summary": "Change password",
+                "operationId": "changePassword",
                 "parameters": [
                     {
-                        "description": "PDF generation request",
+                        "description": "Password change request",
                         "name": "request",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/github_com_ae-base-server_modules_pdf_handlers.PDFGenerateRequest"
+                            "type": "object",
+                            "properties": {
+                                "current_password": {
+                                    "type": "string"
+                                },
+                                "new_password": {
+                                    "type": "string"
+                                }
+                            }
                         }
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "PDF generated successfully",
+                        "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/github_com_ae-base-server_modules_pdf_handlers.PDFGenerateResponse"
+                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.APIResponse"
                         }
                     },
                     "400": {
-                        "description": "Invalid request",
+                        "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/github_com_ae-base-server_modules_pdf_handlers.ErrorResponse"
+                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
                         }
                     },
-                    "500": {
-                        "description": "Failed to generate PDF",
+                    "401": {
+                        "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/github_com_ae-base-server_modules_pdf_handlers.ErrorResponse"
+                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
                         }
                     }
                 }
             }
         },
-        "/auth/forgot-password": {
+        "/api/v1/auth/forgot-password": {
             "post": {
                 "description": "Send password reset email to user",
                 "consumes": [
@@ -88,14 +97,20 @@ const docTemplate = `{
                     "authentication"
                 ],
                 "summary": "Request password reset",
+                "operationId": "forgotPassword",
                 "parameters": [
                     {
-                        "description": "Password reset request",
+                        "description": "User email",
                         "name": "request",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/models.ForgotPasswordRequest"
+                            "type": "object",
+                            "properties": {
+                                "email": {
+                                    "type": "string"
+                                }
+                            }
                         }
                     }
                 ],
@@ -103,19 +118,19 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/github_com_ae-base-server_modules_base_models.APIResponse"
+                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.APIResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/github_com_ae-base-server_modules_base_models.ErrorResponse"
+                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
                         }
                     }
                 }
             }
         },
-        "/auth/login": {
+        "/api/v1/auth/login": {
             "post": {
                 "description": "Authenticate user with username/email and password",
                 "consumes": [
@@ -128,6 +143,7 @@ const docTemplate = `{
                     "authentication"
                 ],
                 "summary": "User login",
+                "operationId": "login",
                 "parameters": [
                     {
                         "description": "Login credentials",
@@ -135,7 +151,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/github_com_ae-base-server_modules_base_models.LoginRequest"
+                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.LoginRequest"
                         }
                     }
                 ],
@@ -145,13 +161,13 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/github_com_ae-base-server_modules_base_models.APIResponse"
+                                    "$ref": "#/definitions/github_com_ae-base-server_internal_models.APIResponse"
                                 },
                                 {
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/github_com_ae-base-server_modules_base_models.LoginResponse"
+                                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.LoginResponse"
                                         }
                                     }
                                 }
@@ -161,19 +177,19 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/github_com_ae-base-server_modules_base_models.ErrorResponse"
+                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/github_com_ae-base-server_modules_base_models.ErrorResponse"
+                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
                         }
                     }
                 }
             }
         },
-        "/auth/logout": {
+        "/api/v1/auth/logout": {
             "post": {
                 "security": [
                     {
@@ -191,29 +207,130 @@ const docTemplate = `{
                     "authentication"
                 ],
                 "summary": "User logout",
+                "operationId": "logout",
                 "responses": {
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/github_com_ae-base-server_modules_base_models.APIResponse"
+                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.APIResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/github_com_ae-base-server_modules_base_models.ErrorResponse"
+                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/github_com_ae-base-server_modules_base_models.ErrorResponse"
+                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
                         }
                     }
                 }
             }
         },
-        "/auth/refresh": {
+        "/api/v1/auth/me": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Get current authenticated user information",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "authentication"
+                ],
+                "summary": "Get current user",
+                "operationId": "getCurrentUser",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/github_com_ae-base-server_internal_models.APIResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.UserResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/auth/new-password/{token}": {
+            "post": {
+                "description": "Reset user password with reset token",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "authentication"
+                ],
+                "summary": "Reset password",
+                "operationId": "resetPassword",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Reset token",
+                        "name": "token",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "New password",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "new_password": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.APIResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/auth/refresh": {
             "post": {
                 "security": [
                     {
@@ -231,19 +348,20 @@ const docTemplate = `{
                     "authentication"
                 ],
                 "summary": "Refresh access token",
+                "operationId": "refreshToken",
                 "responses": {
                     "200": {
                         "description": "OK",
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/github_com_ae-base-server_modules_base_models.APIResponse"
+                                    "$ref": "#/definitions/github_com_ae-base-server_internal_models.APIResponse"
                                 },
                                 {
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/github_com_ae-base-server_modules_base_models.LoginResponse"
+                                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.LoginResponse"
                                         }
                                     }
                                 }
@@ -253,19 +371,19 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/github_com_ae-base-server_modules_base_models.ErrorResponse"
+                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/github_com_ae-base-server_modules_base_models.ErrorResponse"
+                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
                         }
                     }
                 }
             }
         },
-        "/auth/register": {
+        "/api/v1/auth/register": {
             "post": {
                 "description": "Register a new user account",
                 "consumes": [
@@ -278,6 +396,7 @@ const docTemplate = `{
                     "authentication"
                 ],
                 "summary": "User registration",
+                "operationId": "register",
                 "parameters": [
                     {
                         "description": "User registration data",
@@ -285,7 +404,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/github_com_ae-base-server_modules_base_models.UserCreateRequest"
+                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.UserCreateRequest"
                         }
                     }
                 ],
@@ -295,13 +414,13 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/github_com_ae-base-server_modules_base_models.APIResponse"
+                                    "$ref": "#/definitions/github_com_ae-base-server_internal_models.APIResponse"
                                 },
                                 {
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/github_com_ae-base-server_modules_base_models.LoginResponse"
+                                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.LoginResponse"
                                         }
                                     }
                                 }
@@ -311,59 +430,19 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/github_com_ae-base-server_modules_base_models.ErrorResponse"
+                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
                         }
                     },
                     "409": {
                         "description": "Conflict",
                         "schema": {
-                            "$ref": "#/definitions/github_com_ae-base-server_modules_base_models.ErrorResponse"
+                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
                         }
                     }
                 }
             }
         },
-        "/auth/reset-password": {
-            "post": {
-                "description": "Reset user password with reset token",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "authentication"
-                ],
-                "summary": "Reset password",
-                "parameters": [
-                    {
-                        "description": "Password reset data",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/models.ResetPasswordRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_ae-base-server_modules_base_models.APIResponse"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_ae-base-server_modules_base_models.ErrorResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/auth/verify-email": {
+        "/api/v1/auth/verify-email/{token}": {
             "get": {
                 "description": "Verify user email address with verification token",
                 "consumes": [
@@ -376,12 +455,13 @@ const docTemplate = `{
                     "authentication"
                 ],
                 "summary": "Verify email address",
+                "operationId": "verifyEmail",
                 "parameters": [
                     {
                         "type": "string",
                         "description": "Verification token",
                         "name": "token",
-                        "in": "query",
+                        "in": "path",
                         "required": true
                     }
                 ],
@@ -389,72 +469,26 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/github_com_ae-base-server_modules_base_models.APIResponse"
+                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.APIResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/github_com_ae-base-server_modules_base_models.ErrorResponse"
+                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
                         }
                     }
                 }
             }
         },
-        "/contact/form": {
-            "post": {
-                "description": "Submit a contact form and optionally subscribe to newsletter",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "contact-form"
-                ],
-                "summary": "Submit contact form",
-                "parameters": [
-                    {
-                        "description": "Contact form data",
-                        "name": "contactForm",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/github_com_ae-base-server_modules_base_models.ContactFormRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_ae-base-server_modules_base_models.ContactFormResponse"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_ae-base-server_modules_base_models.ErrorResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_ae-base-server_modules_base_models.ErrorResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/contact/newsletter": {
+        "/api/v1/contacts": {
             "get": {
                 "security": [
                     {
                         "BearerAuth": []
                     }
                 ],
-                "description": "Get all newsletter subscriptions for admin users",
+                "description": "Get paginated list of contacts with optional filters",
                 "consumes": [
                     "application/json"
                 ],
@@ -462,36 +496,221 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "newsletter"
+                    "contacts"
+                ],
+                "summary": "Get all contacts",
+                "operationId": "getContacts",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "default": 1,
+                        "description": "Page number",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 20,
+                        "description": "Items per page",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "Filter by active status",
+                        "name": "active",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by contact type (business, personal, etc)",
+                        "name": "type",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/github_com_ae-base-server_internal_models.APIResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ListResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Create a new contact for the authenticated user",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "contacts"
+                ],
+                "summary": "Create new contact",
+                "operationId": "createContact",
+                "parameters": [
+                    {
+                        "description": "Contact data",
+                        "name": "contact",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.ContactCreateRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/github_com_ae-base-server_internal_models.APIResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/models.ContactResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/contacts/form": {
+            "post": {
+                "description": "Public endpoint to submit a contact form (no authentication required)",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "contacts"
+                ],
+                "summary": "Submit contact form",
+                "operationId": "submitContactForm",
+                "parameters": [
+                    {
+                        "description": "Contact form data",
+                        "name": "form",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ContactFormRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.APIResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/contacts/newsletter": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Get all newsletter subscriptions",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "contacts"
                 ],
                 "summary": "Get newsletter subscriptions",
+                "operationId": "getNewsletterSubscriptions",
                 "responses": {
                     "200": {
                         "description": "OK",
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/github_com_ae-base-server_modules_base_models.Newsletter"
+                                "$ref": "#/definitions/github_com_ae-base-server_internal_models.Newsletter"
                             }
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/github_com_ae-base-server_modules_base_models.ErrorResponse"
+                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
                         }
                     }
                 }
             }
         },
-        "/contact/newsletter/unsubscribe": {
+        "/api/v1/contacts/newsletter/{email}": {
             "delete": {
                 "security": [
                     {
                         "BearerAuth": []
                     }
                 ],
-                "description": "Unsubscribe an email from the newsletter",
+                "description": "Unsubscribe an email address from the newsletter",
                 "consumes": [
                     "application/json"
                 ],
@@ -499,15 +718,16 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "newsletter"
+                    "contacts"
                 ],
                 "summary": "Unsubscribe from newsletter",
+                "operationId": "unsubscribeFromNewsletter",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "Email to unsubscribe",
+                        "description": "Email address to unsubscribe",
                         "name": "email",
-                        "in": "query",
+                        "in": "path",
                         "required": true
                     }
                 ],
@@ -515,28 +735,228 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
+                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.APIResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/github_com_ae-base-server_modules_base_models.ErrorResponse"
+                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/github_com_ae-base-server_modules_base_models.ErrorResponse"
+                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
                         }
                     }
                 }
             }
         },
-        "/customers": {
+        "/api/v1/contacts/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Get a specific contact by ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "contacts"
+                ],
+                "summary": "Get contact by ID",
+                "operationId": "getContactById",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Contact ID (UUID)",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/github_com_ae-base-server_internal_models.APIResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/models.Contact"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Update an existing contact by ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "contacts"
+                ],
+                "summary": "Update contact",
+                "operationId": "updateContact",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Contact ID (UUID)",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Updated contact data",
+                        "name": "contact",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.ContactUpdateRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/github_com_ae-base-server_internal_models.APIResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/models.ContactResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Soft delete a contact by ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "contacts"
+                ],
+                "summary": "Delete contact",
+                "operationId": "deleteContact",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Contact ID (UUID)",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.APIResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/customers": {
             "get": {
                 "security": [
                     {
@@ -551,6 +971,7 @@ const docTemplate = `{
                     "customers"
                 ],
                 "summary": "Get all customers",
+                "operationId": "getCustomers",
                 "parameters": [
                     {
                         "type": "integer",
@@ -573,13 +994,13 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/github_com_ae-base-server_modules_base_models.APIResponse"
+                                    "$ref": "#/definitions/github_com_ae-base-server_internal_models.APIResponse"
                                 },
                                 {
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/github_com_ae-base-server_modules_base_models.ListResponse"
+                                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ListResponse"
                                         }
                                     }
                                 }
@@ -589,7 +1010,7 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/github_com_ae-base-server_modules_base_models.ErrorResponse"
+                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
                         }
                     }
                 }
@@ -611,6 +1032,7 @@ const docTemplate = `{
                     "customers"
                 ],
                 "summary": "Create a new customer",
+                "operationId": "createCustomer",
                 "parameters": [
                     {
                         "description": "Customer data",
@@ -628,13 +1050,13 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/github_com_ae-base-server_modules_base_models.APIResponse"
+                                    "$ref": "#/definitions/github_com_ae-base-server_internal_models.APIResponse"
                                 },
                                 {
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/github_com_ae-base-server_modules_base_models.CustomerResponse"
+                                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.CustomerResponse"
                                         }
                                     }
                                 }
@@ -644,13 +1066,13 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/github_com_ae-base-server_modules_base_models.ErrorResponse"
+                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
                         }
                     }
                 }
             }
         },
-        "/customers/{id}": {
+        "/api/v1/customers/{id}": {
             "get": {
                 "security": [
                     {
@@ -665,6 +1087,7 @@ const docTemplate = `{
                     "customers"
                 ],
                 "summary": "Get customer by ID",
+                "operationId": "getCustomerById",
                 "parameters": [
                     {
                         "type": "integer",
@@ -680,13 +1103,13 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/github_com_ae-base-server_modules_base_models.APIResponse"
+                                    "$ref": "#/definitions/github_com_ae-base-server_internal_models.APIResponse"
                                 },
                                 {
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/github_com_ae-base-server_modules_base_models.CustomerResponse"
+                                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.CustomerResponse"
                                         }
                                     }
                                 }
@@ -696,13 +1119,13 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/github_com_ae-base-server_modules_base_models.ErrorResponse"
+                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/github_com_ae-base-server_modules_base_models.ErrorResponse"
+                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
                         }
                     }
                 }
@@ -724,6 +1147,7 @@ const docTemplate = `{
                     "customers"
                 ],
                 "summary": "Update a customer",
+                "operationId": "updateCustomer",
                 "parameters": [
                     {
                         "type": "integer",
@@ -748,13 +1172,13 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/github_com_ae-base-server_modules_base_models.APIResponse"
+                                    "$ref": "#/definitions/github_com_ae-base-server_internal_models.APIResponse"
                                 },
                                 {
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/github_com_ae-base-server_modules_base_models.CustomerResponse"
+                                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.CustomerResponse"
                                         }
                                     }
                                 }
@@ -764,13 +1188,13 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/github_com_ae-base-server_modules_base_models.ErrorResponse"
+                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/github_com_ae-base-server_modules_base_models.ErrorResponse"
+                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
                         }
                     }
                 }
@@ -789,6 +1213,7 @@ const docTemplate = `{
                     "customers"
                 ],
                 "summary": "Delete a customer",
+                "operationId": "deleteCustomer",
                 "parameters": [
                     {
                         "type": "integer",
@@ -802,25 +1227,25 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/github_com_ae-base-server_modules_base_models.APIResponse"
+                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.APIResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/github_com_ae-base-server_modules_base_models.ErrorResponse"
+                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/github_com_ae-base-server_modules_base_models.ErrorResponse"
+                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
                         }
                     }
                 }
             }
         },
-        "/emails": {
+        "/api/v1/emails": {
             "get": {
                 "security": [
                     {
@@ -835,6 +1260,7 @@ const docTemplate = `{
                     "emails"
                 ],
                 "summary": "Get all emails",
+                "operationId": "getEmails",
                 "parameters": [
                     {
                         "type": "integer",
@@ -885,7 +1311,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/emails/send": {
+        "/api/v1/emails/send": {
             "post": {
                 "security": [
                     {
@@ -903,6 +1329,7 @@ const docTemplate = `{
                     "emails"
                 ],
                 "summary": "Send an email",
+                "operationId": "sendEmail",
                 "parameters": [
                     {
                         "description": "Email send data",
@@ -942,7 +1369,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/emails/stats": {
+        "/api/v1/emails/stats": {
             "get": {
                 "security": [
                     {
@@ -957,6 +1384,7 @@ const docTemplate = `{
                     "emails"
                 ],
                 "summary": "Get email statistics",
+                "operationId": "getEmailStats",
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -985,7 +1413,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/emails/{id}": {
+        "/api/v1/emails/{id}": {
             "get": {
                 "security": [
                     {
@@ -1000,6 +1428,7 @@ const docTemplate = `{
                     "emails"
                 ],
                 "summary": "Get email by ID",
+                "operationId": "getEmailById",
                 "parameters": [
                     {
                         "type": "integer",
@@ -1043,7 +1472,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/health": {
+        "/api/v1/health": {
             "get": {
                 "description": "Check the health status of the API and database",
                 "produces": [
@@ -1053,6 +1482,7 @@ const docTemplate = `{
                     "health"
                 ],
                 "summary": "Health check",
+                "operationId": "healthCheck",
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -1069,7 +1499,59 @@ const docTemplate = `{
                 }
             }
         },
-        "/ping": {
+        "/api/v1/pdf/create": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Generate a PDF document based on a specified template and data",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "pdf"
+                ],
+                "summary": "Generate PDF from template",
+                "operationId": "createPdf",
+                "parameters": [
+                    {
+                        "description": "PDF generation request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/github_com_ae-base-server_modules_pdf_handlers.PDFGenerateRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "PDF generated successfully",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_ae-base-server_modules_pdf_handlers.PDFGenerateResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_ae-base-server_modules_pdf_handlers.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to generate PDF",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_ae-base-server_modules_pdf_handlers.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/ping": {
             "get": {
                 "description": "Simple ping endpoint",
                 "produces": [
@@ -1079,6 +1561,7 @@ const docTemplate = `{
                     "health"
                 ],
                 "summary": "Ping check",
+                "operationId": "ping",
                 "responses": {
                     "200": {
                         "description": "pong",
@@ -1089,7 +1572,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/plans": {
+        "/api/v1/plans": {
             "get": {
                 "description": "Get a list of all available subscription plans",
                 "produces": [
@@ -1099,20 +1582,21 @@ const docTemplate = `{
                     "plans"
                 ],
                 "summary": "Get all plans",
+                "operationId": "getPlans",
                 "responses": {
                     "200": {
                         "description": "OK",
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/github_com_ae-base-server_modules_base_models.Plan"
+                                "$ref": "#/definitions/github_com_ae-base-server_internal_models.Plan"
                             }
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/github_com_ae-base-server_modules_base_models.ErrorResponse"
+                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
                         }
                     }
                 }
@@ -1134,6 +1618,7 @@ const docTemplate = `{
                     "plans"
                 ],
                 "summary": "Create a new plan",
+                "operationId": "createPlan",
                 "parameters": [
                     {
                         "description": "Plan data",
@@ -1151,13 +1636,13 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/github_com_ae-base-server_modules_base_models.APIResponse"
+                                    "$ref": "#/definitions/github_com_ae-base-server_internal_models.APIResponse"
                                 },
                                 {
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/github_com_ae-base-server_modules_base_models.Plan"
+                                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.Plan"
                                         }
                                     }
                                 }
@@ -1167,13 +1652,13 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/github_com_ae-base-server_modules_base_models.ErrorResponse"
+                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
                         }
                     }
                 }
             }
         },
-        "/plans/{id}": {
+        "/api/v1/plans/{id}": {
             "get": {
                 "description": "Get a specific subscription plan by its ID",
                 "produces": [
@@ -1183,6 +1668,7 @@ const docTemplate = `{
                     "plans"
                 ],
                 "summary": "Get plan by ID",
+                "operationId": "getPlanById",
                 "parameters": [
                     {
                         "type": "integer",
@@ -1198,13 +1684,13 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/github_com_ae-base-server_modules_base_models.APIResponse"
+                                    "$ref": "#/definitions/github_com_ae-base-server_internal_models.APIResponse"
                                 },
                                 {
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/github_com_ae-base-server_modules_base_models.Plan"
+                                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.Plan"
                                         }
                                     }
                                 }
@@ -1214,13 +1700,13 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/github_com_ae-base-server_modules_base_models.ErrorResponse"
+                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/github_com_ae-base-server_modules_base_models.ErrorResponse"
+                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
                         }
                     }
                 }
@@ -1242,6 +1728,7 @@ const docTemplate = `{
                     "plans"
                 ],
                 "summary": "Update a plan",
+                "operationId": "updatePlan",
                 "parameters": [
                     {
                         "type": "integer",
@@ -1266,13 +1753,13 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/github_com_ae-base-server_modules_base_models.APIResponse"
+                                    "$ref": "#/definitions/github_com_ae-base-server_internal_models.APIResponse"
                                 },
                                 {
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/github_com_ae-base-server_modules_base_models.Plan"
+                                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.Plan"
                                         }
                                     }
                                 }
@@ -1282,13 +1769,13 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/github_com_ae-base-server_modules_base_models.ErrorResponse"
+                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/github_com_ae-base-server_modules_base_models.ErrorResponse"
+                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
                         }
                     }
                 }
@@ -1307,6 +1794,7 @@ const docTemplate = `{
                     "plans"
                 ],
                 "summary": "Delete a plan",
+                "operationId": "deletePlan",
                 "parameters": [
                     {
                         "type": "integer",
@@ -1320,19 +1808,307 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/github_com_ae-base-server_modules_base_models.APIResponse"
+                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.APIResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/github_com_ae-base-server_modules_base_models.ErrorResponse"
+                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/github_com_ae-base-server_modules_base_models.ErrorResponse"
+                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/static": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Get a list of all JSON files available in the statics/json directory",
+                "tags": [
+                    "static"
+                ],
+                "summary": "List available static JSON files",
+                "operationId": "listStaticFiles",
+                "responses": {
+                    "200": {
+                        "description": "List of available JSON files",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to read directory",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/static/{filename}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Securely serve JSON data files from statics/json directory only. Prevents access to other directories or file types.",
+                "tags": [
+                    "static"
+                ],
+                "summary": "Serve static JSON files (JSON only, security restricted)",
+                "operationId": "getStaticFile",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "example": "\"bundeslaender\"",
+                        "description": "JSON filename (without .json extension)",
+                        "name": "filename",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "JSON file content",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid file name",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "404": {
+                        "description": "File not found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to read file",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/user-settings": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Get settings for the authenticated user (creates default if not found)",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "user-settings"
+                ],
+                "summary": "Get user settings",
+                "operationId": "getUserSettings",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/github_com_ae-base-server_internal_models.APIResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/models.UserSettings"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Update settings for the authenticated user",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "user-settings"
+                ],
+                "summary": "Update user settings",
+                "operationId": "updateUserSettings",
+                "parameters": [
+                    {
+                        "description": "Updated settings",
+                        "name": "settings",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.UserSettingsUpdateRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/github_com_ae-base-server_internal_models.APIResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/models.UserSettings"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/user-settings/reset": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Reset user settings to default values",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "user-settings"
+                ],
+                "summary": "Reset user settings",
+                "operationId": "resetUserSettings",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/github_com_ae-base-server_internal_models.APIResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/models.UserSettings"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
                         }
                     }
                 }
@@ -1352,6 +2128,106 @@ const docTemplate = `{
                 },
                 "success": {
                     "type": "boolean"
+                }
+            }
+        },
+        "github_com_ae-base-server_internal_models.ContactFormRequest": {
+            "description": "Contact form submission request",
+            "type": "object",
+            "required": [
+                "email",
+                "message",
+                "name",
+                "source",
+                "subject"
+            ],
+            "properties": {
+                "email": {
+                    "type": "string",
+                    "example": "john.doe@example.com"
+                },
+                "message": {
+                    "type": "string",
+                    "example": "I am interested in learning more about your therapy services."
+                },
+                "name": {
+                    "type": "string",
+                    "example": "John Doe"
+                },
+                "newsletter": {
+                    "type": "boolean",
+                    "example": true
+                },
+                "source": {
+                    "type": "string",
+                    "example": "website"
+                },
+                "subject": {
+                    "type": "string",
+                    "example": "Inquiry about therapy services"
+                },
+                "timestamp": {
+                    "type": "string",
+                    "example": "2025-08-03T10:00:00Z"
+                }
+            }
+        },
+        "github_com_ae-base-server_internal_models.CustomerResponse": {
+            "type": "object",
+            "properties": {
+                "active": {
+                    "type": "boolean"
+                },
+                "city": {
+                    "type": "string"
+                },
+                "country": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "payment_method": {
+                    "type": "string"
+                },
+                "phone": {
+                    "type": "string"
+                },
+                "plan": {
+                    "$ref": "#/definitions/models.PlanResponse"
+                },
+                "plan_id": {
+                    "type": "integer"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "street": {
+                    "type": "string"
+                },
+                "tax_id": {
+                    "type": "string"
+                },
+                "tenant": {
+                    "$ref": "#/definitions/github_com_ae-base-server_internal_models.TenantResponse"
+                },
+                "tenant_id": {
+                    "type": "integer"
+                },
+                "vat": {
+                    "type": "string"
+                },
+                "zip": {
+                    "type": "string"
                 }
             }
         },
@@ -1436,6 +2312,69 @@ const docTemplate = `{
                 }
             }
         },
+        "github_com_ae-base-server_internal_models.LoginRequest": {
+            "type": "object",
+            "required": [
+                "password",
+                "username"
+            ],
+            "properties": {
+                "password": {
+                    "type": "string"
+                },
+                "username": {
+                    "type": "string"
+                }
+            }
+        },
+        "github_com_ae-base-server_internal_models.LoginResponse": {
+            "type": "object",
+            "properties": {
+                "token": {
+                    "type": "string"
+                },
+                "user": {
+                    "$ref": "#/definitions/github_com_ae-base-server_internal_models.UserResponse"
+                }
+            }
+        },
+        "github_com_ae-base-server_internal_models.Newsletter": {
+            "type": "object",
+            "properties": {
+                "createdAt": {
+                    "type": "string",
+                    "example": "2025-08-03T10:00:00Z"
+                },
+                "email": {
+                    "type": "string",
+                    "example": "john.doe@example.com"
+                },
+                "id": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "interest": {
+                    "type": "string",
+                    "example": "mental_health"
+                },
+                "lastContact": {
+                    "type": "string",
+                    "example": "2025-08-03T10:00:00Z"
+                },
+                "name": {
+                    "type": "string",
+                    "example": "John Doe"
+                },
+                "source": {
+                    "type": "string",
+                    "example": "website"
+                },
+                "updatedAt": {
+                    "type": "string",
+                    "example": "2025-08-03T10:00:00Z"
+                }
+            }
+        },
         "github_com_ae-base-server_internal_models.PaginationResponse": {
             "type": "object",
             "properties": {
@@ -1453,91 +2392,155 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_ae-base-server_modules_base_models.APIResponse": {
+        "github_com_ae-base-server_internal_models.Plan": {
             "type": "object",
+            "required": [
+                "name",
+                "price",
+                "slug"
+            ],
             "properties": {
-                "data": {},
-                "error": {
-                    "type": "string"
-                },
-                "message": {
-                    "type": "string"
-                },
-                "success": {
+                "active": {
                     "type": "boolean"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "currency": {
+                    "type": "string"
+                },
+                "deleted_at": {
+                    "$ref": "#/definitions/gorm.DeletedAt"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "features": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "invoice_period": {
+                    "type": "string"
+                },
+                "max_clients": {
+                    "type": "integer"
+                },
+                "max_users": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "price": {
+                    "type": "number"
+                },
+                "slug": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
                 }
             }
         },
-        "github_com_ae-base-server_modules_base_models.ContactFormRequest": {
+        "github_com_ae-base-server_internal_models.TenantResponse": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "slug": {
+                    "type": "string"
+                }
+            }
+        },
+        "github_com_ae-base-server_internal_models.UserCreateRequest": {
             "type": "object",
             "required": [
                 "email",
-                "message",
-                "name",
-                "subject"
+                "first_name",
+                "last_name",
+                "password",
+                "username"
             ],
             "properties": {
-                "email": {
-                    "type": "string",
-                    "example": "john@example.com"
+                "accept_terms": {
+                    "description": "Terms and conditions acceptance",
+                    "type": "boolean"
                 },
-                "message": {
-                    "type": "string",
-                    "example": "I would like to know more about your services."
-                },
-                "name": {
-                    "type": "string",
-                    "example": "John Doe"
-                },
-                "subject": {
-                    "type": "string",
-                    "example": "Inquiry about services"
-                }
-            }
-        },
-        "github_com_ae-base-server_modules_base_models.ContactFormResponse": {
-            "type": "object",
-            "properties": {
-                "id": {
-                    "type": "integer",
-                    "example": 1
-                },
-                "message": {
-                    "type": "string",
-                    "example": "Thank you for your message! We will get back to you soon."
-                }
-            }
-        },
-        "github_com_ae-base-server_modules_base_models.CustomerResponse": {
-            "type": "object",
-            "properties": {
                 "company_name": {
-                    "type": "string",
-                    "example": "Acme Corp"
+                    "description": "Required unless user-signup token is present",
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "first_name": {
+                    "type": "string"
+                },
+                "last_name": {
+                    "type": "string"
+                },
+                "newsletter_opt_in": {
+                    "description": "Newsletter subscription",
+                    "type": "boolean"
+                },
+                "password": {
+                    "type": "string"
+                },
+                "role": {
+                    "type": "string"
+                },
+                "username": {
+                    "type": "string"
+                }
+            }
+        },
+        "github_com_ae-base-server_internal_models.UserResponse": {
+            "type": "object",
+            "properties": {
+                "active": {
+                    "type": "boolean"
                 },
                 "created_at": {
-                    "type": "string",
-                    "example": "2023-01-01T00:00:00Z"
+                    "type": "string"
                 },
                 "email": {
-                    "type": "string",
-                    "example": "john@example.com"
+                    "type": "string"
+                },
+                "email_verified": {
+                    "type": "boolean"
+                },
+                "email_verified_at": {
+                    "type": "string"
+                },
+                "first_name": {
+                    "type": "string"
                 },
                 "id": {
-                    "type": "integer",
-                    "example": 1
+                    "type": "integer"
                 },
-                "name": {
-                    "type": "string",
-                    "example": "John Doe"
+                "last_name": {
+                    "type": "string"
                 },
-                "phone": {
-                    "type": "string",
-                    "example": "+1-555-123-4567"
+                "role": {
+                    "type": "string"
                 },
-                "updated_at": {
-                    "type": "string",
-                    "example": "2023-01-01T00:00:00Z"
+                "tenant": {
+                    "$ref": "#/definitions/github_com_ae-base-server_internal_models.TenantResponse"
+                },
+                "tenant_id": {
+                    "type": "integer"
+                },
+                "username": {
+                    "type": "string"
                 }
             }
         },
@@ -1573,218 +2576,6 @@ const docTemplate = `{
                 },
                 "version": {
                     "type": "string"
-                }
-            }
-        },
-        "github_com_ae-base-server_modules_base_models.ListResponse": {
-            "type": "object",
-            "properties": {
-                "data": {},
-                "pagination": {
-                    "$ref": "#/definitions/github_com_ae-base-server_modules_base_models.PaginationResponse"
-                }
-            }
-        },
-        "github_com_ae-base-server_modules_base_models.LoginRequest": {
-            "type": "object",
-            "required": [
-                "email",
-                "password"
-            ],
-            "properties": {
-                "email": {
-                    "type": "string",
-                    "example": "user@example.com"
-                },
-                "password": {
-                    "type": "string",
-                    "minLength": 8,
-                    "example": "password123"
-                }
-            }
-        },
-        "github_com_ae-base-server_modules_base_models.LoginResponse": {
-            "type": "object",
-            "properties": {
-                "refresh_token": {
-                    "type": "string",
-                    "example": "refresh-token-123"
-                },
-                "token": {
-                    "type": "string",
-                    "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
-                },
-                "user": {
-                    "$ref": "#/definitions/github_com_ae-base-server_modules_base_models.UserResponse"
-                }
-            }
-        },
-        "github_com_ae-base-server_modules_base_models.Newsletter": {
-            "type": "object",
-            "properties": {
-                "created_at": {
-                    "type": "string",
-                    "example": "2023-01-01T00:00:00Z"
-                },
-                "email": {
-                    "type": "string",
-                    "example": "user@example.com"
-                },
-                "id": {
-                    "type": "integer",
-                    "example": 1
-                },
-                "is_active": {
-                    "type": "boolean",
-                    "example": true
-                }
-            }
-        },
-        "github_com_ae-base-server_modules_base_models.PaginationResponse": {
-            "type": "object",
-            "properties": {
-                "limit": {
-                    "type": "integer",
-                    "example": 10
-                },
-                "page": {
-                    "type": "integer",
-                    "example": 1
-                },
-                "total": {
-                    "type": "integer",
-                    "example": 100
-                },
-                "total_pages": {
-                    "type": "integer",
-                    "example": 10
-                }
-            }
-        },
-        "github_com_ae-base-server_modules_base_models.Plan": {
-            "type": "object",
-            "properties": {
-                "created_at": {
-                    "type": "string",
-                    "example": "2023-01-01T00:00:00Z"
-                },
-                "currency": {
-                    "type": "string",
-                    "example": "USD"
-                },
-                "description": {
-                    "type": "string",
-                    "example": "Basic subscription plan"
-                },
-                "id": {
-                    "type": "integer",
-                    "example": 1
-                },
-                "is_active": {
-                    "type": "boolean",
-                    "example": true
-                },
-                "name": {
-                    "type": "string",
-                    "example": "Basic Plan"
-                },
-                "price": {
-                    "type": "number",
-                    "example": 29.99
-                },
-                "updated_at": {
-                    "type": "string",
-                    "example": "2023-01-01T00:00:00Z"
-                }
-            }
-        },
-        "github_com_ae-base-server_modules_base_models.TenantResponse": {
-            "type": "object",
-            "properties": {
-                "display_name": {
-                    "type": "string",
-                    "example": "Acme Corp"
-                },
-                "id": {
-                    "type": "integer",
-                    "example": 1
-                },
-                "is_active": {
-                    "type": "boolean",
-                    "example": true
-                },
-                "name": {
-                    "type": "string",
-                    "example": "acme"
-                }
-            }
-        },
-        "github_com_ae-base-server_modules_base_models.UserCreateRequest": {
-            "type": "object",
-            "required": [
-                "email",
-                "first_name",
-                "last_name",
-                "password",
-                "tenant_name"
-            ],
-            "properties": {
-                "company_name": {
-                    "type": "string",
-                    "example": "Acme Corp"
-                },
-                "email": {
-                    "type": "string",
-                    "example": "user@example.com"
-                },
-                "first_name": {
-                    "type": "string",
-                    "example": "John"
-                },
-                "last_name": {
-                    "type": "string",
-                    "example": "Doe"
-                },
-                "password": {
-                    "type": "string",
-                    "minLength": 8,
-                    "example": "password123"
-                },
-                "tenant_name": {
-                    "type": "string",
-                    "example": "acme"
-                }
-            }
-        },
-        "github_com_ae-base-server_modules_base_models.UserResponse": {
-            "type": "object",
-            "properties": {
-                "company_name": {
-                    "type": "string",
-                    "example": "Acme Corp"
-                },
-                "email": {
-                    "type": "string",
-                    "example": "user@example.com"
-                },
-                "first_name": {
-                    "type": "string",
-                    "example": "John"
-                },
-                "id": {
-                    "type": "integer",
-                    "example": 1
-                },
-                "is_active": {
-                    "type": "boolean",
-                    "example": true
-                },
-                "last_name": {
-                    "type": "string",
-                    "example": "Doe"
-                },
-                "tenant": {
-                    "$ref": "#/definitions/github_com_ae-base-server_modules_base_models.TenantResponse"
                 }
             }
         },
@@ -1835,6 +2626,205 @@ const docTemplate = `{
                 }
             }
         },
+        "gorm.DeletedAt": {
+            "type": "object",
+            "properties": {
+                "time": {
+                    "type": "string"
+                },
+                "valid": {
+                    "description": "Valid is true if Time is not NULL",
+                    "type": "boolean"
+                }
+            }
+        },
+        "models.Contact": {
+            "type": "object",
+            "required": [
+                "first_name",
+                "last_name"
+            ],
+            "properties": {
+                "active": {
+                    "type": "boolean"
+                },
+                "city": {
+                    "type": "string"
+                },
+                "country": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "deleted_at": {
+                    "$ref": "#/definitions/gorm.DeletedAt"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "first_name": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "last_name": {
+                    "type": "string"
+                },
+                "mobile": {
+                    "type": "string"
+                },
+                "notes": {
+                    "type": "string"
+                },
+                "phone": {
+                    "type": "string"
+                },
+                "street": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                },
+                "zip": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.ContactCreateRequest": {
+            "type": "object",
+            "required": [
+                "first_name",
+                "last_name"
+            ],
+            "properties": {
+                "city": {
+                    "type": "string"
+                },
+                "country": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "first_name": {
+                    "type": "string"
+                },
+                "last_name": {
+                    "type": "string"
+                },
+                "mobile": {
+                    "type": "string"
+                },
+                "notes": {
+                    "type": "string"
+                },
+                "phone": {
+                    "type": "string"
+                },
+                "street": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
+                },
+                "zip": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.ContactResponse": {
+            "type": "object",
+            "properties": {
+                "active": {
+                    "type": "boolean"
+                },
+                "city": {
+                    "type": "string"
+                },
+                "country": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "first_name": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "last_name": {
+                    "type": "string"
+                },
+                "mobile": {
+                    "type": "string"
+                },
+                "notes": {
+                    "type": "string"
+                },
+                "phone": {
+                    "type": "string"
+                },
+                "street": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
+                },
+                "zip": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.ContactUpdateRequest": {
+            "type": "object",
+            "properties": {
+                "active": {
+                    "type": "boolean"
+                },
+                "city": {
+                    "type": "string"
+                },
+                "country": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "first_name": {
+                    "type": "string"
+                },
+                "last_name": {
+                    "type": "string"
+                },
+                "mobile": {
+                    "type": "string"
+                },
+                "notes": {
+                    "type": "string"
+                },
+                "phone": {
+                    "type": "string"
+                },
+                "street": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
+                },
+                "zip": {
+                    "type": "string"
+                }
+            }
+        },
         "models.CustomerRequest": {
             "type": "object",
             "required": [
@@ -1857,18 +2847,6 @@ const docTemplate = `{
                 "phone": {
                     "type": "string",
                     "example": "+1-555-123-4567"
-                }
-            }
-        },
-        "models.ForgotPasswordRequest": {
-            "type": "object",
-            "required": [
-                "email"
-            ],
-            "properties": {
-                "email": {
-                    "type": "string",
-                    "example": "user@example.com"
                 }
             }
         },
@@ -1898,21 +2876,97 @@ const docTemplate = `{
                 }
             }
         },
-        "models.ResetPasswordRequest": {
+        "models.PlanResponse": {
+            "type": "object",
+            "properties": {
+                "active": {
+                    "type": "boolean"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "currency": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "features": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "invoice_period": {
+                    "type": "string"
+                },
+                "max_clients": {
+                    "type": "integer"
+                },
+                "max_users": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "price": {
+                    "type": "number"
+                },
+                "slug": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.UserSettings": {
             "type": "object",
             "required": [
-                "password",
-                "token"
+                "user_id"
             ],
             "properties": {
-                "password": {
-                    "type": "string",
-                    "minLength": 8,
-                    "example": "newpassword123"
+                "created_at": {
+                    "type": "string"
                 },
-                "token": {
-                    "type": "string",
-                    "example": "reset-token-123"
+                "deleted_at": {
+                    "$ref": "#/definitions/gorm.DeletedAt"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "language": {
+                    "description": "User      User           ` + "`" + `gorm:\"foreignKey:UserID\" json:\"user,omitempty\"` + "`" + ` // Disabled for migration",
+                    "type": "string"
+                },
+                "settings": {
+                    "type": "string"
+                },
+                "theme": {
+                    "type": "string"
+                },
+                "timezone": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                },
+                "user_id": {
+                    "type": "integer"
+                }
+            }
+        },
+        "models.UserSettingsUpdateRequest": {
+            "type": "object",
+            "properties": {
+                "language": {
+                    "type": "string"
+                },
+                "settings": {
+                    "type": "string"
+                },
+                "theme": {
+                    "type": "string"
+                },
+                "timezone": {
+                    "type": "string"
                 }
             }
         }
@@ -1965,6 +3019,10 @@ const docTemplate = `{
         {
             "description": "[System] Application health checks, system status, and monitoring endpoints",
             "name": "health"
+        },
+        {
+            "description": "[Static Module] Secure JSON file serving from statics directory with enhanced security validation",
+            "name": "static"
         },
         {
             "description": "[System] Module registry, discovery, and runtime information endpoints",

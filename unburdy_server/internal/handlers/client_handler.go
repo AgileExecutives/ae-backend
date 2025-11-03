@@ -54,7 +54,7 @@ func (h *ClientHandler) CreateClient(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusCreated, client.ToResponse())
+	c.JSON(http.StatusCreated, models.SuccessResponse("Client created successfully", client.ToResponse()))
 }
 
 // GetClient godoc
@@ -182,7 +182,7 @@ func (h *ClientHandler) UpdateClient(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, client.ToResponse())
+	c.JSON(http.StatusOK, models.SuccessResponse("Client updated successfully", client.ToResponse()))
 }
 
 // DeleteClient godoc

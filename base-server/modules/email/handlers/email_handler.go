@@ -57,6 +57,7 @@ func (h *EmailHandler) GetSwaggerTags() []string {
 
 // GetEmails retrieves all emails with pagination
 // @Summary Get all emails
+// @ID getEmails
 // @Description Get a paginated list of all emails
 // @Tags emails
 // @Produce json
@@ -66,7 +67,7 @@ func (h *EmailHandler) GetSwaggerTags() []string {
 // @Param status query string false "Filter by email status"
 // @Success 200 {object} models.APIResponse{data=models.ListResponse}
 // @Failure 500 {object} models.ErrorResponse
-// @Router /emails [get]
+// @Router /api/v1/emails [get]
 func (h *EmailHandler) GetEmails(c *gin.Context) {
 	page, limit := utils.GetPaginationParams(c)
 	offset := utils.GetOffset(page, limit)
@@ -114,6 +115,7 @@ func (h *EmailHandler) GetEmails(c *gin.Context) {
 
 // GetEmail retrieves a specific email by ID
 // @Summary Get email by ID
+// @ID getEmailById
 // @Description Get a specific email by its ID
 // @Tags emails
 // @Produce json
@@ -122,7 +124,7 @@ func (h *EmailHandler) GetEmails(c *gin.Context) {
 // @Success 200 {object} models.APIResponse{data=models.EmailResponse}
 // @Failure 400 {object} models.ErrorResponse
 // @Failure 404 {object} models.ErrorResponse
-// @Router /emails/{id} [get]
+// @Router /api/v1/emails/{id} [get]
 func (h *EmailHandler) GetEmail(c *gin.Context) {
 	id, err := utils.ValidateID(c, "id")
 	if err != nil {
@@ -145,6 +147,7 @@ func (h *EmailHandler) GetEmail(c *gin.Context) {
 
 // SendEmail creates and queues an email for sending
 // @Summary Send an email
+// @ID sendEmail
 // @Description Create and queue an email for sending
 // @Tags emails
 // @Accept json
@@ -153,7 +156,7 @@ func (h *EmailHandler) GetEmail(c *gin.Context) {
 // @Param request body models.EmailSendRequest true "Email send data"
 // @Success 201 {object} models.APIResponse{data=models.EmailResponse}
 // @Failure 400 {object} models.ErrorResponse
-// @Router /emails/send [post]
+// @Router /api/v1/emails/send [post]
 func (h *EmailHandler) SendEmail(c *gin.Context) {
 	var req models.EmailSendRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -204,13 +207,14 @@ func (h *EmailHandler) SendEmail(c *gin.Context) {
 
 // GetEmailStats retrieves email statistics
 // @Summary Get email statistics
+// @ID getEmailStats
 // @Description Get email statistics including counts by status
 // @Tags emails
 // @Produce json
 // @Security BearerAuth
 // @Success 200 {object} models.APIResponse{data=object}
 // @Failure 500 {object} models.ErrorResponse
-// @Router /emails/stats [get]
+// @Router /api/v1/emails/stats [get]
 func (h *EmailHandler) GetEmailStats(c *gin.Context) {
 	type EmailStats struct {
 		Total     int64 `json:"total"`

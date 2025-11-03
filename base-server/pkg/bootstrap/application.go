@@ -10,13 +10,18 @@ import (
 	"time"
 
 	internalDB "github.com/ae-base-server/internal/database"
+	internalHandlers "github.com/ae-base-server/internal/handlers"
+	"github.com/ae-base-server/internal/middleware"
+	internalMiddleware "github.com/ae-base-server/internal/middleware"
 	"github.com/ae-base-server/pkg/auth"
 	"github.com/ae-base-server/pkg/config"
 	"github.com/ae-base-server/pkg/core"
 	"github.com/ae-base-server/pkg/database"
+	"github.com/ae-base-server/services"
 	"github.com/gin-gonic/gin"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
+	"gorm.io/gorm"
 )
 
 // Application represents the main application
@@ -180,7 +185,8 @@ func (app *Application) initializeCoreServices() error {
 	// Setup miscellaneous static file routes (favicon, robots.txt, etc.)
 	app.setupStaticMiscRoutes(router)
 
-	// ✅ All routes now handled by modular system - legacy internal routes removed
+	// ✅ Auth routes now handled by modular base module
+	// app.setupInternalAuthRoutes(router, db, *app.config)
 
 	// Event Bus
 	eventBus := core.NewEventBus()
@@ -188,6 +194,7 @@ func (app *Application) initializeCoreServices() error {
 	// Auth Service
 	authService := &authServiceAdapter{
 		jwtSecret: app.config.JWT.Secret,
+		db:        db,
 	}
 
 	// Service Registry
@@ -209,6 +216,102 @@ func (app *Application) initializeCoreServices() error {
 }
 
 // setupInternalAuthRoutes temporarily adds internal auth routes until modular auth is implemented
+func (app *Application) setupInternalAuthRoutes(router *gin.Engine, db *gorm.DB, cfg config.Config) {
+	// Import needed for internal handlers - these imports will need to be added at the top
+	// For now, we'll add the most critical auth routes manually
+
+	// Initialize internal auth handler
+	authHandler := internalHandlers.NewAuthHandler(db)
+
+	// Public routes group
+	public := router.Group("/api/v1")
+
+	// Authentication routes with rate limiting
+	public.POST("/auth/login",
+		internalMiddleware.NewRateLimiter(internalMiddleware.LoginRateLimiter),
+		authHandler.Login,
+	)
+	public.POST("/auth/register",
+		internalMiddleware.NewRateLimiter(internalMiddleware.RegisterRateLimiter),
+		authHandler.Register,
+	)
+	public.POST("/auth/forgot-password",
+		internalMiddleware.NewRateLimiter(internalMiddleware.PasswordResetRateLimiter),
+		authHandler.ForgotPassword,
+	)
+	public.POST("/auth/new-password/:token",
+		internalMiddleware.NewRateLimiter(internalMiddleware.PasswordResetRateLimiter),
+		authHandler.ResetPassword,
+	)
+	public.GET("/auth/verify-email/:token",
+		internalMiddleware.NewRateLimiter(internalMiddleware.EmailVerificationRateLimiter),
+		authHandler.VerifyEmail,
+	)
+
+	// Initialize other internal handlers
+	planHandler := internalHandlers.NewPlanHandler(db)
+	customerHandler := internalHandlers.NewCustomerHandler(db)
+	contactHandler := internalHandlers.NewContactHandler(db)
+	userSettingsHandler := internalHandlers.NewUserSettingsHandler(db)
+
+	// Initialize PDF service and handler
+	pdfService := services.NewPDFGenerator()
+	pdfHandler := internalHandlers.NewPDFHandler(pdfService)
+
+	// Public routes for plans (used by signup pages)
+	public.GET("/plans", planHandler.GetPlans)
+	public.GET("/plans/:id", planHandler.GetPlan)
+
+	// Public contact form
+	public.POST("/contact/form", contactHandler.SubmitContactForm)
+
+	// Protected routes
+	protected := router.Group("/api/v1")
+	protected.Use(internalMiddleware.AuthMiddleware(db))
+
+	// Auth routes for authenticated users
+	auth := protected.Group("/auth")
+	{
+		auth.POST("/logout", authHandler.Logout)
+		auth.POST("/change-password", authHandler.ChangePassword)
+		auth.GET("/me", authHandler.Me)
+	}
+
+	// Customer routes
+	customers := protected.Group("/customers")
+	{
+		customers.GET("", customerHandler.GetCustomers)
+		customers.GET("/:id", customerHandler.GetCustomer)
+		customers.POST("", customerHandler.CreateCustomer)
+		customers.PUT("/:id", customerHandler.UpdateCustomer)
+		customers.DELETE("/:id", customerHandler.DeleteCustomer)
+	}
+
+	// Contact routes
+	contacts := protected.Group("/contacts")
+	{
+		contacts.GET("", contactHandler.GetContacts)
+		contacts.GET("/:id", contactHandler.GetContact)
+		contacts.POST("", contactHandler.CreateContact)
+		contacts.PUT("/:id", contactHandler.UpdateContact)
+		contacts.DELETE("/:id", contactHandler.DeleteContact)
+	}
+
+	// User settings routes
+	userSettings := protected.Group("/user-settings")
+	{
+		userSettings.GET("", userSettingsHandler.GetUserSettings)
+		userSettings.PUT("", userSettingsHandler.UpdateUserSettings)
+		userSettings.POST("/reset", userSettingsHandler.ResetUserSettings)
+	}
+
+	// PDF generation routes
+	pdf := protected.Group("/pdf")
+	{
+		pdf.POST("/create", pdfHandler.GeneratePDFFromTemplate)
+	}
+}
+
 // runMigrations runs database migrations for all registered module entities
 func (app *Application) runMigrations() error {
 	// Collect entities from all registered modules (including base module)
@@ -298,6 +401,7 @@ func (app *Application) setupGracefulShutdown() {
 // authServiceAdapter adapts the existing auth package to the core.AuthService interface
 type authServiceAdapter struct {
 	jwtSecret string
+	db        *gorm.DB
 }
 
 func (a *authServiceAdapter) ValidateToken(token string) (interface{}, error) {
@@ -315,17 +419,9 @@ func (a *authServiceAdapter) GetCurrentUser(c *gin.Context) (interface{}, error)
 }
 
 func (a *authServiceAdapter) RequireAuth() gin.HandlerFunc {
-	// This will need to be implemented - for now return a placeholder
-	return gin.HandlerFunc(func(c *gin.Context) {
-		// TODO: Implement auth middleware
-		c.Next()
-	})
+	return middleware.AuthMiddleware(a.db)
 }
 
 func (a *authServiceAdapter) RequireRole(roles ...string) gin.HandlerFunc {
-	// This will need to be implemented - for now return a placeholder
-	return gin.HandlerFunc(func(c *gin.Context) {
-		// TODO: Implement role-based middleware
-		c.Next()
-	})
+	return middleware.RequireRole(roles...)
 }

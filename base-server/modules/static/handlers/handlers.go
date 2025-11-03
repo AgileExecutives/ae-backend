@@ -24,13 +24,14 @@ func NewStaticHandlers(logger core.Logger) *StaticHandlers {
 
 // ListStaticJSON lists all available JSON files in the statics/json directory
 // @Summary List available static JSON files
+// @ID listStaticFiles
 // @Description Get a list of all JSON files available in the statics/json directory
 // @Tags static
 // @Security BearerAuth
 // @Success 200 {object} map[string]interface{} "List of available JSON files"
 // @Failure 401 {object} map[string]interface{} "Unauthorized"
 // @Failure 500 {object} map[string]string "Failed to read directory"
-// @Router /static [get]
+// @Router /api/v1/static [get]
 func (h *StaticHandlers) ListStaticJSON(c *gin.Context) {
 	// Read the statics/json directory
 	entries, err := os.ReadDir("./statics/json")
@@ -62,6 +63,7 @@ func (h *StaticHandlers) ListStaticJSON(c *gin.Context) {
 // ServeStaticJSON serves ONLY JSON files from the statics/json directory
 // Security: This endpoint is restricted to JSON files in statics/json/ directory only
 // @Summary Serve static JSON files (JSON only, security restricted)
+// @ID getStaticFile
 // @Description Securely serve JSON data files from statics/json directory only. Prevents access to other directories or file types.
 // @Tags static
 // @Security BearerAuth
@@ -71,7 +73,7 @@ func (h *StaticHandlers) ListStaticJSON(c *gin.Context) {
 // @Failure 401 {object} map[string]interface{} "Unauthorized"
 // @Failure 404 {object} map[string]string "File not found"
 // @Failure 500 {object} map[string]string "Failed to read file"
-// @Router /static/{filename} [get]
+// @Router /api/v1/static/{filename} [get]
 func (h *StaticHandlers) ServeStaticJSON(c *gin.Context) {
 	// Get the requested file name
 	fileName := c.Param("filename")
