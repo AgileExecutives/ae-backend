@@ -122,6 +122,78 @@ func (s *ClientService) UpdateClient(id, tenantID uint, req models.UpdateClientR
 	if req.DateOfBirth != nil {
 		client.DateOfBirth = req.DateOfBirth
 	}
+	if req.Gender != nil {
+		client.Gender = *req.Gender
+	}
+	if req.PrimaryLanguage != nil {
+		client.PrimaryLanguage = *req.PrimaryLanguage
+	}
+	if req.ContactFirstName != nil {
+		client.ContactFirstName = *req.ContactFirstName
+	}
+	if req.ContactLastName != nil {
+		client.ContactLastName = *req.ContactLastName
+	}
+	if req.ContactEmail != nil {
+		client.ContactEmail = *req.ContactEmail
+	}
+	if req.ContactPhone != nil {
+		client.ContactPhone = *req.ContactPhone
+	}
+	if req.AlternativeFirstName != nil {
+		client.AlternativeFirstName = *req.AlternativeFirstName
+	}
+	if req.AlternativeLastName != nil {
+		client.AlternativeLastName = *req.AlternativeLastName
+	}
+	if req.AlternativePhone != nil {
+		client.AlternativePhone = *req.AlternativePhone
+	}
+	if req.AlternativeEmail != nil {
+		client.AlternativeEmail = *req.AlternativeEmail
+	}
+	if req.StreetAddress != nil {
+		client.StreetAddress = *req.StreetAddress
+	}
+	if req.Zip != nil {
+		client.Zip = *req.Zip
+	}
+	if req.City != nil {
+		client.City = *req.City
+	}
+	if req.Email != nil {
+		client.Email = *req.Email
+	}
+	if req.Phone != nil {
+		client.Phone = *req.Phone
+	}
+	if req.InvoicedIndividually != nil {
+		client.InvoicedIndividually = *req.InvoicedIndividually
+	}
+	if req.TherapyTitle != nil {
+		client.TherapyTitle = *req.TherapyTitle
+	}
+	if req.ProviderApprovalCode != nil {
+		client.ProviderApprovalCode = *req.ProviderApprovalCode
+	}
+	if req.ProviderApprovalDate != nil {
+		client.ProviderApprovalDate = req.ProviderApprovalDate
+	}
+	if req.UnitPrice != nil {
+		client.UnitPrice = req.UnitPrice
+	}
+	if req.Status != nil {
+		client.Status = *req.Status
+	}
+	if req.AdmissionDate != nil {
+		client.AdmissionDate = req.AdmissionDate
+	}
+	if req.ReferralSource != nil {
+		client.ReferralSource = *req.ReferralSource
+	}
+	if req.Notes != nil {
+		client.Notes = *req.Notes
+	}
 
 	if err := s.db.Save(&client).Error; err != nil {
 		return nil, fmt.Errorf("failed to update client: %w", err)

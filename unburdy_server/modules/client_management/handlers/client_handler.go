@@ -8,7 +8,8 @@ import (
 	"github.com/ae-base-server/pkg/utils"
 	"github.com/gin-gonic/gin"
 	"github.com/unburdy/unburdy-server-api/internal/models"
-	"github.com/unburdy/unburdy-server-api/internal/services"
+	"github.com/unburdy/unburdy-server-api/modules/client_management/entities"
+	"github.com/unburdy/unburdy-server-api/modules/client_management/services"
 )
 
 // ClientHandler handles client-related HTTP requests
@@ -30,15 +31,15 @@ func NewClientHandler(clientService *services.ClientService) *ClientHandler {
 // @ID createClient
 // @Accept json
 // @Produce json
-// @Param client body models.CreateClientRequest true "Client information"
-// @Success 201 {object} models.APIResponse{data=models.ClientResponse} "Client created successfully"
+// @Param client body entities.CreateClientRequest true "Client information"
+// @Success 201 {object} entities.APIResponse{data=entities.ClientResponse} "Client created successfully"
 // @Failure 400 {object} map[string]string "Bad request"
 // @Failure 401 {object} map[string]string "Unauthorized"
 // @Failure 500 {object} map[string]string "Internal server error"
 // @Security BearerAuth
 // @Router /clients [post]
 func (h *ClientHandler) CreateClient(c *gin.Context) {
-	var req models.CreateClientRequest
+	var req entities.CreateClientRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -66,7 +67,7 @@ func (h *ClientHandler) CreateClient(c *gin.Context) {
 // @ID getClientById
 // @Produce json
 // @Param id path int true "Client ID"
-// @Success 200 {object} models.APIResponse{data=models.ClientResponse} "Client found"
+// @Success 200 {object} entities.APIResponse{data=entities.ClientResponse} "Client found"
 // @Failure 400 {object} map[string]string "Bad request"
 // @Failure 401 {object} map[string]string "Unauthorized"
 // @Failure 404 {object} map[string]string "Client not found"
@@ -123,7 +124,7 @@ func (h *ClientHandler) GetAllClients(c *gin.Context) {
 		return
 	}
 
-	responses := make([]models.ClientResponse, len(clients))
+	responses := make([]entities.ClientResponse, len(clients))
 	for i, client := range clients {
 		responses[i] = client.ToResponse()
 	}
@@ -147,8 +148,8 @@ func (h *ClientHandler) GetAllClients(c *gin.Context) {
 // @Accept json
 // @Produce json
 // @Param id path int true "Client ID"
-// @Param client body models.UpdateClientRequest true "Updated client information"
-// @Success 200 {object} models.APIResponse{data=models.ClientResponse} "Updated client"
+// @Param client body entities.UpdateClientRequest true "Updated client information"
+// @Success 200 {object} entities.APIResponse{data=entities.ClientResponse} "Updated client"
 // @Failure 400 {object} map[string]string "Bad request"
 // @Failure 401 {object} map[string]string "Unauthorized"
 // @Failure 404 {object} map[string]string "Client not found"
@@ -162,7 +163,7 @@ func (h *ClientHandler) UpdateClient(c *gin.Context) {
 		return
 	}
 
-	var req models.UpdateClientRequest
+	var req entities.UpdateClientRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -255,7 +256,7 @@ func (h *ClientHandler) SearchClients(c *gin.Context) {
 		return
 	}
 
-	responses := make([]models.ClientResponse, len(clients))
+	responses := make([]entities.ClientResponse, len(clients))
 	for i, client := range clients {
 		responses[i] = client.ToResponse()
 	}
