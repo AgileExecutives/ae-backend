@@ -6,6 +6,8 @@ ae-base-server
 # Data 
 statics
 
+**/processed/*
+
 # Go build artifacts
 *.exe
 *.exe~

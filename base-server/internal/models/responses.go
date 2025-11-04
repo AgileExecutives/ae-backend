@@ -44,12 +44,41 @@ type ErrorResponse struct {
 	Details string `json:"details,omitempty"`
 }
 
-// SuccessResponse creates a success API response
+// SuccessResponse creates a success API response with data
 func SuccessResponse(message string, data interface{}) APIResponse {
 	return APIResponse{
 		Success: true,
 		Message: message,
 		Data:    data,
+	}
+}
+
+// SuccessMessageResponse creates a success API response with just a message
+func SuccessMessageResponse(message string) APIResponse {
+	return APIResponse{
+		Success: true,
+		Message: message,
+	}
+}
+
+// SuccessListResponse creates a success API response with paginated list data
+func SuccessListResponse(data interface{}, page, limit, total int) APIResponse {
+	totalPages := (total + limit - 1) / limit
+	if limit == 0 {
+		totalPages = 0
+	}
+
+	return APIResponse{
+		Success: true,
+		Data: ListResponse{
+			Data: data,
+			Pagination: PaginationResponse{
+				Page:       page,
+				Limit:      limit,
+				Total:      total,
+				TotalPages: totalPages,
+			},
+		},
 	}
 }
 
@@ -59,5 +88,12 @@ func ErrorResponseFunc(message string, err string) APIResponse {
 		Success: false,
 		Message: message,
 		Error:   err,
+	}
+}
+
+// SimpleErrorResponse creates a simple error response (for backward compatibility)
+func SimpleErrorResponse(err string) ErrorResponse {
+	return ErrorResponse{
+		Error: err,
 	}
 }

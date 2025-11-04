@@ -2188,28 +2188,37 @@ const docTemplate = `{
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/entities.CalendarResponse"
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/api.APIResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/entities.CalendarResponse"
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": true
+                            "$ref": "#/definitions/api.APIResponse"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": true
+                            "$ref": "#/definitions/api.APIResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": true
+                            "$ref": "#/definitions/api.APIResponse"
                         }
                     }
                 }
@@ -3063,35 +3072,43 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/entities.CalendarResponse"
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/api.APIResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/entities.CalendarResponse"
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": true
+                            "$ref": "#/definitions/api.APIResponse"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": true
+                            "$ref": "#/definitions/api.APIResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": true
+                            "$ref": "#/definitions/api.APIResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": true
+                            "$ref": "#/definitions/api.APIResponse"
                         }
                     }
                 }
@@ -3343,26 +3360,31 @@ const docTemplate = `{
                     "200": {
                         "description": "Clients retrieved successfully",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": true
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.APIResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ListResponse"
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
+                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.APIResponse"
                         }
                     },
                     "500": {
                         "description": "Internal server error",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
+                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.APIResponse"
                         }
                     }
                 }
@@ -3392,7 +3414,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/models.CreateClientRequest"
+                            "$ref": "#/definitions/entities.CreateClientRequest"
                         }
                     }
                 ],
@@ -3408,7 +3430,7 @@ const docTemplate = `{
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/models.ClientResponse"
+                                            "$ref": "#/definitions/entities.ClientResponse"
                                         }
                                     }
                                 }
@@ -3488,35 +3510,37 @@ const docTemplate = `{
                     "200": {
                         "description": "Search results",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": true
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.APIResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ListResponse"
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     },
                     "400": {
                         "description": "Bad request",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
+                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.APIResponse"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
+                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.APIResponse"
                         }
                     },
                     "500": {
                         "description": "Internal server error",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
+                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.APIResponse"
                         }
                     }
                 }
@@ -3559,7 +3583,7 @@ const docTemplate = `{
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/models.ClientResponse"
+                                            "$ref": "#/definitions/entities.ClientResponse"
                                         }
                                     }
                                 }
@@ -3636,7 +3660,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/models.UpdateClientRequest"
+                            "$ref": "#/definitions/entities.UpdateClientRequest"
                         }
                     }
                 ],
@@ -3652,7 +3676,7 @@ const docTemplate = `{
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/models.ClientResponse"
+                                            "$ref": "#/definitions/entities.ClientResponse"
                                         }
                                     }
                                 }
@@ -3725,46 +3749,31 @@ const docTemplate = `{
                     "200": {
                         "description": "Client deleted successfully",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
+                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.APIResponse"
                         }
                     },
                     "400": {
                         "description": "Bad request",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
+                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.APIResponse"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
+                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.APIResponse"
                         }
                     },
                     "404": {
                         "description": "Client not found",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
+                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.APIResponse"
                         }
                     },
                     "500": {
                         "description": "Internal server error",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
+                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.APIResponse"
                         }
                     }
                 }
@@ -3806,26 +3815,31 @@ const docTemplate = `{
                     "200": {
                         "description": "Cost providers retrieved successfully",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": true
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.APIResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ListResponse"
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
+                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.APIResponse"
                         }
                     },
                     "500": {
                         "description": "Internal server error",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
+                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.APIResponse"
                         }
                     }
                 }
@@ -3863,34 +3877,37 @@ const docTemplate = `{
                     "201": {
                         "description": "Created cost provider",
                         "schema": {
-                            "$ref": "#/definitions/entities.CostProviderResponse"
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.APIResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/entities.CostProviderResponse"
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     },
                     "400": {
                         "description": "Bad request",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
+                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.APIResponse"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
+                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.APIResponse"
                         }
                     },
                     "500": {
                         "description": "Internal server error",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
+                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.APIResponse"
                         }
                     }
                 }
@@ -3939,35 +3956,37 @@ const docTemplate = `{
                     "200": {
                         "description": "Search results",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": true
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.APIResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ListResponse"
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     },
                     "400": {
                         "description": "Bad request",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
+                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.APIResponse"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
+                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.APIResponse"
                         }
                     },
                     "500": {
                         "description": "Internal server error",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
+                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.APIResponse"
                         }
                     }
                 }
@@ -4002,43 +4021,43 @@ const docTemplate = `{
                     "200": {
                         "description": "Cost provider found",
                         "schema": {
-                            "$ref": "#/definitions/entities.CostProviderResponse"
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.APIResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/entities.CostProviderResponse"
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     },
                     "400": {
                         "description": "Bad request",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
+                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.APIResponse"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
+                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.APIResponse"
                         }
                     },
                     "404": {
                         "description": "Cost provider not found",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
+                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.APIResponse"
                         }
                     },
                     "500": {
                         "description": "Internal server error",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
+                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.APIResponse"
                         }
                     }
                 }
@@ -4083,43 +4102,43 @@ const docTemplate = `{
                     "200": {
                         "description": "Updated cost provider",
                         "schema": {
-                            "$ref": "#/definitions/entities.CostProviderResponse"
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.APIResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/entities.CostProviderResponse"
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     },
                     "400": {
                         "description": "Bad request",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
+                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.APIResponse"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
+                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.APIResponse"
                         }
                     },
                     "404": {
                         "description": "Cost provider not found",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
+                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.APIResponse"
                         }
                     },
                     "500": {
                         "description": "Internal server error",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
+                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.APIResponse"
                         }
                     }
                 }
@@ -4152,46 +4171,31 @@ const docTemplate = `{
                     "200": {
                         "description": "Cost provider deleted successfully",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
+                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.APIResponse"
                         }
                     },
                     "400": {
                         "description": "Bad request",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
+                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.APIResponse"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
+                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.APIResponse"
                         }
                     },
                     "404": {
                         "description": "Cost provider not found",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
+                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.APIResponse"
                         }
                     },
                     "500": {
                         "description": "Internal server error",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
+                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.APIResponse"
                         }
                     }
                 }
@@ -4513,6 +4517,21 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "api.APIResponse": {
+            "type": "object",
+            "properties": {
+                "data": {},
+                "error": {
+                    "type": "string"
+                },
+                "message": {
+                    "type": "string"
+                },
+                "success": {
+                    "type": "boolean"
+                }
+            }
+        },
         "entities.CalendarEntryResponse": {
             "type": "object",
             "properties": {
@@ -4696,6 +4715,110 @@ const docTemplate = `{
                 }
             }
         },
+        "entities.ClientResponse": {
+            "type": "object",
+            "properties": {
+                "admission_date": {
+                    "type": "string"
+                },
+                "alternative_email": {
+                    "type": "string"
+                },
+                "alternative_first_name": {
+                    "type": "string"
+                },
+                "alternative_last_name": {
+                    "type": "string"
+                },
+                "alternative_phone": {
+                    "type": "string"
+                },
+                "city": {
+                    "type": "string"
+                },
+                "contact_email": {
+                    "type": "string"
+                },
+                "contact_first_name": {
+                    "type": "string"
+                },
+                "contact_last_name": {
+                    "type": "string"
+                },
+                "contact_phone": {
+                    "type": "string"
+                },
+                "cost_provider": {
+                    "$ref": "#/definitions/entities.CostProviderResponse"
+                },
+                "cost_provider_id": {
+                    "type": "integer"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "date_of_birth": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "first_name": {
+                    "type": "string"
+                },
+                "gender": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "invoiced_individually": {
+                    "type": "boolean"
+                },
+                "last_name": {
+                    "type": "string"
+                },
+                "notes": {
+                    "type": "string"
+                },
+                "phone": {
+                    "type": "string"
+                },
+                "primary_language": {
+                    "type": "string"
+                },
+                "provider_approval_code": {
+                    "type": "string"
+                },
+                "provider_approval_date": {
+                    "type": "string"
+                },
+                "referral_source": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "street_address": {
+                    "type": "string"
+                },
+                "tenant_id": {
+                    "type": "integer"
+                },
+                "therapy_title": {
+                    "type": "string"
+                },
+                "unit_price": {
+                    "type": "number"
+                },
+                "updated_at": {
+                    "type": "string"
+                },
+                "zip": {
+                    "type": "string"
+                }
+            }
+        },
         "entities.CostProviderResponse": {
             "type": "object",
             "properties": {
@@ -4738,6 +4861,9 @@ const docTemplate = `{
             "type": "object"
         },
         "entities.CreateCalendarSeriesRequest": {
+            "type": "object"
+        },
+        "entities.CreateClientRequest": {
             "type": "object"
         },
         "entities.CreateCostProviderRequest": {
@@ -4892,6 +5018,14 @@ const docTemplate = `{
                 }
             }
         },
+        "entities.NullableDate": {
+            "type": "object",
+            "properties": {
+                "time.Time": {
+                    "type": "string"
+                }
+            }
+        },
         "entities.UnburdyHolidaysData": {
             "type": "object",
             "properties": {
@@ -4925,6 +5059,9 @@ const docTemplate = `{
             "type": "object"
         },
         "entities.UpdateCalendarSeriesRequest": {
+            "type": "object"
+        },
+        "entities.UpdateClientRequest": {
             "type": "object"
         },
         "entities.UpdateCostProviderRequest": {
@@ -5481,6 +5618,32 @@ const docTemplate = `{
                 },
                 "success": {
                     "type": "boolean"
+                }
+            }
+        },
+        "github_com_unburdy_unburdy-server-api_internal_models.ListResponse": {
+            "type": "object",
+            "properties": {
+                "data": {},
+                "pagination": {
+                    "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.PaginationResponse"
+                }
+            }
+        },
+        "github_com_unburdy_unburdy-server-api_internal_models.PaginationResponse": {
+            "type": "object",
+            "properties": {
+                "limit": {
+                    "type": "integer"
+                },
+                "page": {
+                    "type": "integer"
+                },
+                "total": {
+                    "type": "integer"
+                },
+                "total_pages": {
+                    "type": "integer"
                 }
             }
         },

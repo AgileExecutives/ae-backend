@@ -32,7 +32,7 @@ func NewClientHandler(clientService *services.ClientService) *ClientHandler {
 // @Accept json
 // @Produce json
 // @Param client body entities.CreateClientRequest true "Client information"
-// @Success 201 {object} entities.APIResponse{data=entities.ClientResponse} "Client created successfully"
+// @Success 201 {object} models.APIResponse{data=entities.ClientResponse} "Client created successfully"
 // @Failure 400 {object} map[string]string "Bad request"
 // @Failure 401 {object} map[string]string "Unauthorized"
 // @Failure 500 {object} map[string]string "Internal server error"
@@ -41,19 +41,19 @@ func NewClientHandler(clientService *services.ClientService) *ClientHandler {
 func (h *ClientHandler) CreateClient(c *gin.Context) {
 	var req entities.CreateClientRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, models.ErrorResponseFunc("Invalid request", err.Error()))
 		return
 	}
 
 	tenantID, err := baseAPI.GetTenantID(c)
 	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Failed to get tenant ID: " + err.Error()})
+		c.JSON(http.StatusUnauthorized, models.ErrorResponseFunc("Unauthorized", "Failed to get tenant ID: "+err.Error()))
 		return
 	}
 
 	client, err := h.clientService.CreateClient(req, tenantID)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, models.ErrorResponseFunc("Internal server error", err.Error()))
 		return
 	}
 
@@ -67,7 +67,7 @@ func (h *ClientHandler) CreateClient(c *gin.Context) {
 // @ID getClientById
 // @Produce json
 // @Param id path int true "Client ID"
-// @Success 200 {object} entities.APIResponse{data=entities.ClientResponse} "Client found"
+// @Success 200 {object} models.APIResponse{data=entities.ClientResponse} "Client found"
 // @Failure 400 {object} map[string]string "Bad request"
 // @Failure 401 {object} map[string]string "Unauthorized"
 // @Failure 404 {object} map[string]string "Client not found"
@@ -77,19 +77,19 @@ func (h *ClientHandler) CreateClient(c *gin.Context) {
 func (h *ClientHandler) GetClient(c *gin.Context) {
 	id, err := strconv.ParseUint(c.Param("id"), 10, 32)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid client ID"})
+		c.JSON(http.StatusBadRequest, models.ErrorResponseFunc("Invalid request", "Invalid client ID"))
 		return
 	}
 
 	tenantID, err := baseAPI.GetTenantID(c)
 	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Failed to get tenant ID: " + err.Error()})
+		c.JSON(http.StatusUnauthorized, models.ErrorResponseFunc("Unauthorized", "Failed to get tenant ID: "+err.Error()))
 		return
 	}
 
 	client, err := h.clientService.GetClientByID(uint(id), tenantID)
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+		c.JSON(http.StatusNotFound, models.ErrorResponseFunc("Not found", err.Error()))
 		return
 	}
 
@@ -104,9 +104,9 @@ func (h *ClientHandler) GetClient(c *gin.Context) {
 // @Produce json
 // @Param page query int false "Page number" default(1)
 // @Param limit query int false "Number of clients per page (respects DEFAULT_PAGE_LIMIT and MAX_PAGE_LIMIT env vars)" default(200)
-// @Success 200 {object} map[string]interface{} "Clients retrieved successfully"
-// @Failure 401 {object} map[string]string "Unauthorized"
-// @Failure 500 {object} map[string]string "Internal server error"
+// @Success 200 {object} models.APIResponse{data=models.ListResponse} "Clients retrieved successfully"
+// @Failure 401 {object} models.APIResponse "Unauthorized"
+// @Failure 500 {object} models.APIResponse "Internal server error"
 // @Security BearerAuth
 // @Router /clients [get]
 func (h *ClientHandler) GetAllClients(c *gin.Context) {
@@ -114,13 +114,13 @@ func (h *ClientHandler) GetAllClients(c *gin.Context) {
 
 	tenantID, err := baseAPI.GetTenantID(c)
 	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Failed to get tenant ID: " + err.Error()})
+		c.JSON(http.StatusUnauthorized, models.ErrorResponseFunc("Unauthorized", "Failed to get tenant ID: "+err.Error()))
 		return
 	}
 
 	clients, total, err := h.clientService.GetAllClients(page, limit, tenantID)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, models.ErrorResponseFunc("Failed to retrieve clients", err.Error()))
 		return
 	}
 
@@ -129,15 +129,7 @@ func (h *ClientHandler) GetAllClients(c *gin.Context) {
 		responses[i] = client.ToResponse()
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"clients": responses,
-		"pagination": gin.H{
-			"page":       page,
-			"limit":      limit,
-			"total":      total,
-			"totalPages": (total + limit - 1) / limit,
-		},
-	})
+	c.JSON(http.StatusOK, models.SuccessListResponse(responses, page, limit, int(total)))
 }
 
 // UpdateClient handles updating a client
@@ -149,7 +141,7 @@ func (h *ClientHandler) GetAllClients(c *gin.Context) {
 // @Produce json
 // @Param id path int true "Client ID"
 // @Param client body entities.UpdateClientRequest true "Updated client information"
-// @Success 200 {object} entities.APIResponse{data=entities.ClientResponse} "Updated client"
+// @Success 200 {object} models.APIResponse{data=entities.ClientResponse} "Updated client"
 // @Failure 400 {object} map[string]string "Bad request"
 // @Failure 401 {object} map[string]string "Unauthorized"
 // @Failure 404 {object} map[string]string "Client not found"
@@ -159,25 +151,25 @@ func (h *ClientHandler) GetAllClients(c *gin.Context) {
 func (h *ClientHandler) UpdateClient(c *gin.Context) {
 	id, err := strconv.ParseUint(c.Param("id"), 10, 32)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid client ID"})
+		c.JSON(http.StatusBadRequest, models.ErrorResponseFunc("Invalid request", "Invalid client ID"))
 		return
 	}
 
 	var req entities.UpdateClientRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, models.ErrorResponseFunc("Invalid request", err.Error()))
 		return
 	}
 
 	tenantID, err := baseAPI.GetTenantID(c)
 	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Failed to get tenant ID: " + err.Error()})
+		c.JSON(http.StatusUnauthorized, models.ErrorResponseFunc("Unauthorized", "Failed to get tenant ID: "+err.Error()))
 		return
 	}
 
 	client, err := h.clientService.UpdateClient(uint(id), tenantID, req)
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+		c.JSON(http.StatusNotFound, models.ErrorResponseFunc("Not found", err.Error()))
 		return
 	}
 
@@ -191,33 +183,33 @@ func (h *ClientHandler) UpdateClient(c *gin.Context) {
 // @ID deleteClient
 // @Produce json
 // @Param id path int true "Client ID"
-// @Success 200 {object} map[string]string "Client deleted successfully"
-// @Failure 400 {object} map[string]string "Bad request"
-// @Failure 401 {object} map[string]string "Unauthorized"
-// @Failure 404 {object} map[string]string "Client not found"
-// @Failure 500 {object} map[string]string "Internal server error"
+// @Success 200 {object} models.APIResponse "Client deleted successfully"
+// @Failure 400 {object} models.APIResponse "Bad request"
+// @Failure 401 {object} models.APIResponse "Unauthorized"
+// @Failure 404 {object} models.APIResponse "Client not found"
+// @Failure 500 {object} models.APIResponse "Internal server error"
 // @Security BearerAuth
 // @Router /clients/{id} [delete]
 func (h *ClientHandler) DeleteClient(c *gin.Context) {
 	id, err := strconv.ParseUint(c.Param("id"), 10, 32)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid client ID"})
+		c.JSON(http.StatusBadRequest, models.ErrorResponseFunc("Invalid request", "Invalid client ID"))
 		return
 	}
 
 	tenantID, err := baseAPI.GetTenantID(c)
 	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Failed to get tenant ID: " + err.Error()})
+		c.JSON(http.StatusUnauthorized, models.ErrorResponseFunc("Unauthorized", "Failed to get tenant ID: "+err.Error()))
 		return
 	}
 
 	err = h.clientService.DeleteClient(uint(id), tenantID)
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+		c.JSON(http.StatusNotFound, models.ErrorResponseFunc("Not found", err.Error()))
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"message": "Client deleted successfully"})
+	c.JSON(http.StatusOK, models.SuccessMessageResponse("Client deleted successfully"))
 }
 
 // SearchClients handles searching clients
@@ -229,16 +221,16 @@ func (h *ClientHandler) DeleteClient(c *gin.Context) {
 // @Param q query string true "Search query"
 // @Param page query int false "Page number" default(1)
 // @Param limit query int false "Number of clients per page (respects DEFAULT_PAGE_LIMIT and MAX_PAGE_LIMIT env vars)" default(200)
-// @Success 200 {object} map[string]interface{} "Search results"
-// @Failure 400 {object} map[string]string "Bad request"
-// @Failure 401 {object} map[string]string "Unauthorized"
-// @Failure 500 {object} map[string]string "Internal server error"
+// @Success 200 {object} models.APIResponse{data=models.ListResponse} "Search results"
+// @Failure 400 {object} models.APIResponse "Bad request"
+// @Failure 401 {object} models.APIResponse "Unauthorized"
+// @Failure 500 {object} models.APIResponse "Internal server error"
 // @Security BearerAuth
 // @Router /clients/search [get]
 func (h *ClientHandler) SearchClients(c *gin.Context) {
 	query := c.Query("q")
 	if query == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Search query is required"})
+		c.JSON(http.StatusBadRequest, models.ErrorResponseFunc("Invalid request", "Search query is required"))
 		return
 	}
 
@@ -246,13 +238,13 @@ func (h *ClientHandler) SearchClients(c *gin.Context) {
 
 	tenantID, err := baseAPI.GetTenantID(c)
 	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Failed to get tenant ID: " + err.Error()})
+		c.JSON(http.StatusUnauthorized, models.ErrorResponseFunc("Unauthorized", "Failed to get tenant ID: "+err.Error()))
 		return
 	}
 
 	clients, total, err := h.clientService.SearchClients(query, page, limit, tenantID)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, models.ErrorResponseFunc("Internal server error", err.Error()))
 		return
 	}
 
@@ -261,14 +253,5 @@ func (h *ClientHandler) SearchClients(c *gin.Context) {
 		responses[i] = client.ToResponse()
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"clients": responses,
-		"pagination": gin.H{
-			"page":       page,
-			"limit":      limit,
-			"total":      total,
-			"totalPages": (int(total) + limit - 1) / limit,
-		},
-		"query": query,
-	})
+	c.JSON(http.StatusOK, models.SuccessListResponse(responses, page, limit, int(total)))
 }

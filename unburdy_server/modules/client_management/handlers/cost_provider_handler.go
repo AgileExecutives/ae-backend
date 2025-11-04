@@ -8,6 +8,7 @@ import (
 	"github.com/ae-base-server/pkg/utils"
 	"github.com/gin-gonic/gin"
 
+	"github.com/unburdy/unburdy-server-api/internal/models"
 	"github.com/unburdy/unburdy-server-api/modules/client_management/entities"
 	"github.com/unburdy/unburdy-server-api/modules/client_management/services"
 )
@@ -32,32 +33,32 @@ func NewCostProviderHandler(costProviderService *services.CostProviderService) *
 // @Accept json
 // @Produce json
 // @Param cost_provider body entities.CreateCostProviderRequest true "Cost provider information"
-// @Success 201 {object} entities.CostProviderResponse "Created cost provider"
-// @Failure 400 {object} map[string]string "Bad request"
-// @Failure 401 {object} map[string]string "Unauthorized"
-// @Failure 500 {object} map[string]string "Internal server error"
+// @Success 201 {object} models.APIResponse{data=entities.CostProviderResponse} "Created cost provider"
+// @Failure 400 {object} models.APIResponse "Bad request"
+// @Failure 401 {object} models.APIResponse "Unauthorized"
+// @Failure 500 {object} models.APIResponse "Internal server error"
 // @Security BearerAuth
 // @Router /cost-providers [post]
 func (h *CostProviderHandler) CreateCostProvider(c *gin.Context) {
 	var req entities.CreateCostProviderRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, models.ErrorResponseFunc("Invalid request", err.Error()))
 		return
 	}
 
 	tenantID, err := baseAPI.GetTenantID(c)
 	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Failed to get tenant ID: " + err.Error()})
+		c.JSON(http.StatusUnauthorized, models.ErrorResponseFunc("Unauthorized", "Failed to get tenant ID: "+err.Error()))
 		return
 	}
 
 	costProvider, err := h.costProviderService.CreateCostProvider(req, tenantID)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, models.ErrorResponseFunc("Internal server error", err.Error()))
 		return
 	}
 
-	c.JSON(http.StatusCreated, costProvider.ToResponse())
+	c.JSON(http.StatusCreated, models.SuccessResponse("Cost provider created successfully", costProvider.ToResponse()))
 }
 
 // GetCostProvider handles retrieving a cost provider by ID
@@ -67,33 +68,33 @@ func (h *CostProviderHandler) CreateCostProvider(c *gin.Context) {
 // @Tags cost-providers
 // @Produce json
 // @Param id path int true "Cost Provider ID"
-// @Success 200 {object} entities.CostProviderResponse "Cost provider found"
-// @Failure 400 {object} map[string]string "Bad request"
-// @Failure 401 {object} map[string]string "Unauthorized"
-// @Failure 404 {object} map[string]string "Cost provider not found"
-// @Failure 500 {object} map[string]string "Internal server error"
+// @Success 200 {object} models.APIResponse{data=entities.CostProviderResponse} "Cost provider found"
+// @Failure 400 {object} models.APIResponse "Bad request"
+// @Failure 401 {object} models.APIResponse "Unauthorized"
+// @Failure 404 {object} models.APIResponse "Cost provider not found"
+// @Failure 500 {object} models.APIResponse "Internal server error"
 // @Security BearerAuth
 // @Router /cost-providers/{id} [get]
 func (h *CostProviderHandler) GetCostProvider(c *gin.Context) {
 	id, err := strconv.ParseUint(c.Param("id"), 10, 32)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid cost provider ID"})
+		c.JSON(http.StatusBadRequest, models.ErrorResponseFunc("Invalid request", "Invalid cost provider ID"))
 		return
 	}
 
 	tenantID, err := baseAPI.GetTenantID(c)
 	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Failed to get tenant ID: " + err.Error()})
+		c.JSON(http.StatusUnauthorized, models.ErrorResponseFunc("Unauthorized", "Failed to get tenant ID: "+err.Error()))
 		return
 	}
 
 	costProvider, err := h.costProviderService.GetCostProviderByID(uint(id), tenantID)
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+		c.JSON(http.StatusNotFound, models.ErrorResponseFunc("Not found", err.Error()))
 		return
 	}
 
-	c.JSON(http.StatusOK, costProvider.ToResponse())
+	c.JSON(http.StatusOK, models.SuccessResponse("Cost provider retrieved successfully", costProvider.ToResponse()))
 }
 
 // GetAllCostProviders handles retrieving all cost providers with pagination
@@ -104,9 +105,9 @@ func (h *CostProviderHandler) GetCostProvider(c *gin.Context) {
 // @Produce json
 // @Param page query int false "Page number" default(1)
 // @Param limit query int false "Number of cost providers per page (respects DEFAULT_PAGE_LIMIT and MAX_PAGE_LIMIT env vars)" default(200)
-// @Success 200 {object} map[string]interface{} "Cost providers retrieved successfully"
-// @Failure 401 {object} map[string]string "Unauthorized"
-// @Failure 500 {object} map[string]string "Internal server error"
+// @Success 200 {object} models.APIResponse{data=models.ListResponse} "Cost providers retrieved successfully"
+// @Failure 401 {object} models.APIResponse "Unauthorized"
+// @Failure 500 {object} models.APIResponse "Internal server error"
 // @Security BearerAuth
 // @Router /cost-providers [get]
 func (h *CostProviderHandler) GetAllCostProviders(c *gin.Context) {
@@ -114,13 +115,13 @@ func (h *CostProviderHandler) GetAllCostProviders(c *gin.Context) {
 
 	tenantID, err := baseAPI.GetTenantID(c)
 	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Failed to get tenant ID: " + err.Error()})
+		c.JSON(http.StatusUnauthorized, models.ErrorResponseFunc("Unauthorized", "Failed to get tenant ID: "+err.Error()))
 		return
 	}
 
 	costProviders, total, err := h.costProviderService.GetAllCostProviders(page, limit, tenantID)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, models.ErrorResponseFunc("Internal server error", err.Error()))
 		return
 	}
 
@@ -129,15 +130,7 @@ func (h *CostProviderHandler) GetAllCostProviders(c *gin.Context) {
 		responses[i] = costProvider.ToResponse()
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"cost_providers": responses,
-		"pagination": gin.H{
-			"page":       page,
-			"limit":      limit,
-			"total":      total,
-			"totalPages": (int(total) + limit - 1) / limit,
-		},
-	})
+	c.JSON(http.StatusOK, models.SuccessListResponse(responses, page, limit, int(total)))
 }
 
 // UpdateCostProvider handles updating a cost provider
@@ -149,39 +142,39 @@ func (h *CostProviderHandler) GetAllCostProviders(c *gin.Context) {
 // @Produce json
 // @Param id path int true "Cost Provider ID"
 // @Param cost_provider body entities.UpdateCostProviderRequest true "Updated cost provider information"
-// @Success 200 {object} entities.CostProviderResponse "Updated cost provider"
-// @Failure 400 {object} map[string]string "Bad request"
-// @Failure 401 {object} map[string]string "Unauthorized"
-// @Failure 404 {object} map[string]string "Cost provider not found"
-// @Failure 500 {object} map[string]string "Internal server error"
+// @Success 200 {object} models.APIResponse{data=entities.CostProviderResponse} "Updated cost provider"
+// @Failure 400 {object} models.APIResponse "Bad request"
+// @Failure 401 {object} models.APIResponse "Unauthorized"
+// @Failure 404 {object} models.APIResponse "Cost provider not found"
+// @Failure 500 {object} models.APIResponse "Internal server error"
 // @Security BearerAuth
 // @Router /cost-providers/{id} [put]
 func (h *CostProviderHandler) UpdateCostProvider(c *gin.Context) {
 	id, err := strconv.ParseUint(c.Param("id"), 10, 32)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid cost provider ID"})
+		c.JSON(http.StatusBadRequest, models.ErrorResponseFunc("Invalid request", "Invalid cost provider ID"))
 		return
 	}
 
 	var req entities.UpdateCostProviderRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, models.ErrorResponseFunc("Invalid request", err.Error()))
 		return
 	}
 
 	tenantID, err := baseAPI.GetTenantID(c)
 	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Failed to get tenant ID: " + err.Error()})
+		c.JSON(http.StatusUnauthorized, models.ErrorResponseFunc("Unauthorized", "Failed to get tenant ID: "+err.Error()))
 		return
 	}
 
 	costProvider, err := h.costProviderService.UpdateCostProvider(uint(id), tenantID, req)
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+		c.JSON(http.StatusNotFound, models.ErrorResponseFunc("Not found", err.Error()))
 		return
 	}
 
-	c.JSON(http.StatusOK, costProvider.ToResponse())
+	c.JSON(http.StatusOK, models.SuccessResponse("Cost provider updated successfully", costProvider.ToResponse()))
 }
 
 // DeleteCostProvider handles deleting a cost provider
@@ -191,33 +184,33 @@ func (h *CostProviderHandler) UpdateCostProvider(c *gin.Context) {
 // @Tags cost-providers
 // @Produce json
 // @Param id path int true "Cost Provider ID"
-// @Success 200 {object} map[string]string "Cost provider deleted successfully"
-// @Failure 400 {object} map[string]string "Bad request"
-// @Failure 401 {object} map[string]string "Unauthorized"
-// @Failure 404 {object} map[string]string "Cost provider not found"
-// @Failure 500 {object} map[string]string "Internal server error"
+// @Success 200 {object} models.APIResponse "Cost provider deleted successfully"
+// @Failure 400 {object} models.APIResponse "Bad request"
+// @Failure 401 {object} models.APIResponse "Unauthorized"
+// @Failure 404 {object} models.APIResponse "Cost provider not found"
+// @Failure 500 {object} models.APIResponse "Internal server error"
 // @Security BearerAuth
 // @Router /cost-providers/{id} [delete]
 func (h *CostProviderHandler) DeleteCostProvider(c *gin.Context) {
 	id, err := strconv.ParseUint(c.Param("id"), 10, 32)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid cost provider ID"})
+		c.JSON(http.StatusBadRequest, models.ErrorResponseFunc("Invalid request", "Invalid cost provider ID"))
 		return
 	}
 
 	tenantID, err := baseAPI.GetTenantID(c)
 	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Failed to get tenant ID: " + err.Error()})
+		c.JSON(http.StatusUnauthorized, models.ErrorResponseFunc("Unauthorized", "Failed to get tenant ID: "+err.Error()))
 		return
 	}
 
 	err = h.costProviderService.DeleteCostProvider(uint(id), tenantID)
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+		c.JSON(http.StatusNotFound, models.ErrorResponseFunc("Not found", err.Error()))
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"message": "Cost provider deleted successfully"})
+	c.JSON(http.StatusOK, models.SuccessMessageResponse("Cost provider deleted successfully"))
 }
 
 // SearchCostProviders handles searching cost providers
@@ -229,16 +222,16 @@ func (h *CostProviderHandler) DeleteCostProvider(c *gin.Context) {
 // @Param q query string true "Search query"
 // @Param page query int false "Page number" default(1)
 // @Param limit query int false "Number of cost providers per page (respects DEFAULT_PAGE_LIMIT and MAX_PAGE_LIMIT env vars)" default(200)
-// @Success 200 {object} map[string]interface{} "Search results"
-// @Failure 400 {object} map[string]string "Bad request"
-// @Failure 401 {object} map[string]string "Unauthorized"
-// @Failure 500 {object} map[string]string "Internal server error"
+// @Success 200 {object} models.APIResponse{data=models.ListResponse} "Search results"
+// @Failure 400 {object} models.APIResponse "Bad request"
+// @Failure 401 {object} models.APIResponse "Unauthorized"
+// @Failure 500 {object} models.APIResponse "Internal server error"
 // @Security BearerAuth
 // @Router /cost-providers/search [get]
 func (h *CostProviderHandler) SearchCostProviders(c *gin.Context) {
 	query := c.Query("q")
 	if query == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Search query is required"})
+		c.JSON(http.StatusBadRequest, models.ErrorResponseFunc("Invalid request", "Search query is required"))
 		return
 	}
 
@@ -246,13 +239,13 @@ func (h *CostProviderHandler) SearchCostProviders(c *gin.Context) {
 
 	tenantID, err := baseAPI.GetTenantID(c)
 	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Failed to get tenant ID: " + err.Error()})
+		c.JSON(http.StatusUnauthorized, models.ErrorResponseFunc("Unauthorized", "Failed to get tenant ID: "+err.Error()))
 		return
 	}
 
 	costProviders, total, err := h.costProviderService.SearchCostProviders(query, page, limit, tenantID)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, models.ErrorResponseFunc("Internal server error", err.Error()))
 		return
 	}
 
@@ -261,14 +254,5 @@ func (h *CostProviderHandler) SearchCostProviders(c *gin.Context) {
 		responses[i] = costProvider.ToResponse()
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"cost_providers": responses,
-		"pagination": gin.H{
-			"page":       page,
-			"limit":      limit,
-			"total":      total,
-			"totalPages": (int(total) + limit - 1) / limit,
-		},
-		"query": query,
-	})
+	c.JSON(http.StatusOK, models.SuccessListResponse(responses, page, limit, int(total)))
 }

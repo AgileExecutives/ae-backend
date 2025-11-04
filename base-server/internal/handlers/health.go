@@ -69,8 +69,8 @@ func (h *HealthHandler) Health(c *gin.Context) {
 // DISABLED-SWAGGER: @Description Simple ping endpoint
 // DISABLED-SWAGGER: @Tags health
 // DISABLED-SWAGGER: @Produce json
-// DISABLED-SWAGGER: @Success 200 {string} string "pong"
+// DISABLED-SWAGGER: @Success 200 {object} models.APIResponse "pong"
 // DISABLED-SWAGGER: @Router /api/v1/ping [get]
 func (h *HealthHandler) Ping(c *gin.Context) {
-	c.JSON(http.StatusOK, gin.H{"message": "pong"})
+	c.JSON(http.StatusOK, models.SuccessMessageResponse("pong"))
 }

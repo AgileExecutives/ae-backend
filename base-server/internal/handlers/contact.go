@@ -302,7 +302,7 @@ func (h *ContactHandler) SubmitContactForm(c *gin.Context) {
 	var req models.ContactFormRequest
 
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, models.ErrorResponseFunc("Invalid request", err.Error()))
 		return
 	}
 
@@ -321,7 +321,7 @@ func (h *ContactHandler) SubmitContactForm(c *gin.Context) {
 		req.Source,
 	)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to send contact form email: " + err.Error()})
+		c.JSON(http.StatusInternalServerError, models.ErrorResponseFunc("Internal server error", "Failed to send contact form email: "+err.Error()))
 		return
 	}
 
@@ -395,7 +395,7 @@ func (h *ContactHandler) GetNewsletterSubscriptions(c *gin.Context) {
 	var newsletters []models.Newsletter
 
 	if err := h.db.Find(&newsletters).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch newsletter subscriptions"})
+		c.JSON(http.StatusInternalServerError, models.ErrorResponseFunc("Internal server error", "Failed to fetch newsletter subscriptions"))
 		return
 	}
 
@@ -417,21 +417,21 @@ func (h *ContactHandler) GetNewsletterSubscriptions(c *gin.Context) {
 func (h *ContactHandler) UnsubscribeFromNewsletter(c *gin.Context) {
 	email := c.Query("email")
 	if email == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Email parameter is required"})
+		c.JSON(http.StatusBadRequest, models.ErrorResponseFunc("Invalid request", "Email parameter is required"))
 		return
 	}
 
 	// Soft delete the newsletter subscription
 	result := h.db.Where("email = ?", email).Delete(&models.Newsletter{})
 	if result.Error != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to unsubscribe from newsletter"})
+		c.JSON(http.StatusInternalServerError, models.ErrorResponseFunc("Internal server error", "Failed to unsubscribe from newsletter"))
 		return
 	}
 
 	if result.RowsAffected == 0 {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Email not found in newsletter subscriptions"})
+		c.JSON(http.StatusNotFound, models.ErrorResponseFunc("Not found", "Email not found in newsletter subscriptions"))
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"message": "Successfully unsubscribed from newsletter"})
+	c.JSON(http.StatusOK, models.SuccessMessageResponse("Successfully unsubscribed from newsletter"))
 }

@@ -35,38 +35,38 @@ func NewCalendarHandler(service *services.CalendarService) *CalendarHandler {
 // @Produce json
 // @Security BearerAuth
 // @Param calendar body entities.CreateCalendarRequest true "Calendar data"
-// @Success 201 {object} entities.CalendarResponse
-// @Failure 400 {object} map[string]interface{}
-// @Failure 401 {object} map[string]interface{}
-// @Failure 500 {object} map[string]interface{}
+// @Success 201 {object} baseAPI.APIResponse{data=entities.CalendarResponse}
+// @Failure 400 {object} baseAPI.APIResponse
+// @Failure 401 {object} baseAPI.APIResponse
+// @Failure 500 {object} baseAPI.APIResponse
 // @Router /calendar [post]
 func (h *CalendarHandler) CreateCalendar(c *gin.Context) {
 	var req entities.CreateCalendarRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, baseAPI.ErrorResponseFunc("Invalid request", err.Error()))
 		return
 	}
 
 	// Get tenant ID and user ID from context (set by auth middleware)
 	tenantID, err := baseAPI.GetTenantID(c)
 	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unable to get tenant ID: " + err.Error()})
+		c.JSON(http.StatusUnauthorized, baseAPI.ErrorResponseFunc("Unauthorized", "Unable to get tenant ID: "+err.Error()))
 		return
 	}
 
 	userID, err := baseAPI.GetUserID(c)
 	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unable to get user ID: " + err.Error()})
+		c.JSON(http.StatusUnauthorized, baseAPI.ErrorResponseFunc("Unauthorized", "Unable to get user ID: "+err.Error()))
 		return
 	}
 
 	calendar, err := h.service.CreateCalendar(req, tenantID, userID)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, baseAPI.ErrorResponseFunc("Internal server error", err.Error()))
 		return
 	}
 
-	c.JSON(http.StatusCreated, calendar.ToResponse())
+	c.JSON(http.StatusCreated, baseAPI.SuccessResponse("Calendar created successfully", calendar.ToResponse()))
 }
 
 // GetCalendar retrieves a specific calendar
@@ -77,38 +77,38 @@ func (h *CalendarHandler) CreateCalendar(c *gin.Context) {
 // @Produce json
 // @Security BearerAuth
 // @Param id path int true "Calendar ID"
-// @Success 200 {object} entities.CalendarResponse
-// @Failure 400 {object} map[string]interface{}
-// @Failure 401 {object} map[string]interface{}
-// @Failure 404 {object} map[string]interface{}
-// @Failure 500 {object} map[string]interface{}
+// @Success 200 {object} baseAPI.APIResponse{data=entities.CalendarResponse}
+// @Failure 400 {object} baseAPI.APIResponse
+// @Failure 401 {object} baseAPI.APIResponse
+// @Failure 404 {object} baseAPI.APIResponse
+// @Failure 500 {object} baseAPI.APIResponse
 // @Router /calendar/{id} [get]
 func (h *CalendarHandler) GetCalendar(c *gin.Context) {
 	idStr := c.Param("id")
 	id, err := strconv.ParseUint(idStr, 10, 32)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid calendar ID"})
+		c.JSON(http.StatusBadRequest, baseAPI.ErrorResponseFunc("Invalid request", "Invalid calendar ID"))
 		return
 	}
 
 	tenantID, err := baseAPI.GetTenantID(c)
 	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unable to get tenant ID: " + err.Error()})
+		c.JSON(http.StatusUnauthorized, baseAPI.ErrorResponseFunc("Unauthorized", "Unable to get tenant ID: "+err.Error()))
 		return
 	}
 	userID, err := baseAPI.GetUserID(c)
 	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unable to get user ID: " + err.Error()})
+		c.JSON(http.StatusUnauthorized, baseAPI.ErrorResponseFunc("Unauthorized", "Unable to get user ID: "+err.Error()))
 		return
 	}
 
 	calendar, err := h.service.GetCalendarByID(uint(id), tenantID, userID)
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+		c.JSON(http.StatusNotFound, baseAPI.ErrorResponseFunc("Not found", err.Error()))
 		return
 	}
 
-	c.JSON(http.StatusOK, calendar.ToResponse())
+	c.JSON(http.StatusOK, baseAPI.SuccessResponse("Calendar retrieved successfully", calendar.ToResponse()))
 }
 
 // GetCalendarsWithMetadata retrieves all calendars with 2-level deep preloading
@@ -126,18 +126,18 @@ func (h *CalendarHandler) GetCalendar(c *gin.Context) {
 func (h *CalendarHandler) GetCalendarsWithMetadata(c *gin.Context) {
 	tenantID, err := baseAPI.GetTenantID(c)
 	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unable to get tenant ID: " + err.Error()})
+		c.JSON(http.StatusUnauthorized, baseAPI.ErrorResponseFunc("Unauthorized", "Unable to get tenant ID: "+err.Error()))
 		return
 	}
 	userID, err := baseAPI.GetUserID(c)
 	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unable to get user ID: " + err.Error()})
+		c.JSON(http.StatusUnauthorized, baseAPI.ErrorResponseFunc("Unauthorized", "Unable to get user ID: "+err.Error()))
 		return
 	}
 
 	calendars, err := h.service.GetCalendarsWithDeepPreload(tenantID, userID)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, baseAPI.ErrorResponseFunc("Internal server error", err.Error()))
 		return
 	}
 
@@ -146,9 +146,7 @@ func (h *CalendarHandler) GetCalendarsWithMetadata(c *gin.Context) {
 		responses = append(responses, calendar.ToResponse())
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"calendars": responses,
-	})
+	c.JSON(http.StatusOK, baseAPI.SuccessResponse("Calendars retrieved successfully", responses))
 }
 
 // UpdateCalendar updates an existing calendar
@@ -171,34 +169,34 @@ func (h *CalendarHandler) UpdateCalendar(c *gin.Context) {
 	idStr := c.Param("id")
 	id, err := strconv.ParseUint(idStr, 10, 32)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid calendar ID"})
+		c.JSON(http.StatusBadRequest, baseAPI.ErrorResponseFunc("Invalid request", "Invalid calendar ID"))
 		return
 	}
 
 	var req entities.UpdateCalendarRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, baseAPI.ErrorResponseFunc("Internal server error", err.Error()))
 		return
 	}
 
 	tenantID, err := baseAPI.GetTenantID(c)
 	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unable to get tenant ID: " + err.Error()})
+		c.JSON(http.StatusUnauthorized, baseAPI.ErrorResponseFunc("Unauthorized", "Unable to get tenant ID: "+err.Error()))
 		return
 	}
 	userID, err := baseAPI.GetUserID(c)
 	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unable to get user ID: " + err.Error()})
+		c.JSON(http.StatusUnauthorized, baseAPI.ErrorResponseFunc("Unauthorized", "Unable to get user ID: "+err.Error()))
 		return
 	}
 
 	calendar, err := h.service.UpdateCalendar(uint(id), tenantID, userID, req)
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+		c.JSON(http.StatusNotFound, baseAPI.ErrorResponseFunc("Internal server error", err.Error()))
 		return
 	}
 
-	c.JSON(http.StatusOK, calendar.ToResponse())
+	c.JSON(http.StatusOK, baseAPI.SuccessResponse("Calendar updated successfully", calendar.ToResponse()))
 }
 
 // DeleteCalendar deletes a calendar
@@ -219,28 +217,28 @@ func (h *CalendarHandler) DeleteCalendar(c *gin.Context) {
 	idStr := c.Param("id")
 	id, err := strconv.ParseUint(idStr, 10, 32)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid calendar ID"})
+		c.JSON(http.StatusBadRequest, baseAPI.ErrorResponseFunc("Invalid request", "Invalid calendar ID"))
 		return
 	}
 
 	tenantID, err := baseAPI.GetTenantID(c)
 	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unable to get tenant ID: " + err.Error()})
+		c.JSON(http.StatusUnauthorized, baseAPI.ErrorResponseFunc("Unauthorized", "Unable to get tenant ID: "+err.Error()))
 		return
 	}
 	userID, err := baseAPI.GetUserID(c)
 	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unable to get user ID: " + err.Error()})
+		c.JSON(http.StatusUnauthorized, baseAPI.ErrorResponseFunc("Unauthorized", "Unable to get user ID: "+err.Error()))
 		return
 	}
 
 	err = h.service.DeleteCalendar(uint(id), tenantID, userID)
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+		c.JSON(http.StatusNotFound, baseAPI.ErrorResponseFunc("Internal server error", err.Error()))
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"message": "Calendar deleted successfully"})
+	c.JSON(http.StatusOK, baseAPI.SuccessMessageResponse("Calendar deleted successfully"))
 }
 
 // Calendar Entry CRUD Handlers
@@ -262,28 +260,28 @@ func (h *CalendarHandler) DeleteCalendar(c *gin.Context) {
 func (h *CalendarHandler) CreateCalendarEntry(c *gin.Context) {
 	var req entities.CreateCalendarEntryRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, baseAPI.ErrorResponseFunc("Internal server error", err.Error()))
 		return
 	}
 
 	tenantID, err := baseAPI.GetTenantID(c)
 	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unable to get tenant ID: " + err.Error()})
+		c.JSON(http.StatusUnauthorized, baseAPI.ErrorResponseFunc("Unauthorized", "Unable to get tenant ID: "+err.Error()))
 		return
 	}
 	userID, err := baseAPI.GetUserID(c)
 	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unable to get user ID: " + err.Error()})
+		c.JSON(http.StatusUnauthorized, baseAPI.ErrorResponseFunc("Unauthorized", "Unable to get user ID: "+err.Error()))
 		return
 	}
 
 	entry, err := h.service.CreateCalendarEntry(req, tenantID, userID)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, baseAPI.ErrorResponseFunc("Internal server error", err.Error()))
 		return
 	}
 
-	c.JSON(http.StatusCreated, entry.ToResponse())
+	c.JSON(http.StatusCreated, baseAPI.SuccessResponse("Calendar entry created successfully", entry.ToResponse()))
 }
 
 // GetCalendarEntry retrieves a specific calendar entry
@@ -304,28 +302,28 @@ func (h *CalendarHandler) GetCalendarEntry(c *gin.Context) {
 	idStr := c.Param("id")
 	id, err := strconv.ParseUint(idStr, 10, 32)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid calendar entry ID"})
+		c.JSON(http.StatusBadRequest, baseAPI.ErrorResponseFunc("Invalid request", "Invalid calendar entry ID"))
 		return
 	}
 
 	tenantID, err := baseAPI.GetTenantID(c)
 	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unable to get tenant ID: " + err.Error()})
+		c.JSON(http.StatusUnauthorized, baseAPI.ErrorResponseFunc("Unauthorized", "Unable to get tenant ID: "+err.Error()))
 		return
 	}
 	userID, err := baseAPI.GetUserID(c)
 	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unable to get user ID: " + err.Error()})
+		c.JSON(http.StatusUnauthorized, baseAPI.ErrorResponseFunc("Unauthorized", "Unable to get user ID: "+err.Error()))
 		return
 	}
 
 	entry, err := h.service.GetCalendarEntryByID(uint(id), tenantID, userID)
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+		c.JSON(http.StatusNotFound, baseAPI.ErrorResponseFunc("Internal server error", err.Error()))
 		return
 	}
 
-	c.JSON(http.StatusOK, entry.ToResponse())
+	c.JSON(http.StatusOK, baseAPI.SuccessResponse("Calendar entry updated successfully", entry.ToResponse()))
 }
 
 // GetAllCalendarEntries retrieves all calendar entries with pagination
@@ -354,19 +352,19 @@ func (h *CalendarHandler) GetAllCalendarEntries(c *gin.Context) {
 
 	tenantID, err := baseAPI.GetTenantID(c)
 	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unable to get tenant ID: " + err.Error()})
+		c.JSON(http.StatusUnauthorized, baseAPI.ErrorResponseFunc("Unauthorized", "Unable to get tenant ID: "+err.Error()))
 		return
 	}
 
 	userID, err := baseAPI.GetUserID(c)
 	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unable to get user ID: " + err.Error()})
+		c.JSON(http.StatusUnauthorized, baseAPI.ErrorResponseFunc("Unauthorized", "Unable to get user ID: "+err.Error()))
 		return
 	}
 
 	entries, total, err := h.service.GetAllCalendarEntries(page, limit, tenantID, userID)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, baseAPI.ErrorResponseFunc("Internal server error", err.Error()))
 		return
 	}
 
@@ -375,14 +373,7 @@ func (h *CalendarHandler) GetAllCalendarEntries(c *gin.Context) {
 		responses = append(responses, entry.ToResponse())
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"entries": responses,
-		"pagination": gin.H{
-			"page":  page,
-			"limit": limit,
-			"total": total,
-		},
-	})
+	c.JSON(http.StatusOK, baseAPI.SuccessListResponse(responses, page, limit, int(total)))
 }
 
 // UpdateCalendarEntry updates an existing calendar entry
@@ -405,34 +396,34 @@ func (h *CalendarHandler) UpdateCalendarEntry(c *gin.Context) {
 	idStr := c.Param("id")
 	id, err := strconv.ParseUint(idStr, 10, 32)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid calendar entry ID"})
+		c.JSON(http.StatusBadRequest, baseAPI.ErrorResponseFunc("Invalid request", "Invalid calendar entry ID"))
 		return
 	}
 
 	var req entities.UpdateCalendarEntryRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, baseAPI.ErrorResponseFunc("Internal server error", err.Error()))
 		return
 	}
 
 	tenantID, err := baseAPI.GetTenantID(c)
 	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unable to get tenant ID: " + err.Error()})
+		c.JSON(http.StatusUnauthorized, baseAPI.ErrorResponseFunc("Unauthorized", "Unable to get tenant ID: "+err.Error()))
 		return
 	}
 	userID, err := baseAPI.GetUserID(c)
 	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unable to get user ID: " + err.Error()})
+		c.JSON(http.StatusUnauthorized, baseAPI.ErrorResponseFunc("Unauthorized", "Unable to get user ID: "+err.Error()))
 		return
 	}
 
 	entry, err := h.service.UpdateCalendarEntry(uint(id), tenantID, userID, req)
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+		c.JSON(http.StatusNotFound, baseAPI.ErrorResponseFunc("Internal server error", err.Error()))
 		return
 	}
 
-	c.JSON(http.StatusOK, entry.ToResponse())
+	c.JSON(http.StatusOK, baseAPI.SuccessResponse("Calendar entry updated successfully", entry.ToResponse()))
 }
 
 // DeleteCalendarEntry deletes a calendar entry
@@ -453,28 +444,28 @@ func (h *CalendarHandler) DeleteCalendarEntry(c *gin.Context) {
 	idStr := c.Param("id")
 	id, err := strconv.ParseUint(idStr, 10, 32)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid calendar entry ID"})
+		c.JSON(http.StatusBadRequest, baseAPI.ErrorResponseFunc("Invalid request", "Invalid calendar entry ID"))
 		return
 	}
 
 	tenantID, err := baseAPI.GetTenantID(c)
 	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unable to get tenant ID: " + err.Error()})
+		c.JSON(http.StatusUnauthorized, baseAPI.ErrorResponseFunc("Unauthorized", "Unable to get tenant ID: "+err.Error()))
 		return
 	}
 	userID, err := baseAPI.GetUserID(c)
 	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unable to get user ID: " + err.Error()})
+		c.JSON(http.StatusUnauthorized, baseAPI.ErrorResponseFunc("Unauthorized", "Unable to get user ID: "+err.Error()))
 		return
 	}
 
 	err = h.service.DeleteCalendarEntry(uint(id), tenantID, userID)
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+		c.JSON(http.StatusNotFound, baseAPI.ErrorResponseFunc("Internal server error", err.Error()))
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"message": "Calendar entry deleted successfully"})
+	c.JSON(http.StatusOK, baseAPI.SuccessMessageResponse("Calendar entry deleted successfully"))
 }
 
 // Calendar Series CRUD Handlers
@@ -496,28 +487,28 @@ func (h *CalendarHandler) DeleteCalendarEntry(c *gin.Context) {
 func (h *CalendarHandler) CreateCalendarSeries(c *gin.Context) {
 	var req entities.CreateCalendarSeriesRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, baseAPI.ErrorResponseFunc("Internal server error", err.Error()))
 		return
 	}
 
 	tenantID, err := baseAPI.GetTenantID(c)
 	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unable to get tenant ID: " + err.Error()})
+		c.JSON(http.StatusUnauthorized, baseAPI.ErrorResponseFunc("Unauthorized", "Unable to get tenant ID: "+err.Error()))
 		return
 	}
 	userID, err := baseAPI.GetUserID(c)
 	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unable to get user ID: " + err.Error()})
+		c.JSON(http.StatusUnauthorized, baseAPI.ErrorResponseFunc("Unauthorized", "Unable to get user ID: "+err.Error()))
 		return
 	}
 
 	series, err := h.service.CreateCalendarSeries(req, tenantID, userID)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, baseAPI.ErrorResponseFunc("Internal server error", err.Error()))
 		return
 	}
 
-	c.JSON(http.StatusCreated, series.ToResponse())
+	c.JSON(http.StatusCreated, baseAPI.SuccessResponse("Calendar series created successfully", series.ToResponse()))
 }
 
 // GetCalendarSeries retrieves a specific calendar series
@@ -538,28 +529,28 @@ func (h *CalendarHandler) GetCalendarSeries(c *gin.Context) {
 	idStr := c.Param("id")
 	id, err := strconv.ParseUint(idStr, 10, 32)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid calendar series ID"})
+		c.JSON(http.StatusBadRequest, baseAPI.ErrorResponseFunc("Invalid request", "Invalid calendar series ID"))
 		return
 	}
 
 	tenantID, err := baseAPI.GetTenantID(c)
 	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unable to get tenant ID: " + err.Error()})
+		c.JSON(http.StatusUnauthorized, baseAPI.ErrorResponseFunc("Unauthorized", "Unable to get tenant ID: "+err.Error()))
 		return
 	}
 	userID, err := baseAPI.GetUserID(c)
 	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unable to get user ID: " + err.Error()})
+		c.JSON(http.StatusUnauthorized, baseAPI.ErrorResponseFunc("Unauthorized", "Unable to get user ID: "+err.Error()))
 		return
 	}
 
 	series, err := h.service.GetCalendarSeriesByID(uint(id), tenantID, userID)
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+		c.JSON(http.StatusNotFound, baseAPI.ErrorResponseFunc("Internal server error", err.Error()))
 		return
 	}
 
-	c.JSON(http.StatusOK, series.ToResponse())
+	c.JSON(http.StatusOK, baseAPI.SuccessResponse("Calendar series updated successfully", series.ToResponse()))
 }
 
 // GetAllCalendarSeries retrieves all calendar series with pagination
@@ -588,18 +579,18 @@ func (h *CalendarHandler) GetAllCalendarSeries(c *gin.Context) {
 
 	tenantID, err := baseAPI.GetTenantID(c)
 	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unable to get tenant ID: " + err.Error()})
+		c.JSON(http.StatusUnauthorized, baseAPI.ErrorResponseFunc("Unauthorized", "Unable to get tenant ID: "+err.Error()))
 		return
 	}
 	userID, err := baseAPI.GetUserID(c)
 	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unable to get user ID: " + err.Error()})
+		c.JSON(http.StatusUnauthorized, baseAPI.ErrorResponseFunc("Unauthorized", "Unable to get user ID: "+err.Error()))
 		return
 	}
 
 	series, total, err := h.service.GetAllCalendarSeries(page, limit, tenantID, userID)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, baseAPI.ErrorResponseFunc("Internal server error", err.Error()))
 		return
 	}
 
@@ -608,14 +599,7 @@ func (h *CalendarHandler) GetAllCalendarSeries(c *gin.Context) {
 		responses = append(responses, s.ToResponse())
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"series": responses,
-		"pagination": gin.H{
-			"page":  page,
-			"limit": limit,
-			"total": total,
-		},
-	})
+	c.JSON(http.StatusOK, baseAPI.SuccessListResponse(responses, page, limit, int(total)))
 }
 
 // UpdateCalendarSeries updates an existing calendar series
@@ -638,34 +622,34 @@ func (h *CalendarHandler) UpdateCalendarSeries(c *gin.Context) {
 	idStr := c.Param("id")
 	id, err := strconv.ParseUint(idStr, 10, 32)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid calendar series ID"})
+		c.JSON(http.StatusBadRequest, baseAPI.ErrorResponseFunc("Invalid request", "Invalid calendar series ID"))
 		return
 	}
 
 	var req entities.UpdateCalendarSeriesRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, baseAPI.ErrorResponseFunc("Internal server error", err.Error()))
 		return
 	}
 
 	tenantID, err := baseAPI.GetTenantID(c)
 	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unable to get tenant ID: " + err.Error()})
+		c.JSON(http.StatusUnauthorized, baseAPI.ErrorResponseFunc("Unauthorized", "Unable to get tenant ID: "+err.Error()))
 		return
 	}
 	userID, err := baseAPI.GetUserID(c)
 	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unable to get user ID: " + err.Error()})
+		c.JSON(http.StatusUnauthorized, baseAPI.ErrorResponseFunc("Unauthorized", "Unable to get user ID: "+err.Error()))
 		return
 	}
 
 	series, err := h.service.UpdateCalendarSeries(uint(id), tenantID, userID, req)
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+		c.JSON(http.StatusNotFound, baseAPI.ErrorResponseFunc("Internal server error", err.Error()))
 		return
 	}
 
-	c.JSON(http.StatusOK, series.ToResponse())
+	c.JSON(http.StatusOK, baseAPI.SuccessResponse("Calendar series updated successfully", series.ToResponse()))
 }
 
 // DeleteCalendarSeries deletes a calendar series
@@ -686,28 +670,28 @@ func (h *CalendarHandler) DeleteCalendarSeries(c *gin.Context) {
 	idStr := c.Param("id")
 	id, err := strconv.ParseUint(idStr, 10, 32)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid calendar series ID"})
+		c.JSON(http.StatusBadRequest, baseAPI.ErrorResponseFunc("Invalid request", "Invalid calendar series ID"))
 		return
 	}
 
 	tenantID, err := baseAPI.GetTenantID(c)
 	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unable to get tenant ID: " + err.Error()})
+		c.JSON(http.StatusUnauthorized, baseAPI.ErrorResponseFunc("Unauthorized", "Unable to get tenant ID: "+err.Error()))
 		return
 	}
 	userID, err := baseAPI.GetUserID(c)
 	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unable to get user ID: " + err.Error()})
+		c.JSON(http.StatusUnauthorized, baseAPI.ErrorResponseFunc("Unauthorized", "Unable to get user ID: "+err.Error()))
 		return
 	}
 
 	err = h.service.DeleteCalendarSeries(uint(id), tenantID, userID)
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+		c.JSON(http.StatusNotFound, baseAPI.ErrorResponseFunc("Internal server error", err.Error()))
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"message": "Calendar series deleted successfully"})
+	c.JSON(http.StatusOK, baseAPI.SuccessMessageResponse("Calendar series deleted successfully"))
 }
 
 // External Calendar CRUD Handlers
@@ -729,28 +713,28 @@ func (h *CalendarHandler) DeleteCalendarSeries(c *gin.Context) {
 func (h *CalendarHandler) CreateExternalCalendar(c *gin.Context) {
 	var req entities.CreateExternalCalendarRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, baseAPI.ErrorResponseFunc("Internal server error", err.Error()))
 		return
 	}
 
 	tenantID, err := baseAPI.GetTenantID(c)
 	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unable to get tenant ID: " + err.Error()})
+		c.JSON(http.StatusUnauthorized, baseAPI.ErrorResponseFunc("Unauthorized", "Unable to get tenant ID: "+err.Error()))
 		return
 	}
 	userID, err := baseAPI.GetUserID(c)
 	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unable to get user ID: " + err.Error()})
+		c.JSON(http.StatusUnauthorized, baseAPI.ErrorResponseFunc("Unauthorized", "Unable to get user ID: "+err.Error()))
 		return
 	}
 
 	external, err := h.service.CreateExternalCalendar(req, tenantID, userID)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, baseAPI.ErrorResponseFunc("Internal server error", err.Error()))
 		return
 	}
 
-	c.JSON(http.StatusCreated, external.ToResponse())
+	c.JSON(http.StatusCreated, baseAPI.SuccessResponse("External calendar created successfully", external.ToResponse()))
 }
 
 // GetExternalCalendar retrieves a specific external calendar
@@ -771,28 +755,28 @@ func (h *CalendarHandler) GetExternalCalendar(c *gin.Context) {
 	idStr := c.Param("id")
 	id, err := strconv.ParseUint(idStr, 10, 32)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid external calendar ID"})
+		c.JSON(http.StatusBadRequest, baseAPI.ErrorResponseFunc("Invalid request", "Invalid external calendar ID"))
 		return
 	}
 
 	tenantID, err := baseAPI.GetTenantID(c)
 	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unable to get tenant ID: " + err.Error()})
+		c.JSON(http.StatusUnauthorized, baseAPI.ErrorResponseFunc("Unauthorized", "Unable to get tenant ID: "+err.Error()))
 		return
 	}
 	userID, err := baseAPI.GetUserID(c)
 	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unable to get user ID: " + err.Error()})
+		c.JSON(http.StatusUnauthorized, baseAPI.ErrorResponseFunc("Unauthorized", "Unable to get user ID: "+err.Error()))
 		return
 	}
 
 	external, err := h.service.GetExternalCalendarByID(uint(id), tenantID, userID)
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+		c.JSON(http.StatusNotFound, baseAPI.ErrorResponseFunc("Internal server error", err.Error()))
 		return
 	}
 
-	c.JSON(http.StatusOK, external.ToResponse())
+	c.JSON(http.StatusOK, baseAPI.SuccessResponse("External calendar updated successfully", external.ToResponse()))
 }
 
 // GetAllExternalCalendars retrieves all external calendars with pagination
@@ -821,18 +805,18 @@ func (h *CalendarHandler) GetAllExternalCalendars(c *gin.Context) {
 
 	tenantID, err := baseAPI.GetTenantID(c)
 	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unable to get tenant ID: " + err.Error()})
+		c.JSON(http.StatusUnauthorized, baseAPI.ErrorResponseFunc("Unauthorized", "Unable to get tenant ID: "+err.Error()))
 		return
 	}
 	userID, err := baseAPI.GetUserID(c)
 	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unable to get user ID: " + err.Error()})
+		c.JSON(http.StatusUnauthorized, baseAPI.ErrorResponseFunc("Unauthorized", "Unable to get user ID: "+err.Error()))
 		return
 	}
 
 	externals, total, err := h.service.GetAllExternalCalendars(page, limit, tenantID, userID)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, baseAPI.ErrorResponseFunc("Internal server error", err.Error()))
 		return
 	}
 
@@ -841,14 +825,7 @@ func (h *CalendarHandler) GetAllExternalCalendars(c *gin.Context) {
 		responses = append(responses, external.ToResponse())
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"external_calendars": responses,
-		"pagination": gin.H{
-			"page":  page,
-			"limit": limit,
-			"total": total,
-		},
-	})
+	c.JSON(http.StatusOK, baseAPI.SuccessListResponse(responses, page, limit, int(total)))
 }
 
 // UpdateExternalCalendar updates an existing external calendar
@@ -871,34 +848,34 @@ func (h *CalendarHandler) UpdateExternalCalendar(c *gin.Context) {
 	idStr := c.Param("id")
 	id, err := strconv.ParseUint(idStr, 10, 32)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid external calendar ID"})
+		c.JSON(http.StatusBadRequest, baseAPI.ErrorResponseFunc("Invalid request", "Invalid external calendar ID"))
 		return
 	}
 
 	var req entities.UpdateExternalCalendarRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, baseAPI.ErrorResponseFunc("Internal server error", err.Error()))
 		return
 	}
 
 	tenantID, err := baseAPI.GetTenantID(c)
 	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unable to get tenant ID: " + err.Error()})
+		c.JSON(http.StatusUnauthorized, baseAPI.ErrorResponseFunc("Unauthorized", "Unable to get tenant ID: "+err.Error()))
 		return
 	}
 	userID, err := baseAPI.GetUserID(c)
 	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unable to get user ID: " + err.Error()})
+		c.JSON(http.StatusUnauthorized, baseAPI.ErrorResponseFunc("Unauthorized", "Unable to get user ID: "+err.Error()))
 		return
 	}
 
 	external, err := h.service.UpdateExternalCalendar(uint(id), tenantID, userID, req)
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+		c.JSON(http.StatusNotFound, baseAPI.ErrorResponseFunc("Internal server error", err.Error()))
 		return
 	}
 
-	c.JSON(http.StatusOK, external.ToResponse())
+	c.JSON(http.StatusOK, baseAPI.SuccessResponse("External calendar updated successfully", external.ToResponse()))
 }
 
 // DeleteExternalCalendar deletes an external calendar
@@ -919,28 +896,28 @@ func (h *CalendarHandler) DeleteExternalCalendar(c *gin.Context) {
 	idStr := c.Param("id")
 	id, err := strconv.ParseUint(idStr, 10, 32)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid external calendar ID"})
+		c.JSON(http.StatusBadRequest, baseAPI.ErrorResponseFunc("Invalid request", "Invalid external calendar ID"))
 		return
 	}
 
 	tenantID, err := baseAPI.GetTenantID(c)
 	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unable to get tenant ID: " + err.Error()})
+		c.JSON(http.StatusUnauthorized, baseAPI.ErrorResponseFunc("Unauthorized", "Unable to get tenant ID: "+err.Error()))
 		return
 	}
 	userID, err := baseAPI.GetUserID(c)
 	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unable to get user ID: " + err.Error()})
+		c.JSON(http.StatusUnauthorized, baseAPI.ErrorResponseFunc("Unauthorized", "Unable to get user ID: "+err.Error()))
 		return
 	}
 
 	err = h.service.DeleteExternalCalendar(uint(id), tenantID, userID)
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+		c.JSON(http.StatusNotFound, baseAPI.ErrorResponseFunc("Internal server error", err.Error()))
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"message": "External calendar deleted successfully"})
+	c.JSON(http.StatusOK, baseAPI.SuccessMessageResponse("External calendar deleted successfully"))
 }
 
 // Specialized Handlers
@@ -961,31 +938,31 @@ func (h *CalendarHandler) DeleteExternalCalendar(c *gin.Context) {
 func (h *CalendarHandler) GetCalendarWeekView(c *gin.Context) {
 	var req entities.WeekViewRequest
 	if err := c.ShouldBindQuery(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, baseAPI.ErrorResponseFunc("Internal server error", err.Error()))
 		return
 	}
 
 	date, err := time.Parse("2006-01-02", req.Date)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid date format. Use YYYY-MM-DD"})
+		c.JSON(http.StatusBadRequest, baseAPI.ErrorResponseFunc("Invalid request", "Invalid date format. Use YYYY-MM-DD"))
 		return
 	}
 
 	tenantID, err := baseAPI.GetTenantID(c)
 	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unable to get tenant ID: " + err.Error()})
+		c.JSON(http.StatusUnauthorized, baseAPI.ErrorResponseFunc("Unauthorized", "Unable to get tenant ID: "+err.Error()))
 		return
 	}
 
 	userID, err := baseAPI.GetUserID(c)
 	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unable to get user ID: " + err.Error()})
+		c.JSON(http.StatusUnauthorized, baseAPI.ErrorResponseFunc("Unauthorized", "Unable to get user ID: "+err.Error()))
 		return
 	}
 
 	entries, err := h.service.GetCalendarWeekView(date, tenantID, userID)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, baseAPI.ErrorResponseFunc("Internal server error", err.Error()))
 		return
 	}
 
@@ -1013,24 +990,24 @@ func (h *CalendarHandler) GetCalendarWeekView(c *gin.Context) {
 func (h *CalendarHandler) GetCalendarYearView(c *gin.Context) {
 	var req entities.YearViewRequest
 	if err := c.ShouldBindQuery(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, baseAPI.ErrorResponseFunc("Internal server error", err.Error()))
 		return
 	}
 
 	tenantID, err := baseAPI.GetTenantID(c)
 	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unable to get tenant ID: " + err.Error()})
+		c.JSON(http.StatusUnauthorized, baseAPI.ErrorResponseFunc("Unauthorized", "Unable to get tenant ID: "+err.Error()))
 		return
 	}
 	userID, err := baseAPI.GetUserID(c)
 	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unable to get user ID: " + err.Error()})
+		c.JSON(http.StatusUnauthorized, baseAPI.ErrorResponseFunc("Unauthorized", "Unable to get user ID: "+err.Error()))
 		return
 	}
 
 	entries, err := h.service.GetCalendarYearView(req.Year, tenantID, userID)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, baseAPI.ErrorResponseFunc("Internal server error", err.Error()))
 		return
 	}
 
@@ -1060,24 +1037,24 @@ func (h *CalendarHandler) GetCalendarYearView(c *gin.Context) {
 func (h *CalendarHandler) GetFreeSlots(c *gin.Context) {
 	var req entities.FreeSlotRequest
 	if err := c.ShouldBindQuery(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, baseAPI.ErrorResponseFunc("Internal server error", err.Error()))
 		return
 	}
 
 	tenantID, err := baseAPI.GetTenantID(c)
 	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unable to get tenant ID: " + err.Error()})
+		c.JSON(http.StatusUnauthorized, baseAPI.ErrorResponseFunc("Unauthorized", "Unable to get tenant ID: "+err.Error()))
 		return
 	}
 	userID, err := baseAPI.GetUserID(c)
 	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unable to get user ID: " + err.Error()})
+		c.JSON(http.StatusUnauthorized, baseAPI.ErrorResponseFunc("Unauthorized", "Unable to get user ID: "+err.Error()))
 		return
 	}
 
 	slots, err := h.service.GetFreeSlots(req, tenantID, userID)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, baseAPI.ErrorResponseFunc("Internal server error", err.Error()))
 		return
 	}
 
@@ -1105,36 +1082,36 @@ func (h *CalendarHandler) ImportHolidays(c *gin.Context) {
 	idStr := c.Param("id")
 	calendarID, err := strconv.ParseUint(idStr, 10, 32)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid calendar ID"})
+		c.JSON(http.StatusBadRequest, baseAPI.ErrorResponseFunc("Invalid request", "Invalid calendar ID"))
 		return
 	}
 
 	var req entities.ImportHolidaysRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, baseAPI.ErrorResponseFunc("Internal server error", err.Error()))
 		return
 	}
 
 	// Validate year range
 	if req.YearTo < req.YearFrom {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "year_to must be greater than or equal to year_from"})
+		c.JSON(http.StatusBadRequest, baseAPI.ErrorResponseFunc("Invalid request", "year_to must be greater than or equal to year_from"))
 		return
 	}
 
 	tenantID, err := baseAPI.GetTenantID(c)
 	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unable to get tenant ID: " + err.Error()})
+		c.JSON(http.StatusUnauthorized, baseAPI.ErrorResponseFunc("Unauthorized", "Unable to get tenant ID: "+err.Error()))
 		return
 	}
 	userID, err := baseAPI.GetUserID(c)
 	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unable to get user ID: " + err.Error()})
+		c.JSON(http.StatusUnauthorized, baseAPI.ErrorResponseFunc("Unauthorized", "Unable to get user ID: "+err.Error()))
 		return
 	}
 
 	result, err := h.service.ImportHolidaysToCalendar(uint(calendarID), req, tenantID, userID)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, baseAPI.ErrorResponseFunc("Internal server error", err.Error()))
 		return
 	}
 

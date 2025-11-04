@@ -1,5 +1,15 @@
 basePath: /api/v1
 definitions:
+  api.APIResponse:
+    properties:
+      data: {}
+      error:
+        type: string
+      message:
+        type: string
+      success:
+        type: boolean
+    type: object
   entities.CalendarEntryResponse:
     properties:
       calendar_id:
@@ -121,6 +131,75 @@ definitions:
       weekday:
         type: integer
     type: object
+  entities.ClientResponse:
+    properties:
+      admission_date:
+        type: string
+      alternative_email:
+        type: string
+      alternative_first_name:
+        type: string
+      alternative_last_name:
+        type: string
+      alternative_phone:
+        type: string
+      city:
+        type: string
+      contact_email:
+        type: string
+      contact_first_name:
+        type: string
+      contact_last_name:
+        type: string
+      contact_phone:
+        type: string
+      cost_provider:
+        $ref: '#/definitions/entities.CostProviderResponse'
+      cost_provider_id:
+        type: integer
+      created_at:
+        type: string
+      date_of_birth:
+        type: string
+      email:
+        type: string
+      first_name:
+        type: string
+      gender:
+        type: string
+      id:
+        type: integer
+      invoiced_individually:
+        type: boolean
+      last_name:
+        type: string
+      notes:
+        type: string
+      phone:
+        type: string
+      primary_language:
+        type: string
+      provider_approval_code:
+        type: string
+      provider_approval_date:
+        type: string
+      referral_source:
+        type: string
+      status:
+        type: string
+      street_address:
+        type: string
+      tenant_id:
+        type: integer
+      therapy_title:
+        type: string
+      unit_price:
+        type: number
+      updated_at:
+        type: string
+      zip:
+        type: string
+    type: object
   entities.CostProviderResponse:
     properties:
       city:
@@ -149,6 +228,8 @@ definitions:
   entities.CreateCalendarRequest:
     type: object
   entities.CreateCalendarSeriesRequest:
+    type: object
+  entities.CreateClientRequest:
     type: object
   entities.CreateCostProviderRequest:
     properties:
@@ -256,6 +337,11 @@ definitions:
     - year_from
     - year_to
     type: object
+  entities.NullableDate:
+    properties:
+      time.Time:
+        type: string
+    type: object
   entities.UnburdyHolidaysData:
     properties:
       public_holidays:
@@ -278,6 +364,8 @@ definitions:
   entities.UpdateCalendarRequest:
     type: object
   entities.UpdateCalendarSeriesRequest:
+    type: object
+  entities.UpdateClientRequest:
     type: object
   entities.UpdateCostProviderRequest:
     properties:
@@ -659,6 +747,23 @@ definitions:
         type: string
       success:
         type: boolean
+    type: object
+  github_com_unburdy_unburdy-server-api_internal_models.ListResponse:
+    properties:
+      data: {}
+      pagination:
+        $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.PaginationResponse'
+    type: object
+  github_com_unburdy_unburdy-server-api_internal_models.PaginationResponse:
+    properties:
+      limit:
+        type: integer
+      page:
+        type: integer
+      total:
+        type: integer
+      total_pages:
+        type: integer
     type: object
   gorm.DeletedAt:
     properties:
@@ -2563,22 +2668,24 @@ paths:
         "201":
           description: Created
           schema:
-            $ref: '#/definitions/entities.CalendarResponse'
+            allOf:
+            - $ref: '#/definitions/api.APIResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/entities.CalendarResponse'
+              type: object
         "400":
           description: Bad Request
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/api.APIResponse'
         "401":
           description: Unauthorized
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/api.APIResponse'
         "500":
           description: Internal Server Error
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/api.APIResponse'
       security:
       - BearerAuth: []
       summary: Create a new calendar
@@ -3062,27 +3169,28 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/entities.CalendarResponse'
+            allOf:
+            - $ref: '#/definitions/api.APIResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/entities.CalendarResponse'
+              type: object
         "400":
           description: Bad Request
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/api.APIResponse'
         "401":
           description: Unauthorized
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/api.APIResponse'
         "404":
           description: Not Found
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/api.APIResponse'
         "500":
           description: Internal Server Error
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/api.APIResponse'
       security:
       - BearerAuth: []
       summary: Get calendar by ID
@@ -3339,20 +3447,20 @@ paths:
         "200":
           description: Clients retrieved successfully
           schema:
-            additionalProperties: true
-            type: object
+            allOf:
+            - $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.APIResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ListResponse'
+              type: object
         "401":
           description: Unauthorized
           schema:
-            additionalProperties:
-              type: string
-            type: object
+            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.APIResponse'
         "500":
           description: Internal server error
           schema:
-            additionalProperties:
-              type: string
-            type: object
+            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.APIResponse'
       security:
       - BearerAuth: []
       summary: Get all clients
@@ -3369,7 +3477,7 @@ paths:
         name: client
         required: true
         schema:
-          $ref: '#/definitions/models.CreateClientRequest'
+          $ref: '#/definitions/entities.CreateClientRequest'
       produces:
       - application/json
       responses:
@@ -3380,7 +3488,7 @@ paths:
             - $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.APIResponse'
             - properties:
                 data:
-                  $ref: '#/definitions/models.ClientResponse'
+                  $ref: '#/definitions/entities.ClientResponse'
               type: object
         "400":
           description: Bad request
@@ -3421,33 +3529,23 @@ paths:
         "200":
           description: Client deleted successfully
           schema:
-            additionalProperties:
-              type: string
-            type: object
+            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.APIResponse'
         "400":
           description: Bad request
           schema:
-            additionalProperties:
-              type: string
-            type: object
+            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.APIResponse'
         "401":
           description: Unauthorized
           schema:
-            additionalProperties:
-              type: string
-            type: object
+            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.APIResponse'
         "404":
           description: Client not found
           schema:
-            additionalProperties:
-              type: string
-            type: object
+            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.APIResponse'
         "500":
           description: Internal server error
           schema:
-            additionalProperties:
-              type: string
-            type: object
+            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.APIResponse'
       security:
       - BearerAuth: []
       summary: Delete a client
@@ -3472,7 +3570,7 @@ paths:
             - $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.APIResponse'
             - properties:
                 data:
-                  $ref: '#/definitions/models.ClientResponse'
+                  $ref: '#/definitions/entities.ClientResponse'
               type: object
         "400":
           description: Bad request
@@ -3519,7 +3617,7 @@ paths:
         name: client
         required: true
         schema:
-          $ref: '#/definitions/models.UpdateClientRequest'
+          $ref: '#/definitions/entities.UpdateClientRequest'
       produces:
       - application/json
       responses:
@@ -3530,7 +3628,7 @@ paths:
             - $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.APIResponse'
             - properties:
                 data:
-                  $ref: '#/definitions/models.ClientResponse'
+                  $ref: '#/definitions/entities.ClientResponse'
               type: object
         "400":
           description: Bad request
@@ -3588,26 +3686,24 @@ paths:
         "200":
           description: Search results
           schema:
-            additionalProperties: true
-            type: object
+            allOf:
+            - $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.APIResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ListResponse'
+              type: object
         "400":
           description: Bad request
           schema:
-            additionalProperties:
-              type: string
-            type: object
+            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.APIResponse'
         "401":
           description: Unauthorized
           schema:
-            additionalProperties:
-              type: string
-            type: object
+            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.APIResponse'
         "500":
           description: Internal server error
           schema:
-            additionalProperties:
-              type: string
-            type: object
+            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.APIResponse'
       security:
       - BearerAuth: []
       summary: Search clients
@@ -3635,20 +3731,20 @@ paths:
         "200":
           description: Cost providers retrieved successfully
           schema:
-            additionalProperties: true
-            type: object
+            allOf:
+            - $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.APIResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ListResponse'
+              type: object
         "401":
           description: Unauthorized
           schema:
-            additionalProperties:
-              type: string
-            type: object
+            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.APIResponse'
         "500":
           description: Internal server error
           schema:
-            additionalProperties:
-              type: string
-            type: object
+            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.APIResponse'
       security:
       - BearerAuth: []
       summary: Get all cost providers
@@ -3672,25 +3768,24 @@ paths:
         "201":
           description: Created cost provider
           schema:
-            $ref: '#/definitions/entities.CostProviderResponse'
+            allOf:
+            - $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.APIResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/entities.CostProviderResponse'
+              type: object
         "400":
           description: Bad request
           schema:
-            additionalProperties:
-              type: string
-            type: object
+            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.APIResponse'
         "401":
           description: Unauthorized
           schema:
-            additionalProperties:
-              type: string
-            type: object
+            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.APIResponse'
         "500":
           description: Internal server error
           schema:
-            additionalProperties:
-              type: string
-            type: object
+            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.APIResponse'
       security:
       - BearerAuth: []
       summary: Create a new cost provider
@@ -3712,33 +3807,23 @@ paths:
         "200":
           description: Cost provider deleted successfully
           schema:
-            additionalProperties:
-              type: string
-            type: object
+            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.APIResponse'
         "400":
           description: Bad request
           schema:
-            additionalProperties:
-              type: string
-            type: object
+            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.APIResponse'
         "401":
           description: Unauthorized
           schema:
-            additionalProperties:
-              type: string
-            type: object
+            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.APIResponse'
         "404":
           description: Cost provider not found
           schema:
-            additionalProperties:
-              type: string
-            type: object
+            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.APIResponse'
         "500":
           description: Internal server error
           schema:
-            additionalProperties:
-              type: string
-            type: object
+            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.APIResponse'
       security:
       - BearerAuth: []
       summary: Delete a cost provider
@@ -3759,31 +3844,28 @@ paths:
         "200":
           description: Cost provider found
           schema:
-            $ref: '#/definitions/entities.CostProviderResponse'
+            allOf:
+            - $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.APIResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/entities.CostProviderResponse'
+              type: object
         "400":
           description: Bad request
           schema:
-            additionalProperties:
-              type: string
-            type: object
+            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.APIResponse'
         "401":
           description: Unauthorized
           schema:
-            additionalProperties:
-              type: string
-            type: object
+            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.APIResponse'
         "404":
           description: Cost provider not found
           schema:
-            additionalProperties:
-              type: string
-            type: object
+            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.APIResponse'
         "500":
           description: Internal server error
           schema:
-            additionalProperties:
-              type: string
-            type: object
+            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.APIResponse'
       security:
       - BearerAuth: []
       summary: Get a cost provider by ID
@@ -3812,31 +3894,28 @@ paths:
         "200":
           description: Updated cost provider
           schema:
-            $ref: '#/definitions/entities.CostProviderResponse'
+            allOf:
+            - $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.APIResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/entities.CostProviderResponse'
+              type: object
         "400":
           description: Bad request
           schema:
-            additionalProperties:
-              type: string
-            type: object
+            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.APIResponse'
         "401":
           description: Unauthorized
           schema:
-            additionalProperties:
-              type: string
-            type: object
+            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.APIResponse'
         "404":
           description: Cost provider not found
           schema:
-            additionalProperties:
-              type: string
-            type: object
+            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.APIResponse'
         "500":
           description: Internal server error
           schema:
-            additionalProperties:
-              type: string
-            type: object
+            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.APIResponse'
       security:
       - BearerAuth: []
       summary: Update a cost provider
@@ -3869,26 +3948,24 @@ paths:
         "200":
           description: Search results
           schema:
-            additionalProperties: true
-            type: object
+            allOf:
+            - $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.APIResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ListResponse'
+              type: object
         "400":
           description: Bad request
           schema:
-            additionalProperties:
-              type: string
-            type: object
+            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.APIResponse'
         "401":
           description: Unauthorized
           schema:
-            additionalProperties:
-              type: string
-            type: object
+            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.APIResponse'
         "500":
           description: Internal server error
           schema:
-            additionalProperties:
-              type: string
-            type: object
+            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.APIResponse'
       security:
       - BearerAuth: []
       summary: Search cost providers

@@ -15,10 +15,14 @@ type (
 	ErrorResponse  = models.ErrorResponse
 	LoginRequest   = models.LoginRequest
 	LoginResponse  = models.LoginResponse
+	ListResponse   = models.ListResponse
 )
 
 // Helper functions
 var (
-	SuccessResponse   = models.SuccessResponse
-	ErrorResponseFunc = models.ErrorResponseFunc
+	SuccessResponse        = models.SuccessResponse
+	SuccessMessageResponse = models.SuccessMessageResponse
+	SuccessListResponse    = models.SuccessListResponse
+	ErrorResponseFunc      = models.ErrorResponseFunc
+	SimpleErrorResponse    = models.SimpleErrorResponse
 )
