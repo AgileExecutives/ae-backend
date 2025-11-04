@@ -118,10 +118,10 @@ func (h *CalendarHandler) GetCalendar(c *gin.Context) {
 // @Tags calendar
 // @Produce json
 // @Security BearerAuth
-// @Success 200 {object} map[string]interface{} "Returns calendars array with complete metadata including nested relationships"
+// @Success 200 {object} baseAPI.APIResponse "Returns calendars array with complete metadata including nested relationships"
 // @Success 200 {array} entities.CalendarResponse "Array of calendars with preloaded entries, series, and external calendars"
-// @Failure 401 {object} map[string]interface{} "Unauthorized - invalid or missing JWT token"
-// @Failure 500 {object} map[string]interface{} "Internal server error during calendar retrieval"
+// @Failure 401 {object} baseAPI.APIResponse "Unauthorized - invalid or missing JWT token"
+// @Failure 500 {object} baseAPI.APIResponse "Internal server error during calendar retrieval"
 // @Router /calendar [get]
 func (h *CalendarHandler) GetCalendarsWithMetadata(c *gin.Context) {
 	tenantID, err := baseAPI.GetTenantID(c)
@@ -159,11 +159,11 @@ func (h *CalendarHandler) GetCalendarsWithMetadata(c *gin.Context) {
 // @Security BearerAuth
 // @Param id path int true "Calendar ID"
 // @Param calendar body entities.UpdateCalendarRequest true "Updated calendar data"
-// @Success 200 {object} entities.CalendarResponse
-// @Failure 400 {object} map[string]interface{}
-// @Failure 401 {object} map[string]interface{}
-// @Failure 404 {object} map[string]interface{}
-// @Failure 500 {object} map[string]interface{}
+// @Success 200 {object} baseAPI.APIResponse{data=entities.CalendarResponse}
+// @Failure 400 {object} baseAPI.APIResponse
+// @Failure 401 {object} baseAPI.APIResponse
+// @Failure 404 {object} baseAPI.APIResponse
+// @Failure 500 {object} baseAPI.APIResponse
 // @Router /calendar/{id} [put]
 func (h *CalendarHandler) UpdateCalendar(c *gin.Context) {
 	idStr := c.Param("id")
@@ -207,11 +207,11 @@ func (h *CalendarHandler) UpdateCalendar(c *gin.Context) {
 // @Produce json
 // @Security BearerAuth
 // @Param id path int true "Calendar ID"
-// @Success 200 {object} map[string]interface{}
-// @Failure 400 {object} map[string]interface{}
-// @Failure 401 {object} map[string]interface{}
-// @Failure 404 {object} map[string]interface{}
-// @Failure 500 {object} map[string]interface{}
+// @Success 200 {object} baseAPI.APIResponse
+// @Failure 400 {object} baseAPI.APIResponse
+// @Failure 401 {object} baseAPI.APIResponse
+// @Failure 404 {object} baseAPI.APIResponse
+// @Failure 500 {object} baseAPI.APIResponse
 // @Router /calendar/{id} [delete]
 func (h *CalendarHandler) DeleteCalendar(c *gin.Context) {
 	idStr := c.Param("id")
@@ -246,16 +246,16 @@ func (h *CalendarHandler) DeleteCalendar(c *gin.Context) {
 // CreateCalendarEntry creates a new calendar entry
 // @Summary Create a new calendar entry
 // @ID createCalendarEntry
-// @Description Create a new calendar entry
+// @Description Create a new calendar entry with UTC timestamps. All datetime fields use ISO 8601 format in UTC (e.g., 2025-11-04T09:00:00Z). Stored as timestamptz in PostgreSQL, ensuring timezone-aware storage and retrieval.
 // @Tags calendar-entries
 // @Accept json
 // @Produce json
 // @Security BearerAuth
 // @Param entry body entities.CreateCalendarEntryRequest true "Calendar entry data"
-// @Success 201 {object} entities.CalendarEntryResponse
-// @Failure 400 {object} map[string]interface{}
-// @Failure 401 {object} map[string]interface{}
-// @Failure 500 {object} map[string]interface{}
+// @Success 201 {object} baseAPI.APIResponse{data=entities.CalendarEntryResponse}
+// @Failure 400 {object} baseAPI.APIResponse
+// @Failure 401 {object} baseAPI.APIResponse
+// @Failure 500 {object} baseAPI.APIResponse
 // @Router /calendar-entries [post]
 func (h *CalendarHandler) CreateCalendarEntry(c *gin.Context) {
 	var req entities.CreateCalendarEntryRequest
@@ -287,16 +287,16 @@ func (h *CalendarHandler) CreateCalendarEntry(c *gin.Context) {
 // GetCalendarEntry retrieves a specific calendar entry
 // @Summary Get calendar entry by ID
 // @ID getCalendarEntryById
-// @Description Retrieve a calendar entry by its ID
+// @Description Retrieve a calendar entry by its ID. Returns datetime fields in UTC ISO 8601 format (e.g., 2025-11-04T09:00:00Z).
 // @Tags calendar-entries
 // @Produce json
 // @Security BearerAuth
 // @Param id path int true "Calendar Entry ID"
-// @Success 200 {object} entities.CalendarEntryResponse
-// @Failure 400 {object} map[string]interface{}
-// @Failure 401 {object} map[string]interface{}
-// @Failure 404 {object} map[string]interface{}
-// @Failure 500 {object} map[string]interface{}
+// @Success 200 {object} baseAPI.APIResponse{data=entities.CalendarEntryResponse}
+// @Failure 400 {object} baseAPI.APIResponse
+// @Failure 401 {object} baseAPI.APIResponse
+// @Failure 404 {object} baseAPI.APIResponse
+// @Failure 500 {object} baseAPI.APIResponse
 // @Router /calendar-entries/{id} [get]
 func (h *CalendarHandler) GetCalendarEntry(c *gin.Context) {
 	idStr := c.Param("id")
@@ -329,15 +329,15 @@ func (h *CalendarHandler) GetCalendarEntry(c *gin.Context) {
 // GetAllCalendarEntries retrieves all calendar entries with pagination
 // @Summary Get all calendar entries
 // @ID getCalendarEntries
-// @Description Retrieve all calendar entries for the authenticated user
+// @Description Retrieve all calendar entries for the authenticated user. All datetime fields are returned in UTC ISO 8601 format (e.g., 2025-11-04T09:00:00Z).
 // @Tags calendar-entries
 // @Produce json
 // @Security BearerAuth
 // @Param page query int false "Page number" default(1)
 // @Param limit query int false "Items per page" default(10)
-// @Success 200 {object} map[string]interface{}
-// @Failure 401 {object} map[string]interface{}
-// @Failure 500 {object} map[string]interface{}
+// @Success 200 {object} baseAPI.APIResponse{data=baseAPI.ListResponse}
+// @Failure 401 {object} baseAPI.APIResponse
+// @Failure 500 {object} baseAPI.APIResponse
 // @Router /calendar-entries [get]
 func (h *CalendarHandler) GetAllCalendarEntries(c *gin.Context) {
 	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
@@ -379,18 +379,18 @@ func (h *CalendarHandler) GetAllCalendarEntries(c *gin.Context) {
 // UpdateCalendarEntry updates an existing calendar entry
 // @Summary Update calendar entry
 // @ID updateCalendarEntry
-// @Description Update an existing calendar entry
+// @Description Update an existing calendar entry. Datetime fields use UTC ISO 8601 format (e.g., 2025-11-04T09:00:00Z).
 // @Tags calendar-entries
 // @Accept json
 // @Produce json
 // @Security BearerAuth
 // @Param id path int true "Calendar Entry ID"
 // @Param entry body entities.UpdateCalendarEntryRequest true "Updated calendar entry data"
-// @Success 200 {object} entities.CalendarEntryResponse
-// @Failure 400 {object} map[string]interface{}
-// @Failure 401 {object} map[string]interface{}
-// @Failure 404 {object} map[string]interface{}
-// @Failure 500 {object} map[string]interface{}
+// @Success 200 {object} baseAPI.APIResponse{data=entities.CalendarEntryResponse}
+// @Failure 400 {object} baseAPI.APIResponse
+// @Failure 401 {object} baseAPI.APIResponse
+// @Failure 404 {object} baseAPI.APIResponse
+// @Failure 500 {object} baseAPI.APIResponse
 // @Router /calendar-entries/{id} [put]
 func (h *CalendarHandler) UpdateCalendarEntry(c *gin.Context) {
 	idStr := c.Param("id")
@@ -434,11 +434,11 @@ func (h *CalendarHandler) UpdateCalendarEntry(c *gin.Context) {
 // @Produce json
 // @Security BearerAuth
 // @Param id path int true "Calendar Entry ID"
-// @Success 200 {object} map[string]interface{}
-// @Failure 400 {object} map[string]interface{}
-// @Failure 401 {object} map[string]interface{}
-// @Failure 404 {object} map[string]interface{}
-// @Failure 500 {object} map[string]interface{}
+// @Success 200 {object} baseAPI.APIResponse
+// @Failure 400 {object} baseAPI.APIResponse
+// @Failure 401 {object} baseAPI.APIResponse
+// @Failure 404 {object} baseAPI.APIResponse
+// @Failure 500 {object} baseAPI.APIResponse
 // @Router /calendar-entries/{id} [delete]
 func (h *CalendarHandler) DeleteCalendarEntry(c *gin.Context) {
 	idStr := c.Param("id")
@@ -473,16 +473,16 @@ func (h *CalendarHandler) DeleteCalendarEntry(c *gin.Context) {
 // CreateCalendarSeries creates a new calendar series
 // @Summary Create a new calendar series
 // @ID createCalendarSeries
-// @Description Create a new calendar series for recurring events
+// @Description Create a new calendar series for recurring events. Start/end time fields use UTC ISO 8601 format (e.g., 2025-11-04T09:00:00Z). For recurring events, these represent the time portion that will be combined with calculated recurrence dates.
 // @Tags calendar-series
 // @Accept json
 // @Produce json
 // @Security BearerAuth
 // @Param series body entities.CreateCalendarSeriesRequest true "Calendar series data"
-// @Success 201 {object} entities.CalendarSeriesResponse
-// @Failure 400 {object} map[string]interface{}
-// @Failure 401 {object} map[string]interface{}
-// @Failure 500 {object} map[string]interface{}
+// @Success 201 {object} baseAPI.APIResponse{data=entities.CalendarSeriesResponse}
+// @Failure 400 {object} baseAPI.APIResponse
+// @Failure 401 {object} baseAPI.APIResponse
+// @Failure 500 {object} baseAPI.APIResponse
 // @Router /calendar-series [post]
 func (h *CalendarHandler) CreateCalendarSeries(c *gin.Context) {
 	var req entities.CreateCalendarSeriesRequest
@@ -514,16 +514,16 @@ func (h *CalendarHandler) CreateCalendarSeries(c *gin.Context) {
 // GetCalendarSeries retrieves a specific calendar series
 // @Summary Get calendar series by ID
 // @ID getCalendarSeriesById
-// @Description Retrieve a calendar series by its ID
+// @Description Retrieve a calendar series by its ID. Returns datetime fields in UTC ISO 8601 format (e.g., 2025-11-04T09:00:00Z).
 // @Tags calendar-series
 // @Produce json
 // @Security BearerAuth
 // @Param id path int true "Calendar Series ID"
-// @Success 200 {object} entities.CalendarSeriesResponse
-// @Failure 400 {object} map[string]interface{}
-// @Failure 401 {object} map[string]interface{}
-// @Failure 404 {object} map[string]interface{}
-// @Failure 500 {object} map[string]interface{}
+// @Success 200 {object} baseAPI.APIResponse{data=entities.CalendarSeriesResponse}
+// @Failure 400 {object} baseAPI.APIResponse
+// @Failure 401 {object} baseAPI.APIResponse
+// @Failure 404 {object} baseAPI.APIResponse
+// @Failure 500 {object} baseAPI.APIResponse
 // @Router /calendar-series/{id} [get]
 func (h *CalendarHandler) GetCalendarSeries(c *gin.Context) {
 	idStr := c.Param("id")
@@ -556,15 +556,15 @@ func (h *CalendarHandler) GetCalendarSeries(c *gin.Context) {
 // GetAllCalendarSeries retrieves all calendar series with pagination
 // @Summary Get all calendar series
 // @ID getCalendarSeries
-// @Description Retrieve all calendar series for the authenticated user
+// @Description Retrieve all calendar series for the authenticated user. All datetime fields are returned in UTC ISO 8601 format (e.g., 2025-11-04T09:00:00Z).
 // @Tags calendar-series
 // @Produce json
 // @Security BearerAuth
 // @Param page query int false "Page number" default(1)
 // @Param limit query int false "Items per page" default(10)
-// @Success 200 {object} map[string]interface{}
-// @Failure 401 {object} map[string]interface{}
-// @Failure 500 {object} map[string]interface{}
+// @Success 200 {object} baseAPI.APIResponse{data=baseAPI.ListResponse}
+// @Failure 401 {object} baseAPI.APIResponse
+// @Failure 500 {object} baseAPI.APIResponse
 // @Router /calendar-series [get]
 func (h *CalendarHandler) GetAllCalendarSeries(c *gin.Context) {
 	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
@@ -605,18 +605,18 @@ func (h *CalendarHandler) GetAllCalendarSeries(c *gin.Context) {
 // UpdateCalendarSeries updates an existing calendar series
 // @Summary Update calendar series
 // @ID updateCalendarSeries
-// @Description Update an existing calendar series
+// @Description Update an existing calendar series. Datetime fields use UTC ISO 8601 format (e.g., 2025-11-04T09:00:00Z).
 // @Tags calendar-series
 // @Accept json
 // @Produce json
 // @Security BearerAuth
 // @Param id path int true "Calendar Series ID"
 // @Param series body entities.UpdateCalendarSeriesRequest true "Updated calendar series data"
-// @Success 200 {object} entities.CalendarSeriesResponse
-// @Failure 400 {object} map[string]interface{}
-// @Failure 401 {object} map[string]interface{}
-// @Failure 404 {object} map[string]interface{}
-// @Failure 500 {object} map[string]interface{}
+// @Success 200 {object} baseAPI.APIResponse{data=entities.CalendarSeriesResponse}
+// @Failure 400 {object} baseAPI.APIResponse
+// @Failure 401 {object} baseAPI.APIResponse
+// @Failure 404 {object} baseAPI.APIResponse
+// @Failure 500 {object} baseAPI.APIResponse
 // @Router /calendar-series/{id} [put]
 func (h *CalendarHandler) UpdateCalendarSeries(c *gin.Context) {
 	idStr := c.Param("id")
@@ -660,11 +660,11 @@ func (h *CalendarHandler) UpdateCalendarSeries(c *gin.Context) {
 // @Produce json
 // @Security BearerAuth
 // @Param id path int true "Calendar Series ID"
-// @Success 200 {object} map[string]interface{}
-// @Failure 400 {object} map[string]interface{}
-// @Failure 401 {object} map[string]interface{}
-// @Failure 404 {object} map[string]interface{}
-// @Failure 500 {object} map[string]interface{}
+// @Success 200 {object} baseAPI.APIResponse
+// @Failure 400 {object} baseAPI.APIResponse
+// @Failure 401 {object} baseAPI.APIResponse
+// @Failure 404 {object} baseAPI.APIResponse
+// @Failure 500 {object} baseAPI.APIResponse
 // @Router /calendar-series/{id} [delete]
 func (h *CalendarHandler) DeleteCalendarSeries(c *gin.Context) {
 	idStr := c.Param("id")
@@ -705,10 +705,10 @@ func (h *CalendarHandler) DeleteCalendarSeries(c *gin.Context) {
 // @Produce json
 // @Security BearerAuth
 // @Param external body entities.CreateExternalCalendarRequest true "External calendar data"
-// @Success 201 {object} entities.ExternalCalendarResponse
-// @Failure 400 {object} map[string]interface{}
-// @Failure 401 {object} map[string]interface{}
-// @Failure 500 {object} map[string]interface{}
+// @Success 201 {object} baseAPI.APIResponse{data=entities.ExternalCalendarResponse}
+// @Failure 400 {object} baseAPI.APIResponse
+// @Failure 401 {object} baseAPI.APIResponse
+// @Failure 500 {object} baseAPI.APIResponse
 // @Router /external-calendars [post]
 func (h *CalendarHandler) CreateExternalCalendar(c *gin.Context) {
 	var req entities.CreateExternalCalendarRequest
@@ -745,11 +745,11 @@ func (h *CalendarHandler) CreateExternalCalendar(c *gin.Context) {
 // @Produce json
 // @Security BearerAuth
 // @Param id path int true "External Calendar ID"
-// @Success 200 {object} entities.ExternalCalendarResponse
-// @Failure 400 {object} map[string]interface{}
-// @Failure 401 {object} map[string]interface{}
-// @Failure 404 {object} map[string]interface{}
-// @Failure 500 {object} map[string]interface{}
+// @Success 200 {object} baseAPI.APIResponse{data=entities.ExternalCalendarResponse}
+// @Failure 400 {object} baseAPI.APIResponse
+// @Failure 401 {object} baseAPI.APIResponse
+// @Failure 404 {object} baseAPI.APIResponse
+// @Failure 500 {object} baseAPI.APIResponse
 // @Router /external-calendars/{id} [get]
 func (h *CalendarHandler) GetExternalCalendar(c *gin.Context) {
 	idStr := c.Param("id")
@@ -788,9 +788,9 @@ func (h *CalendarHandler) GetExternalCalendar(c *gin.Context) {
 // @Security BearerAuth
 // @Param page query int false "Page number" default(1)
 // @Param limit query int false "Items per page" default(10)
-// @Success 200 {object} map[string]interface{}
-// @Failure 401 {object} map[string]interface{}
-// @Failure 500 {object} map[string]interface{}
+// @Success 200 {object} baseAPI.APIResponse{data=baseAPI.ListResponse}
+// @Failure 401 {object} baseAPI.APIResponse
+// @Failure 500 {object} baseAPI.APIResponse
 // @Router /external-calendars [get]
 func (h *CalendarHandler) GetAllExternalCalendars(c *gin.Context) {
 	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
@@ -838,11 +838,11 @@ func (h *CalendarHandler) GetAllExternalCalendars(c *gin.Context) {
 // @Security BearerAuth
 // @Param id path int true "External Calendar ID"
 // @Param external body entities.UpdateExternalCalendarRequest true "Updated external calendar data"
-// @Success 200 {object} entities.ExternalCalendarResponse
-// @Failure 400 {object} map[string]interface{}
-// @Failure 401 {object} map[string]interface{}
-// @Failure 404 {object} map[string]interface{}
-// @Failure 500 {object} map[string]interface{}
+// @Success 200 {object} baseAPI.APIResponse{data=entities.ExternalCalendarResponse}
+// @Failure 400 {object} baseAPI.APIResponse
+// @Failure 401 {object} baseAPI.APIResponse
+// @Failure 404 {object} baseAPI.APIResponse
+// @Failure 500 {object} baseAPI.APIResponse
 // @Router /external-calendars/{id} [put]
 func (h *CalendarHandler) UpdateExternalCalendar(c *gin.Context) {
 	idStr := c.Param("id")
@@ -886,11 +886,11 @@ func (h *CalendarHandler) UpdateExternalCalendar(c *gin.Context) {
 // @Produce json
 // @Security BearerAuth
 // @Param id path int true "External Calendar ID"
-// @Success 200 {object} map[string]interface{}
-// @Failure 400 {object} map[string]interface{}
-// @Failure 401 {object} map[string]interface{}
-// @Failure 404 {object} map[string]interface{}
-// @Failure 500 {object} map[string]interface{}
+// @Success 200 {object} baseAPI.APIResponse
+// @Failure 400 {object} baseAPI.APIResponse
+// @Failure 401 {object} baseAPI.APIResponse
+// @Failure 404 {object} baseAPI.APIResponse
+// @Failure 500 {object} baseAPI.APIResponse
 // @Router /external-calendars/{id} [delete]
 func (h *CalendarHandler) DeleteExternalCalendar(c *gin.Context) {
 	idStr := c.Param("id")
@@ -931,9 +931,9 @@ func (h *CalendarHandler) DeleteExternalCalendar(c *gin.Context) {
 // @Security BearerAuth
 // @Param date query string true "Date in YYYY-MM-DD format" example:"2025-01-15"
 // @Success 200 {array} entities.CalendarEntryResponse
-// @Failure 400 {object} map[string]interface{}
-// @Failure 401 {object} map[string]interface{}
-// @Failure 500 {object} map[string]interface{}
+// @Failure 400 {object} baseAPI.APIResponse
+// @Failure 401 {object} baseAPI.APIResponse
+// @Failure 500 {object} baseAPI.APIResponse
 // @Router /calendar/week [get]
 func (h *CalendarHandler) GetCalendarWeekView(c *gin.Context) {
 	var req entities.WeekViewRequest
@@ -983,9 +983,9 @@ func (h *CalendarHandler) GetCalendarWeekView(c *gin.Context) {
 // @Security BearerAuth
 // @Param year query int true "Year" example:2025
 // @Success 200 {array} entities.CalendarEntryResponse
-// @Failure 400 {object} map[string]interface{}
-// @Failure 401 {object} map[string]interface{}
-// @Failure 500 {object} map[string]interface{}
+// @Failure 400 {object} baseAPI.APIResponse
+// @Failure 401 {object} baseAPI.APIResponse
+// @Failure 500 {object} baseAPI.APIResponse
 // @Router /calendar/year [get]
 func (h *CalendarHandler) GetCalendarYearView(c *gin.Context) {
 	var req entities.YearViewRequest
@@ -1030,9 +1030,9 @@ func (h *CalendarHandler) GetCalendarYearView(c *gin.Context) {
 // @Param interval query int true "Interval between slots in minutes" example:30
 // @Param number_max query int true "Maximum number of slots to return" example:10
 // @Success 200 {array} entities.FreeSlot
-// @Failure 400 {object} map[string]interface{}
-// @Failure 401 {object} map[string]interface{}
-// @Failure 500 {object} map[string]interface{}
+// @Failure 400 {object} baseAPI.APIResponse
+// @Failure 401 {object} baseAPI.APIResponse
+// @Failure 500 {object} baseAPI.APIResponse
 // @Router /calendar/free-slots [get]
 func (h *CalendarHandler) GetFreeSlots(c *gin.Context) {
 	var req entities.FreeSlotRequest
@@ -1071,10 +1071,10 @@ func (h *CalendarHandler) GetFreeSlots(c *gin.Context) {
 // @Param id path int true "Calendar ID"
 // @Param holidays body entities.ImportHolidaysRequest true "Import holidays request with state, year range, and holidays data"
 // @Success 200 {object} entities.HolidayImportResult
-// @Failure 400 {object} map[string]interface{}
-// @Failure 401 {object} map[string]interface{}
-// @Failure 404 {object} map[string]interface{}
-// @Failure 500 {object} map[string]interface{}
+// @Failure 400 {object} baseAPI.APIResponse
+// @Failure 401 {object} baseAPI.APIResponse
+// @Failure 404 {object} baseAPI.APIResponse
+// @Failure 500 {object} baseAPI.APIResponse
 // @Router /calendar/{id}/import_holidays [post]
 // @Security BearerAuth
 func (h *CalendarHandler) ImportHolidays(c *gin.Context) {

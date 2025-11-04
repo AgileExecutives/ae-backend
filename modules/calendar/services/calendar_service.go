@@ -178,11 +178,8 @@ func (s *CalendarService) CreateCalendarEntry(req entities.CreateCalendarEntryRe
 		Title:        req.Title,
 		IsException:  req.IsException,
 		Participants: req.Participants,
-		DateFrom:     req.DateFrom,
-		DateTo:       req.DateTo,
-		TimeFrom:     req.TimeFrom,
-		TimeTo:       req.TimeTo,
-		Timezone:     req.Timezone,
+		StartTime:    req.StartTime,
+		EndTime:      req.EndTime,
 		Type:         req.Type,
 		Description:  req.Description,
 		Location:     req.Location,
@@ -246,22 +243,13 @@ func (s *CalendarService) UpdateCalendarEntry(id, tenantID, userID uint, req ent
 		entry.IsException = *req.IsException
 	}
 	if req.Participants != nil {
-		entry.Participants = *req.Participants
+		entry.Participants = req.Participants
 	}
-	if req.DateFrom != nil {
-		entry.DateFrom = req.DateFrom
+	if req.StartTime != nil {
+		entry.StartTime = req.StartTime
 	}
-	if req.DateTo != nil {
-		entry.DateTo = req.DateTo
-	}
-	if req.TimeFrom != nil {
-		entry.TimeFrom = req.TimeFrom
-	}
-	if req.TimeTo != nil {
-		entry.TimeTo = req.TimeTo
-	}
-	if req.Timezone != nil {
-		entry.Timezone = *req.Timezone
+	if req.EndTime != nil {
+		entry.EndTime = req.EndTime
 	}
 	if req.Type != nil {
 		entry.Type = *req.Type
@@ -318,8 +306,8 @@ func (s *CalendarService) CreateCalendarSeries(req entities.CreateCalendarSeries
 		Participants:         req.Participants,
 		Weekday:              req.Weekday,
 		Interval:             req.Interval,
-		TimeStart:            req.TimeStart,
-		TimeEnd:              req.TimeEnd,
+		StartTime:            req.StartTime,
+		EndTime:              req.EndTime,
 		Description:          req.Description,
 		Location:             req.Location,
 		EntryUUID:            uuid.New().String(),
@@ -381,7 +369,7 @@ func (s *CalendarService) UpdateCalendarSeries(id, tenantID, userID uint, req en
 		series.Title = *req.Title
 	}
 	if req.Participants != nil {
-		series.Participants = *req.Participants
+		series.Participants = req.Participants
 	}
 	if req.Weekday != nil {
 		series.Weekday = *req.Weekday
@@ -389,11 +377,12 @@ func (s *CalendarService) UpdateCalendarSeries(id, tenantID, userID uint, req en
 	if req.Interval != nil {
 		series.Interval = *req.Interval
 	}
-	if req.TimeStart != nil {
-		series.TimeStart = req.TimeStart
+	// Use new UTC timestamp fields if provided
+	if req.StartTime != nil {
+		series.StartTime = req.StartTime
 	}
-	if req.TimeEnd != nil {
-		series.TimeEnd = req.TimeEnd
+	if req.EndTime != nil {
+		series.EndTime = req.EndTime
 	}
 	if req.Description != nil {
 		series.Description = *req.Description
@@ -403,9 +392,6 @@ func (s *CalendarService) UpdateCalendarSeries(id, tenantID, userID uint, req en
 	}
 	if req.ExternalUID != nil {
 		series.ExternalUID = *req.ExternalUID
-	}
-	if req.ExternalCalendarUUID != nil {
-		series.ExternalCalendarUUID = *req.ExternalCalendarUUID
 	}
 
 	if err := s.db.Save(&series).Error; err != nil {
@@ -677,8 +663,8 @@ func (s *CalendarService) importSchoolHolidays(calendarID, tenantID, userID uint
 			UserID:      userID,
 			CalendarID:  calendarID,
 			Title:       holidayName,
-			DateFrom:    &startDate,
-			DateTo:      &endDate,
+			StartTime:   &startDate,
+			EndTime:     &endDate,
 			Type:        "school_holiday",
 			Description: fmt.Sprintf("%s - School holidays in %s", holidayName, state),
 			IsAllDay:    true,
@@ -712,8 +698,8 @@ func (s *CalendarService) importPublicHolidays(calendarID, tenantID, userID uint
 			UserID:      userID,
 			CalendarID:  calendarID,
 			Title:       holidayName,
-			DateFrom:    &holidayDate,
-			DateTo:      &holidayDate,
+			StartTime:   &holidayDate,
+			EndTime:     &holidayDate,
 			Type:        "public_holiday",
 			Description: fmt.Sprintf("%s - Public holiday in %s", holidayName, state),
 			IsAllDay:    true,
