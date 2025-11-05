@@ -76,7 +76,7 @@ services:
       FROM_NAME: "Unburdy Staging"
       
       # Application Configuration
-      LOG_LEVEL: info
+      LOG_LEVEL: debug
       CORS_ALLOWED_ORIGINS: "*"
       RATE_LIMIT_ENABLED: "true"
       
@@ -94,7 +94,12 @@ services:
       
       # Monitoring
       HEALTH_CHECK_ENABLED: "true"
-      
+
+      MOCK_EMAIL: "true"
+      EMAIL_VALIDATION_ENABLED: "false"
+      MAX_PAGE_LIMIT: 3000
+      DEFAULT_PAGE_LIMIT: 3000
+
     ports:
       - "8080:8080"  # Expose Unburdy Server on port 8080
     networks:
