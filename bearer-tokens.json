@@ -1,5 +1,5 @@
 {
-  "generated_at": "2025-11-01T17:17:15Z",
+  "generated_at": "2025-11-04T16:26:40Z",
   "server_host": "http://localhost:8080",
   "tokens": [
     {
@@ -9,8 +9,8 @@
       "tenant_slug": "admin",
       "user_id": 1,
       "tenant_id": 1,
-      "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoxLCJ0ZW5hbnRfaWQiOjEsInJvbGUiOiJzdXBlci1hZG1pbiIsInRva2VuX3R5cGUiOiJhdXRoIiwiZXhwIjoxNzYyMTAzODM1LCJuYmYiOjE3NjIwMTc0MzUsImlhdCI6MTc2MjAxNzQzNSwianRpIjoiMV8xNzYyMDE3NDM1In0.EvUpWS_cAwTP_b7lXeOmbYnrBisZHiv3JcFuF0H3d_4",
-      "curl_example": "curl -H 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoxLCJ0ZW5hbnRfaWQiOjEsInJvbGUiOiJzdXBlci1hZG1pbiIsInRva2VuX3R5cGUiOiJhdXRoIiwiZXhwIjoxNzYyMTAzODM1LCJuYmYiOjE3NjIwMTc0MzUsImlhdCI6MTc2MjAxNzQzNSwianRpIjoiMV8xNzYyMDE3NDM1In0.EvUpWS_cAwTP_b7lXeOmbYnrBisZHiv3JcFuF0H3d_4' http://localhost:8080/api/v1/health"
+      "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoxLCJ0ZW5hbnRfaWQiOjEsInJvbGUiOiJzdXBlci1hZG1pbiIsInRva2VuX3R5cGUiOiJhdXRoIiwiZXhwIjoxNzYyMzYwMDAwLCJuYmYiOjE3NjIyNzM2MDAsImlhdCI6MTc2MjI3MzYwMCwianRpIjoiMV8xNzYyMjczNjAwIn0.gc7Vs-UJn2Y4Wsj1eO2Hk8tx_g2JnYuTcwtrpFKuIio",
+      "curl_example": "curl -H 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoxLCJ0ZW5hbnRfaWQiOjEsInJvbGUiOiJzdXBlci1hZG1pbiIsInRva2VuX3R5cGUiOiJhdXRoIiwiZXhwIjoxNzYyMzYwMDAwLCJuYmYiOjE3NjIyNzM2MDAsImlhdCI6MTc2MjI3MzYwMCwianRpIjoiMV8xNzYyMjczNjAwIn0.gc7Vs-UJn2Y4Wsj1eO2Hk8tx_g2JnYuTcwtrpFKuIio' http://localhost:8080/api/v1/health"
     }
 ,
     {
@@ -20,8 +20,8 @@
       "tenant_slug": "default-tenant",
       "user_id": 2,
       "tenant_id": 2,
-      "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoyLCJ0ZW5hbnRfaWQiOjIsInJvbGUiOiJhZG1pbiIsInRva2VuX3R5cGUiOiJhdXRoIiwiZXhwIjoxNzYyMTAzODM1LCJuYmYiOjE3NjIwMTc0MzUsImlhdCI6MTc2MjAxNzQzNSwianRpIjoiMl8xNzYyMDE3NDM1In0.Ku4bzfiWTs1ZvStFDRTGSqh2tX-2yFlLQ2ijfgBmbaI",
-      "curl_example": "curl -H 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoyLCJ0ZW5hbnRfaWQiOjIsInJvbGUiOiJhZG1pbiIsInRva2VuX3R5cGUiOiJhdXRoIiwiZXhwIjoxNzYyMTAzODM1LCJuYmYiOjE3NjIwMTc0MzUsImlhdCI6MTc2MjAxNzQzNSwianRpIjoiMl8xNzYyMDE3NDM1In0.Ku4bzfiWTs1ZvStFDRTGSqh2tX-2yFlLQ2ijfgBmbaI' http://localhost:8080/api/v1/health"
+      "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoyLCJ0ZW5hbnRfaWQiOjIsInJvbGUiOiJhZG1pbiIsInRva2VuX3R5cGUiOiJhdXRoIiwiZXhwIjoxNzYyMzYwMDAwLCJuYmYiOjE3NjIyNzM2MDAsImlhdCI6MTc2MjI3MzYwMCwianRpIjoiMl8xNzYyMjczNjAwIn0.yw0B_aUJuz2Hcai6b2UkOX1nhgn-kI133HFqYwhgkBM",
+      "curl_example": "curl -H 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoyLCJ0ZW5hbnRfaWQiOjIsInJvbGUiOiJhZG1pbiIsInRva2VuX3R5cGUiOiJhdXRoIiwiZXhwIjoxNzYyMzYwMDAwLCJuYmYiOjE3NjIyNzM2MDAsImlhdCI6MTc2MjI3MzYwMCwianRpIjoiMl8xNzYyMjczNjAwIn0.yw0B_aUJuz2Hcai6b2UkOX1nhgn-kI133HFqYwhgkBM' http://localhost:8080/api/v1/health"
     }
 
   ]

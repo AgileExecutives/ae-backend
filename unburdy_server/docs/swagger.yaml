@@ -22,6 +22,10 @@ definitions:
         type: integer
       created_at:
         type: string
+      date_from:
+        type: string
+      date_to:
+        type: string
       description:
         type: string
       end_time:
@@ -44,6 +48,12 @@ definitions:
         type: string
       tenant_id:
         type: integer
+      time_from:
+        type: string
+      time_to:
+        type: string
+      timezone:
+        type: string
       title:
         type: string
       type:
@@ -1310,7 +1320,7 @@ definitions:
       timezone:
         type: string
     type: object
-host: localhost:8081
+host: localhost:8080
 info:
   contact:
     email: support@ae-base-server.com
@@ -2625,6 +2635,17 @@ paths:
         deep preloading including entries with their series and series with their
         entries
       operationId: getCalendars
+      parameters:
+      - description: Start year for filtering calendar entries (defaults to current
+          year if not provided)
+        in: query
+        name: from_year
+        type: integer
+      - description: End year for filtering calendar entries (defaults to next year
+          if not provided)
+        in: query
+        name: to_year
+        type: integer
       produces:
       - application/json
       responses:
@@ -3168,6 +3189,16 @@ paths:
         in: path
         name: id
         required: true
+        type: integer
+      - description: Start year for filtering calendar entries (defaults to current
+          year if not provided)
+        in: query
+        name: from_year
+        type: integer
+      - description: End year for filtering calendar entries (defaults to next year
+          if not provided)
+        in: query
+        name: to_year
         type: integer
       produces:
       - application/json

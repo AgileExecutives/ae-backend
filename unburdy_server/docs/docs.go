@@ -2129,6 +2129,20 @@ const docTemplate = `{
                 ],
                 "summary": "Get calendars with complete metadata",
                 "operationId": "getCalendars",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Start year for filtering calendar entries (defaults to current year if not provided)",
+                        "name": "from_year",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "End year for filtering calendar entries (defaults to next year if not provided)",
+                        "name": "to_year",
+                        "in": "query"
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "Array of calendars with preloaded entries, series, and external calendars",
@@ -3113,6 +3127,18 @@ const docTemplate = `{
                         "name": "id",
                         "in": "path",
                         "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Start year for filtering calendar entries (defaults to current year if not provided)",
+                        "name": "from_year",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "End year for filtering calendar entries (defaults to next year if not provided)",
+                        "name": "to_year",
+                        "in": "query"
                     }
                 ],
                 "responses": {
@@ -4625,6 +4651,12 @@ const docTemplate = `{
                 "created_at": {
                     "type": "string"
                 },
+                "date_from": {
+                    "type": "string"
+                },
+                "date_to": {
+                    "type": "string"
+                },
                 "description": {
                     "type": "string"
                 },
@@ -4657,6 +4689,15 @@ const docTemplate = `{
                 },
                 "tenant_id": {
                     "type": "integer"
+                },
+                "time_from": {
+                    "type": "string"
+                },
+                "time_to": {
+                    "type": "string"
+                },
+                "timezone": {
+                    "type": "string"
                 },
                 "title": {
                     "type": "string"
@@ -6600,7 +6641,7 @@ const docTemplate = `{
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
 	Version:          "1.0",
-	Host:             "localhost:8081",
+	Host:             "localhost:8080",
 	BasePath:         "/api/v1",
 	Schemes:          []string{},
 	Title:            "Unburdy Server API",

@@ -22,12 +22,24 @@
                 "operationId": "getCalendars",
                 "responses": {
                     "200": {
-                        "description": "Array of calendars with preloaded entries, series, and external calendars",
+                        "description": "Returns calendars array with complete metadata including nested relationships",
                         "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/entities.CalendarResponse"
-                            }
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/api.APIResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/entities.CalendarResponse"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     },
                     "401": {

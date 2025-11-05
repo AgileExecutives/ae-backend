@@ -118,8 +118,7 @@ func (h *CalendarHandler) GetCalendar(c *gin.Context) {
 // @Tags calendar
 // @Produce json
 // @Security BearerAuth
-// @Success 200 {object} baseAPI.APIResponse "Returns calendars array with complete metadata including nested relationships"
-// @Success 200 {array} entities.CalendarResponse "Array of calendars with preloaded entries, series, and external calendars"
+// @Success 200 {object} baseAPI.APIResponse{data=[]entities.CalendarResponse} "Returns calendars array with complete metadata including nested relationships"
 // @Failure 401 {object} baseAPI.APIResponse "Unauthorized - invalid or missing JWT token"
 // @Failure 500 {object} baseAPI.APIResponse "Internal server error during calendar retrieval"
 // @Router /calendar [get]
