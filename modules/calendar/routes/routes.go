@@ -25,7 +25,7 @@ func NewRouteProvider(calendarHandler *handlers.CalendarHandler, db *gorm.DB) *R
 // RegisterRoutes registers the calendar management routes with the provided router group
 func (rp *RouteProvider) RegisterRoutes(router *gin.RouterGroup) {
 	// Calendar CRUD endpoints (authenticated)
-	calendar := router.Group("/calendar")
+	calendar := router.Group("/calendars")
 	{
 		calendar.POST("", rp.calendarHandler.CreateCalendar)
 		calendar.GET("", rp.calendarHandler.GetCalendarsWithMetadata)
