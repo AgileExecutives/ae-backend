@@ -384,6 +384,13 @@ func (cs *CalendarSeeder) createRecurringSeries(calendar *entities.Calendar, sta
 			return fmt.Errorf("failed to parse end time: %w", err)
 		}
 
+		// Convert time-only values to UTC timestamps (use today's date as base)
+		now := time.Now().UTC()
+		startTimeUTC := time.Date(now.Year(), now.Month(), now.Day(),
+			timeStart.Hour(), timeStart.Minute(), 0, 0, time.UTC)
+		endTimeUTC := time.Date(now.Year(), now.Month(), now.Day(),
+			timeEnd.Hour(), timeEnd.Minute(), 0, 0, time.UTC)
+
 		series := &entities.CalendarSeries{
 			TenantID:     calendar.TenantID,
 			UserID:       calendar.UserID,
@@ -392,10 +399,11 @@ func (cs *CalendarSeeder) createRecurringSeries(calendar *entities.Calendar, sta
 			Participants: participantsJSON,
 			Weekday:      template.Weekday,
 			Interval:     template.Interval,
-			TimeStart:    &timeStart,
-			TimeEnd:      &timeEnd,
+			StartTime:    &startTimeUTC,
+			EndTime:      &endTimeUTC,
 			Description:  template.Description,
 			Location:     template.Location,
+			Timezone:     "Europe/Berlin",
 			EntryUUID:    uuid.New().String(),
 		}
 
@@ -422,20 +430,20 @@ func (cs *CalendarSeeder) createSeriesEntries(series *entities.CalendarSeries, s
 	}
 
 	for current.Before(endDate) {
-		// Create date and time
+		// Create date and time (UTC)
 		eventDate := current
 
-		// Combine date with time from series
+		// Combine date with time from series StartTime/EndTime
 		startTime := time.Date(
 			eventDate.Year(), eventDate.Month(), eventDate.Day(),
-			series.TimeStart.Hour(), series.TimeStart.Minute(), 0, 0,
-			eventDate.Location(),
+			series.StartTime.Hour(), series.StartTime.Minute(), 0, 0,
+			time.UTC,
 		)
 
 		endTime := time.Date(
 			eventDate.Year(), eventDate.Month(), eventDate.Day(),
-			series.TimeEnd.Hour(), series.TimeEnd.Minute(), 0, 0,
-			eventDate.Location(),
+			series.EndTime.Hour(), series.EndTime.Minute(), 0, 0,
+			time.UTC,
 		)
 
 		entry := &entities.CalendarEntry{
@@ -446,14 +454,12 @@ func (cs *CalendarSeeder) createSeriesEntries(series *entities.CalendarSeries, s
 			Title:        series.Title,
 			IsException:  false,
 			Participants: series.Participants,
-			DateFrom:     &eventDate,
-			DateTo:       &eventDate,
-			TimeFrom:     &startTime,
-			TimeTo:       &endTime,
-			Timezone:     "Europe/Berlin",
+			StartTime:    &startTime,
+			EndTime:      &endTime,
 			Type:         eventType,
 			Description:  series.Description,
 			Location:     series.Location,
+			Timezone:     "Europe/Berlin",
 			IsAllDay:     false,
 		}
 
@@ -554,17 +560,17 @@ func (cs *CalendarSeeder) createTherapyAppointments(calendar *entities.Calendar,
 		// Calculate end time
 		endTime := startTime.Add(time.Duration(template.DurationMinutes) * time.Minute)
 
-		// Combine with event date
+		// Combine with event date (UTC)
 		eventStart := time.Date(
 			eventDate.Year(), eventDate.Month(), eventDate.Day(),
 			startTime.Hour(), startTime.Minute(), 0, 0,
-			eventDate.Location(),
+			time.UTC,
 		)
 
 		eventEnd := time.Date(
 			eventDate.Year(), eventDate.Month(), eventDate.Day(),
 			endTime.Hour(), endTime.Minute(), 0, 0,
-			eventDate.Location(),
+			time.UTC,
 		)
 
 		// Select a random client and generate participants with real data
@@ -586,14 +592,12 @@ func (cs *CalendarSeeder) createTherapyAppointments(calendar *entities.Calendar,
 			Title:        appointmentTitle,
 			IsException:  false,
 			Participants: participantsJSON,
-			DateFrom:     &eventDate,
-			DateTo:       &eventDate,
-			TimeFrom:     &eventStart,
-			TimeTo:       &eventEnd,
-			Timezone:     "Europe/Berlin",
+			StartTime:    &eventStart,
+			EndTime:      &eventEnd,
 			Type:         template.Type,
 			Description:  appointmentDescription,
 			Location:     location,
+			Timezone:     "Europe/Berlin",
 			IsAllDay:     false,
 		}
 
@@ -806,6 +810,10 @@ func (cs *CalendarSeeder) createPublicHolidayEntries(calendar *entities.Calendar
 				continue
 			}
 
+			// For all-day events, set times to 00:00 UTC
+			startTime := time.Date(holidayDate.Year(), holidayDate.Month(), holidayDate.Day(), 0, 0, 0, 0, time.UTC)
+			endTime := time.Date(holidayDate.Year(), holidayDate.Month(), holidayDate.Day(), 23, 59, 59, 0, time.UTC)
+
 			// Create all-day holiday entry
 			entry := &entities.CalendarEntry{
 				TenantID:     calendar.TenantID,
@@ -814,14 +822,12 @@ func (cs *CalendarSeeder) createPublicHolidayEntries(calendar *entities.Calendar
 				Title:        fmt.Sprintf("🎉 %s", name),
 				IsException:  false,
 				Participants: json.RawMessage("[]"),
-				DateFrom:     &holidayDate,
-				DateTo:       &holidayDate,
-				TimeFrom:     nil, // All-day events have no specific time
-				TimeTo:       nil,
-				Timezone:     "Europe/Berlin",
+				StartTime:    &startTime,
+				EndTime:      &endTime,
 				Type:         "public_holiday",
 				Description:  fmt.Sprintf("Gesetzlicher Feiertag in Baden-Württemberg (%s %s)", name, year),
 				Location:     "",
+				Timezone:     "Europe/Berlin",
 				IsAllDay:     true,
 			}
 
@@ -873,6 +879,10 @@ func (cs *CalendarSeeder) createSchoolHolidayEntries(calendar *entities.Calendar
 				endHoliday = endDate
 			}
 
+			// For all-day events, set times to 00:00 UTC
+			startTime := time.Date(startHoliday.Year(), startHoliday.Month(), startHoliday.Day(), 0, 0, 0, 0, time.UTC)
+			endTime := time.Date(endHoliday.Year(), endHoliday.Month(), endHoliday.Day(), 23, 59, 59, 0, time.UTC)
+
 			// Create multi-day holiday entry
 			entry := &entities.CalendarEntry{
 				TenantID:     calendar.TenantID,
@@ -881,14 +891,12 @@ func (cs *CalendarSeeder) createSchoolHolidayEntries(calendar *entities.Calendar
 				Title:        fmt.Sprintf("🏫 %s", name),
 				IsException:  false,
 				Participants: json.RawMessage("[]"),
-				DateFrom:     &startHoliday,
-				DateTo:       &endHoliday,
-				TimeFrom:     nil, // All-day events have no specific time
-				TimeTo:       nil,
-				Timezone:     "Europe/Berlin",
+				StartTime:    &startTime,
+				EndTime:      &endTime,
 				Type:         "school_holiday",
 				Description:  fmt.Sprintf("Schulferien in Baden-Württemberg (%s %s) - %s bis %s", name, year, startHoliday.Format("02.01.2006"), endHoliday.Format("02.01.2006")),
 				Location:     "",
+				Timezone:     "Europe/Berlin",
 				IsAllDay:     true,
 			}
 

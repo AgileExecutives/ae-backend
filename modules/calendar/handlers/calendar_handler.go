@@ -39,7 +39,7 @@ func NewCalendarHandler(service *services.CalendarService) *CalendarHandler {
 // @Failure 400 {object} baseAPI.APIResponse
 // @Failure 401 {object} baseAPI.APIResponse
 // @Failure 500 {object} baseAPI.APIResponse
-// @Router /calendar [post]
+// @Router /calendars [post]
 func (h *CalendarHandler) CreateCalendar(c *gin.Context) {
 	var req entities.CreateCalendarRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -82,7 +82,7 @@ func (h *CalendarHandler) CreateCalendar(c *gin.Context) {
 // @Failure 401 {object} baseAPI.APIResponse
 // @Failure 404 {object} baseAPI.APIResponse
 // @Failure 500 {object} baseAPI.APIResponse
-// @Router /calendar/{id} [get]
+// @Router /calendars/{id} [get]
 func (h *CalendarHandler) GetCalendar(c *gin.Context) {
 	idStr := c.Param("id")
 	id, err := strconv.ParseUint(idStr, 10, 32)
@@ -121,7 +121,7 @@ func (h *CalendarHandler) GetCalendar(c *gin.Context) {
 // @Success 200 {object} baseAPI.APIResponse{data=[]entities.CalendarResponse} "Returns calendars array with complete metadata including nested relationships"
 // @Failure 401 {object} baseAPI.APIResponse "Unauthorized - invalid or missing JWT token"
 // @Failure 500 {object} baseAPI.APIResponse "Internal server error during calendar retrieval"
-// @Router /calendar [get]
+// @Router /calendars [get]
 func (h *CalendarHandler) GetCalendarsWithMetadata(c *gin.Context) {
 	tenantID, err := baseAPI.GetTenantID(c)
 	if err != nil {
@@ -163,7 +163,7 @@ func (h *CalendarHandler) GetCalendarsWithMetadata(c *gin.Context) {
 // @Failure 401 {object} baseAPI.APIResponse
 // @Failure 404 {object} baseAPI.APIResponse
 // @Failure 500 {object} baseAPI.APIResponse
-// @Router /calendar/{id} [put]
+// @Router /calendars/{id} [put]
 func (h *CalendarHandler) UpdateCalendar(c *gin.Context) {
 	idStr := c.Param("id")
 	id, err := strconv.ParseUint(idStr, 10, 32)
@@ -211,7 +211,7 @@ func (h *CalendarHandler) UpdateCalendar(c *gin.Context) {
 // @Failure 401 {object} baseAPI.APIResponse
 // @Failure 404 {object} baseAPI.APIResponse
 // @Failure 500 {object} baseAPI.APIResponse
-// @Router /calendar/{id} [delete]
+// @Router /calendars/{id} [delete]
 func (h *CalendarHandler) DeleteCalendar(c *gin.Context) {
 	idStr := c.Param("id")
 	id, err := strconv.ParseUint(idStr, 10, 32)
@@ -933,7 +933,7 @@ func (h *CalendarHandler) DeleteExternalCalendar(c *gin.Context) {
 // @Failure 400 {object} baseAPI.APIResponse
 // @Failure 401 {object} baseAPI.APIResponse
 // @Failure 500 {object} baseAPI.APIResponse
-// @Router /calendar/week [get]
+// @Router /calendars/week [get]
 func (h *CalendarHandler) GetCalendarWeekView(c *gin.Context) {
 	var req entities.WeekViewRequest
 	if err := c.ShouldBindQuery(&req); err != nil {
@@ -985,7 +985,7 @@ func (h *CalendarHandler) GetCalendarWeekView(c *gin.Context) {
 // @Failure 400 {object} baseAPI.APIResponse
 // @Failure 401 {object} baseAPI.APIResponse
 // @Failure 500 {object} baseAPI.APIResponse
-// @Router /calendar/year [get]
+// @Router /calendars/year [get]
 func (h *CalendarHandler) GetCalendarYearView(c *gin.Context) {
 	var req entities.YearViewRequest
 	if err := c.ShouldBindQuery(&req); err != nil {
@@ -1032,7 +1032,7 @@ func (h *CalendarHandler) GetCalendarYearView(c *gin.Context) {
 // @Failure 400 {object} baseAPI.APIResponse
 // @Failure 401 {object} baseAPI.APIResponse
 // @Failure 500 {object} baseAPI.APIResponse
-// @Router /calendar/free-slots [get]
+// @Router /calendars/free-slots [get]
 func (h *CalendarHandler) GetFreeSlots(c *gin.Context) {
 	var req entities.FreeSlotRequest
 	if err := c.ShouldBindQuery(&req); err != nil {
@@ -1074,7 +1074,7 @@ func (h *CalendarHandler) GetFreeSlots(c *gin.Context) {
 // @Failure 401 {object} baseAPI.APIResponse
 // @Failure 404 {object} baseAPI.APIResponse
 // @Failure 500 {object} baseAPI.APIResponse
-// @Router /calendar/{id}/import_holidays [post]
+// @Router /calendars/{id}/import_holidays [post]
 // @Security BearerAuth
 func (h *CalendarHandler) ImportHolidays(c *gin.Context) {
 	// Get calendar ID from path parameter

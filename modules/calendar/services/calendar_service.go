@@ -183,6 +183,7 @@ func (s *CalendarService) CreateCalendarEntry(req entities.CreateCalendarEntryRe
 		Type:         req.Type,
 		Description:  req.Description,
 		Location:     req.Location,
+		Timezone:     req.Timezone,
 		IsAllDay:     req.IsAllDay,
 	}
 
@@ -260,6 +261,9 @@ func (s *CalendarService) UpdateCalendarEntry(id, tenantID, userID uint, req ent
 	if req.Location != nil {
 		entry.Location = *req.Location
 	}
+	if req.Timezone != nil {
+		entry.Timezone = *req.Timezone
+	}
 	if req.IsAllDay != nil {
 		entry.IsAllDay = *req.IsAllDay
 	}
@@ -310,6 +314,7 @@ func (s *CalendarService) CreateCalendarSeries(req entities.CreateCalendarSeries
 		EndTime:              req.EndTime,
 		Description:          req.Description,
 		Location:             req.Location,
+		Timezone:             req.Timezone,
 		EntryUUID:            uuid.New().String(),
 		ExternalUID:          req.ExternalUID,
 		ExternalCalendarUUID: req.ExternalCalendarUUID,
@@ -389,6 +394,9 @@ func (s *CalendarService) UpdateCalendarSeries(id, tenantID, userID uint, req en
 	}
 	if req.Location != nil {
 		series.Location = *req.Location
+	}
+	if req.Timezone != nil {
+		series.Timezone = *req.Timezone
 	}
 	if req.ExternalUID != nil {
 		series.ExternalUID = *req.ExternalUID

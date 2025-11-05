@@ -38,12 +38,16 @@ definitions:
         items:
           type: integer
         type: array
+      series:
+        $ref: '#/definitions/entities.CalendarSeriesResponse'
       series_id:
         type: integer
       start_time:
         type: string
       tenant_id:
         type: integer
+      timezone:
+        type: string
       title:
         type: string
       type:
@@ -122,6 +126,8 @@ definitions:
         type: string
       tenant_id:
         type: integer
+      timezone:
+        type: string
       title:
         type: string
       updated_at:
@@ -2619,81 +2625,6 @@ paths:
       summary: Reset user settings
       tags:
       - user-settings
-  /calendar:
-    get:
-      description: Retrieve all calendars for the authenticated user with 2-level
-        deep preloading including entries with their series and series with their
-        entries
-      operationId: getCalendars
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: Returns calendars array with complete metadata including nested
-            relationships
-          schema:
-            allOf:
-            - $ref: '#/definitions/api.APIResponse'
-            - properties:
-                data:
-                  items:
-                    $ref: '#/definitions/entities.CalendarResponse'
-                  type: array
-              type: object
-        "401":
-          description: Unauthorized - invalid or missing JWT token
-          schema:
-            $ref: '#/definitions/api.APIResponse'
-        "500":
-          description: Internal server error during calendar retrieval
-          schema:
-            $ref: '#/definitions/api.APIResponse'
-      security:
-      - BearerAuth: []
-      summary: Get calendars with complete metadata
-      tags:
-      - calendar
-    post:
-      consumes:
-      - application/json
-      description: Create a new calendar for the authenticated user
-      operationId: createCalendar
-      parameters:
-      - description: Calendar data
-        in: body
-        name: calendar
-        required: true
-        schema:
-          $ref: '#/definitions/entities.CreateCalendarRequest'
-      produces:
-      - application/json
-      responses:
-        "201":
-          description: Created
-          schema:
-            allOf:
-            - $ref: '#/definitions/api.APIResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/entities.CalendarResponse'
-              type: object
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/api.APIResponse'
-        "401":
-          description: Unauthorized
-          schema:
-            $ref: '#/definitions/api.APIResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/api.APIResponse'
-      security:
-      - BearerAuth: []
-      summary: Create a new calendar
-      tags:
-      - calendar
   /calendar-entries:
     get:
       description: Retrieve all calendar entries for the authenticated user. All datetime
@@ -3127,7 +3058,82 @@ paths:
       summary: Update calendar series
       tags:
       - calendar-series
-  /calendar/{id}:
+  /calendars:
+    get:
+      description: Retrieve all calendars for the authenticated user with 2-level
+        deep preloading including entries with their series and series with their
+        entries
+      operationId: getCalendars
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Returns calendars array with complete metadata including nested
+            relationships
+          schema:
+            allOf:
+            - $ref: '#/definitions/api.APIResponse'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/entities.CalendarResponse'
+                  type: array
+              type: object
+        "401":
+          description: Unauthorized - invalid or missing JWT token
+          schema:
+            $ref: '#/definitions/api.APIResponse'
+        "500":
+          description: Internal server error during calendar retrieval
+          schema:
+            $ref: '#/definitions/api.APIResponse'
+      security:
+      - BearerAuth: []
+      summary: Get calendars with complete metadata
+      tags:
+      - calendar
+    post:
+      consumes:
+      - application/json
+      description: Create a new calendar for the authenticated user
+      operationId: createCalendar
+      parameters:
+      - description: Calendar data
+        in: body
+        name: calendar
+        required: true
+        schema:
+          $ref: '#/definitions/entities.CreateCalendarRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            allOf:
+            - $ref: '#/definitions/api.APIResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/entities.CalendarResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api.APIResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/api.APIResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api.APIResponse'
+      security:
+      - BearerAuth: []
+      summary: Create a new calendar
+      tags:
+      - calendar
+  /calendars/{id}:
     delete:
       description: Delete a calendar by ID
       operationId: deleteCalendar
@@ -3257,7 +3263,7 @@ paths:
       summary: Update calendar
       tags:
       - calendar
-  /calendar/{id}/import_holidays:
+  /calendars/{id}/import_holidays:
     post:
       consumes:
       - application/json
@@ -3305,7 +3311,7 @@ paths:
       summary: Import holidays into calendar
       tags:
       - calendar-utilities
-  /calendar/free-slots:
+  /calendars/free-slots:
     get:
       description: Find available time slots based on duration, interval, and maximum
         number
@@ -3352,7 +3358,7 @@ paths:
       summary: Get free time slots
       tags:
       - calendar-availability
-  /calendar/week:
+  /calendars/week:
     get:
       description: Retrieve calendar entries for a specific week
       operationId: getCalendarWeek
@@ -3388,7 +3394,7 @@ paths:
       summary: Get calendar week view
       tags:
       - calendar-views
-  /calendar/year:
+  /calendars/year:
     get:
       description: Retrieve calendar entries for a specific year
       operationId: getCalendarYear

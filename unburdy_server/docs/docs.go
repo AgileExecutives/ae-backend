@@ -2113,127 +2113,6 @@ const docTemplate = `{
                 }
             }
         },
-        "/calendar": {
-            "get": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "Retrieve all calendars for the authenticated user with 2-level deep preloading including entries with their series and series with their entries",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "calendar"
-                ],
-                "summary": "Get calendars with complete metadata",
-                "operationId": "getCalendars",
-                "responses": {
-                    "200": {
-                        "description": "Returns calendars array with complete metadata including nested relationships",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/api.APIResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "type": "array",
-                                            "items": {
-                                                "$ref": "#/definitions/entities.CalendarResponse"
-                                            }
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized - invalid or missing JWT token",
-                        "schema": {
-                            "$ref": "#/definitions/api.APIResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal server error during calendar retrieval",
-                        "schema": {
-                            "$ref": "#/definitions/api.APIResponse"
-                        }
-                    }
-                }
-            },
-            "post": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "Create a new calendar for the authenticated user",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "calendar"
-                ],
-                "summary": "Create a new calendar",
-                "operationId": "createCalendar",
-                "parameters": [
-                    {
-                        "description": "Calendar data",
-                        "name": "calendar",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/entities.CreateCalendarRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "201": {
-                        "description": "Created",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/api.APIResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/entities.CalendarResponse"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/api.APIResponse"
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "$ref": "#/definitions/api.APIResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/api.APIResponse"
-                        }
-                    }
-                }
-            }
-        },
         "/calendar-entries": {
             "get": {
                 "security": [
@@ -2920,7 +2799,128 @@ const docTemplate = `{
                 }
             }
         },
-        "/calendar/free-slots": {
+        "/calendars": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Retrieve all calendars for the authenticated user with 2-level deep preloading including entries with their series and series with their entries",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "calendar"
+                ],
+                "summary": "Get calendars with complete metadata",
+                "operationId": "getCalendars",
+                "responses": {
+                    "200": {
+                        "description": "Returns calendars array with complete metadata including nested relationships",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/api.APIResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/entities.CalendarResponse"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized - invalid or missing JWT token",
+                        "schema": {
+                            "$ref": "#/definitions/api.APIResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error during calendar retrieval",
+                        "schema": {
+                            "$ref": "#/definitions/api.APIResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Create a new calendar for the authenticated user",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "calendar"
+                ],
+                "summary": "Create a new calendar",
+                "operationId": "createCalendar",
+                "parameters": [
+                    {
+                        "description": "Calendar data",
+                        "name": "calendar",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/entities.CreateCalendarRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/api.APIResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/entities.CalendarResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/api.APIResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/api.APIResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/api.APIResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/calendars/free-slots": {
             "get": {
                 "security": [
                     {
@@ -2990,7 +2990,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/calendar/week": {
+        "/calendars/week": {
             "get": {
                 "security": [
                     {
@@ -3046,7 +3046,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/calendar/year": {
+        "/calendars/year": {
             "get": {
                 "security": [
                     {
@@ -3102,7 +3102,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/calendar/{id}": {
+        "/calendars/{id}": {
             "get": {
                 "security": [
                     {
@@ -3311,7 +3311,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/calendar/{id}/import_holidays": {
+        "/calendars/{id}/import_holidays": {
             "post": {
                 "security": [
                     {
@@ -4661,6 +4661,9 @@ const docTemplate = `{
                         "type": "integer"
                     }
                 },
+                "series": {
+                    "$ref": "#/definitions/entities.CalendarSeriesResponse"
+                },
                 "series_id": {
                     "type": "integer"
                 },
@@ -4669,6 +4672,9 @@ const docTemplate = `{
                 },
                 "tenant_id": {
                     "type": "integer"
+                },
+                "timezone": {
+                    "type": "string"
                 },
                 "title": {
                     "type": "string"
@@ -4787,6 +4793,9 @@ const docTemplate = `{
                 },
                 "tenant_id": {
                     "type": "integer"
+                },
+                "timezone": {
+                    "type": "string"
                 },
                 "title": {
                     "type": "string"
