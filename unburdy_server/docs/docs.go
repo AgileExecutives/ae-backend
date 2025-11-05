@@ -2129,28 +2129,26 @@ const docTemplate = `{
                 ],
                 "summary": "Get calendars with complete metadata",
                 "operationId": "getCalendars",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "Start year for filtering calendar entries (defaults to current year if not provided)",
-                        "name": "from_year",
-                        "in": "query"
-                    },
-                    {
-                        "type": "integer",
-                        "description": "End year for filtering calendar entries (defaults to next year if not provided)",
-                        "name": "to_year",
-                        "in": "query"
-                    }
-                ],
                 "responses": {
                     "200": {
-                        "description": "Array of calendars with preloaded entries, series, and external calendars",
+                        "description": "Returns calendars array with complete metadata including nested relationships",
                         "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/entities.CalendarResponse"
-                            }
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/api.APIResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/entities.CalendarResponse"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     },
                     "401": {
@@ -3127,18 +3125,6 @@ const docTemplate = `{
                         "name": "id",
                         "in": "path",
                         "required": true
-                    },
-                    {
-                        "type": "integer",
-                        "description": "Start year for filtering calendar entries (defaults to current year if not provided)",
-                        "name": "from_year",
-                        "in": "query"
-                    },
-                    {
-                        "type": "integer",
-                        "description": "End year for filtering calendar entries (defaults to next year if not provided)",
-                        "name": "to_year",
-                        "in": "query"
                     }
                 ],
                 "responses": {
@@ -4651,12 +4637,6 @@ const docTemplate = `{
                 "created_at": {
                     "type": "string"
                 },
-                "date_from": {
-                    "type": "string"
-                },
-                "date_to": {
-                    "type": "string"
-                },
                 "description": {
                     "type": "string"
                 },
@@ -4689,15 +4669,6 @@ const docTemplate = `{
                 },
                 "tenant_id": {
                     "type": "integer"
-                },
-                "time_from": {
-                    "type": "string"
-                },
-                "time_to": {
-                    "type": "string"
-                },
-                "timezone": {
-                    "type": "string"
                 },
                 "title": {
                     "type": "string"

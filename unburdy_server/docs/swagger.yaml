@@ -22,10 +22,6 @@ definitions:
         type: integer
       created_at:
         type: string
-      date_from:
-        type: string
-      date_to:
-        type: string
       description:
         type: string
       end_time:
@@ -48,12 +44,6 @@ definitions:
         type: string
       tenant_id:
         type: integer
-      time_from:
-        type: string
-      time_to:
-        type: string
-      timezone:
-        type: string
       title:
         type: string
       type:
@@ -2635,27 +2625,21 @@ paths:
         deep preloading including entries with their series and series with their
         entries
       operationId: getCalendars
-      parameters:
-      - description: Start year for filtering calendar entries (defaults to current
-          year if not provided)
-        in: query
-        name: from_year
-        type: integer
-      - description: End year for filtering calendar entries (defaults to next year
-          if not provided)
-        in: query
-        name: to_year
-        type: integer
       produces:
       - application/json
       responses:
         "200":
-          description: Array of calendars with preloaded entries, series, and external
-            calendars
+          description: Returns calendars array with complete metadata including nested
+            relationships
           schema:
-            items:
-              $ref: '#/definitions/entities.CalendarResponse'
-            type: array
+            allOf:
+            - $ref: '#/definitions/api.APIResponse'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/entities.CalendarResponse'
+                  type: array
+              type: object
         "401":
           description: Unauthorized - invalid or missing JWT token
           schema:
@@ -3189,16 +3173,6 @@ paths:
         in: path
         name: id
         required: true
-        type: integer
-      - description: Start year for filtering calendar entries (defaults to current
-          year if not provided)
-        in: query
-        name: from_year
-        type: integer
-      - description: End year for filtering calendar entries (defaults to next year
-          if not provided)
-        in: query
-        name: to_year
         type: integer
       produces:
       - application/json

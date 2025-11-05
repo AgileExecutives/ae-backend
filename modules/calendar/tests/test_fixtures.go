@@ -89,10 +89,8 @@ func (f *TestFixtures) CreateUpdateCalendarRequest() entities.UpdateCalendarRequ
 // Calendar Entry test fixtures
 
 func (f *TestFixtures) CreateMockCalendarEntry() *entities.CalendarEntry {
-	dateFrom := time.Date(2025, 11, 1, 0, 0, 0, 0, time.UTC)
-	dateTo := time.Date(2025, 11, 1, 0, 0, 0, 0, time.UTC)
-	timeFrom := time.Date(0, 1, 1, 9, 0, 0, 0, time.UTC)
-	timeTo := time.Date(0, 1, 1, 10, 0, 0, 0, time.UTC)
+	startTime := time.Date(2025, 11, 1, 9, 0, 0, 0, time.UTC)
+	endTime := time.Date(2025, 11, 1, 10, 0, 0, 0, time.UTC)
 
 	participants, _ := json.Marshal([]string{"user1@example.com", "user2@example.com"})
 
@@ -104,11 +102,8 @@ func (f *TestFixtures) CreateMockCalendarEntry() *entities.CalendarEntry {
 		Title:        "Test Meeting",
 		IsException:  false,
 		Participants: participants,
-		DateFrom:     &dateFrom,
-		DateTo:       &dateTo,
-		TimeFrom:     &timeFrom,
-		TimeTo:       &timeTo,
-		Timezone:     "UTC",
+		StartTime:    &startTime,
+		EndTime:      &endTime,
 		Type:         "meeting",
 		Description:  "Test meeting description",
 		Location:     "Conference Room A",
@@ -121,10 +116,8 @@ func (f *TestFixtures) CreateMockCalendarEntry() *entities.CalendarEntry {
 // Additional fixture methods...
 
 func (f *TestFixtures) CreateCalendarEntryRequest() entities.CreateCalendarEntryRequest {
-	dateFrom := time.Date(2025, 11, 1, 0, 0, 0, 0, time.UTC)
-	dateTo := time.Date(2025, 11, 1, 0, 0, 0, 0, time.UTC)
-	timeFrom := time.Date(0, 1, 1, 14, 0, 0, 0, time.UTC)
-	timeTo := time.Date(0, 1, 1, 15, 0, 0, 0, time.UTC)
+	startTime := time.Date(2025, 11, 1, 14, 0, 0, 0, time.UTC)
+	endTime := time.Date(2025, 11, 1, 15, 0, 0, 0, time.UTC)
 
 	participants, _ := json.Marshal([]string{"john@example.com"})
 
@@ -133,11 +126,8 @@ func (f *TestFixtures) CreateCalendarEntryRequest() entities.CreateCalendarEntry
 		Title:        "New Meeting",
 		IsException:  false,
 		Participants: participants,
-		DateFrom:     &dateFrom,
-		DateTo:       &dateTo,
-		TimeFrom:     &timeFrom,
-		TimeTo:       &timeTo,
-		Timezone:     "UTC",
+		StartTime:    &startTime,
+		EndTime:      &endTime,
 		Type:         "meeting",
 		Description:  "New meeting description",
 		Location:     "Room B",
@@ -167,24 +157,29 @@ func (f *TestFixtures) CreateUpdateCalendarEntryRequest() entities.UpdateCalenda
 
 func (f *TestFixtures) CreateImportHolidaysRequest() entities.ImportHolidaysRequest {
 	return entities.ImportHolidaysRequest{
-		Country: "US",
-		Year:    2024,
+		State:    "BW",
+		YearFrom: 2024,
+		YearTo:   2025,
+		Holidays: entities.UnburdyHolidaysData{
+			SchoolHolidays: make(map[string]map[string][2]string),
+			PublicHolidays: make(map[string]map[string]string),
+		},
 	}
 }
 
 // Calendar Series fixtures
 
 func (f *TestFixtures) CreateCalendarSeriesRequest() entities.CreateCalendarSeriesRequest {
-	timeStart := time.Date(0, 1, 1, 9, 0, 0, 0, time.UTC)
-	timeEnd := time.Date(0, 1, 1, 10, 0, 0, 0, time.UTC)
+	startTime := time.Date(2025, 11, 1, 9, 0, 0, 0, time.UTC)
+	endTime := time.Date(2025, 11, 1, 10, 0, 0, 0, time.UTC)
 
 	return entities.CreateCalendarSeriesRequest{
 		CalendarID:  1,
 		Title:       "Test Series",
 		Weekday:     1, // Monday
 		Interval:    1,
-		TimeStart:   &timeStart,
-		TimeEnd:     &timeEnd,
+		StartTime:   &startTime,
+		EndTime:     &endTime,
 		Description: "Test Series Description",
 		Location:    "Test Location",
 	}
@@ -207,8 +202,8 @@ func (f *TestFixtures) CreateUpdateCalendarSeriesRequest() entities.UpdateCalend
 }
 
 func (f *TestFixtures) CreateMockCalendarSeries() *entities.CalendarSeries {
-	timeStart := time.Date(0, 1, 1, 9, 0, 0, 0, time.UTC)
-	timeEnd := time.Date(0, 1, 1, 10, 0, 0, 0, time.UTC)
+	startTime := time.Date(2025, 11, 1, 9, 0, 0, 0, time.UTC)
+	endTime := time.Date(2025, 11, 1, 10, 0, 0, 0, time.UTC)
 
 	return &entities.CalendarSeries{
 		ID:          1,
@@ -218,8 +213,8 @@ func (f *TestFixtures) CreateMockCalendarSeries() *entities.CalendarSeries {
 		Title:       "Test Series",
 		Weekday:     1, // Monday
 		Interval:    1,
-		TimeStart:   &timeStart,
-		TimeEnd:     &timeEnd,
+		StartTime:   &startTime,
+		EndTime:     &endTime,
 		Description: "Test Series Description",
 		Location:    "Test Location",
 		EntryUUID:   "test-series-uuid",

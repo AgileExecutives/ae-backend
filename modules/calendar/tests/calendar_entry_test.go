@@ -1,8 +1,7 @@
-package test
+package tests
 
 import (
 	"testing"
-	"time"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
@@ -10,12 +9,11 @@ import (
 
 	"github.com/unburdy/calendar-module/entities"
 	"github.com/unburdy/calendar-module/services"
-	"github.com/unburdy/calendar-module/tests"
 	"github.com/unburdy/calendar-module/tests/mocks"
 )
 
 func TestCalendarService_CreateCalendarEntry(t *testing.T) {
-	fixtures := tests.NewTestFixtures()
+	fixtures := NewTestFixtures()
 	mockDB := &mocks.MockDB{}
 	service := services.NewCalendarService(mockDB)
 
@@ -37,7 +35,7 @@ func TestCalendarService_CreateCalendarEntry(t *testing.T) {
 				mockCalendar := fixtures.CreateMockCalendar()
 				mockDB.On("Where", "id = ? AND tenant_id = ? AND user_id = ?", uint(1), fixtures.TenantID, fixtures.UserID).Return(mockDB)
 				mockDB.On("First", mock.AnythingOfType("*entities.Calendar")).Return(nil, true, mockCalendar)
-				
+
 				// Mock entry creation
 				mockDB.On("Create", mock.AnythingOfType("*entities.CalendarEntry")).Return(nil, true)
 			},
@@ -64,7 +62,7 @@ func TestCalendarService_CreateCalendarEntry(t *testing.T) {
 				mockCalendar := fixtures.CreateMockCalendar()
 				mockDB.On("Where", "id = ? AND tenant_id = ? AND user_id = ?", uint(1), fixtures.TenantID, fixtures.UserID).Return(mockDB)
 				mockDB.On("First", mock.AnythingOfType("*entities.Calendar")).Return(nil, true, mockCalendar)
-				
+
 				// Mock entry creation failure
 				mockDB.On("Create", mock.AnythingOfType("*entities.CalendarEntry")).Return(mocks.ErrDatabase, false)
 			},
@@ -77,7 +75,7 @@ func TestCalendarService_CreateCalendarEntry(t *testing.T) {
 			// Reset mock
 			mockDB.ExpectedCalls = nil
 			mockDB.Calls = nil
-			
+
 			// Setup mock expectations
 			tt.setupMock()
 
@@ -105,7 +103,7 @@ func TestCalendarService_CreateCalendarEntry(t *testing.T) {
 }
 
 func TestCalendarService_GetCalendarEntryByID(t *testing.T) {
-	fixtures := tests.NewTestFixtures()
+	fixtures := NewTestFixtures()
 	mockDB := &mocks.MockDB{}
 	service := services.NewCalendarService(mockDB)
 
@@ -178,7 +176,7 @@ func TestCalendarService_GetCalendarEntryByID(t *testing.T) {
 }
 
 func TestCalendarService_UpdateCalendarEntry(t *testing.T) {
-	fixtures := tests.NewTestFixtures()
+	fixtures := NewTestFixtures()
 	mockDB := &mocks.MockDB{}
 	service := services.NewCalendarService(mockDB)
 
@@ -199,11 +197,11 @@ func TestCalendarService_UpdateCalendarEntry(t *testing.T) {
 			userID:   fixtures.UserID,
 			setupMock: func() {
 				mockEntry := fixtures.CreateMockCalendarEntry()
-				
+
 				// Mock finding the entry
 				mockDB.On("Where", "id = ? AND tenant_id = ? AND user_id = ?", uint(1), fixtures.TenantID, fixtures.UserID).Return(mockDB)
 				mockDB.On("First", mock.AnythingOfType("*entities.CalendarEntry")).Return(nil, true, mockEntry)
-				
+
 				// Mock saving the entry
 				mockDB.On("Save", mock.AnythingOfType("*entities.CalendarEntry")).Return(nil)
 			},
@@ -258,7 +256,7 @@ func TestCalendarService_UpdateCalendarEntry(t *testing.T) {
 }
 
 func TestCalendarService_DeleteCalendarEntry(t *testing.T) {
-	fixtures := tests.NewTestFixtures()
+	fixtures := NewTestFixtures()
 	mockDB := &mocks.MockDB{}
 	service := services.NewCalendarService(mockDB)
 
@@ -277,11 +275,11 @@ func TestCalendarService_DeleteCalendarEntry(t *testing.T) {
 			userID:   fixtures.UserID,
 			setupMock: func() {
 				mockEntry := fixtures.CreateMockCalendarEntry()
-				
+
 				// Mock finding the entry
 				mockDB.On("Where", "id = ? AND tenant_id = ? AND user_id = ?", uint(1), fixtures.TenantID, fixtures.UserID).Return(mockDB)
 				mockDB.On("First", mock.AnythingOfType("*entities.CalendarEntry")).Return(nil, true, mockEntry)
-				
+
 				// Mock deleting the entry
 				mockDB.On("Delete", mock.AnythingOfType("*entities.CalendarEntry")).Return(nil)
 			},
@@ -327,17 +325,17 @@ func TestCalendarService_DeleteCalendarEntry(t *testing.T) {
 }
 
 func TestCalendarService_GetFreeSlots(t *testing.T) {
-	fixtures := tests.NewTestFixtures()
+	fixtures := NewTestFixtures()
 	mockDB := &mocks.MockDB{}
 	service := services.NewCalendarService(mockDB)
 
 	testCases := []struct {
-		name            string
-		request         entities.FreeSlotRequest
-		tenantID        uint
-		userID          uint
+		name             string
+		request          entities.FreeSlotRequest
+		tenantID         uint
+		userID           uint
 		expectedMinSlots int
-		expectedError   string
+		expectedError    string
 	}{
 		{
 			name:             "successful free slot calculation",
@@ -362,7 +360,7 @@ func TestCalendarService_GetFreeSlots(t *testing.T) {
 			} else {
 				assert.NoError(t, err)
 				assert.GreaterOrEqual(t, len(result), tt.expectedMinSlots)
-				
+
 				// Verify slot structure
 				for _, slot := range result {
 					assert.True(t, slot.EndTime.After(slot.StartTime))
@@ -374,7 +372,7 @@ func TestCalendarService_GetFreeSlots(t *testing.T) {
 }
 
 func TestCalendarService_ImportHolidays(t *testing.T) {
-	fixtures := tests.NewTestFixtures()
+	fixtures := NewTestFixtures()
 	mockDB := &mocks.MockDB{}
 	service := services.NewCalendarService(mockDB)
 
@@ -395,10 +393,10 @@ func TestCalendarService_ImportHolidays(t *testing.T) {
 				// Mock holidays calendar not found (will create new one)
 				mockDB.On("Where", "tenant_id = ? AND user_id = ? AND title = ?", fixtures.TenantID, fixtures.UserID, "Holidays").Return(mockDB)
 				mockDB.On("First", mock.AnythingOfType("*entities.Calendar")).Return(gorm.ErrRecordNotFound, false, nil)
-				
+
 				// Mock calendar creation
 				mockDB.On("Create", mock.AnythingOfType("*entities.Calendar")).Return(nil, true)
-				
+
 				// Mock holiday entry creation
 				mockDB.On("Create", mock.AnythingOfType("*entities.CalendarEntry")).Return(nil, true)
 			},
@@ -415,7 +413,7 @@ func TestCalendarService_ImportHolidays(t *testing.T) {
 				mockCalendar.Title = "Holidays"
 				mockDB.On("Where", "tenant_id = ? AND user_id = ? AND title = ?", fixtures.TenantID, fixtures.UserID, "Holidays").Return(mockDB)
 				mockDB.On("First", mock.AnythingOfType("*entities.Calendar")).Return(nil, true, mockCalendar)
-				
+
 				// Mock holiday entry creation
 				mockDB.On("Create", mock.AnythingOfType("*entities.CalendarEntry")).Return(nil, true)
 			},

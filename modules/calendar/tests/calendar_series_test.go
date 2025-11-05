@@ -1,8 +1,7 @@
-package test
+package tests
 
 import (
 	"testing"
-	"time"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
@@ -10,12 +9,11 @@ import (
 
 	"github.com/unburdy/calendar-module/entities"
 	"github.com/unburdy/calendar-module/services"
-	"github.com/unburdy/calendar-module/tests"
 	"github.com/unburdy/calendar-module/tests/mocks"
 )
 
 func TestCalendarService_CreateCalendarSeries(t *testing.T) {
-	fixtures := tests.NewTestFixtures()
+	fixtures := NewTestFixtures()
 	mockDB := &mocks.MockDB{}
 	service := services.NewCalendarService(mockDB)
 
@@ -37,7 +35,7 @@ func TestCalendarService_CreateCalendarSeries(t *testing.T) {
 				mockCalendar := fixtures.CreateMockCalendar()
 				mockDB.On("Where", "id = ? AND tenant_id = ? AND user_id = ?", uint(1), fixtures.TenantID, fixtures.UserID).Return(mockDB)
 				mockDB.On("First", mock.AnythingOfType("*entities.Calendar")).Return(nil, true, mockCalendar)
-				
+
 				// Mock series creation
 				mockDB.On("Create", mock.AnythingOfType("*entities.CalendarSeries")).Return(nil, true)
 			},
@@ -64,7 +62,7 @@ func TestCalendarService_CreateCalendarSeries(t *testing.T) {
 				mockCalendar := fixtures.CreateMockCalendar()
 				mockDB.On("Where", "id = ? AND tenant_id = ? AND user_id = ?", uint(1), fixtures.TenantID, fixtures.UserID).Return(mockDB)
 				mockDB.On("First", mock.AnythingOfType("*entities.Calendar")).Return(nil, true, mockCalendar)
-				
+
 				// Mock series creation failure
 				mockDB.On("Create", mock.AnythingOfType("*entities.CalendarSeries")).Return(mocks.ErrDatabase, false)
 			},
@@ -77,7 +75,7 @@ func TestCalendarService_CreateCalendarSeries(t *testing.T) {
 			// Reset mock
 			mockDB.ExpectedCalls = nil
 			mockDB.Calls = nil
-			
+
 			// Setup mock expectations
 			tt.setupMock()
 
@@ -105,7 +103,7 @@ func TestCalendarService_CreateCalendarSeries(t *testing.T) {
 }
 
 func TestCalendarService_GetCalendarSeriesByID(t *testing.T) {
-	fixtures := tests.NewTestFixtures()
+	fixtures := NewTestFixtures()
 	mockDB := &mocks.MockDB{}
 	service := services.NewCalendarService(mockDB)
 
@@ -178,7 +176,7 @@ func TestCalendarService_GetCalendarSeriesByID(t *testing.T) {
 }
 
 func TestCalendarService_UpdateCalendarSeries(t *testing.T) {
-	fixtures := tests.NewTestFixtures()
+	fixtures := NewTestFixtures()
 	mockDB := &mocks.MockDB{}
 	service := services.NewCalendarService(mockDB)
 
@@ -199,11 +197,11 @@ func TestCalendarService_UpdateCalendarSeries(t *testing.T) {
 			userID:   fixtures.UserID,
 			setupMock: func() {
 				mockSeries := fixtures.CreateMockCalendarSeries()
-				
+
 				// Mock finding the series
 				mockDB.On("Where", "id = ? AND tenant_id = ? AND user_id = ?", uint(1), fixtures.TenantID, fixtures.UserID).Return(mockDB)
 				mockDB.On("First", mock.AnythingOfType("*entities.CalendarSeries")).Return(nil, true, mockSeries)
-				
+
 				// Mock saving the series
 				mockDB.On("Save", mock.AnythingOfType("*entities.CalendarSeries")).Return(nil)
 			},
@@ -258,7 +256,7 @@ func TestCalendarService_UpdateCalendarSeries(t *testing.T) {
 }
 
 func TestCalendarService_DeleteCalendarSeries(t *testing.T) {
-	fixtures := tests.NewTestFixtures()
+	fixtures := NewTestFixtures()
 	mockDB := &mocks.MockDB{}
 	service := services.NewCalendarService(mockDB)
 
@@ -277,15 +275,15 @@ func TestCalendarService_DeleteCalendarSeries(t *testing.T) {
 			userID:   fixtures.UserID,
 			setupMock: func() {
 				mockSeries := fixtures.CreateMockCalendarSeries()
-				
+
 				// Mock finding the series
 				mockDB.On("Where", "id = ? AND tenant_id = ? AND user_id = ?", uint(1), fixtures.TenantID, fixtures.UserID).Return(mockDB)
 				mockDB.On("First", mock.AnythingOfType("*entities.CalendarSeries")).Return(nil, true, mockSeries)
-				
+
 				// Mock deleting related entries
 				mockDB.On("Where", "series_id = ?", uint(1)).Return(mockDB)
 				mockDB.On("Delete", mock.AnythingOfType("*entities.CalendarEntry")).Return(nil)
-				
+
 				// Mock deleting the series
 				mockDB.On("Delete", mock.AnythingOfType("*entities.CalendarSeries")).Return(nil)
 			},
@@ -331,7 +329,7 @@ func TestCalendarService_DeleteCalendarSeries(t *testing.T) {
 }
 
 func TestCalendarService_GenerateSeriesEntries(t *testing.T) {
-	fixtures := tests.NewTestFixtures()
+	fixtures := NewTestFixtures()
 	mockDB := &mocks.MockDB{}
 	service := services.NewCalendarService(mockDB)
 
@@ -356,11 +354,11 @@ func TestCalendarService_GenerateSeriesEntries(t *testing.T) {
 				mockSeries.Count = 5
 				mockDB.On("Where", "id = ? AND tenant_id = ? AND user_id = ?", uint(1), fixtures.TenantID, fixtures.UserID).Return(mockDB)
 				mockDB.On("First", mock.AnythingOfType("*entities.CalendarSeries")).Return(nil, true, mockSeries)
-				
+
 				// Mock deleting existing entries
 				mockDB.On("Where", "series_id = ?", uint(1)).Return(mockDB)
 				mockDB.On("Delete", mock.AnythingOfType("*entities.CalendarEntry")).Return(nil)
-				
+
 				// Mock creating new entries (will be called multiple times)
 				mockDB.On("Create", mock.AnythingOfType("*entities.CalendarEntry")).Return(nil, true).Maybe()
 			},
