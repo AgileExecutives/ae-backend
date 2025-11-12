@@ -1018,48 +1018,6 @@ func (h *CalendarHandler) GetCalendarYearView(c *gin.Context) {
 	c.JSON(http.StatusOK, responses)
 }
 
-// GetFreeSlots finds available time slots
-// @Summary Get free time slots
-// @ID getFreeSlots
-// @Description Find available time slots based on duration, interval, and maximum number
-// @Tags calendar-availability
-// @Produce json
-// @Security BearerAuth
-// @Param duration query int true "Duration in minutes" example:60
-// @Param interval query int true "Interval between slots in minutes" example:30
-// @Param number_max query int true "Maximum number of slots to return" example:10
-// @Success 200 {array} entities.FreeSlot
-// @Failure 400 {object} baseAPI.APIResponse
-// @Failure 401 {object} baseAPI.APIResponse
-// @Failure 500 {object} baseAPI.APIResponse
-// @Router /calendars/free-slots [get]
-func (h *CalendarHandler) GetFreeSlots(c *gin.Context) {
-	var req entities.FreeSlotRequest
-	if err := c.ShouldBindQuery(&req); err != nil {
-		c.JSON(http.StatusBadRequest, baseAPI.ErrorResponseFunc("Internal server error", err.Error()))
-		return
-	}
-
-	tenantID, err := baseAPI.GetTenantID(c)
-	if err != nil {
-		c.JSON(http.StatusUnauthorized, baseAPI.ErrorResponseFunc("Unauthorized", "Unable to get tenant ID: "+err.Error()))
-		return
-	}
-	userID, err := baseAPI.GetUserID(c)
-	if err != nil {
-		c.JSON(http.StatusUnauthorized, baseAPI.ErrorResponseFunc("Unauthorized", "Unable to get user ID: "+err.Error()))
-		return
-	}
-
-	slots, err := h.service.GetFreeSlots(req, tenantID, userID)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, baseAPI.ErrorResponseFunc("Internal server error", err.Error()))
-		return
-	}
-
-	c.JSON(http.StatusOK, slots)
-}
-
 // ImportHolidays imports holidays into a specific calendar using unburdy format
 // @Summary Import holidays into calendar
 // @ID importHolidays

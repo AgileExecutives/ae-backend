@@ -13,6 +13,7 @@ import (
 	"github.com/ae-base-server/pkg/config"
 	"github.com/ae-base-server/pkg/core"
 	"github.com/joho/godotenv"
+	booking "github.com/unburdy/booking-module"
 	calendar "github.com/unburdy/calendar-module"
 	_ "github.com/unburdy/unburdy-server-api/docs" // swagger docs - unburdy-specific
 	"github.com/unburdy/unburdy-server-api/modules/client_management"
@@ -97,6 +98,9 @@ import (
 // @tag.name calendar-utilities
 // @tag.description [Calendar Module] Calendar utilities including holiday import and data management
 
+// @tag.name booking-templates
+// @tag.description [Booking Module] Booking template/configuration management for appointment scheduling
+
 func main() {
 	// Load .env file
 	if err := godotenv.Load(); err != nil {
@@ -131,6 +135,7 @@ func main() {
 		static.NewStaticModule(),          // Static JSON file serving
 		client_management.NewCoreModule(), // Client management (unburdy-specific)
 		calendar.NewCoreModule(),          // Calendar management (unburdy-specific)
+		booking.NewCoreModule(),           // Booking management (unburdy-specific)
 	}
 
 	for _, module := range modules {

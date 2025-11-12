@@ -89,9 +89,9 @@ lint:
 .PHONY: swagger
 swagger:
 	@echo "$(YELLOW)Generating Swagger documentation...$(RESET)"
-	@echo "$(CYAN)Scanning unburdy handlers, ae-saas-basic handlers, and calendar module...$(RESET)"
-	swag init -g $(MAIN_FILE) -o ./docs --parseDependency --parseInternal --parseDepth 2 -d ./,$(BASE_API_PATH),../modules/calendar
-	@echo "$(GREEN)✓ Swagger docs generated with base API and calendar endpoints$(RESET)"
+	@echo "$(CYAN)Scanning unburdy handlers, ae-saas-basic handlers, calendar module, and booking module...$(RESET)"
+	swag init -g $(MAIN_FILE) -o ./docs --parseDependency --parseInternal --parseDepth 2 -d ./,$(BASE_API_PATH),../modules/calendar,../modules/booking
+	@echo "$(GREEN)✓ Swagger docs generated with base API, calendar, and booking endpoints$(RESET)"
 
 ## docker-build: Build Docker image
 .PHONY: docker-build

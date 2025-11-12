@@ -16,6 +16,66 @@ definitions:
       pagination:
         $ref: '#/definitions/github_com_ae-base-server_internal_models.PaginationResponse'
     type: object
+  entities.BookingLinkResponse:
+    properties:
+      created_at:
+        type: string
+      expires_at:
+        type: string
+      purpose:
+        $ref: '#/definitions/entities.TokenPurpose'
+      token:
+        type: string
+      url:
+        type: string
+    type: object
+  entities.BookingTemplateResponse:
+    properties:
+      advance_booking_days:
+        type: integer
+      allow_back_to_back:
+        type: boolean
+      allowed_intervals:
+        items:
+          $ref: '#/definitions/entities.IntervalType'
+        type: array
+      block_dates:
+        items:
+          $ref: '#/definitions/entities.DateRange'
+        type: array
+      buffer_time:
+        type: integer
+      calendar_id:
+        type: integer
+      created_at:
+        type: string
+      description:
+        type: string
+      id:
+        type: integer
+      max_bookings_per_day:
+        type: integer
+      max_series_bookings:
+        type: integer
+      min_notice_hours:
+        type: integer
+      name:
+        type: string
+      number_of_intervals:
+        type: integer
+      slot_duration:
+        type: integer
+      tenant_id:
+        type: integer
+      timezone:
+        type: string
+      updated_at:
+        type: string
+      user_id:
+        type: integer
+      weekly_availability:
+        $ref: '#/definitions/entities.WeeklyAvailability'
+    type: object
   entities.CalendarEntryResponse:
     properties:
       calendar_id:
@@ -229,6 +289,80 @@ definitions:
       zip:
         type: string
     type: object
+  entities.CreateBookingLinkRequest:
+    properties:
+      client_id:
+        type: integer
+      template_id:
+        type: integer
+      token_purpose:
+        allOf:
+        - $ref: '#/definitions/entities.TokenPurpose'
+        enum:
+        - one-time-booking-link
+        - permanent-booking-link
+    required:
+    - client_id
+    - template_id
+    - token_purpose
+    type: object
+  entities.CreateBookingTemplateRequest:
+    properties:
+      advance_booking_days:
+        minimum: 1
+        type: integer
+      allow_back_to_back:
+        type: boolean
+      allowed_intervals:
+        items:
+          $ref: '#/definitions/entities.IntervalType'
+        type: array
+      block_dates:
+        items:
+          $ref: '#/definitions/entities.DateRange'
+        type: array
+      buffer_time:
+        minimum: 0
+        type: integer
+      calendar_id:
+        type: integer
+      description:
+        type: string
+      max_bookings_per_day:
+        type: integer
+      max_series_bookings:
+        minimum: 1
+        type: integer
+      min_notice_hours:
+        minimum: 0
+        type: integer
+      name:
+        type: string
+      number_of_intervals:
+        minimum: 1
+        type: integer
+      slot_duration:
+        minimum: 5
+        type: integer
+      timezone:
+        type: string
+      user_id:
+        type: integer
+      weekly_availability:
+        $ref: '#/definitions/entities.WeeklyAvailability'
+    required:
+    - advance_booking_days
+    - allowed_intervals
+    - calendar_id
+    - max_series_bookings
+    - min_notice_hours
+    - name
+    - number_of_intervals
+    - slot_duration
+    - timezone
+    - user_id
+    - weekly_availability
+    type: object
   entities.CreateCalendarEntryRequest:
     type: object
   entities.CreateCalendarRequest:
@@ -262,6 +396,27 @@ definitions:
     type: object
   entities.CreateExternalCalendarRequest:
     type: object
+  entities.DateRange:
+    properties:
+      end:
+        description: Date in YYYY-MM-DD format
+        type: string
+      start:
+        description: Date in YYYY-MM-DD format
+        type: string
+    type: object
+  entities.DayData:
+    properties:
+      availableCount:
+        description: Number of free slots
+        type: integer
+      date:
+        description: YYYY-MM-DD format
+        type: string
+      status:
+        description: '"available", "partial", "none"'
+        type: string
+    type: object
   entities.ExternalCalendarResponse:
     properties:
       calendar_id:
@@ -291,17 +446,16 @@ definitions:
       user_id:
         type: integer
     type: object
-  entities.FreeSlot:
+  entities.FreeSlotsResponse:
     properties:
-      duration:
-        example: 60
-        type: integer
-      end_time:
-        example: "2025-01-15T10:00:00Z"
-        type: string
-      start_time:
-        example: "2025-01-15T09:00:00Z"
-        type: string
+      config:
+        $ref: '#/definitions/entities.SlotConfiguration'
+      monthData:
+        $ref: '#/definitions/entities.MonthData'
+      slots:
+        items:
+          $ref: '#/definitions/entities.TimeSlot'
+        type: array
     type: object
   entities.HolidayImportResult:
     properties:
@@ -343,11 +497,105 @@ definitions:
     - year_from
     - year_to
     type: object
+  entities.IntervalType:
+    enum:
+    - none
+    - weekly
+    - monthly-date
+    - monthly-day
+    - yearly
+    type: string
+    x-enum-varnames:
+    - IntervalNone
+    - IntervalWeekly
+    - IntervalMonthlyDate
+    - IntervalMonthlyDay
+    - IntervalYearly
+  entities.MonthData:
+    properties:
+      days:
+        description: Array of all days in month
+        items:
+          $ref: '#/definitions/entities.DayData'
+        type: array
+      month:
+        description: 1-12
+        type: integer
+      year:
+        description: e.g., 2025
+        type: integer
+    type: object
   entities.NullableDate:
     properties:
       time.Time:
         type: string
     type: object
+  entities.SlotConfiguration:
+    properties:
+      buffer_time:
+        description: Buffer between slots in minutes
+        type: integer
+      duration:
+        description: Slot duration in minutes
+        type: integer
+      interval:
+        description: '"weekly", "biweekly", "none"'
+        type: string
+      number_max:
+        description: Max number of series slots
+        type: integer
+      weekly_availability:
+        allOf:
+        - $ref: '#/definitions/entities.WeeklyAvailability'
+        description: Weekly availability config
+    type: object
+  entities.TimeRange:
+    properties:
+      end:
+        description: Time in HH:mm format (e.g., "17:00")
+        type: string
+      start:
+        description: Time in HH:mm format (e.g., "09:00")
+        type: string
+    type: object
+  entities.TimeSlot:
+    properties:
+      available:
+        description: Is this slot available?
+        type: boolean
+      date:
+        description: YYYY-MM-DD format
+        type: string
+      duration:
+        description: Duration in minutes
+        type: integer
+      end_time:
+        description: ISO datetime (e.g., "2025-11-05T09:30:00+01:00")
+        type: string
+      id:
+        description: Unique identifier (e.g., "slot-2025-11-05-09-00")
+        type: string
+      start_time:
+        description: ISO datetime (e.g., "2025-11-05T09:00:00+01:00")
+        type: string
+      time:
+        description: HH:mm format
+        type: string
+      time_of_day:
+        description: '"morning", "afternoon", "evening"'
+        type: string
+      timezone:
+        description: e.g., "Europe/Berlin"
+        type: string
+    type: object
+  entities.TokenPurpose:
+    enum:
+    - one-time-booking-link
+    - permanent-booking-link
+    type: string
+    x-enum-varnames:
+    - OneTimeBookingLink
+    - PermanentBookingLink
   entities.UnburdyHolidaysData:
     properties:
       public_holidays:
@@ -364,6 +612,47 @@ definitions:
             type: array
           type: object
         type: object
+    type: object
+  entities.UpdateBookingTemplateRequest:
+    properties:
+      advance_booking_days:
+        minimum: 1
+        type: integer
+      allow_back_to_back:
+        type: boolean
+      allowed_intervals:
+        items:
+          $ref: '#/definitions/entities.IntervalType'
+        type: array
+      block_dates:
+        items:
+          $ref: '#/definitions/entities.DateRange'
+        type: array
+      buffer_time:
+        minimum: 0
+        type: integer
+      description:
+        type: string
+      max_bookings_per_day:
+        type: integer
+      max_series_bookings:
+        minimum: 1
+        type: integer
+      min_notice_hours:
+        minimum: 0
+        type: integer
+      name:
+        type: string
+      number_of_intervals:
+        minimum: 1
+        type: integer
+      slot_duration:
+        minimum: 5
+        type: integer
+      timezone:
+        type: string
+      weekly_availability:
+        $ref: '#/definitions/entities.WeeklyAvailability'
     type: object
   entities.UpdateCalendarEntryRequest:
     type: object
@@ -395,6 +684,37 @@ definitions:
         type: string
     type: object
   entities.UpdateExternalCalendarRequest:
+    type: object
+  entities.WeeklyAvailability:
+    properties:
+      friday:
+        items:
+          $ref: '#/definitions/entities.TimeRange'
+        type: array
+      monday:
+        items:
+          $ref: '#/definitions/entities.TimeRange'
+        type: array
+      saturday:
+        items:
+          $ref: '#/definitions/entities.TimeRange'
+        type: array
+      sunday:
+        items:
+          $ref: '#/definitions/entities.TimeRange'
+        type: array
+      thursday:
+        items:
+          $ref: '#/definitions/entities.TimeRange'
+        type: array
+      tuesday:
+        items:
+          $ref: '#/definitions/entities.TimeRange'
+        type: array
+      wednesday:
+        items:
+          $ref: '#/definitions/entities.TimeRange'
+        type: array
     type: object
   github_com_ae-base-server_internal_models.APIResponse:
     properties:
@@ -2625,6 +2945,386 @@ paths:
       summary: Reset user settings
       tags:
       - user-settings
+  /booking/freeslots/{token}:
+    get:
+      description: Retrieve available time slots based on a booking link token. Token
+        is validated and must not be blacklisted.
+      operationId: getBookingFreeSlots
+      parameters:
+      - description: Booking link token
+        in: path
+        name: token
+        required: true
+        type: string
+      - description: Start date for slot search (YYYY-MM-DD)
+        in: query
+        name: start
+        type: string
+      - description: End date for slot search (YYYY-MM-DD)
+        in: query
+        name: end
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/api.APIResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/entities.FreeSlotsResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api.APIResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/api.APIResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/api.APIResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api.APIResponse'
+      summary: Get available time slots for booking
+      tags:
+      - booking-slots
+  /booking/link:
+    post:
+      consumes:
+      - application/json
+      description: Generate a booking link token for a client to book appointments
+      operationId: createBookingLink
+      parameters:
+      - description: Booking link data
+        in: body
+        name: link
+        required: true
+        schema:
+          $ref: '#/definitions/entities.CreateBookingLinkRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            allOf:
+            - $ref: '#/definitions/api.APIResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/entities.BookingLinkResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api.APIResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/api.APIResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/api.APIResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api.APIResponse'
+      security:
+      - BearerAuth: []
+      summary: Create a booking link
+      tags:
+      - booking-templates
+  /booking/templates:
+    get:
+      description: Retrieve all booking configurations for the tenant
+      operationId: listBookingTemplates
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/api.APIResponse'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/entities.BookingTemplateResponse'
+                  type: array
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/api.APIResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api.APIResponse'
+      security:
+      - BearerAuth: []
+      summary: Get all booking configurations
+      tags:
+      - booking-templates
+    post:
+      consumes:
+      - application/json
+      description: Create a new booking configuration/template for a user's calendar
+      operationId: createBookingTemplate
+      parameters:
+      - description: Booking configuration data
+        in: body
+        name: configuration
+        required: true
+        schema:
+          $ref: '#/definitions/entities.CreateBookingTemplateRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            allOf:
+            - $ref: '#/definitions/api.APIResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/entities.BookingTemplateResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api.APIResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/api.APIResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api.APIResponse'
+      security:
+      - BearerAuth: []
+      summary: Create a new booking configuration
+      tags:
+      - booking-templates
+  /booking/templates/{id}:
+    delete:
+      description: Soft delete a booking configuration by ID
+      operationId: deleteBookingTemplate
+      parameters:
+      - description: Configuration ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/api.APIResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api.APIResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/api.APIResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/api.APIResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api.APIResponse'
+      security:
+      - BearerAuth: []
+      summary: Delete a booking configuration
+      tags:
+      - booking-templates
+    get:
+      description: Retrieve a specific booking configuration by ID
+      operationId: getBookingTemplate
+      parameters:
+      - description: Configuration ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/api.APIResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/entities.BookingTemplateResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api.APIResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/api.APIResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/api.APIResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api.APIResponse'
+      security:
+      - BearerAuth: []
+      summary: Get a booking configuration by ID
+      tags:
+      - booking-templates
+    put:
+      consumes:
+      - application/json
+      description: Update an existing booking configuration
+      operationId: updateBookingTemplate
+      parameters:
+      - description: Configuration ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Updated configuration data
+        in: body
+        name: configuration
+        required: true
+        schema:
+          $ref: '#/definitions/entities.UpdateBookingTemplateRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/api.APIResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/entities.BookingTemplateResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api.APIResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/api.APIResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/api.APIResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api.APIResponse'
+      security:
+      - BearerAuth: []
+      summary: Update a booking configuration
+      tags:
+      - booking-templates
+  /booking/templates/by-calendar:
+    get:
+      description: Retrieve all booking configurations for a specific calendar
+      operationId: listBookingTemplatesByCalendar
+      parameters:
+      - description: Calendar ID
+        in: query
+        name: calendar_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/api.APIResponse'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/entities.BookingTemplateResponse'
+                  type: array
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api.APIResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/api.APIResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api.APIResponse'
+      security:
+      - BearerAuth: []
+      summary: Get booking configurations by calendar ID
+      tags:
+      - booking-templates
+  /booking/templates/by-user:
+    get:
+      description: Retrieve all booking configurations for a specific user
+      operationId: listBookingTemplatesByUser
+      parameters:
+      - description: User ID
+        in: query
+        name: user_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/api.APIResponse'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/entities.BookingTemplateResponse'
+                  type: array
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api.APIResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/api.APIResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api.APIResponse'
+      security:
+      - BearerAuth: []
+      summary: Get booking configurations by user ID
+      tags:
+      - booking-templates
   /calendar-entries:
     get:
       description: Retrieve all calendar entries for the authenticated user. All datetime
@@ -3311,53 +4011,6 @@ paths:
       summary: Import holidays into calendar
       tags:
       - calendar-utilities
-  /calendars/free-slots:
-    get:
-      description: Find available time slots based on duration, interval, and maximum
-        number
-      operationId: getFreeSlots
-      parameters:
-      - description: Duration in minutes
-        in: query
-        name: duration
-        required: true
-        type: integer
-      - description: Interval between slots in minutes
-        in: query
-        name: interval
-        required: true
-        type: integer
-      - description: Maximum number of slots to return
-        in: query
-        name: number_max
-        required: true
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            items:
-              $ref: '#/definitions/entities.FreeSlot'
-            type: array
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/api.APIResponse'
-        "401":
-          description: Unauthorized
-          schema:
-            $ref: '#/definitions/api.APIResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/api.APIResponse'
-      security:
-      - BearerAuth: []
-      summary: Get free time slots
-      tags:
-      - calendar-availability
   /calendars/week:
     get:
       description: Retrieve calendar entries for a specific week
@@ -4242,3 +4895,6 @@ tags:
 - description: '[Calendar Module] Calendar utilities including holiday import and
     data management'
   name: calendar-utilities
+- description: '[Booking Module] Booking template/configuration management for appointment
+    scheduling'
+  name: booking-templates

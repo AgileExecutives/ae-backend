@@ -569,33 +569,6 @@ func (s *CalendarService) GetCalendarYearView(year int, tenantID, userID uint) (
 	return entries, nil
 }
 
-// GetFreeSlots finds free time slots based on weekly availability and existing entries
-func (s *CalendarService) GetFreeSlots(req entities.FreeSlotRequest, tenantID, userID uint) ([]entities.FreeSlot, error) {
-	// This is a basic implementation - in a real system you would:
-	// 1. Parse weekly_availability JSON from user's calendar
-	// 2. Generate time slots based on availability
-	// 3. Filter out occupied slots based on existing calendar entries
-	// 4. Return available slots
-
-	var freeSlots []entities.FreeSlot
-
-	// For now, return a placeholder implementation
-	// In a real implementation, you would query calendar entries and calculate availability
-	startTime := time.Now().Add(24 * time.Hour) // Start from tomorrow
-	for i := 0; i < req.NumberMax; i++ {
-		slotStart := startTime.Add(time.Duration(i*req.Interval) * time.Minute)
-		slotEnd := slotStart.Add(time.Duration(req.Duration) * time.Minute)
-
-		freeSlots = append(freeSlots, entities.FreeSlot{
-			StartTime: slotStart,
-			EndTime:   slotEnd,
-			Duration:  req.Duration,
-		})
-	}
-
-	return freeSlots, nil
-}
-
 // ImportHolidaysToCalendar imports holidays into a specific calendar using unburdy format
 func (s *CalendarService) ImportHolidaysToCalendar(calendarID uint, req entities.ImportHolidaysRequest, tenantID, userID uint) (*entities.HolidayImportResult, error) {
 	// Verify calendar exists and belongs to user

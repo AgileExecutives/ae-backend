@@ -380,20 +380,6 @@ func (ec *ExternalCalendar) ToResponse() ExternalCalendarResponse {
 	}
 }
 
-// FreeSlotRequest represents the request for finding free time slots
-type FreeSlotRequest struct {
-	Duration  int `form:"duration" binding:"required,min=1" example:"60"`   // Duration in minutes
-	Interval  int `form:"interval" binding:"required,min=1" example:"30"`   // Interval between slots in minutes
-	NumberMax int `form:"number_max" binding:"required,min=1" example:"10"` // Maximum number of slots to return
-}
-
-// FreeSlot represents a free time slot
-type FreeSlot struct {
-	StartTime time.Time `json:"start_time" example:"2025-01-15T09:00:00Z"`
-	EndTime   time.Time `json:"end_time" example:"2025-01-15T10:00:00Z"`
-	Duration  int       `json:"duration" example:"60"`
-}
-
 // WeekViewRequest represents the request for week view
 type WeekViewRequest struct {
 	Date string `form:"date" binding:"required" example:"2025-01-15"` // Date in YYYY-MM-DD format
