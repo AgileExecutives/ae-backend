@@ -1,0 +1,737 @@
+
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+		<title>services: Go Coverage Report</title>
+		<style>
+			body {
+				background: black;
+				color: rgb(80, 80, 80);
+			}
+			body, pre, #legend span {
+				font-family: Menlo, monospace;
+				font-weight: bold;
+			}
+			#topbar {
+				background: black;
+				position: fixed;
+				top: 0; left: 0; right: 0;
+				height: 42px;
+				border-bottom: 1px solid rgb(80, 80, 80);
+			}
+			#content {
+				margin-top: 50px;
+			}
+			#nav, #legend {
+				float: left;
+				margin-left: 10px;
+			}
+			#legend {
+				margin-top: 12px;
+			}
+			#nav {
+				margin-top: 10px;
+			}
+			#legend span {
+				margin: 0 5px;
+			}
+			.cov0 { color: rgb(192, 0, 0) }
+.cov1 { color: rgb(128, 128, 128) }
+.cov2 { color: rgb(116, 140, 131) }
+.cov3 { color: rgb(104, 152, 134) }
+.cov4 { color: rgb(92, 164, 137) }
+.cov5 { color: rgb(80, 176, 140) }
+.cov6 { color: rgb(68, 188, 143) }
+.cov7 { color: rgb(56, 200, 146) }
+.cov8 { color: rgb(44, 212, 149) }
+.cov9 { color: rgb(32, 224, 152) }
+.cov10 { color: rgb(20, 236, 155) }
+
+		</style>
+	</head>
+	<body>
+		<div id="topbar">
+			<div id="nav">
+				<select id="files">
+				
+				<option value="file0">github.com/unburdy/booking-module/services/booking_link_service.go (68.6%)</option>
+				
+				<option value="file1">github.com/unburdy/booking-module/services/booking_service.go (0.0%)</option>
+				
+				<option value="file2">github.com/unburdy/booking-module/services/free_slots_service.go (93.0%)</option>
+				
+				</select>
+			</div>
+			<div id="legend">
+				<span>not tracked</span>
+			
+				<span class="cov0">not covered</span>
+				<span class="cov8">covered</span>
+			
+			</div>
+		</div>
+		<div id="content">
+		
+		<pre class="file" id="file0" style="display: none">package services
+
+import (
+        "crypto/hmac"
+        "crypto/sha256"
+        "encoding/base64"
+        "encoding/json"
+        "errors"
+        "fmt"
+        "strings"
+        "time"
+
+        "github.com/unburdy/booking-module/entities"
+        "gorm.io/gorm"
+)
+
+// BookingLinkService handles booking link generation and validation with JWT tokens
+type BookingLinkService struct {
+        db        *gorm.DB
+        secretKey []byte
+}
+
+// NewBookingLinkService creates a new booking link service
+func NewBookingLinkService(db *gorm.DB, secretKey string) *BookingLinkService <span class="cov8" title="1">{
+        return &amp;BookingLinkService{
+                db:        db,
+                secretKey: []byte(secretKey),
+        }
+}</span>
+
+// GenerateBookingLink creates a self-contained JWT token for a booking link
+func (s *BookingLinkService) GenerateBookingLink(templateID, clientID, tenantID uint, tokenPurpose entities.TokenPurpose) (string, error) <span class="cov0" title="0">{
+        // Fetch the template to get user_id and calendar_id
+        var template entities.BookingTemplate
+        if err := s.db.Where("id = ? AND tenant_id = ?", templateID, tenantID).First(&amp;template).Error; err != nil </span><span class="cov0" title="0">{
+                if errors.Is(err, gorm.ErrRecordNotFound) </span><span class="cov0" title="0">{
+                        return "", errors.New("booking template not found")
+                }</span>
+                <span class="cov0" title="0">return "", fmt.Errorf("failed to retrieve booking template: %w", err)</span>
+        }
+
+        // Create JWT claims
+        <span class="cov0" title="0">claims := entities.BookingLinkClaims{
+                TenantID:   tenantID,
+                UserID:     template.UserID,
+                CalendarID: template.CalendarID,
+                TemplateID: templateID,
+                ClientID:   clientID,
+                IssuedAt:   time.Now().Unix(),
+                Purpose:    tokenPurpose,
+        }
+
+        // Set expiry for one-time links (24 hours)
+        if tokenPurpose == entities.OneTimeBookingLink </span><span class="cov0" title="0">{
+                claims.ExpiresAt = time.Now().Add(24 * time.Hour).Unix()
+        }</span>
+
+        // Generate JWT token
+        <span class="cov0" title="0">token, err := s.generateToken(claims)
+        if err != nil </span><span class="cov0" title="0">{
+                return "", fmt.Errorf("failed to generate token: %w", err)
+        }</span>
+
+        <span class="cov0" title="0">return token, nil</span>
+}
+
+// ValidateBookingLink validates and decodes a booking link token
+func (s *BookingLinkService) ValidateBookingLink(token string) (*entities.BookingLinkClaims, error) <span class="cov8" title="1">{
+        // Split token into parts
+        parts := strings.Split(token, ".")
+        if len(parts) != 3 </span><span class="cov8" title="1">{
+                return nil, errors.New("invalid token format")
+        }</span>
+
+        <span class="cov8" title="1">headerEncoded := parts[0]
+        payloadEncoded := parts[1]
+        signatureEncoded := parts[2]
+
+        // Verify signature
+        message := headerEncoded + "." + payloadEncoded
+        expectedSignature := s.createSignature(message)
+        expectedSignatureEncoded := base64.RawURLEncoding.EncodeToString(expectedSignature)
+
+        if signatureEncoded != expectedSignatureEncoded </span><span class="cov8" title="1">{
+                return nil, errors.New("invalid token signature")
+        }</span>
+
+        // Decode payload
+        <span class="cov8" title="1">payloadJSON, err := base64.RawURLEncoding.DecodeString(payloadEncoded)
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, fmt.Errorf("failed to decode payload: %w", err)
+        }</span>
+
+        <span class="cov8" title="1">var claims entities.BookingLinkClaims
+        if err := json.Unmarshal(payloadJSON, &amp;claims); err != nil </span><span class="cov0" title="0">{
+                return nil, fmt.Errorf("failed to unmarshal claims: %w", err)
+        }</span>
+
+        // Check expiration for one-time links
+        <span class="cov8" title="1">if claims.Purpose == entities.OneTimeBookingLink &amp;&amp; claims.ExpiresAt &gt; 0 </span><span class="cov8" title="1">{
+                if time.Now().Unix() &gt; claims.ExpiresAt </span><span class="cov8" title="1">{
+                        return nil, errors.New("token has expired")
+                }</span>
+        }
+
+        <span class="cov8" title="1">return &amp;claims, nil</span>
+}
+
+// generateToken creates a self-contained JWT token with HMAC-SHA256 signature
+func (s *BookingLinkService) generateToken(claims entities.BookingLinkClaims) (string, error) <span class="cov8" title="1">{
+        // Create header
+        header := map[string]interface{}{
+                "alg": "HS256",
+                "typ": "JWT",
+        }
+
+        // Encode header
+        headerJSON, err := json.Marshal(header)
+        if err != nil </span><span class="cov0" title="0">{
+                return "", fmt.Errorf("failed to marshal header: %w", err)
+        }</span>
+        <span class="cov8" title="1">headerEncoded := base64.RawURLEncoding.EncodeToString(headerJSON)
+
+        // Encode payload (claims)
+        payloadJSON, err := json.Marshal(claims)
+        if err != nil </span><span class="cov0" title="0">{
+                return "", fmt.Errorf("failed to marshal claims: %w", err)
+        }</span>
+        <span class="cov8" title="1">payloadEncoded := base64.RawURLEncoding.EncodeToString(payloadJSON)
+
+        // Create signature
+        message := headerEncoded + "." + payloadEncoded
+        signature := s.createSignature(message)
+        signatureEncoded := base64.RawURLEncoding.EncodeToString(signature)
+
+        // Combine to create JWT
+        token := message + "." + signatureEncoded
+
+        return token, nil</span>
+}
+
+// createSignature creates HMAC-SHA256 signature
+func (s *BookingLinkService) createSignature(message string) []byte <span class="cov8" title="1">{
+        h := hmac.New(sha256.New, s.secretKey)
+        h.Write([]byte(message))
+        return h.Sum(nil)
+}</span>
+</pre>
+		
+		<pre class="file" id="file1" style="display: none">package services
+
+import (
+        "errors"
+        "fmt"
+
+        "github.com/unburdy/booking-module/entities"
+        "gorm.io/gorm"
+)
+
+type BookingService struct {
+        db *gorm.DB
+}
+
+func NewBookingService(db *gorm.DB) *BookingService <span class="cov0" title="0">{
+        return &amp;BookingService{db: db}
+}</span>
+
+// CreateConfiguration creates a new booking configuration
+func (s *BookingService) CreateConfiguration(req entities.CreateBookingTemplateRequest, tenantID uint) (*entities.BookingTemplate, error) <span class="cov0" title="0">{
+        config := &amp;entities.BookingTemplate{
+                UserID:             req.UserID,
+                CalendarID:         req.CalendarID,
+                TenantID:           tenantID,
+                Name:               req.Name,
+                Description:        req.Description,
+                SlotDuration:       req.SlotDuration,
+                BufferTime:         req.BufferTime,
+                MaxSeriesBookings:  req.MaxSeriesBookings,
+                AllowedIntervals:   req.AllowedIntervals,
+                NumberOfIntervals:  req.NumberOfIntervals,
+                WeeklyAvailability: req.WeeklyAvailability,
+                AdvanceBookingDays: req.AdvanceBookingDays,
+                MinNoticeHours:     req.MinNoticeHours,
+                Timezone:           req.Timezone,
+                MaxBookingsPerDay:  req.MaxBookingsPerDay,
+                AllowBackToBack:    req.AllowBackToBack,
+                BlockDates:         req.BlockDates,
+        }
+
+        if err := s.db.Create(config).Error; err != nil </span><span class="cov0" title="0">{
+                return nil, fmt.Errorf("failed to create booking configuration: %w", err)
+        }</span>
+
+        <span class="cov0" title="0">return config, nil</span>
+}
+
+// GetConfiguration retrieves a booking configuration by ID
+func (s *BookingService) GetConfiguration(id uint, tenantID uint) (*entities.BookingTemplate, error) <span class="cov0" title="0">{
+        var config entities.BookingTemplate
+        
+        if err := s.db.Where("id = ? AND tenant_id = ?", id, tenantID).First(&amp;config).Error; err != nil </span><span class="cov0" title="0">{
+                if errors.Is(err, gorm.ErrRecordNotFound) </span><span class="cov0" title="0">{
+                        return nil, errors.New("booking configuration not found")
+                }</span>
+                <span class="cov0" title="0">return nil, fmt.Errorf("failed to retrieve booking configuration: %w", err)</span>
+        }
+
+        <span class="cov0" title="0">return &amp;config, nil</span>
+}
+
+// GetAllConfigurations retrieves all booking configurations for a tenant
+func (s *BookingService) GetAllConfigurations(tenantID uint, page, limit int) ([]entities.BookingTemplate, int64, error) <span class="cov0" title="0">{
+        var configs []entities.BookingTemplate
+        var total int64
+
+        query := s.db.Model(&amp;entities.BookingTemplate{}).Where("tenant_id = ?", tenantID)
+
+        if err := query.Count(&amp;total).Error; err != nil </span><span class="cov0" title="0">{
+                return nil, 0, fmt.Errorf("failed to count booking configurations: %w", err)
+        }</span>
+
+        <span class="cov0" title="0">offset := (page - 1) * limit
+        if err := query.Offset(offset).Limit(limit).Find(&amp;configs).Error; err != nil </span><span class="cov0" title="0">{
+                return nil, 0, fmt.Errorf("failed to retrieve booking configurations: %w", err)
+        }</span>
+
+        <span class="cov0" title="0">return configs, total, nil</span>
+}
+
+// GetConfigurationsByUser retrieves all booking configurations for a specific user
+func (s *BookingService) GetConfigurationsByUser(userID uint, tenantID uint) ([]entities.BookingTemplate, error) <span class="cov0" title="0">{
+        var configs []entities.BookingTemplate
+        
+        if err := s.db.Where("user_id = ? AND tenant_id = ?", userID, tenantID).Find(&amp;configs).Error; err != nil </span><span class="cov0" title="0">{
+                return nil, fmt.Errorf("failed to retrieve booking configurations for user: %w", err)
+        }</span>
+
+        <span class="cov0" title="0">return configs, nil</span>
+}
+
+// GetConfigurationsByCalendar retrieves all booking configurations for a specific calendar
+func (s *BookingService) GetConfigurationsByCalendar(calendarID uint, tenantID uint) ([]entities.BookingTemplate, error) <span class="cov0" title="0">{
+        var configs []entities.BookingTemplate
+        
+        if err := s.db.Where("calendar_id = ? AND tenant_id = ?", calendarID, tenantID).Find(&amp;configs).Error; err != nil </span><span class="cov0" title="0">{
+                return nil, fmt.Errorf("failed to retrieve booking configurations for calendar: %w", err)
+        }</span>
+
+        <span class="cov0" title="0">return configs, nil</span>
+}
+
+// UpdateConfiguration updates an existing booking configuration
+func (s *BookingService) UpdateConfiguration(id uint, tenantID uint, req entities.UpdateBookingTemplateRequest) (*entities.BookingTemplate, error) <span class="cov0" title="0">{
+        var config entities.BookingTemplate
+        
+        if err := s.db.Where("id = ? AND tenant_id = ?", id, tenantID).First(&amp;config).Error; err != nil </span><span class="cov0" title="0">{
+                if errors.Is(err, gorm.ErrRecordNotFound) </span><span class="cov0" title="0">{
+                        return nil, errors.New("booking configuration not found")
+                }</span>
+                <span class="cov0" title="0">return nil, fmt.Errorf("failed to retrieve booking configuration: %w", err)</span>
+        }
+
+        // Update fields if provided
+        <span class="cov0" title="0">if req.Name != nil </span><span class="cov0" title="0">{
+                config.Name = *req.Name
+        }</span>
+        <span class="cov0" title="0">if req.Description != nil </span><span class="cov0" title="0">{
+                config.Description = *req.Description
+        }</span>
+        <span class="cov0" title="0">if req.SlotDuration != nil </span><span class="cov0" title="0">{
+                config.SlotDuration = *req.SlotDuration
+        }</span>
+        <span class="cov0" title="0">if req.BufferTime != nil </span><span class="cov0" title="0">{
+                config.BufferTime = *req.BufferTime
+        }</span>
+        <span class="cov0" title="0">if req.MaxSeriesBookings != nil </span><span class="cov0" title="0">{
+                config.MaxSeriesBookings = *req.MaxSeriesBookings
+        }</span>
+        <span class="cov0" title="0">if req.AllowedIntervals != nil </span><span class="cov0" title="0">{
+                config.AllowedIntervals = req.AllowedIntervals
+        }</span>
+        <span class="cov0" title="0">if req.NumberOfIntervals != nil </span><span class="cov0" title="0">{
+                config.NumberOfIntervals = *req.NumberOfIntervals
+        }</span>
+        <span class="cov0" title="0">if req.WeeklyAvailability != nil </span><span class="cov0" title="0">{
+                config.WeeklyAvailability = *req.WeeklyAvailability
+        }</span>
+        <span class="cov0" title="0">if req.AdvanceBookingDays != nil </span><span class="cov0" title="0">{
+                config.AdvanceBookingDays = *req.AdvanceBookingDays
+        }</span>
+        <span class="cov0" title="0">if req.MinNoticeHours != nil </span><span class="cov0" title="0">{
+                config.MinNoticeHours = *req.MinNoticeHours
+        }</span>
+        <span class="cov0" title="0">if req.Timezone != nil </span><span class="cov0" title="0">{
+                config.Timezone = *req.Timezone
+        }</span>
+        <span class="cov0" title="0">if req.MaxBookingsPerDay != nil </span><span class="cov0" title="0">{
+                config.MaxBookingsPerDay = req.MaxBookingsPerDay
+        }</span>
+        <span class="cov0" title="0">if req.AllowBackToBack != nil </span><span class="cov0" title="0">{
+                config.AllowBackToBack = req.AllowBackToBack
+        }</span>
+        <span class="cov0" title="0">if req.BlockDates != nil </span><span class="cov0" title="0">{
+                config.BlockDates = req.BlockDates
+        }</span>
+
+        <span class="cov0" title="0">if err := s.db.Save(&amp;config).Error; err != nil </span><span class="cov0" title="0">{
+                return nil, fmt.Errorf("failed to update booking configuration: %w", err)
+        }</span>
+
+        <span class="cov0" title="0">return &amp;config, nil</span>
+}
+
+// DeleteConfiguration soft deletes a booking configuration
+func (s *BookingService) DeleteConfiguration(id uint, tenantID uint) error <span class="cov0" title="0">{
+        result := s.db.Where("id = ? AND tenant_id = ?", id, tenantID).Delete(&amp;entities.BookingTemplate{})
+        
+        if result.Error != nil </span><span class="cov0" title="0">{
+                return fmt.Errorf("failed to delete booking configuration: %w", result.Error)
+        }</span>
+
+        <span class="cov0" title="0">if result.RowsAffected == 0 </span><span class="cov0" title="0">{
+                return errors.New("booking configuration not found")
+        }</span>
+
+        <span class="cov0" title="0">return nil</span>
+}
+</pre>
+		
+		<pre class="file" id="file2" style="display: none">package services
+
+import (
+        "fmt"
+        "time"
+
+        "github.com/unburdy/booking-module/entities"
+        "gorm.io/gorm"
+)
+
+// CalendarEntry represents a simplified calendar entry for conflict checking
+type CalendarEntry struct {
+        ID         uint
+        CalendarID uint
+        TenantID   uint
+        StartTime  *time.Time
+        EndTime    *time.Time
+}
+
+// FreeSlotsService handles free slot calculation
+type FreeSlotsService struct {
+        db *gorm.DB
+}
+
+// NewFreeSlotsService creates a new free slots service
+func NewFreeSlotsService(db *gorm.DB) *FreeSlotsService <span class="cov8" title="1">{
+        return &amp;FreeSlotsService{db: db}
+}</span>
+
+// FreeSlotsRequest contains parameters for free slot calculation
+type FreeSlotsRequest struct {
+        TemplateID uint
+        TenantID   uint
+        CalendarID uint
+        StartDate  time.Time // Start of range to search
+        EndDate    time.Time // End of range to search
+        Timezone   string    // Timezone for slot calculation
+}
+
+// CalculateFreeSlots generates available time slots based on template configuration
+func (s *FreeSlotsService) CalculateFreeSlots(req FreeSlotsRequest, template *entities.BookingTemplate) (*entities.FreeSlotsResponse, error) <span class="cov8" title="1">{
+        // Load timezone
+        loc, err := time.LoadLocation(req.Timezone)
+        if err != nil </span><span class="cov8" title="1">{
+                loc = time.UTC
+        }</span>
+
+        // Get existing calendar entries for the date range
+        <span class="cov8" title="1">var existingEntries []CalendarEntry
+        err = s.db.Table("calendar_entries").
+                Select("id, calendar_id, tenant_id, start_time, end_time").
+                Where("calendar_id = ? AND tenant_id = ? AND start_time &gt;= ? AND start_time &lt;= ? AND deleted_at IS NULL",
+                        req.CalendarID, req.TenantID, req.StartDate, req.EndDate).
+                Find(&amp;existingEntries).Error
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, fmt.Errorf("failed to fetch existing entries: %w", err)
+        }</span>
+
+        // Generate all possible slots
+        <span class="cov8" title="1">allSlots := s.generateAllSlots(req, template, loc)
+
+        // Filter out slots that conflict with existing entries
+        availableSlots := s.filterConflictingSlots(allSlots, existingEntries, template.BufferTime)
+
+        // Generate month data
+        monthData := s.generateMonthData(availableSlots, req.StartDate, loc)
+
+        // Build configuration response
+        config := entities.SlotConfiguration{
+                Duration:           template.SlotDuration,
+                Interval:           s.determineInterval(template.AllowedIntervals),
+                NumberMax:          template.MaxSeriesBookings,
+                BufferTime:         template.BufferTime,
+                WeeklyAvailability: template.WeeklyAvailability,
+        }
+
+        return &amp;entities.FreeSlotsResponse{
+                Slots:     availableSlots,
+                MonthData: monthData,
+                Config:    config,
+        }, nil</span>
+}
+
+// generateAllSlots creates all possible time slots based on template configuration
+func (s *FreeSlotsService) generateAllSlots(req FreeSlotsRequest, template *entities.BookingTemplate, loc *time.Location) []entities.TimeSlot <span class="cov8" title="1">{
+        var slots []entities.TimeSlot
+
+        // Iterate through each day in the range
+        currentDate := req.StartDate
+        for currentDate.Before(req.EndDate) || currentDate.Equal(req.EndDate) </span><span class="cov8" title="1">{
+                // Get the weekday availability
+                weekdayAvail := s.getWeekdayAvailability(currentDate, template.WeeklyAvailability)
+
+                // For each availability window in the day
+                for _, window := range weekdayAvail </span><span class="cov8" title="1">{
+                        // Parse window start and end times
+                        windowStart, _ := time.Parse("15:04", window.Start)
+                        windowEnd, _ := time.Parse("15:04", window.End)
+
+                        // Create slots within this window
+                        slotStart := time.Date(currentDate.Year(), currentDate.Month(), currentDate.Day(),
+                                windowStart.Hour(), windowStart.Minute(), 0, 0, loc)
+                        windowEndTime := time.Date(currentDate.Year(), currentDate.Month(), currentDate.Day(),
+                                windowEnd.Hour(), windowEnd.Minute(), 0, 0, loc)
+
+                        // Generate slots
+                        for slotStart.Before(windowEndTime) </span><span class="cov8" title="1">{
+                                slotEnd := slotStart.Add(time.Duration(template.SlotDuration) * time.Minute)
+
+                                // Only add if slot end is within the window
+                                if slotEnd.After(windowEndTime) </span><span class="cov8" title="1">{
+                                        break</span>
+                                }
+
+                                // Check advance booking days and min notice hours
+                                <span class="cov8" title="1">if !s.isSlotBookable(slotStart, template.AdvanceBookingDays, template.MinNoticeHours) </span><span class="cov0" title="0">{
+                                        slotStart = slotEnd.Add(time.Duration(template.BufferTime) * time.Minute)
+                                        continue</span>
+                                }
+
+                                // Check if date is blocked
+                                <span class="cov8" title="1">if s.isDateBlocked(slotStart, template.BlockDates) </span><span class="cov0" title="0">{
+                                        slotStart = slotEnd.Add(time.Duration(template.BufferTime) * time.Minute)
+                                        continue</span>
+                                }
+
+                                <span class="cov8" title="1">slot := entities.TimeSlot{
+                                        ID:        fmt.Sprintf("slot-%s-%02d-%02d", slotStart.Format("2006-01-02"), slotStart.Hour(), slotStart.Minute()),
+                                        StartTime: slotStart.Format(time.RFC3339),
+                                        EndTime:   slotEnd.Format(time.RFC3339),
+                                        Date:      slotStart.Format("2006-01-02"),
+                                        Time:      slotStart.Format("15:04"),
+                                        Duration:  template.SlotDuration,
+                                        Available: true,
+                                        TimeOfDay: entities.ClassifyTimeOfDay(slotStart.Hour()),
+                                        Timezone:  req.Timezone,
+                                }
+
+                                slots = append(slots, slot)
+
+                                // Move to next slot (with buffer time)
+                                slotStart = slotEnd.Add(time.Duration(template.BufferTime) * time.Minute)</span>
+                        }
+                }
+
+                // Move to next day
+                <span class="cov8" title="1">currentDate = currentDate.AddDate(0, 0, 1)</span>
+        }
+
+        <span class="cov8" title="1">return slots</span>
+}
+
+// getWeekdayAvailability returns the availability windows for a given day
+func (s *FreeSlotsService) getWeekdayAvailability(date time.Time, weeklyAvail entities.WeeklyAvailability) []entities.TimeRange <span class="cov8" title="1">{
+        weekday := date.Weekday().String()
+        weekdayLower := map[string][]entities.TimeRange{
+                "Monday":    weeklyAvail.Monday,
+                "Tuesday":   weeklyAvail.Tuesday,
+                "Wednesday": weeklyAvail.Wednesday,
+                "Thursday":  weeklyAvail.Thursday,
+                "Friday":    weeklyAvail.Friday,
+                "Saturday":  weeklyAvail.Saturday,
+                "Sunday":    weeklyAvail.Sunday,
+        }
+
+        if avail, exists := weekdayLower[weekday]; exists </span><span class="cov8" title="1">{
+                return avail
+        }</span>
+        <span class="cov0" title="0">return []entities.TimeRange{}</span>
+}
+
+// isSlotBookable checks if a slot meets advance booking and min notice requirements
+func (s *FreeSlotsService) isSlotBookable(slotStart time.Time, advanceBookingDays, minNoticeHours int) bool <span class="cov8" title="1">{
+        now := time.Now()
+
+        // Check minimum notice period
+        minNoticeTime := now.Add(time.Duration(minNoticeHours) * time.Hour)
+        if slotStart.Before(minNoticeTime) </span><span class="cov8" title="1">{
+                return false
+        }</span>
+
+        // Check advance booking limit
+        <span class="cov8" title="1">maxAdvanceTime := now.AddDate(0, 0, advanceBookingDays)
+        if slotStart.After(maxAdvanceTime) </span><span class="cov8" title="1">{
+                return false
+        }</span>
+
+        <span class="cov8" title="1">return true</span>
+}
+
+// isDateBlocked checks if a date is in the blocked dates list
+func (s *FreeSlotsService) isDateBlocked(slotStart time.Time, blockDates []entities.DateRange) bool <span class="cov8" title="1">{
+        for _, blocked := range blockDates </span><span class="cov8" title="1">{
+                blockedStart, _ := time.Parse("2006-01-02", blocked.Start)
+                blockedEnd, _ := time.Parse("2006-01-02", blocked.End)
+
+                if slotStart.After(blockedStart) &amp;&amp; slotStart.Before(blockedEnd) </span><span class="cov8" title="1">{
+                        return true
+                }</span>
+                <span class="cov8" title="1">if slotStart.Format("2006-01-02") == blocked.Start || slotStart.Format("2006-01-02") == blocked.End </span><span class="cov8" title="1">{
+                        return true
+                }</span>
+        }
+
+        <span class="cov8" title="1">return false</span>
+}
+
+// filterConflictingSlots removes slots that conflict with existing entries
+func (s *FreeSlotsService) filterConflictingSlots(slots []entities.TimeSlot, existingEntries []CalendarEntry, bufferTime int) []entities.TimeSlot <span class="cov8" title="1">{
+        var available []entities.TimeSlot
+
+        for _, slot := range slots </span><span class="cov8" title="1">{
+                slotStart, _ := time.Parse(time.RFC3339, slot.StartTime)
+                slotEnd, _ := time.Parse(time.RFC3339, slot.EndTime)
+
+                // Add buffer time to slot for conflict checking
+                slotStartWithBuffer := slotStart.Add(-time.Duration(bufferTime) * time.Minute)
+                slotEndWithBuffer := slotEnd.Add(time.Duration(bufferTime) * time.Minute)
+
+                isAvailable := true
+                for _, entry := range existingEntries </span><span class="cov8" title="1">{
+                        if entry.StartTime == nil || entry.EndTime == nil </span><span class="cov0" title="0">{
+                                continue</span>
+                        }
+
+                        // Check if there's any overlap
+                        <span class="cov8" title="1">if slotStartWithBuffer.Before(*entry.EndTime) &amp;&amp; slotEndWithBuffer.After(*entry.StartTime) </span><span class="cov8" title="1">{
+                                isAvailable = false
+                                break</span>
+                        }
+                }
+
+                <span class="cov8" title="1">if isAvailable </span><span class="cov8" title="1">{
+                        available = append(available, slot)
+                }</span>
+        }
+
+        <span class="cov8" title="1">return available</span>
+}
+
+// generateMonthData creates month overview data for calendar display
+func (s *FreeSlotsService) generateMonthData(slots []entities.TimeSlot, startDate time.Time, loc *time.Location) entities.MonthData <span class="cov8" title="1">{
+        year := startDate.Year()
+        month := int(startDate.Month())
+
+        // Group slots by date
+        slotsByDate := make(map[string]int)
+        totalPossibleByDate := make(map[string]int)
+
+        for _, slot := range slots </span><span class="cov8" title="1">{
+                slotsByDate[slot.Date]++
+                totalPossibleByDate[slot.Date]++ // Simplified: count all generated slots as "possible"
+        }</span>
+
+        // Generate day data for all days in the month
+        <span class="cov8" title="1">var days []entities.DayData
+        firstDay := time.Date(year, time.Month(month), 1, 0, 0, 0, 0, loc)
+        lastDay := firstDay.AddDate(0, 1, -1)
+
+        for d := firstDay; !d.After(lastDay); d = d.AddDate(0, 0, 1) </span><span class="cov8" title="1">{
+                dateStr := d.Format("2006-01-02")
+                availCount := slotsByDate[dateStr]
+                totalPossible := totalPossibleByDate[dateStr]
+                if totalPossible == 0 </span><span class="cov8" title="1">{
+                        totalPossible = 1 // Avoid division by zero
+                }</span>
+
+                <span class="cov8" title="1">status := entities.DayStatus(availCount, totalPossible)
+
+                days = append(days, entities.DayData{
+                        Date:           dateStr,
+                        AvailableCount: availCount,
+                        Status:         status,
+                })</span>
+        }
+
+        <span class="cov8" title="1">return entities.MonthData{
+                Year:  year,
+                Month: month,
+                Days:  days,
+        }</span>
+}
+
+// determineInterval converts AllowedIntervals to a readable string
+func (s *FreeSlotsService) determineInterval(intervals []entities.IntervalType) string <span class="cov8" title="1">{
+        if len(intervals) == 0 </span><span class="cov8" title="1">{
+                return "none"
+        }</span>
+
+        // Return the first interval as the primary
+        <span class="cov8" title="1">switch intervals[0] </span>{
+        case entities.IntervalWeekly:<span class="cov8" title="1">
+                return "weekly"</span>
+        case entities.IntervalMonthlyDate, entities.IntervalMonthlyDay:<span class="cov8" title="1">
+                return "monthly"</span>
+        case entities.IntervalYearly:<span class="cov8" title="1">
+                return "yearly"</span>
+        default:<span class="cov8" title="1">
+                return "none"</span>
+        }
+}
+</pre>
+		
+		</div>
+	</body>
+	<script>
+	(function() {
+		var files = document.getElementById('files');
+		var visible;
+		files.addEventListener('change', onChange, false);
+		function select(part) {
+			if (visible)
+				visible.style.display = 'none';
+			visible = document.getElementById(part);
+			if (!visible)
+				return;
+			files.value = part;
+			visible.style.display = 'block';
+			location.hash = part;
+		}
+		function onChange() {
+			select(files.value);
+			window.scrollTo(0, 0);
+		}
+		if (location.hash != "") {
+			select(location.hash.substr(1));
+		}
+		if (!visible) {
+			select("file0");
+		}
+	})();
+	</script>
+</html>
