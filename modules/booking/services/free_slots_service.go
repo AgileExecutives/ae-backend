@@ -45,6 +45,9 @@ func (s *FreeSlotsService) CalculateFreeSlots(req FreeSlotsRequest, template *en
 		loc = time.UTC
 	}
 
+	// Get weekly availability - prioritize template, fallback to calendar, then default to all-day
+	weeklyAvailability := s.getWeeklyAvailabilityWithFallback(req.CalendarID, req.TenantID, template.WeeklyAvailability)
+
 	// Get existing calendar entries for the date range
 	var existingEntries []CalendarEntry
 	err = s.db.Table("calendar_entries").
@@ -57,7 +60,7 @@ func (s *FreeSlotsService) CalculateFreeSlots(req FreeSlotsRequest, template *en
 	}
 
 	// Generate all possible slots
-	allSlots := s.generateAllSlots(req, template, loc)
+	allSlots := s.generateAllSlots(req, template, loc, weeklyAvailability)
 
 	// Filter out slots that conflict with existing entries
 	availableSlots := s.filterConflictingSlots(allSlots, existingEntries, template.BufferTime)
@@ -71,7 +74,7 @@ func (s *FreeSlotsService) CalculateFreeSlots(req FreeSlotsRequest, template *en
 		Interval:           s.determineInterval(template.AllowedIntervals),
 		NumberMax:          template.MaxSeriesBookings,
 		BufferTime:         template.BufferTime,
-		WeeklyAvailability: template.WeeklyAvailability,
+		WeeklyAvailability: weeklyAvailability,
 	}
 
 	return &entities.FreeSlotsResponse{
@@ -81,15 +84,65 @@ func (s *FreeSlotsService) CalculateFreeSlots(req FreeSlotsRequest, template *en
 	}, nil
 }
 
+// getWeeklyAvailabilityWithFallback returns weekly availability from template, calendar, or default all-day
+func (s *FreeSlotsService) getWeeklyAvailabilityWithFallback(calendarID, tenantID uint, templateAvailability entities.WeeklyAvailability) entities.WeeklyAvailability {
+	// Check if template has any availability defined
+	if s.hasAvailability(templateAvailability) {
+		return templateAvailability
+	}
+
+	// Fallback to calendar availability
+	var calendar struct {
+		WeeklyAvailability []byte `gorm:"column:weekly_availability"`
+	}
+
+	err := s.db.Table("calendars").
+		Select("weekly_availability").
+		Where("id = ? AND tenant_id = ? AND deleted_at IS NULL", calendarID, tenantID).
+		Take(&calendar).Error
+
+	if err == nil && len(calendar.WeeklyAvailability) > 0 {
+		var calendarAvailability entities.WeeklyAvailability
+		if err := calendarAvailability.Scan(calendar.WeeklyAvailability); err == nil {
+			if s.hasAvailability(calendarAvailability) {
+				return calendarAvailability
+			}
+		}
+	}
+
+	// Default: all days 00:00-23:59 (full availability)
+	return s.getDefaultAllDayAvailability()
+}
+
+// hasAvailability checks if WeeklyAvailability has any time ranges defined
+func (s *FreeSlotsService) hasAvailability(wa entities.WeeklyAvailability) bool {
+	return len(wa.Monday) > 0 || len(wa.Tuesday) > 0 || len(wa.Wednesday) > 0 ||
+		len(wa.Thursday) > 0 || len(wa.Friday) > 0 || len(wa.Saturday) > 0 || len(wa.Sunday) > 0
+}
+
+// getDefaultAllDayAvailability returns availability for all days, all hours
+func (s *FreeSlotsService) getDefaultAllDayAvailability() entities.WeeklyAvailability {
+	allDay := []entities.TimeRange{{Start: "00:00", End: "23:59"}}
+	return entities.WeeklyAvailability{
+		Monday:    allDay,
+		Tuesday:   allDay,
+		Wednesday: allDay,
+		Thursday:  allDay,
+		Friday:    allDay,
+		Saturday:  allDay,
+		Sunday:    allDay,
+	}
+}
+
 // generateAllSlots creates all possible time slots based on template configuration
-func (s *FreeSlotsService) generateAllSlots(req FreeSlotsRequest, template *entities.BookingTemplate, loc *time.Location) []entities.TimeSlot {
+func (s *FreeSlotsService) generateAllSlots(req FreeSlotsRequest, template *entities.BookingTemplate, loc *time.Location, weeklyAvailability entities.WeeklyAvailability) []entities.TimeSlot {
 	var slots []entities.TimeSlot
 
 	// Iterate through each day in the range
 	currentDate := req.StartDate
 	for currentDate.Before(req.EndDate) || currentDate.Equal(req.EndDate) {
 		// Get the weekday availability
-		weekdayAvail := s.getWeekdayAvailability(currentDate, template.WeeklyAvailability)
+		weekdayAvail := s.getWeekdayAvailability(currentDate, weeklyAvailability)
 
 		// For each availability window in the day
 		for _, window := range weekdayAvail {

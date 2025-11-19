@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"net/http"
+	"os"
 	"strconv"
 	"time"
 
@@ -352,8 +353,12 @@ func (h *BookingHandler) CreateBookingLink(c *gin.Context) {
 		return
 	}
 
-	// Construct the booking URL
-	bookingURL := "/booking/book?token=" + token
+	// Construct the booking URL with frontend URL from environment
+	frontendURL := os.Getenv("FRONTEND_URL")
+	if frontendURL == "" {
+		frontendURL = "http://localhost:3005" // Default fallback
+	}
+	bookingURL := frontendURL + "/booking/" + token
 
 	// Calculate expiry for one-time links
 	var expiresAt *time.Time

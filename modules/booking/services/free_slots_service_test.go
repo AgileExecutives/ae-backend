@@ -126,7 +126,7 @@ func TestGenerateAllSlots_RespectWeeklyAvailability(t *testing.T) {
 	template.MinNoticeHours = 0
 	template.AdvanceBookingDays = 365
 
-	slots := service.generateAllSlots(req, template, time.UTC)
+	slots := service.generateAllSlots(req, template, time.UTC, template.WeeklyAvailability)
 
 	// Group slots by day of week
 	slotsByDay := make(map[string]int)
@@ -175,7 +175,7 @@ func TestGenerateAllSlots_SlotDurationAndBuffer(t *testing.T) {
 	template.MinNoticeHours = 0
 	template.AdvanceBookingDays = 365
 
-	slots := service.generateAllSlots(req, template, time.UTC)
+	slots := service.generateAllSlots(req, template, time.UTC, template.WeeklyAvailability)
 
 	if len(slots) > 1 {
 		// Verify slot duration
@@ -584,7 +584,7 @@ func TestCalculateFreeSlots_MultipleAvailabilityWindows(t *testing.T) {
 	template.MinNoticeHours = 0
 	template.AdvanceBookingDays = 365
 
-	slots := service.generateAllSlots(req, template, time.UTC)
+	slots := service.generateAllSlots(req, template, time.UTC, template.WeeklyAvailability)
 
 	// Verify slots are generated in all windows
 	hasEarlyMorning := false // 08:00-10:00
@@ -609,4 +609,316 @@ func TestCalculateFreeSlots_MultipleAvailabilityWindows(t *testing.T) {
 	assert.True(t, hasEarlyMorning, "Should have slots in 08:00-10:00 window")
 	assert.True(t, hasLateMorning, "Should have slots in 11:00-13:00 window")
 	assert.True(t, hasAfternoon, "Should have slots in 15:00-17:00 window")
+}
+
+// Test fallback behavior: Template has availability
+func TestCalculateFreeSlots_UseTemplateAvailability(t *testing.T) {
+	db := setupTestDB(t)
+	service := NewFreeSlotsService(db)
+
+	// Setup calendars table with different availability
+	err := db.Exec(`
+		CREATE TABLE calendars (
+			id INTEGER PRIMARY KEY,
+			tenant_id INTEGER,
+			weekly_availability JSON,
+			deleted_at DATETIME
+		)
+	`).Error
+	require.NoError(t, err)
+
+	// Calendar has 08:00-20:00 availability
+	calendarAvailability := entities.WeeklyAvailability{
+		Monday: []entities.TimeRange{{Start: "08:00", End: "20:00"}},
+	}
+	availJSON, _ := calendarAvailability.Value()
+	err = db.Exec(`
+		INSERT INTO calendars (id, tenant_id, weekly_availability)
+		VALUES (?, ?, ?)
+	`, 1, 1, availJSON).Error
+	require.NoError(t, err)
+
+	// Template has 10:00-12:00 availability (should take precedence)
+	template := createTestTemplate()
+	template.WeeklyAvailability = entities.WeeklyAvailability{
+		Monday: []entities.TimeRange{{Start: "10:00", End: "12:00"}},
+	}
+	template.MinNoticeHours = 0
+	template.AdvanceBookingDays = 365
+
+	startDate := time.Date(2025, 11, 17, 0, 0, 0, 0, time.UTC) // Monday
+	endDate := time.Date(2025, 11, 17, 23, 59, 59, 0, time.UTC)
+
+	req := FreeSlotsRequest{
+		TemplateID: 1,
+		TenantID:   1,
+		CalendarID: 1,
+		StartDate:  startDate,
+		EndDate:    endDate,
+		Timezone:   "UTC",
+	}
+
+	result, err := service.CalculateFreeSlots(req, template)
+	require.NoError(t, err)
+	assert.NotEmpty(t, result.Slots, "Should have slots")
+
+	// Verify slots are only in template's 10:00-12:00 window, not calendar's 08:00-20:00
+	for _, slot := range result.Slots {
+		slotTime, _ := time.Parse(time.RFC3339, slot.StartTime)
+		hour := slotTime.Hour()
+		assert.GreaterOrEqual(t, hour, 10, "Slot should be at or after 10:00")
+		assert.Less(t, hour, 12, "Slot should be before 12:00")
+	}
+
+	// Verify config reflects template availability
+	assert.Equal(t, 1, len(result.Config.WeeklyAvailability.Monday))
+	assert.Equal(t, "10:00", result.Config.WeeklyAvailability.Monday[0].Start)
+	assert.Equal(t, "12:00", result.Config.WeeklyAvailability.Monday[0].End)
+}
+
+// Test fallback behavior: Template is empty, use calendar
+func TestCalculateFreeSlots_FallbackToCalendarAvailability(t *testing.T) {
+	db := setupTestDB(t)
+	service := NewFreeSlotsService(db)
+
+	// Setup calendars table
+	err := db.Exec(`
+		CREATE TABLE calendars (
+			id INTEGER PRIMARY KEY,
+			tenant_id INTEGER,
+			weekly_availability JSON,
+			deleted_at DATETIME
+		)
+	`).Error
+	require.NoError(t, err)
+
+	// Calendar has specific availability
+	calendarAvailability := entities.WeeklyAvailability{
+		Monday: []entities.TimeRange{{Start: "13:00", End: "15:00"}},
+	}
+	availJSON, _ := calendarAvailability.Value()
+	err = db.Exec(`
+		INSERT INTO calendars (id, tenant_id, weekly_availability)
+		VALUES (?, ?, ?)
+	`, 1, 1, availJSON).Error
+	require.NoError(t, err)
+
+	// Template with EMPTY availability
+	template := createTestTemplate()
+	template.WeeklyAvailability = entities.WeeklyAvailability{} // Empty
+	template.MinNoticeHours = 0
+	template.AdvanceBookingDays = 365
+
+	startDate := time.Date(2025, 11, 17, 0, 0, 0, 0, time.UTC) // Monday
+	endDate := time.Date(2025, 11, 17, 23, 59, 59, 0, time.UTC)
+
+	req := FreeSlotsRequest{
+		TemplateID: 1,
+		TenantID:   1,
+		CalendarID: 1,
+		StartDate:  startDate,
+		EndDate:    endDate,
+		Timezone:   "UTC",
+	}
+
+	result, err := service.CalculateFreeSlots(req, template)
+	require.NoError(t, err)
+	assert.NotEmpty(t, result.Slots, "Should have slots from calendar availability")
+
+	// Verify slots are only in calendar's 13:00-15:00 window
+	for _, slot := range result.Slots {
+		slotTime, _ := time.Parse(time.RFC3339, slot.StartTime)
+		hour := slotTime.Hour()
+		assert.GreaterOrEqual(t, hour, 13, "Slot should be at or after 13:00")
+		assert.Less(t, hour, 15, "Slot should be before 15:00")
+	}
+
+	// Verify config reflects calendar availability
+	assert.Equal(t, 1, len(result.Config.WeeklyAvailability.Monday))
+	assert.Equal(t, "13:00", result.Config.WeeklyAvailability.Monday[0].Start)
+	assert.Equal(t, "15:00", result.Config.WeeklyAvailability.Monday[0].End)
+}
+
+// Test fallback behavior: Both template and calendar empty, use default all-day
+func TestCalculateFreeSlots_FallbackToDefaultAllDay(t *testing.T) {
+	db := setupTestDB(t)
+	service := NewFreeSlotsService(db)
+
+	// Setup calendars table with empty availability
+	err := db.Exec(`
+		CREATE TABLE calendars (
+			id INTEGER PRIMARY KEY,
+			tenant_id INTEGER,
+			weekly_availability JSON,
+			deleted_at DATETIME
+		)
+	`).Error
+	require.NoError(t, err)
+
+	// Calendar with empty availability
+	err = db.Exec(`
+		INSERT INTO calendars (id, tenant_id, weekly_availability)
+		VALUES (?, ?, ?)
+	`, 1, 1, nil).Error
+	require.NoError(t, err)
+
+	// Template with EMPTY availability
+	template := createTestTemplate()
+	template.WeeklyAvailability = entities.WeeklyAvailability{} // Empty
+	template.MinNoticeHours = 0
+	template.AdvanceBookingDays = 365
+	template.SlotDuration = 120 // 2 hour slots to keep test manageable
+
+	startDate := time.Date(2025, 11, 17, 0, 0, 0, 0, time.UTC) // Monday
+	endDate := time.Date(2025, 11, 17, 23, 59, 59, 0, time.UTC)
+
+	req := FreeSlotsRequest{
+		TemplateID: 1,
+		TenantID:   1,
+		CalendarID: 1,
+		StartDate:  startDate,
+		EndDate:    endDate,
+		Timezone:   "UTC",
+	}
+
+	result, err := service.CalculateFreeSlots(req, template)
+	require.NoError(t, err)
+	assert.NotEmpty(t, result.Slots, "Should have slots for all-day availability")
+
+	// Verify we have slots throughout the day (not just business hours)
+	hasEarlyMorning := false // Before 9am
+	hasAfternoon := false    // After 5pm
+
+	for _, slot := range result.Slots {
+		slotTime, _ := time.Parse(time.RFC3339, slot.StartTime)
+		hour := slotTime.Hour()
+
+		if hour < 9 {
+			hasEarlyMorning = true
+		}
+		if hour >= 17 {
+			hasAfternoon = true
+		}
+	}
+
+	assert.True(t, hasEarlyMorning, "Should have slots before 9am (all-day)")
+	assert.True(t, hasAfternoon, "Should have slots after 5pm (all-day)")
+
+	// Verify config reflects default all-day availability
+	assert.Equal(t, 1, len(result.Config.WeeklyAvailability.Monday))
+	assert.Equal(t, "00:00", result.Config.WeeklyAvailability.Monday[0].Start)
+	assert.Equal(t, "23:59", result.Config.WeeklyAvailability.Monday[0].End)
+}
+
+// Test fallback behavior: Calendar not found, use default
+func TestCalculateFreeSlots_CalendarNotFoundUsesDefault(t *testing.T) {
+	db := setupTestDB(t)
+	service := NewFreeSlotsService(db)
+
+	// Setup calendars table but don't insert the calendar
+	err := db.Exec(`
+		CREATE TABLE calendars (
+			id INTEGER PRIMARY KEY,
+			tenant_id INTEGER,
+			weekly_availability JSON,
+			deleted_at DATETIME
+		)
+	`).Error
+	require.NoError(t, err)
+
+	// Template with EMPTY availability
+	template := createTestTemplate()
+	template.WeeklyAvailability = entities.WeeklyAvailability{} // Empty
+	template.MinNoticeHours = 0
+	template.AdvanceBookingDays = 365
+
+	startDate := time.Date(2025, 11, 17, 0, 0, 0, 0, time.UTC) // Monday
+	endDate := time.Date(2025, 11, 17, 23, 59, 59, 0, time.UTC)
+
+	req := FreeSlotsRequest{
+		TemplateID: 1,
+		TenantID:   1,
+		CalendarID: 999, // Non-existent calendar
+		StartDate:  startDate,
+		EndDate:    endDate,
+		Timezone:   "UTC",
+	}
+
+	result, err := service.CalculateFreeSlots(req, template)
+	require.NoError(t, err)
+	assert.NotEmpty(t, result.Slots, "Should have slots with default all-day availability")
+
+	// Verify config reflects default all-day availability
+	assert.Equal(t, "00:00", result.Config.WeeklyAvailability.Monday[0].Start)
+	assert.Equal(t, "23:59", result.Config.WeeklyAvailability.Monday[0].End)
+}
+
+// Test fallback behavior: Partial template availability
+func TestCalculateFreeSlots_PartialTemplateAvailability(t *testing.T) {
+	db := setupTestDB(t)
+	service := NewFreeSlotsService(db)
+
+	// Setup calendars table
+	err := db.Exec(`
+		CREATE TABLE calendars (
+			id INTEGER PRIMARY KEY,
+			tenant_id INTEGER,
+			weekly_availability JSON,
+			deleted_at DATETIME
+		)
+	`).Error
+	require.NoError(t, err)
+
+	// Calendar has availability for all weekdays
+	calendarAvailability := entities.WeeklyAvailability{
+		Monday:  []entities.TimeRange{{Start: "08:00", End: "18:00"}},
+		Tuesday: []entities.TimeRange{{Start: "08:00", End: "18:00"}},
+	}
+	availJSON, _ := calendarAvailability.Value()
+	err = db.Exec(`
+		INSERT INTO calendars (id, tenant_id, weekly_availability)
+		VALUES (?, ?, ?)
+	`, 1, 1, availJSON).Error
+	require.NoError(t, err)
+
+	// Template has availability only for Monday (partial)
+	template := createTestTemplate()
+	template.WeeklyAvailability = entities.WeeklyAvailability{
+		Monday: []entities.TimeRange{{Start: "10:00", End: "12:00"}},
+		// Tuesday is empty, but since template has SOME availability, it should use template
+	}
+	template.MinNoticeHours = 0
+	template.AdvanceBookingDays = 365
+
+	startDate := time.Date(2025, 11, 17, 0, 0, 0, 0, time.UTC)  // Monday
+	endDate := time.Date(2025, 11, 18, 23, 59, 59, 0, time.UTC) // Tuesday
+
+	req := FreeSlotsRequest{
+		TemplateID: 1,
+		TenantID:   1,
+		CalendarID: 1,
+		StartDate:  startDate,
+		EndDate:    endDate,
+		Timezone:   "UTC",
+	}
+
+	result, err := service.CalculateFreeSlots(req, template)
+	require.NoError(t, err)
+
+	// Since template has SOME availability (Monday), it should use template for all days
+	// This means Tuesday should have NO slots (template has no Tuesday availability)
+	mondaySlots := 0
+	tuesdaySlots := 0
+
+	for _, slot := range result.Slots {
+		slotTime, _ := time.Parse(time.RFC3339, slot.StartTime)
+		if slotTime.Weekday() == time.Monday {
+			mondaySlots++
+		} else if slotTime.Weekday() == time.Tuesday {
+			tuesdaySlots++
+		}
+	}
+
+	assert.Greater(t, mondaySlots, 0, "Should have Monday slots from template")
+	assert.Equal(t, 0, tuesdaySlots, "Should have NO Tuesday slots (template takes precedence)")
 }

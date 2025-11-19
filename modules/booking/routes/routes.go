@@ -27,8 +27,15 @@ func NewRouteProvider(bookingHandler *handlers.BookingHandler, tokenMiddleware *
 
 // RegisterRoutes registers the booking management routes with the provided router group
 func (rp *RouteProvider) RegisterRoutes(router *gin.RouterGroup) {
+	// Public endpoint (no authentication) - just token validation
+	router.GET("/booking/freeslots/:token", rp.tokenMiddleware.ValidateBookingToken(), rp.bookingHandler.GetFreeSlots)
+
+	// Authenticated endpoints - wrap in auth middleware
+	authMiddleware := middleware.AuthMiddleware(rp.db)
+
 	// Booking templates/configurations CRUD endpoints (authenticated)
 	templates := router.Group("/booking/templates")
+	templates.Use(authMiddleware)
 	{
 		templates.POST("", rp.bookingHandler.CreateConfiguration)
 		templates.GET("", rp.bookingHandler.GetAllConfigurations)
@@ -42,11 +49,7 @@ func (rp *RouteProvider) RegisterRoutes(router *gin.RouterGroup) {
 	}
 
 	// Booking link generation endpoint (authenticated)
-	router.POST("/booking/link", rp.bookingHandler.CreateBookingLink)
-
-	// Public endpoints (no authentication) with token validation
-	// Note: The token is in the URL path, middleware validates it
-	router.GET("/booking/freeslots/:token", rp.tokenMiddleware.ValidateBookingToken(), rp.bookingHandler.GetFreeSlots)
+	router.POST("/booking/link", authMiddleware, rp.bookingHandler.CreateBookingLink)
 }
 
 // GetPrefix returns the route prefix for booking management endpoints
@@ -55,10 +58,9 @@ func (rp *RouteProvider) GetPrefix() string {
 }
 
 // GetMiddleware returns middleware to apply to all routes
+// Returns empty array since we apply auth selectively in RegisterRoutes
 func (rp *RouteProvider) GetMiddleware() []gin.HandlerFunc {
-	return []gin.HandlerFunc{
-		middleware.AuthMiddleware(rp.db), // Require authentication for all booking routes
-	}
+	return []gin.HandlerFunc{}
 }
 
 // GetSwaggerTags returns swagger tags for the routes
