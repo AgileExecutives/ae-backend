@@ -2,6 +2,7 @@ package services
 
 import (
 	"fmt"
+	"sort"
 	"time"
 
 	"github.com/unburdy/booking-module/entities"
@@ -138,6 +139,36 @@ func (s *FreeSlotsService) getDefaultAllDayAvailability() entities.WeeklyAvailab
 func (s *FreeSlotsService) generateAllSlots(req FreeSlotsRequest, template *entities.BookingTemplate, loc *time.Location, weeklyAvailability entities.WeeklyAvailability) []entities.TimeSlot {
 	var slots []entities.TimeSlot
 
+	// Prepare allowed start minutes helpers (if any)
+	allowedMinutes := []int(template.AllowedStartMinutes)
+	sort.Ints(allowedMinutes)
+	allowedSet := map[int]bool{}
+	for _, m := range allowedMinutes {
+		if m >= 0 && m < 60 {
+			allowedSet[m] = true
+		}
+	}
+
+	// Helper to align a time to the next allowed minute mark
+	alignToNextAllowed := func(t time.Time) time.Time {
+		if len(allowedMinutes) == 0 {
+			return t
+		}
+		m := t.Minute()
+		if allowedSet[m] {
+			return t
+		}
+		// Find next allowed minute in the current hour
+		for _, am := range allowedMinutes {
+			if am >= m {
+				return time.Date(t.Year(), t.Month(), t.Day(), t.Hour(), am, 0, 0, t.Location())
+			}
+		}
+		// No allowed minute left in this hour, roll to next hour at first allowed minute
+		nextHour := t.Add(time.Hour)
+		return time.Date(nextHour.Year(), nextHour.Month(), nextHour.Day(), nextHour.Hour(), allowedMinutes[0], 0, 0, t.Location())
+	}
+
 	// Iterate through each day in the range
 	currentDate := req.StartDate
 	for currentDate.Before(req.EndDate) || currentDate.Equal(req.EndDate) {
@@ -158,6 +189,18 @@ func (s *FreeSlotsService) generateAllSlots(req FreeSlotsRequest, template *enti
 
 			// Generate slots
 			for slotStart.Before(windowEndTime) {
+				// Align to allowed start minutes if configured
+				if len(allowedMinutes) > 0 {
+					aligned := alignToNextAllowed(slotStart)
+					if !aligned.Equal(slotStart) {
+						slotStart = aligned
+					}
+					// If alignment pushes beyond window end, stop
+					if !slotStart.Before(windowEndTime) {
+						break
+					}
+				}
+
 				slotEnd := slotStart.Add(time.Duration(template.SlotDuration) * time.Minute)
 
 				// Only add if slot end is within the window
@@ -191,7 +234,7 @@ func (s *FreeSlotsService) generateAllSlots(req FreeSlotsRequest, template *enti
 
 				slots = append(slots, slot)
 
-				// Move to next slot (with buffer time)
+				// Move to next slot (with buffer time); alignment will be applied at loop start
 				slotStart = slotEnd.Add(time.Duration(template.BufferTime) * time.Minute)
 			}
 		}

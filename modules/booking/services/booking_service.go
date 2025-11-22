@@ -19,23 +19,24 @@ func NewBookingService(db *gorm.DB) *BookingService {
 // CreateConfiguration creates a new booking configuration
 func (s *BookingService) CreateConfiguration(req entities.CreateBookingTemplateRequest, tenantID uint) (*entities.BookingTemplate, error) {
 	config := &entities.BookingTemplate{
-		UserID:             req.UserID,
-		CalendarID:         req.CalendarID,
-		TenantID:           tenantID,
-		Name:               req.Name,
-		Description:        req.Description,
-		SlotDuration:       req.SlotDuration,
-		BufferTime:         req.BufferTime,
-		MaxSeriesBookings:  req.MaxSeriesBookings,
-		AllowedIntervals:   req.AllowedIntervals,
-		NumberOfIntervals:  req.NumberOfIntervals,
-		WeeklyAvailability: req.WeeklyAvailability,
-		AdvanceBookingDays: req.AdvanceBookingDays,
-		MinNoticeHours:     req.MinNoticeHours,
-		Timezone:           req.Timezone,
-		MaxBookingsPerDay:  req.MaxBookingsPerDay,
-		AllowBackToBack:    req.AllowBackToBack,
-		BlockDates:         req.BlockDates,
+		UserID:              req.UserID,
+		CalendarID:          req.CalendarID,
+		TenantID:            tenantID,
+		Name:                req.Name,
+		Description:         req.Description,
+		SlotDuration:        req.SlotDuration,
+		BufferTime:          req.BufferTime,
+		MaxSeriesBookings:   req.MaxSeriesBookings,
+		AllowedIntervals:    req.AllowedIntervals,
+		NumberOfIntervals:   req.NumberOfIntervals,
+		WeeklyAvailability:  req.WeeklyAvailability,
+		AdvanceBookingDays:  req.AdvanceBookingDays,
+		MinNoticeHours:      req.MinNoticeHours,
+		Timezone:            req.Timezone,
+		MaxBookingsPerDay:   req.MaxBookingsPerDay,
+		AllowBackToBack:     req.AllowBackToBack,
+		BlockDates:          req.BlockDates,
+		AllowedStartMinutes: entities.MinutesArray(req.AllowedStartMinutes),
 	}
 
 	if err := s.db.Create(config).Error; err != nil {
@@ -48,7 +49,7 @@ func (s *BookingService) CreateConfiguration(req entities.CreateBookingTemplateR
 // GetConfiguration retrieves a booking configuration by ID
 func (s *BookingService) GetConfiguration(id uint, tenantID uint) (*entities.BookingTemplate, error) {
 	var config entities.BookingTemplate
-	
+
 	if err := s.db.Where("id = ? AND tenant_id = ?", id, tenantID).First(&config).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, errors.New("booking configuration not found")
@@ -81,7 +82,7 @@ func (s *BookingService) GetAllConfigurations(tenantID uint, page, limit int) ([
 // GetConfigurationsByUser retrieves all booking configurations for a specific user
 func (s *BookingService) GetConfigurationsByUser(userID uint, tenantID uint) ([]entities.BookingTemplate, error) {
 	var configs []entities.BookingTemplate
-	
+
 	if err := s.db.Where("user_id = ? AND tenant_id = ?", userID, tenantID).Find(&configs).Error; err != nil {
 		return nil, fmt.Errorf("failed to retrieve booking configurations for user: %w", err)
 	}
@@ -92,7 +93,7 @@ func (s *BookingService) GetConfigurationsByUser(userID uint, tenantID uint) ([]
 // GetConfigurationsByCalendar retrieves all booking configurations for a specific calendar
 func (s *BookingService) GetConfigurationsByCalendar(calendarID uint, tenantID uint) ([]entities.BookingTemplate, error) {
 	var configs []entities.BookingTemplate
-	
+
 	if err := s.db.Where("calendar_id = ? AND tenant_id = ?", calendarID, tenantID).Find(&configs).Error; err != nil {
 		return nil, fmt.Errorf("failed to retrieve booking configurations for calendar: %w", err)
 	}
@@ -103,7 +104,7 @@ func (s *BookingService) GetConfigurationsByCalendar(calendarID uint, tenantID u
 // UpdateConfiguration updates an existing booking configuration
 func (s *BookingService) UpdateConfiguration(id uint, tenantID uint, req entities.UpdateBookingTemplateRequest) (*entities.BookingTemplate, error) {
 	var config entities.BookingTemplate
-	
+
 	if err := s.db.Where("id = ? AND tenant_id = ?", id, tenantID).First(&config).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, errors.New("booking configuration not found")
@@ -154,6 +155,9 @@ func (s *BookingService) UpdateConfiguration(id uint, tenantID uint, req entitie
 	if req.BlockDates != nil {
 		config.BlockDates = req.BlockDates
 	}
+	if req.AllowedStartMinutes != nil {
+		config.AllowedStartMinutes = entities.MinutesArray(req.AllowedStartMinutes)
+	}
 
 	if err := s.db.Save(&config).Error; err != nil {
 		return nil, fmt.Errorf("failed to update booking configuration: %w", err)
@@ -165,7 +169,7 @@ func (s *BookingService) UpdateConfiguration(id uint, tenantID uint, req entitie
 // DeleteConfiguration soft deletes a booking configuration
 func (s *BookingService) DeleteConfiguration(id uint, tenantID uint) error {
 	result := s.db.Where("id = ? AND tenant_id = ?", id, tenantID).Delete(&entities.BookingTemplate{})
-	
+
 	if result.Error != nil {
 		return fmt.Errorf("failed to delete booking configuration: %w", result.Error)
 	}

@@ -18,6 +18,10 @@ type CreateBookingTemplateRequest struct {
 	MaxBookingsPerDay  *int               `json:"max_bookings_per_day,omitempty"`
 	AllowBackToBack    *bool              `json:"allow_back_to_back,omitempty"`
 	BlockDates         []DateRange        `json:"block_dates,omitempty"`
+	// Allowed start minute marks within an hour (e.g., [0,15,30,45]). Optional.
+	// Allowed start minute marks within an hour (e.g., [0,15,30,45]). Optional. Empty means all minute marks permitted.
+	// swagger:example [0,15,30,45]
+	AllowedStartMinutes []int `json:"allowed_start_minutes,omitempty"`
 }
 
 // UpdateBookingTemplateRequest represents the request to update a booking template
@@ -36,6 +40,10 @@ type UpdateBookingTemplateRequest struct {
 	MaxBookingsPerDay  *int                `json:"max_bookings_per_day,omitempty"`
 	AllowBackToBack    *bool               `json:"allow_back_to_back,omitempty"`
 	BlockDates         []DateRange         `json:"block_dates,omitempty"`
+	// Allowed start minute marks within an hour (e.g., [0,15,30,45]). Optional.
+	// Allowed start minute marks within an hour (e.g., [0,15,30,45]). Optional. Empty means all minute marks permitted.
+	// swagger:example [0,15,30,45]
+	AllowedStartMinutes []int `json:"allowed_start_minutes,omitempty"`
 }
 
 // BookingTemplateResponse represents the response for a booking template
@@ -58,32 +66,36 @@ type BookingTemplateResponse struct {
 	MaxBookingsPerDay  *int               `json:"max_bookings_per_day,omitempty"`
 	AllowBackToBack    *bool              `json:"allow_back_to_back,omitempty"`
 	BlockDates         []DateRange        `json:"block_dates,omitempty"`
-	CreatedAt          string             `json:"created_at"`
-	UpdatedAt          string             `json:"updated_at"`
+	// Allowed start minute marks within an hour (e.g., [0,15,30,45]). Empty when all allowed.
+	// swagger:example [0,15,30,45]
+	AllowedStartMinutes []int  `json:"allowed_start_minutes,omitempty"`
+	CreatedAt           string `json:"created_at"`
+	UpdatedAt           string `json:"updated_at"`
 }
 
 // ToResponse converts BookingTemplate to BookingTemplateResponse
 func (bc *BookingTemplate) ToResponse() BookingTemplateResponse {
 	return BookingTemplateResponse{
-		ID:                 bc.ID,
-		UserID:             bc.UserID,
-		CalendarID:         bc.CalendarID,
-		TenantID:           bc.TenantID,
-		Name:               bc.Name,
-		Description:        bc.Description,
-		SlotDuration:       bc.SlotDuration,
-		BufferTime:         bc.BufferTime,
-		MaxSeriesBookings:  bc.MaxSeriesBookings,
-		AllowedIntervals:   bc.AllowedIntervals,
-		NumberOfIntervals:  bc.NumberOfIntervals,
-		WeeklyAvailability: bc.WeeklyAvailability,
-		AdvanceBookingDays: bc.AdvanceBookingDays,
-		MinNoticeHours:     bc.MinNoticeHours,
-		Timezone:           bc.Timezone,
-		MaxBookingsPerDay:  bc.MaxBookingsPerDay,
-		AllowBackToBack:    bc.AllowBackToBack,
-		BlockDates:         bc.BlockDates,
-		CreatedAt:          bc.CreatedAt.Format("2006-01-02T15:04:05Z07:00"),
-		UpdatedAt:          bc.UpdatedAt.Format("2006-01-02T15:04:05Z07:00"),
+		ID:                  bc.ID,
+		UserID:              bc.UserID,
+		CalendarID:          bc.CalendarID,
+		TenantID:            bc.TenantID,
+		Name:                bc.Name,
+		Description:         bc.Description,
+		SlotDuration:        bc.SlotDuration,
+		BufferTime:          bc.BufferTime,
+		MaxSeriesBookings:   bc.MaxSeriesBookings,
+		AllowedIntervals:    bc.AllowedIntervals,
+		NumberOfIntervals:   bc.NumberOfIntervals,
+		WeeklyAvailability:  bc.WeeklyAvailability,
+		AdvanceBookingDays:  bc.AdvanceBookingDays,
+		MinNoticeHours:      bc.MinNoticeHours,
+		Timezone:            bc.Timezone,
+		MaxBookingsPerDay:   bc.MaxBookingsPerDay,
+		AllowBackToBack:     bc.AllowBackToBack,
+		BlockDates:          bc.BlockDates,
+		AllowedStartMinutes: []int(bc.AllowedStartMinutes),
+		CreatedAt:           bc.CreatedAt.Format("2006-01-02T15:04:05Z07:00"),
+		UpdatedAt:           bc.UpdatedAt.Format("2006-01-02T15:04:05Z07:00"),
 	}
 }

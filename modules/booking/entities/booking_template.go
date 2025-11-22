@@ -29,9 +29,9 @@ type BookingTemplate struct {
 	BufferTime   int `gorm:"not null;default:0" json:"buffer_time"`    // Buffer between slots in minutes
 
 	// Series/Recurrence settings
-	MaxSeriesBookings int            `gorm:"not null;default:1" json:"max_series_bookings"` // Maximum number of series slots per booking
-	AllowedIntervals  IntervalArray  `gorm:"type:jsonb" json:"allowed_intervals"`           // Which intervals are allowed
-	NumberOfIntervals int            `gorm:"not null;default:1" json:"number_of_intervals"` // Multiplier for intervals (e.g., 2 weeks = biweekly)
+	MaxSeriesBookings int           `gorm:"not null;default:1" json:"max_series_bookings"` // Maximum number of series slots per booking
+	AllowedIntervals  IntervalArray `gorm:"type:jsonb" json:"allowed_intervals"`           // Which intervals are allowed
+	NumberOfIntervals int           `gorm:"not null;default:1" json:"number_of_intervals"` // Multiplier for intervals (e.g., 2 weeks = biweekly)
 
 	// Weekly availability schedule
 	WeeklyAvailability WeeklyAvailability `gorm:"type:jsonb;not null" json:"weekly_availability"`
@@ -44,20 +44,24 @@ type BookingTemplate struct {
 	Timezone string `gorm:"type:varchar(100);not null;default:'UTC'" json:"timezone"` // e.g., "Europe/Berlin"
 
 	// Optional: Advanced settings
-	MaxBookingsPerDay *int  `gorm:"default:null" json:"max_bookings_per_day,omitempty"` // Limit bookings per day
-	AllowBackToBack   *bool `gorm:"default:null" json:"allow_back_to_back,omitempty"`   // Allow bookings without buffer time
-	BlockDates        DateRangeArray `gorm:"type:jsonb" json:"block_dates,omitempty"`   // Array of dates to block
+	MaxBookingsPerDay *int           `gorm:"default:null" json:"max_bookings_per_day,omitempty"` // Limit bookings per day
+	AllowBackToBack   *bool          `gorm:"default:null" json:"allow_back_to_back,omitempty"`   // Allow bookings without buffer time
+	BlockDates        DateRangeArray `gorm:"type:jsonb" json:"block_dates,omitempty"`            // Array of dates to block
+
+	// Allowed start minute marks within an hour (e.g., [0,15,30,45]).
+	// Empty means all minute marks are allowed based on slot cadence.
+	AllowedStartMinutes MinutesArray `gorm:"type:jsonb" json:"allowed_start_minutes,omitempty"`
 }
 
 // IntervalType represents allowed booking intervals
 type IntervalType string
 
 const (
-	IntervalNone         IntervalType = "none"
-	IntervalWeekly       IntervalType = "weekly"
-	IntervalMonthlyDate  IntervalType = "monthly-date"
-	IntervalMonthlyDay   IntervalType = "monthly-day"
-	IntervalYearly       IntervalType = "yearly"
+	IntervalNone        IntervalType = "none"
+	IntervalWeekly      IntervalType = "weekly"
+	IntervalMonthlyDate IntervalType = "monthly-date"
+	IntervalMonthlyDay  IntervalType = "monthly-day"
+	IntervalYearly      IntervalType = "yearly"
 )
 
 // IntervalArray is a custom type for storing interval types as JSONB
@@ -77,12 +81,12 @@ func (a *IntervalArray) Scan(value interface{}) error {
 		*a = []IntervalType{}
 		return nil
 	}
-	
+
 	bytes, ok := value.([]byte)
 	if !ok {
 		return nil
 	}
-	
+
 	return json.Unmarshal(bytes, a)
 }
 
@@ -107,12 +111,12 @@ func (w *WeeklyAvailability) Scan(value interface{}) error {
 	if value == nil {
 		return nil
 	}
-	
+
 	bytes, ok := value.([]byte)
 	if !ok {
 		return nil
 	}
-	
+
 	return json.Unmarshal(bytes, w)
 }
 
@@ -145,13 +149,37 @@ func (d *DateRangeArray) Scan(value interface{}) error {
 		*d = []DateRange{}
 		return nil
 	}
-	
+
 	bytes, ok := value.([]byte)
 	if !ok {
 		return nil
 	}
-	
+
 	return json.Unmarshal(bytes, d)
+}
+
+// MinutesArray is a custom type for storing minute marks as JSONB
+type MinutesArray []int
+
+// Value implements the driver.Valuer interface for MinutesArray
+func (m MinutesArray) Value() (driver.Value, error) {
+	if m == nil {
+		return json.Marshal([]int{})
+	}
+	return json.Marshal(m)
+}
+
+// Scan implements the sql.Scanner interface for MinutesArray
+func (m *MinutesArray) Scan(value interface{}) error {
+	if value == nil {
+		*m = []int{}
+		return nil
+	}
+	bytes, ok := value.([]byte)
+	if !ok {
+		return nil
+	}
+	return json.Unmarshal(bytes, m)
 }
 
 // TableName specifies the table name for GORM

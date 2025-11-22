@@ -922,3 +922,104 @@ func TestCalculateFreeSlots_PartialTemplateAvailability(t *testing.T) {
 	assert.Greater(t, mondaySlots, 0, "Should have Monday slots from template")
 	assert.Equal(t, 0, tuesdaySlots, "Should have NO Tuesday slots (template takes precedence)")
 }
+
+func TestGenerateAllSlots_AllowedStartMinutes_BasicAlignment(t *testing.T) {
+	db := setupTestDB(t)
+	service := NewFreeSlotsService(db)
+	template := createTestTemplate()
+
+	// Single window to make expectations clear: 09:00-10:00
+	template.WeeklyAvailability = entities.WeeklyAvailability{
+		Monday: []entities.TimeRange{{Start: "09:00", End: "10:00"}},
+	}
+	template.SlotDuration = 20 // minutes
+	template.BufferTime = 0
+	template.AllowedStartMinutes = entities.MinutesArray{0, 30}
+	template.MinNoticeHours = 0
+	template.AdvanceBookingDays = 365
+
+	startDate := time.Date(2025, 11, 17, 0, 0, 0, 0, time.UTC) // Monday
+	endDate := time.Date(2025, 11, 17, 23, 59, 59, 0, time.UTC)
+
+	req := FreeSlotsRequest{StartDate: startDate, EndDate: endDate, Timezone: "UTC"}
+
+	slots := service.generateAllSlots(req, template, time.UTC, template.WeeklyAvailability)
+
+	// Expect starts at 09:00 and 09:30 only (20-min slots)
+	var times []string
+	for _, s := range slots {
+		times = append(times, s.Time)
+		st, _ := time.Parse(time.RFC3339, s.StartTime)
+		minute := st.Minute()
+		assert.Contains(t, []int{0, 30}, minute, "minute must be allowed")
+	}
+	// Ensure exact expected set
+	assert.ElementsMatch(t, []string{"09:00", "09:30"}, times)
+}
+
+func TestGenerateAllSlots_AllowedStartMinutes_NonStandard(t *testing.T) {
+	db := setupTestDB(t)
+	service := NewFreeSlotsService(db)
+	template := createTestTemplate()
+
+	// Window 09:00-11:00, 30-min duration, allowed minutes at :10 and :40
+	template.WeeklyAvailability = entities.WeeklyAvailability{
+		Monday: []entities.TimeRange{{Start: "09:00", End: "11:00"}},
+	}
+	template.SlotDuration = 30
+	template.BufferTime = 0
+	template.AllowedStartMinutes = entities.MinutesArray{10, 40}
+	template.MinNoticeHours = 0
+	template.AdvanceBookingDays = 365
+
+	startDate := time.Date(2025, 11, 17, 0, 0, 0, 0, time.UTC) // Monday
+	endDate := time.Date(2025, 11, 17, 23, 59, 59, 0, time.UTC)
+
+	req := FreeSlotsRequest{StartDate: startDate, EndDate: endDate, Timezone: "UTC"}
+
+	slots := service.generateAllSlots(req, template, time.UTC, template.WeeklyAvailability)
+
+	// Expect: 09:10, 09:40, 10:10, 10:40
+	var times []string
+	for _, s := range slots {
+		times = append(times, s.Time)
+		st, _ := time.Parse(time.RFC3339, s.StartTime)
+		minute := st.Minute()
+		assert.Contains(t, []int{10, 40}, minute, "minute must be allowed")
+	}
+	assert.ElementsMatch(t, []string{"09:10", "09:40", "10:10", "10:40"}, times)
+}
+
+func TestGenerateAllSlots_AllowedStartMinutes_WithBuffer(t *testing.T) {
+	db := setupTestDB(t)
+	service := NewFreeSlotsService(db)
+	template := createTestTemplate()
+
+	// Window 09:00-12:00, 45-min duration, 15-min buffer, allowed minutes :00 and :30
+	template.WeeklyAvailability = entities.WeeklyAvailability{
+		Monday: []entities.TimeRange{{Start: "09:00", End: "12:00"}},
+	}
+	template.SlotDuration = 45
+	template.BufferTime = 15
+	template.AllowedStartMinutes = entities.MinutesArray{0, 30}
+	template.MinNoticeHours = 0
+	template.AdvanceBookingDays = 365
+
+	startDate := time.Date(2025, 11, 17, 0, 0, 0, 0, time.UTC) // Monday
+	endDate := time.Date(2025, 11, 17, 23, 59, 59, 0, time.UTC)
+
+	req := FreeSlotsRequest{StartDate: startDate, EndDate: endDate, Timezone: "UTC"}
+
+	slots := service.generateAllSlots(req, template, time.UTC, template.WeeklyAvailability)
+
+	// Expect starts at 09:00, 10:00, 11:00
+	expected := []string{"09:00", "10:00", "11:00"}
+	var times []string
+	for _, s := range slots {
+		times = append(times, s.Time)
+		st, _ := time.Parse(time.RFC3339, s.StartTime)
+		minute := st.Minute()
+		assert.Contains(t, []int{0, 30}, minute, "minute must be allowed")
+	}
+	assert.ElementsMatch(t, expected, times)
+}

@@ -32,6 +32,7 @@ func NewBookingHandler(service *services.BookingService, bookingLinkSvc *service
 // @Tags booking-templates
 // @Accept json
 // @Produce json
+// @Param allowed_start_minutes body []int false "Allowed minute marks within the hour (e.g., [0,15,30,45])"
 // @Param configuration body entities.CreateBookingTemplateRequest true "Booking configuration data"
 // @Success 201 {object} baseAPI.APIResponse{data=entities.BookingTemplateResponse}
 // @Failure 400 {object} baseAPI.APIResponse
@@ -234,6 +235,7 @@ func (h *BookingHandler) GetConfigurationsByCalendar(c *gin.Context) {
 // @Accept json
 // @Produce json
 // @Param id path int true "Configuration ID"
+// @Param allowed_start_minutes body []int false "Allowed minute marks within the hour (e.g., [0,15,30,45])"
 // @Param configuration body entities.UpdateBookingTemplateRequest true "Updated configuration data"
 // @Success 200 {object} baseAPI.APIResponse{data=entities.BookingTemplateResponse}
 // @Failure 400 {object} baseAPI.APIResponse
