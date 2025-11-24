@@ -255,3 +255,50 @@ func (h *ClientHandler) SearchClients(c *gin.Context) {
 
 	c.JSON(http.StatusOK, models.SuccessListResponse(responses, page, limit, int(total)))
 }
+
+// GetClientByToken handles retrieving client information from a token
+// @Summary Get client by token
+// @Description Retrieve client details from any valid JWT token containing client_id
+// @Tags clients
+// @ID getClientByToken
+// @Produce json
+// @Param token path string true "JWT token containing client_id"
+// @Success 200 {object} models.APIResponse{data=entities.ClientResponse} "Client found"
+// @Failure 401 {object} map[string]string "Unauthorized or invalid token"
+// @Failure 404 {object} map[string]string "Client not found"
+// @Failure 500 {object} map[string]string "Internal server error"
+// @Router /client/{token} [get]
+func (h *ClientHandler) GetClientByToken(c *gin.Context) {
+	// Try to get client_id from context (set by any middleware that validates tokens)
+	clientIDInterface, exists := c.Get("client_id")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, models.ErrorResponseFunc("Unauthorized", "No client_id found in token"))
+		return
+	}
+
+	clientID, ok := clientIDInterface.(uint)
+	if !ok {
+		c.JSON(http.StatusUnauthorized, models.ErrorResponseFunc("Unauthorized", "Invalid client_id format"))
+		return
+	}
+
+	// Get tenant_id from context
+	tenantID, err := baseAPI.GetTenantID(c)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, models.ErrorResponseFunc("Unauthorized", "Failed to get tenant ID: "+err.Error()))
+		return
+	}
+
+	// Retrieve client
+	client, err := h.clientService.GetClientByID(clientID, tenantID)
+	if err != nil {
+		if err.Error() == "client not found" {
+			c.JSON(http.StatusNotFound, models.ErrorResponseFunc("Not found", "Client not found"))
+			return
+		}
+		c.JSON(http.StatusInternalServerError, models.ErrorResponseFunc("Internal server error", err.Error()))
+		return
+	}
+
+	c.JSON(http.StatusOK, models.SuccessResponse("Client information retrieved successfully", client.ToResponse()))
+}

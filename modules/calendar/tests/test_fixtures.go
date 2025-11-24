@@ -135,13 +135,7 @@ func (f *TestFixtures) CreateCalendarEntryRequest() entities.CreateCalendarEntry
 	}
 }
 
-func (f *TestFixtures) CreateFreeSlotRequest() entities.FreeSlotRequest {
-	return entities.FreeSlotRequest{
-		Duration:  60, // 60 minutes
-		Interval:  30, // 30 minutes between slots
-		NumberMax: 5,  // Maximum 5 slots
-	}
-}
+// Note: FreeSlotRequest moved to booking module
 
 func (f *TestFixtures) CreateUpdateCalendarEntryRequest() entities.UpdateCalendarEntryRequest {
 	title := "Updated Meeting"
@@ -172,51 +166,57 @@ func (f *TestFixtures) CreateImportHolidaysRequest() entities.ImportHolidaysRequ
 func (f *TestFixtures) CreateCalendarSeriesRequest() entities.CreateCalendarSeriesRequest {
 	startTime := time.Date(2025, 11, 1, 9, 0, 0, 0, time.UTC)
 	endTime := time.Date(2025, 11, 1, 10, 0, 0, 0, time.UTC)
+	lastDate := time.Date(2025, 12, 31, 23, 59, 59, 0, time.UTC)
 
 	return entities.CreateCalendarSeriesRequest{
-		CalendarID:  1,
-		Title:       "Test Series",
-		Weekday:     1, // Monday
-		Interval:    1,
-		StartTime:   &startTime,
-		EndTime:     &endTime,
-		Description: "Test Series Description",
-		Location:    "Test Location",
+		CalendarID:    1,
+		Title:         "Test Series",
+		IntervalType:  "weekly",
+		IntervalValue: 1,
+		StartTime:     &startTime,
+		EndTime:       &endTime,
+		LastDate:      &lastDate,
+		Description:   "Test Series Description",
+		Location:      "Test Location",
 	}
 }
 
 func (f *TestFixtures) CreateUpdateCalendarSeriesRequest() entities.UpdateCalendarSeriesRequest {
 	title := "Updated Test Series"
 	description := "Updated Series Description"
-	weekday := 2 // Tuesday
-	interval := 2
+	intervalType := "weekly"
+	intervalValue := 2
 	location := "Updated Location"
+	lastDate := time.Date(2026, 1, 31, 23, 59, 59, 0, time.UTC)
 
 	return entities.UpdateCalendarSeriesRequest{
-		Title:       &title,
-		Description: &description,
-		Weekday:     &weekday,
-		Interval:    &interval,
-		Location:    &location,
+		Title:         &title,
+		Description:   &description,
+		IntervalType:  &intervalType,
+		IntervalValue: &intervalValue,
+		Location:      &location,
+		LastDate:      &lastDate,
 	}
 }
 
 func (f *TestFixtures) CreateMockCalendarSeries() *entities.CalendarSeries {
 	startTime := time.Date(2025, 11, 1, 9, 0, 0, 0, time.UTC)
 	endTime := time.Date(2025, 11, 1, 10, 0, 0, 0, time.UTC)
+	lastDate := time.Date(2025, 12, 31, 23, 59, 59, 0, time.UTC)
 
 	return &entities.CalendarSeries{
-		ID:          1,
-		CalendarID:  1,
-		TenantID:    f.TenantID,
-		UserID:      f.UserID,
-		Title:       "Test Series",
-		Weekday:     1, // Monday
-		Interval:    1,
-		StartTime:   &startTime,
-		EndTime:     &endTime,
-		Description: "Test Series Description",
-		Location:    "Test Location",
+		ID:            1,
+		CalendarID:    1,
+		TenantID:      f.TenantID,
+		UserID:        f.UserID,
+		Title:         "Test Series",
+		IntervalType:  "weekly",
+		IntervalValue: 1,
+		StartTime:     &startTime,
+		EndTime:       &endTime,
+		LastDate:      &lastDate,
+		Description:   "Test Series Description",
+		Location:      "Test Location",
 		EntryUUID:   "test-series-uuid",
 		Sequence:    0,
 		CreatedAt:   time.Now(),

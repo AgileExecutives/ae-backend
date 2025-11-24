@@ -42,7 +42,7 @@ func NewModuleWithAutoMigration(db *gorm.DB, jwtSecret string) *Module {
 	tokenMiddleware := middleware.NewBookingTokenMiddleware(bookingLinkService, db)
 
 	// Initialize handlers
-	bookingHandler := handlers.NewBookingHandler(bookingService, bookingLinkService, freeSlotsSvc)
+	bookingHandler := handlers.NewBookingHandler(bookingService, bookingLinkService, freeSlotsSvc, db)
 
 	// Initialize route provider with database for auth middleware
 	routeProvider := routes.NewRouteProvider(bookingHandler, tokenMiddleware, db)
@@ -94,7 +94,7 @@ func (m *Module) Initialize(ctx core.ModuleContext) error {
 	m.tokenMiddleware = middleware.NewBookingTokenMiddleware(m.bookingLinkService, ctx.DB)
 
 	// Initialize handlers
-	m.bookingHandler = handlers.NewBookingHandler(m.bookingService, m.bookingLinkService, m.freeSlotsSvc)
+	m.bookingHandler = handlers.NewBookingHandler(m.bookingService, m.bookingLinkService, m.freeSlotsSvc, ctx.DB)
 
 	// Initialize route provider with database for auth middleware
 	m.routeProvider = routes.NewRouteProvider(m.bookingHandler, m.tokenMiddleware, ctx.DB)

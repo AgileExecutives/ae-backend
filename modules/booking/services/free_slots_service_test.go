@@ -938,8 +938,12 @@ func TestGenerateAllSlots_AllowedStartMinutes_BasicAlignment(t *testing.T) {
 	template.MinNoticeHours = 0
 	template.AdvanceBookingDays = 365
 
-	startDate := time.Date(2025, 11, 17, 0, 0, 0, 0, time.UTC) // Monday
-	endDate := time.Date(2025, 11, 17, 23, 59, 59, 0, time.UTC)
+	startDate := time.Now().AddDate(0, 0, 7).Truncate(24 * time.Hour) // 7 days from now
+	// Adjust to next Monday
+	for startDate.Weekday() != time.Monday {
+		startDate = startDate.AddDate(0, 0, 1)
+	}
+	endDate := startDate.Add(23*time.Hour + 59*time.Minute + 59*time.Second)
 
 	req := FreeSlotsRequest{StartDate: startDate, EndDate: endDate, Timezone: "UTC"}
 
@@ -954,7 +958,7 @@ func TestGenerateAllSlots_AllowedStartMinutes_BasicAlignment(t *testing.T) {
 		assert.Contains(t, []int{0, 30}, minute, "minute must be allowed")
 	}
 	// Ensure exact expected set
-	assert.ElementsMatch(t, []string{"09:00", "09:30"}, times)
+	assert.ElementsMatch(t, times, []string{"09:00", "09:30"})
 }
 
 func TestGenerateAllSlots_AllowedStartMinutes_NonStandard(t *testing.T) {
@@ -972,14 +976,18 @@ func TestGenerateAllSlots_AllowedStartMinutes_NonStandard(t *testing.T) {
 	template.MinNoticeHours = 0
 	template.AdvanceBookingDays = 365
 
-	startDate := time.Date(2025, 11, 17, 0, 0, 0, 0, time.UTC) // Monday
-	endDate := time.Date(2025, 11, 17, 23, 59, 59, 0, time.UTC)
+	startDate := time.Now().AddDate(0, 0, 7).Truncate(24 * time.Hour) // 7 days from now
+	// Adjust to next Monday
+	for startDate.Weekday() != time.Monday {
+		startDate = startDate.AddDate(0, 0, 1)
+	}
+	endDate := startDate.Add(23*time.Hour + 59*time.Minute + 59*time.Second)
 
 	req := FreeSlotsRequest{StartDate: startDate, EndDate: endDate, Timezone: "UTC"}
 
 	slots := service.generateAllSlots(req, template, time.UTC, template.WeeklyAvailability)
 
-	// Expect: 09:10, 09:40, 10:10, 10:40
+	// Expect: 09:10, 09:40, 10:10 (10:40 would end at 11:10, beyond window)
 	var times []string
 	for _, s := range slots {
 		times = append(times, s.Time)
@@ -987,7 +995,7 @@ func TestGenerateAllSlots_AllowedStartMinutes_NonStandard(t *testing.T) {
 		minute := st.Minute()
 		assert.Contains(t, []int{10, 40}, minute, "minute must be allowed")
 	}
-	assert.ElementsMatch(t, []string{"09:10", "09:40", "10:10", "10:40"}, times)
+	assert.ElementsMatch(t, times, []string{"09:10", "09:40", "10:10"})
 }
 
 func TestGenerateAllSlots_AllowedStartMinutes_WithBuffer(t *testing.T) {
@@ -1005,8 +1013,12 @@ func TestGenerateAllSlots_AllowedStartMinutes_WithBuffer(t *testing.T) {
 	template.MinNoticeHours = 0
 	template.AdvanceBookingDays = 365
 
-	startDate := time.Date(2025, 11, 17, 0, 0, 0, 0, time.UTC) // Monday
-	endDate := time.Date(2025, 11, 17, 23, 59, 59, 0, time.UTC)
+	startDate := time.Now().AddDate(0, 0, 7).Truncate(24 * time.Hour) // 7 days from now
+	// Adjust to next Monday
+	for startDate.Weekday() != time.Monday {
+		startDate = startDate.AddDate(0, 0, 1)
+	}
+	endDate := startDate.Add(23*time.Hour + 59*time.Minute + 59*time.Second)
 
 	req := FreeSlotsRequest{StartDate: startDate, EndDate: endDate, Timezone: "UTC"}
 
@@ -1021,5 +1033,5 @@ func TestGenerateAllSlots_AllowedStartMinutes_WithBuffer(t *testing.T) {
 		minute := st.Minute()
 		assert.Contains(t, []int{0, 30}, minute, "minute must be allowed")
 	}
-	assert.ElementsMatch(t, expected, times)
+	assert.ElementsMatch(t, times, expected)
 }

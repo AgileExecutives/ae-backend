@@ -2,9 +2,10 @@ package entities
 
 // FreeSlotsResponse represents the complete response for free slots endpoint
 type FreeSlotsResponse struct {
-	Slots     []TimeSlot        `json:"slots"`
-	MonthData MonthData         `json:"monthData"`
-	Config    SlotConfiguration `json:"config"`
+	Slots     []TimeSlot               `json:"slots"`
+	MonthData MonthData                `json:"monthData"`
+	Config    SlotConfiguration        `json:"config"`
+	Template  *BookingTemplateResponse `json:"template"`
 }
 
 // TimeSlot represents an individual available time slot

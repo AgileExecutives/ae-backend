@@ -24,13 +24,15 @@ func NewModule(db *gorm.DB) baseAPI.ModuleRouteProvider {
 	// Initialize modular services
 	clientService := services.NewClientService(db)
 	costProviderService := services.NewCostProviderService(db)
+	sessionService := services.NewSessionService(db)
 
 	// Initialize handlers
 	clientHandler := handlers.NewClientHandler(clientService)
 	costProviderHandler := handlers.NewCostProviderHandler(costProviderService)
+	sessionHandler := handlers.NewSessionHandler(sessionService)
 
 	// Initialize route provider with database for auth middleware
-	routeProvider := routes.NewRouteProvider(clientHandler, costProviderHandler, db)
+	routeProvider := routes.NewRouteProvider(clientHandler, costProviderHandler, sessionHandler, db)
 
 	return &Module{
 		routeProvider: routeProvider,
@@ -53,6 +55,7 @@ func (m *Module) GetEntitiesForMigration() []interface{} {
 	return []interface{}{
 		&entities.Client{},
 		&entities.CostProvider{},
+		&entities.Session{},
 	}
 }
 
@@ -61,6 +64,7 @@ type CoreModule struct {
 	db                  *gorm.DB
 	clientHandlers      *handlers.ClientHandler
 	costProviderHandler *handlers.CostProviderHandler
+	sessionHandler      *handlers.SessionHandler
 	routeProvider       *routes.RouteProvider
 }
 
@@ -88,13 +92,15 @@ func (m *CoreModule) Initialize(ctx core.ModuleContext) error {
 	// Initialize modular services
 	clientService := services.NewClientService(ctx.DB)
 	costProviderService := services.NewCostProviderService(ctx.DB)
+	sessionService := services.NewSessionService(ctx.DB)
 
 	// Initialize handlers
 	m.clientHandlers = handlers.NewClientHandler(clientService)
 	m.costProviderHandler = handlers.NewCostProviderHandler(costProviderService)
+	m.sessionHandler = handlers.NewSessionHandler(sessionService)
 
 	// Initialize route provider with database for auth middleware
-	m.routeProvider = routes.NewRouteProvider(m.clientHandlers, m.costProviderHandler, ctx.DB)
+	m.routeProvider = routes.NewRouteProvider(m.clientHandlers, m.costProviderHandler, m.sessionHandler, ctx.DB)
 
 	ctx.Logger.Info("Client management module initialized successfully")
 	return nil
@@ -142,6 +148,7 @@ func (m *CoreModule) SwaggerPaths() []string {
 	return []string{
 		"/clients",
 		"/cost-providers",
+		"/sessions",
 	}
 }
 

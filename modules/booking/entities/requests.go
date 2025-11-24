@@ -68,7 +68,7 @@ type BookingTemplateResponse struct {
 	BlockDates         []DateRange        `json:"block_dates,omitempty"`
 	// Allowed start minute marks within an hour (e.g., [0,15,30,45]). Empty when all allowed.
 	// swagger:example [0,15,30,45]
-	AllowedStartMinutes []int  `json:"allowed_start_minutes,omitempty"`
+	AllowedStartMinutes []int  `json:"allowed_start_minutes"`
 	CreatedAt           string `json:"created_at"`
 	UpdatedAt           string `json:"updated_at"`
 }
@@ -94,7 +94,12 @@ func (bc *BookingTemplate) ToResponse() BookingTemplateResponse {
 		MaxBookingsPerDay:   bc.MaxBookingsPerDay,
 		AllowBackToBack:     bc.AllowBackToBack,
 		BlockDates:          bc.BlockDates,
-		AllowedStartMinutes: []int(bc.AllowedStartMinutes),
+		AllowedStartMinutes: func() []int {
+			if bc.AllowedStartMinutes == nil {
+				return []int{}
+			}
+			return []int(bc.AllowedStartMinutes)
+		}(),
 		CreatedAt:           bc.CreatedAt.Format("2006-01-02T15:04:05Z07:00"),
 		UpdatedAt:           bc.UpdatedAt.Format("2006-01-02T15:04:05Z07:00"),
 	}

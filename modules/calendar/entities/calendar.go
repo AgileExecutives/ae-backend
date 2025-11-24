@@ -29,24 +29,25 @@ type Calendar struct {
 
 // CalendarEntry represents a calendar entry entity
 type CalendarEntry struct {
-	ID           uint            `gorm:"primarykey" json:"id"`
-	TenantID     uint            `gorm:"not null;index" json:"tenant_id"`
-	UserID       uint            `gorm:"not null;index" json:"user_id"`
-	CalendarID   uint            `gorm:"not null;index" json:"calendar_id"`
-	SeriesID     *uint           `gorm:"index" json:"series_id,omitempty"`
-	Title        string          `gorm:"size:255;not null" json:"title" binding:"required" example:"Meeting"`
-	IsException  bool            `gorm:"default:false" json:"is_exception" example:"false"`
-	Participants json.RawMessage `gorm:"type:json" json:"participants,omitempty" example:"[]"`
-	StartTime    *time.Time      `gorm:"column:start_time;type:timestamptz" json:"start_time,omitempty" example:"2025-11-04T09:00:00Z"`
-	EndTime      *time.Time      `gorm:"column:end_time;type:timestamptz" json:"end_time,omitempty" example:"2025-11-04T10:00:00Z"`
-	Type         string          `gorm:"size:50" json:"type,omitempty" example:"meeting"`
-	Description  string          `gorm:"type:text" json:"description,omitempty" example:"Team meeting"`
-	Location     string          `gorm:"size:255" json:"location,omitempty" example:"Conference Room A"`
-	Timezone     string          `gorm:"size:100;default:'UTC'" json:"timezone,omitempty" example:"Europe/Berlin"`
-	IsAllDay     bool            `gorm:"default:false" json:"is_all_day" example:"false"`
-	CreatedAt    time.Time       `json:"created_at"`
-	UpdatedAt    time.Time       `json:"updated_at"`
-	DeletedAt    gorm.DeletedAt  `gorm:"index" json:"-"`
+	ID               uint            `gorm:"primarykey" json:"id"`
+	TenantID         uint            `gorm:"not null;index" json:"tenant_id"`
+	UserID           uint            `gorm:"not null;index" json:"user_id"`
+	CalendarID       uint            `gorm:"not null;index" json:"calendar_id"`
+	SeriesID         *uint           `gorm:"index" json:"series_id,omitempty"`
+	PositionInSeries *int            `gorm:"index" json:"position_in_series,omitempty"`
+	Title            string          `gorm:"size:255;not null" json:"title" binding:"required" example:"Meeting"`
+	IsException      bool            `gorm:"default:false" json:"is_exception" example:"false"`
+	Participants     json.RawMessage `gorm:"type:json" json:"participants,omitempty" example:"[]"`
+	StartTime        *time.Time      `gorm:"column:start_time;type:timestamptz" json:"start_time,omitempty" example:"2025-11-04T09:00:00Z"`
+	EndTime          *time.Time      `gorm:"column:end_time;type:timestamptz" json:"end_time,omitempty" example:"2025-11-04T10:00:00Z"`
+	Type             string          `gorm:"size:50" json:"type,omitempty" example:"meeting"`
+	Description      string          `gorm:"type:text" json:"description,omitempty" example:"Team meeting"`
+	Location         string          `gorm:"size:255" json:"location,omitempty" example:"Conference Room A"`
+	Timezone         string          `gorm:"size:100;default:'UTC'" json:"timezone,omitempty" example:"Europe/Berlin"`
+	IsAllDay         bool            `gorm:"default:false" json:"is_all_day" example:"false"`
+	CreatedAt        time.Time       `json:"created_at"`
+	UpdatedAt        time.Time       `json:"updated_at"`
+	DeletedAt        gorm.DeletedAt  `gorm:"index" json:"-"`
 
 	// Relationships
 	Calendar *Calendar       `gorm:"foreignKey:CalendarID" json:"calendar,omitempty"`
@@ -61,10 +62,11 @@ type CalendarSeries struct {
 	CalendarID           uint            `gorm:"not null;index" json:"calendar_id"`
 	Title                string          `gorm:"size:255;not null" json:"title" binding:"required" example:"Weekly Meeting"`
 	Participants         json.RawMessage `gorm:"type:json" json:"participants,omitempty" example:"[]"`
-	Weekday              int             `gorm:"not null" json:"weekday" example:"1"`
-	Interval             int             `gorm:"not null;default:1" json:"interval" example:"1"`
+	IntervalType         string          `gorm:"size:50;not null;default:'none'" json:"interval_type" example:"weekly"` // none, weekly, monthly-date, monthly-day, yearly
+	IntervalValue        int             `gorm:"not null;default:1" json:"interval_value" example:"2"`                    // number of intervals (e.g. weekly and 2 means every 2 weeks)
 	StartTime            *time.Time      `gorm:"column:start_time;type:timestamptz" json:"start_time,omitempty" example:"2025-11-04T09:00:00Z"`
 	EndTime              *time.Time      `gorm:"column:end_time;type:timestamptz" json:"end_time,omitempty" example:"2025-11-04T10:00:00Z"`
+	LastDate             *time.Time      `gorm:"column:last_date;type:timestamptz" json:"last_date,omitempty" example:"2025-12-31T23:59:59Z"` // end condition for recurring events
 	Description          string          `gorm:"type:text" json:"description,omitempty" example:"Weekly team meeting"`
 	Location             string          `gorm:"size:255" json:"location,omitempty" example:"Conference Room A"`
 	Timezone             string          `gorm:"size:100;default:'UTC'" json:"timezone,omitempty" example:"Europe/Berlin"`
@@ -123,7 +125,7 @@ type CreateCalendarEntryRequest struct {
 	SeriesID     *uint           `json:"series_id,omitempty" example:"1"`
 	Title        string          `json:"title" binding:"required" example:"Meeting"`
 	IsException  bool            `json:"is_exception,omitempty" example:"false"`
-	Participants json.RawMessage `json:"participants,omitempty" example:"[]"`
+	Participants json.RawMessage `json:"participants,omitempty" swaggertype:"object"`
 	StartTime    *time.Time      `json:"start_time,omitempty" example:"2025-11-04T09:00:00Z"`
 	EndTime      *time.Time      `json:"end_time,omitempty" example:"2025-11-04T10:00:00Z"`
 	Type         string          `json:"type,omitempty" example:"meeting"`
@@ -135,25 +137,27 @@ type CreateCalendarEntryRequest struct {
 
 // UpdateCalendarEntryRequest represents the request payload for updating a calendar entry
 type UpdateCalendarEntryRequest struct {
-	Title        *string         `json:"title,omitempty" example:"Updated Meeting"`
-	IsException  *bool           `json:"is_exception,omitempty" example:"false"`
-	Participants json.RawMessage `json:"participants,omitempty" example:"[]"`
-	StartTime    *time.Time      `json:"start_time,omitempty" example:"2025-11-04T09:00:00Z"`
-	EndTime      *time.Time      `json:"end_time,omitempty" example:"2025-11-04T10:00:00Z"`
-	Type         *string         `json:"type,omitempty" example:"meeting"`
-	Description  *string         `json:"description,omitempty" example:"Updated team meeting"`
-	Location     *string         `json:"location,omitempty" example:"Conference Room A"`
-	Timezone     *string         `json:"timezone,omitempty" example:"Europe/Berlin"`
-	IsAllDay     *bool           `json:"is_all_day,omitempty" example:"false"`
+	Title            *string         `json:"title,omitempty" example:"Updated Meeting"`
+	IsException      *bool           `json:"is_exception,omitempty" example:"false"`
+	PositionInSeries *int            `json:"position_in_series,omitempty" example:"1"`
+	Participants     json.RawMessage `json:"participants,omitempty" swaggertype:"object"`
+	StartTime        *time.Time      `json:"start_time,omitempty" example:"2025-11-04T09:00:00Z"`
+	EndTime          *time.Time      `json:"end_time,omitempty" example:"2025-11-04T10:00:00Z"`
+	Type             *string         `json:"type,omitempty" example:"meeting"`
+	Description      *string         `json:"description,omitempty" example:"Updated team meeting"`
+	Location         *string         `json:"location,omitempty" example:"Conference Room A"`
+	Timezone         *string         `json:"timezone,omitempty" example:"Europe/Berlin"`
+	IsAllDay         *bool           `json:"is_all_day,omitempty" example:"false"`
 }
 
 // CreateCalendarSeriesRequest represents the request payload for creating a calendar series
 type CreateCalendarSeriesRequest struct {
 	CalendarID           uint            `json:"calendar_id" binding:"required" example:"1"`
 	Title                string          `json:"title" binding:"required" example:"Weekly Meeting"`
-	Participants         json.RawMessage `json:"participants,omitempty" example:"[]"`
-	Weekday              int             `json:"weekday" binding:"required,min=0,max=6" example:"1"`
-	Interval             int             `json:"interval" binding:"required,min=1" example:"1"`
+	Participants         json.RawMessage `json:"participants,omitempty" swaggertype:"object"`
+	IntervalType         string          `json:"interval_type" binding:"required,oneof=none weekly monthly-date monthly-day yearly" example:"weekly"`
+	IntervalValue        int             `json:"interval_value" binding:"required,min=1" example:"1"`
+	LastDate             *time.Time      `json:"last_date,omitempty" example:"2025-12-31T23:59:59Z"`
 	StartTime            *time.Time      `json:"start_time,omitempty" example:"2025-11-04T09:00:00Z"`
 	EndTime              *time.Time      `json:"end_time,omitempty" example:"2025-11-04T10:00:00Z"`
 	Description          string          `json:"description,omitempty" example:"Weekly team meeting"`
@@ -165,16 +169,17 @@ type CreateCalendarSeriesRequest struct {
 
 // UpdateCalendarSeriesRequest represents the request payload for updating a calendar series
 type UpdateCalendarSeriesRequest struct {
-	Title        *string         `json:"title,omitempty" example:"Weekly Meeting Updated"`
-	Participants json.RawMessage `json:"participants,omitempty" example:"[]"`
-	Weekday      *int            `json:"weekday,omitempty" example:"1"`
-	Interval     *int            `json:"interval,omitempty" example:"1"`
-	StartTime    *time.Time      `json:"start_time,omitempty" example:"2025-11-04T09:00:00Z"`
-	EndTime      *time.Time      `json:"end_time,omitempty" example:"2025-11-04T10:00:00Z"`
-	Description  *string         `json:"description,omitempty" example:"Weekly team meeting - updated"`
-	Location     *string         `json:"location,omitempty" example:"Conference Room B"`
-	Timezone     *string         `json:"timezone,omitempty" example:"Europe/Berlin"`
-	ExternalUID  *string         `json:"external_uid,omitempty" example:"ext-123-updated"`
+	Title         *string         `json:"title,omitempty" example:"Weekly Meeting Updated"`
+	Participants  json.RawMessage `json:"participants,omitempty" swaggertype:"object"`
+	IntervalType  *string         `json:"interval_type,omitempty" example:"weekly"`
+	IntervalValue *int            `json:"interval_value,omitempty" example:"1"`
+	LastDate      *time.Time      `json:"last_date,omitempty" example:"2025-12-31T23:59:59Z"`
+	StartTime     *time.Time      `json:"start_time,omitempty" example:"2025-11-04T09:00:00Z"`
+	EndTime       *time.Time      `json:"end_time,omitempty" example:"2025-11-04T10:00:00Z"`
+	Description   *string         `json:"description,omitempty" example:"Weekly team meeting - updated"`
+	Location      *string         `json:"location,omitempty" example:"Conference Room B"`
+	Timezone      *string         `json:"timezone,omitempty" example:"Europe/Berlin"`
+	ExternalUID   *string         `json:"external_uid,omitempty" example:"ext-123-updated"`
 }
 
 // CreateExternalCalendarRequest represents the request payload for creating an external calendar
@@ -213,24 +218,25 @@ type CalendarResponse struct {
 
 // CalendarEntryResponse represents the response format for calendar entry data
 type CalendarEntryResponse struct {
-	ID           uint                    `json:"id"`
-	TenantID     uint                    `json:"tenant_id"`
-	UserID       uint                    `json:"user_id"`
-	CalendarID   uint                    `json:"calendar_id"`
-	SeriesID     *uint                   `json:"series_id,omitempty"`
-	Title        string                  `json:"title"`
-	IsException  bool                    `json:"is_exception"`
-	Participants json.RawMessage         `json:"participants,omitempty"`
-	StartTime    *time.Time              `json:"start_time,omitempty"`
-	EndTime      *time.Time              `json:"end_time,omitempty"`
-	Type         string                  `json:"type,omitempty"`
-	Description  string                  `json:"description,omitempty"`
-	Location     string                  `json:"location,omitempty"`
-	Timezone     string                  `json:"timezone,omitempty"`
-	IsAllDay     bool                    `json:"is_all_day"`
-	Series       *CalendarSeriesResponse `json:"series,omitempty"`
-	CreatedAt    time.Time               `json:"created_at"`
-	UpdatedAt    time.Time               `json:"updated_at"`
+	ID               uint                    `json:"id"`
+	TenantID         uint                    `json:"tenant_id"`
+	UserID           uint                    `json:"user_id"`
+	CalendarID       uint                    `json:"calendar_id"`
+	SeriesID         *uint                   `json:"series_id,omitempty"`
+	PositionInSeries *int                    `json:"position_in_series,omitempty"`
+	Title            string                  `json:"title"`
+	IsException      bool                    `json:"is_exception"`
+	Participants     json.RawMessage         `json:"participants,omitempty"`
+	StartTime        *time.Time              `json:"start_time,omitempty"`
+	EndTime          *time.Time              `json:"end_time,omitempty"`
+	Type             string                  `json:"type,omitempty"`
+	Description      string                  `json:"description,omitempty"`
+	Location         string                  `json:"location,omitempty"`
+	Timezone         string                  `json:"timezone,omitempty"`
+	IsAllDay         bool                    `json:"is_all_day"`
+	Series           *CalendarSeriesResponse `json:"series,omitempty"`
+	CreatedAt        time.Time               `json:"created_at"`
+	UpdatedAt        time.Time               `json:"updated_at"`
 }
 
 // CalendarSeriesResponse represents the response format for calendar series data
@@ -241,10 +247,11 @@ type CalendarSeriesResponse struct {
 	CalendarID           uint            `json:"calendar_id"`
 	Title                string          `json:"title"`
 	Participants         json.RawMessage `json:"participants,omitempty"`
-	Weekday              int             `json:"weekday"`
-	Interval             int             `json:"interval"`
+	IntervalType         string          `json:"interval_type"`
+	IntervalValue        int             `json:"interval_value"`
 	StartTime            *time.Time      `json:"start_time,omitempty"`
 	EndTime              *time.Time      `json:"end_time,omitempty"`
+	LastDate             *time.Time      `json:"last_date,omitempty"`
 	Description          string          `json:"description,omitempty"`
 	Location             string          `json:"location,omitempty"`
 	Timezone             string          `json:"timezone,omitempty"`
@@ -254,6 +261,12 @@ type CalendarSeriesResponse struct {
 	ExternalCalendarUUID string          `json:"external_calendar_uuid,omitempty"`
 	CreatedAt            time.Time       `json:"created_at"`
 	UpdatedAt            time.Time       `json:"updated_at"`
+}
+
+// CalendarSeriesWithEntriesResponse represents the response for creating a series with auto-generated entries
+type CalendarSeriesWithEntriesResponse struct {
+	Series  CalendarSeriesResponse   `json:"series"`
+	Entries []CalendarEntryResponse `json:"entries"`
 }
 
 // ExternalCalendarResponse represents the response format for external calendar data
@@ -309,23 +322,24 @@ func (c *Calendar) ToResponse() CalendarResponse {
 // ToResponse converts a CalendarEntry model to CalendarEntryResponse
 func (ce *CalendarEntry) ToResponse() CalendarEntryResponse {
 	response := CalendarEntryResponse{
-		ID:           ce.ID,
-		TenantID:     ce.TenantID,
-		UserID:       ce.UserID,
-		CalendarID:   ce.CalendarID,
-		SeriesID:     ce.SeriesID,
-		Title:        ce.Title,
-		IsException:  ce.IsException,
-		Participants: ce.Participants,
-		StartTime:    ce.StartTime,
-		EndTime:      ce.EndTime,
-		Type:         ce.Type,
-		Description:  ce.Description,
-		Location:     ce.Location,
-		Timezone:     ce.Timezone,
-		IsAllDay:     ce.IsAllDay,
-		CreatedAt:    ce.CreatedAt,
-		UpdatedAt:    ce.UpdatedAt,
+		ID:               ce.ID,
+		TenantID:         ce.TenantID,
+		UserID:           ce.UserID,
+		CalendarID:       ce.CalendarID,
+		SeriesID:         ce.SeriesID,
+		PositionInSeries: ce.PositionInSeries,
+		Title:            ce.Title,
+		IsException:      ce.IsException,
+		Participants:     ce.Participants,
+		StartTime:        ce.StartTime,
+		EndTime:          ce.EndTime,
+		Type:             ce.Type,
+		Description:      ce.Description,
+		Location:         ce.Location,
+		Timezone:         ce.Timezone,
+		IsAllDay:         ce.IsAllDay,
+		CreatedAt:        ce.CreatedAt,
+		UpdatedAt:        ce.UpdatedAt,
 	}
 
 	// Include series if it's preloaded
@@ -346,10 +360,11 @@ func (cs *CalendarSeries) ToResponse() CalendarSeriesResponse {
 		CalendarID:           cs.CalendarID,
 		Title:                cs.Title,
 		Participants:         cs.Participants,
-		Weekday:              cs.Weekday,
-		Interval:             cs.Interval,
+		IntervalType:         cs.IntervalType,
+		IntervalValue:        cs.IntervalValue,
 		StartTime:            cs.StartTime,
 		EndTime:              cs.EndTime,
+		LastDate:             cs.LastDate,
 		Description:          cs.Description,
 		Location:             cs.Location,
 		Timezone:             cs.Timezone,

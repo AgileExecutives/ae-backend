@@ -12,14 +12,16 @@ import (
 type RouteProvider struct {
 	clientHandler       *handlers.ClientHandler
 	costProviderHandler *handlers.CostProviderHandler
+	sessionHandler      *handlers.SessionHandler
 	db                  *gorm.DB
 }
 
 // NewRouteProvider creates a new route provider
-func NewRouteProvider(clientHandler *handlers.ClientHandler, costProviderHandler *handlers.CostProviderHandler, db *gorm.DB) *RouteProvider {
+func NewRouteProvider(clientHandler *handlers.ClientHandler, costProviderHandler *handlers.CostProviderHandler, sessionHandler *handlers.SessionHandler, db *gorm.DB) *RouteProvider {
 	return &RouteProvider{
 		clientHandler:       clientHandler,
 		costProviderHandler: costProviderHandler,
+		sessionHandler:      sessionHandler,
 		db:                  db,
 	}
 }
@@ -33,6 +35,7 @@ func (rp *RouteProvider) RegisterRoutes(router *gin.RouterGroup) {
 		clients.POST("", rp.clientHandler.CreateClient)
 		clients.GET("", rp.clientHandler.GetAllClients)
 		clients.GET("/search", rp.clientHandler.SearchClients)
+		clients.GET("/:id/sessions", rp.sessionHandler.GetSessionsByClient)
 		clients.GET("/:id", rp.clientHandler.GetClient)
 		clients.PUT("/:id", rp.clientHandler.UpdateClient)
 		clients.DELETE("/:id", rp.clientHandler.DeleteClient)
@@ -47,6 +50,17 @@ func (rp *RouteProvider) RegisterRoutes(router *gin.RouterGroup) {
 		costProviders.GET("/:id", rp.costProviderHandler.GetCostProvider)
 		costProviders.PUT("/:id", rp.costProviderHandler.UpdateCostProvider)
 		costProviders.DELETE("/:id", rp.costProviderHandler.DeleteCostProvider)
+	}
+
+	// Session management endpoints (authenticated)
+	sessions := router.Group("/sessions")
+	{
+		sessions.POST("", rp.sessionHandler.CreateSession)
+		sessions.POST("/book", rp.sessionHandler.BookSessions)
+		sessions.GET("", rp.sessionHandler.GetAllSessions)
+		sessions.GET("/:id", rp.sessionHandler.GetSession)
+		sessions.PUT("/:id", rp.sessionHandler.UpdateSession)
+		sessions.DELETE("/:id", rp.sessionHandler.DeleteSession)
 	}
 }
 
@@ -64,5 +78,5 @@ func (rp *RouteProvider) GetMiddleware() []gin.HandlerFunc {
 
 // GetSwaggerTags returns swagger tags for the routes
 func (rp *RouteProvider) GetSwaggerTags() []string {
-	return []string{"clients", "cost-providers"}
+	return []string{"clients", "cost-providers", "sessions"}
 }

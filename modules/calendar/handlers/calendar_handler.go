@@ -246,6 +246,20 @@ func (h *CalendarHandler) DeleteCalendar(c *gin.Context) {
 // @Summary Create a new calendar entry
 // @ID createCalendarEntry
 // @Description Create a new calendar entry with UTC timestamps. All datetime fields use ISO 8601 format in UTC (e.g., 2025-11-04T09:00:00Z). Stored as timestamptz in PostgreSQL, ensuring timezone-aware storage and retrieval.
+// @Description
+// @Description **Request Body Fields:**
+// @Description - `calendar_id` (required): ID of the calendar to create the entry in
+// @Description - `series_id` (optional): ID of the series this entry belongs to
+// @Description - `title` (required): Title of the calendar entry
+// @Description - `is_exception` (optional): Whether this is an exception to a recurring series
+// @Description - `participants` (optional): JSON array of participant objects
+// @Description - `start_time` (optional): Start time in ISO 8601 UTC format (e.g., 2025-11-04T09:00:00Z)
+// @Description - `end_time` (optional): End time in ISO 8601 UTC format
+// @Description - `type` (optional): Type of event (e.g., "meeting", "appointment")
+// @Description - `description` (optional): Detailed description of the event
+// @Description - `location` (optional): Location of the event
+// @Description - `timezone` (optional): Timezone identifier (e.g., "Europe/Berlin")
+// @Description - `is_all_day` (optional): Whether this is an all-day event
 // @Tags calendar-entries
 // @Accept json
 // @Produce json
@@ -473,12 +487,29 @@ func (h *CalendarHandler) DeleteCalendarEntry(c *gin.Context) {
 // @Summary Create a new calendar series
 // @ID createCalendarSeries
 // @Description Create a new calendar series for recurring events. Start/end time fields use UTC ISO 8601 format (e.g., 2025-11-04T09:00:00Z). For recurring events, these represent the time portion that will be combined with calculated recurrence dates.
+// @Description
+// @Description **Request Body Fields:**
+// @Description - `calendar_id` (required): ID of the calendar to create the series in
+// @Description - `title` (required): Title of the recurring series
+// @Description - `participants` (optional): JSON array of participant objects
+// @Description - `interval_type` (required): Type of recurrence - one of: "none", "weekly", "monthly-date", "monthly-day", "yearly"
+// @Description - `interval_value` (required): Number of intervals between occurrences (e.g., 2 = every 2 weeks for weekly type)
+// @Description - `last_date` (optional): End date for the recurring series in ISO 8601 UTC format (e.g., 2025-12-31T23:59:59Z)
+// @Description - `start_time` (optional): Start time for each occurrence in ISO 8601 UTC format
+// @Description - `end_time` (optional): End time for each occurrence in ISO 8601 UTC format
+// @Description - `description` (optional): Description of the series
+// @Description - `location` (optional): Location for all events in the series
+// @Description - `timezone` (optional): Timezone identifier (e.g., "Europe/Berlin")
+// @Description - `external_uid` (optional): External unique identifier for integration
+// @Description - `external_calendar_uuid` (optional): UUID of external calendar if imported
+// @Description
+// @Description **Response:** Returns the created series and all auto-generated calendar entries based on the recurrence rules.
 // @Tags calendar-series
 // @Accept json
 // @Produce json
 // @Security BearerAuth
 // @Param series body entities.CreateCalendarSeriesRequest true "Calendar series data"
-// @Success 201 {object} baseAPI.APIResponse{data=entities.CalendarSeriesResponse}
+// @Success 201 {object} baseAPI.APIResponse{data=entities.CalendarSeriesWithEntriesResponse}
 // @Failure 400 {object} baseAPI.APIResponse
 // @Failure 401 {object} baseAPI.APIResponse
 // @Failure 500 {object} baseAPI.APIResponse
@@ -486,7 +517,7 @@ func (h *CalendarHandler) DeleteCalendarEntry(c *gin.Context) {
 func (h *CalendarHandler) CreateCalendarSeries(c *gin.Context) {
 	var req entities.CreateCalendarSeriesRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, baseAPI.ErrorResponseFunc("Internal server error", err.Error()))
+		c.JSON(http.StatusBadRequest, baseAPI.ErrorResponseFunc("Invalid request", err.Error()))
 		return
 	}
 
@@ -501,13 +532,24 @@ func (h *CalendarHandler) CreateCalendarSeries(c *gin.Context) {
 		return
 	}
 
-	series, err := h.service.CreateCalendarSeries(req, tenantID, userID)
+	series, entries, err := h.service.CreateCalendarSeriesWithEntries(req, tenantID, userID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, baseAPI.ErrorResponseFunc("Internal server error", err.Error()))
 		return
 	}
 
-	c.JSON(http.StatusCreated, baseAPI.SuccessResponse("Calendar series created successfully", series.ToResponse()))
+	// Convert entries to response format
+	entryResponses := make([]entities.CalendarEntryResponse, len(entries))
+	for i, entry := range entries {
+		entryResponses[i] = entry.ToResponse()
+	}
+
+	response := entities.CalendarSeriesWithEntriesResponse{
+		Series:  series.ToResponse(),
+		Entries: entryResponses,
+	}
+
+	c.JSON(http.StatusCreated, baseAPI.SuccessResponse("Calendar series created successfully with entries", response))
 }
 
 // GetCalendarSeries retrieves a specific calendar series

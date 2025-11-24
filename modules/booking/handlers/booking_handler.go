@@ -10,26 +10,29 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/unburdy/booking-module/entities"
 	"github.com/unburdy/booking-module/services"
+	"gorm.io/gorm"
 )
 
 type BookingHandler struct {
 	service        *services.BookingService
 	bookingLinkSvc *services.BookingLinkService
 	freeSlotsSvc   *services.FreeSlotsService
+	db             *gorm.DB
 }
 
-func NewBookingHandler(service *services.BookingService, bookingLinkSvc *services.BookingLinkService, freeSlotsSvc *services.FreeSlotsService) *BookingHandler {
+func NewBookingHandler(service *services.BookingService, bookingLinkSvc *services.BookingLinkService, freeSlotsSvc *services.FreeSlotsService, db *gorm.DB) *BookingHandler {
 	return &BookingHandler{
 		service:        service,
 		bookingLinkSvc: bookingLinkSvc,
 		freeSlotsSvc:   freeSlotsSvc,
+		db:             db,
 	}
 }
 
 // CreateConfiguration godoc
 // @Summary Create a new booking configuration
 // @Description Create a new booking configuration/template for a user's calendar
-// @Tags booking-templates
+// @Tags booking
 // @Accept json
 // @Produce json
 // @Param allowed_start_minutes body []int false "Allowed minute marks within the hour (e.g., [0,15,30,45])"
@@ -66,7 +69,7 @@ func (h *BookingHandler) CreateConfiguration(c *gin.Context) {
 // GetConfiguration godoc
 // @Summary Get a booking configuration by ID
 // @Description Retrieve a specific booking configuration by ID
-// @Tags booking-templates
+// @Tags booking
 // @Produce json
 // @Param id path int true "Configuration ID"
 // @Success 200 {object} baseAPI.APIResponse{data=entities.BookingTemplateResponse}
@@ -106,7 +109,7 @@ func (h *BookingHandler) GetConfiguration(c *gin.Context) {
 // GetAllConfigurations godoc
 // @Summary Get all booking configurations
 // @Description Retrieve all booking configurations for the tenant
-// @Tags booking-templates
+// @Tags booking
 // @Produce json
 // @Success 200 {object} baseAPI.APIResponse{data=[]entities.BookingTemplateResponse}
 // @Failure 401 {object} baseAPI.APIResponse
@@ -139,7 +142,7 @@ func (h *BookingHandler) GetAllConfigurations(c *gin.Context) {
 // GetConfigurationsByUser godoc
 // @Summary Get booking configurations by user ID
 // @Description Retrieve all booking configurations for a specific user
-// @Tags booking-templates
+// @Tags booking
 // @Produce json
 // @Param user_id query int true "User ID"
 // @Success 200 {object} baseAPI.APIResponse{data=[]entities.BookingTemplateResponse}
@@ -185,7 +188,7 @@ func (h *BookingHandler) GetConfigurationsByUser(c *gin.Context) {
 // GetConfigurationsByCalendar godoc
 // @Summary Get booking configurations by calendar ID
 // @Description Retrieve all booking configurations for a specific calendar
-// @Tags booking-templates
+// @Tags booking
 // @Produce json
 // @Param calendar_id query int true "Calendar ID"
 // @Success 200 {object} baseAPI.APIResponse{data=[]entities.BookingTemplateResponse}
@@ -231,7 +234,7 @@ func (h *BookingHandler) GetConfigurationsByCalendar(c *gin.Context) {
 // UpdateConfiguration godoc
 // @Summary Update a booking configuration
 // @Description Update an existing booking configuration
-// @Tags booking-templates
+// @Tags booking
 // @Accept json
 // @Produce json
 // @Param id path int true "Configuration ID"
@@ -279,8 +282,8 @@ func (h *BookingHandler) UpdateConfiguration(c *gin.Context) {
 
 // DeleteConfiguration godoc
 // @Summary Delete a booking configuration
-// @Description Soft delete a booking configuration by ID
-// @Tags booking-templates
+// @Description Delete a booking configuration by ID
+// @Tags booking
 // @Produce json
 // @Param id path int true "Configuration ID"
 // @Success 200 {object} baseAPI.APIResponse
@@ -320,7 +323,7 @@ func (h *BookingHandler) DeleteConfiguration(c *gin.Context) {
 // CreateBookingLink godoc
 // @Summary Create a booking link
 // @Description Generate a booking link token for a client to book appointments
-// @Tags booking-templates
+// @Tags booking
 // @Accept json
 // @Produce json
 // @Param link body entities.CreateBookingLinkRequest true "Booking link data"
@@ -383,7 +386,7 @@ func (h *BookingHandler) CreateBookingLink(c *gin.Context) {
 // GetFreeSlots godoc
 // @Summary Get available time slots for booking
 // @Description Retrieve available time slots based on a booking link token. Token is validated and must not be blacklisted.
-// @Tags booking-slots
+// @Tags booking
 // @Produce json
 // @Param token path string true "Booking link token"
 // @Param start query string false "Start date for slot search (YYYY-MM-DD)" example="2025-11-01"
@@ -444,8 +447,8 @@ func (h *BookingHandler) GetFreeSlots(c *gin.Context) {
 			return
 		}
 	} else {
-		// Default to end of current month
-		endDate = startDate.AddDate(0, 1, -1)
+		// Use advance_booking_days from template to calculate end date
+		endDate = startDate.AddDate(0, 0, template.AdvanceBookingDays)
 		endDate = time.Date(endDate.Year(), endDate.Month(), endDate.Day(), 23, 59, 59, 0, time.UTC)
 	}
 
@@ -466,4 +469,63 @@ func (h *BookingHandler) GetFreeSlots(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, baseAPI.SuccessResponse("Free slots retrieved successfully", freeSlots))
+}
+
+// GetClientByToken godoc
+// @Summary Get client information by booking token
+// @Description Retrieve client details associated with a booking link token
+// @Tags booking
+// @Produce json
+// @Param token path string true "Booking link token"
+// @Success 200 {object} baseAPI.APIResponse
+// @Failure 401 {object} baseAPI.APIResponse
+// @Failure 404 {object} baseAPI.APIResponse
+// @Failure 500 {object} baseAPI.APIResponse
+// @Router /client/{token} [get]
+// @ID getClientByToken
+func (h *BookingHandler) GetClientByToken(c *gin.Context) {
+	// Get claims from context (set by token middleware)
+	claimsInterface, exists := c.Get("booking_claims")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, baseAPI.ErrorResponseFunc("Unauthorized", "Invalid booking token"))
+		return
+	}
+
+	claims, ok := claimsInterface.(*entities.BookingLinkClaims)
+	if !ok {
+		c.JSON(http.StatusUnauthorized, baseAPI.ErrorResponseFunc("Unauthorized", "Invalid token claims"))
+		return
+	}
+
+	// Set client_id in context for generic access
+	c.Set("client_id", claims.ClientID)
+	c.Set("tenant_id", claims.TenantID)
+
+	// Query client information from database
+	var client struct {
+		ID               uint       `json:"id"`
+		FirstName        string     `json:"first_name"`
+		LastName         string     `json:"last_name"`
+		Email            string     `json:"email"`
+		Phone            string     `json:"phone"`
+		DateOfBirth      *time.Time `json:"date_of_birth,omitempty"`
+		Gender           string     `json:"gender,omitempty"`
+		PrimaryLanguage  string     `json:"primary_language,omitempty"`
+		StreetAddress    string     `json:"street_address,omitempty"`
+		Zip              string     `json:"zip,omitempty"`
+		City             string     `json:"city,omitempty"`
+		Status           string     `json:"status"`
+	}
+
+	err := h.db.Table("clients").
+		Select("id, first_name, last_name, email, phone, date_of_birth, gender, primary_language, street_address, zip, city, status").
+		Where("id = ? AND tenant_id = ? AND deleted_at IS NULL", claims.ClientID, claims.TenantID).
+		First(&client).Error
+
+	if err != nil {
+		c.JSON(http.StatusNotFound, baseAPI.ErrorResponseFunc("Not Found", "Client not found"))
+		return
+	}
+
+	c.JSON(http.StatusOK, baseAPI.SuccessResponse("Client information retrieved successfully", client))
 }

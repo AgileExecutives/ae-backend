@@ -15,127 +15,6 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/calendar": {
-            "get": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "Retrieve all calendars for the authenticated user with 2-level deep preloading including entries with their series and series with their entries",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "calendar"
-                ],
-                "summary": "Get calendars with complete metadata",
-                "operationId": "getCalendars",
-                "responses": {
-                    "200": {
-                        "description": "Returns calendars array with complete metadata including nested relationships",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/api.APIResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "type": "array",
-                                            "items": {
-                                                "$ref": "#/definitions/entities.CalendarResponse"
-                                            }
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized - invalid or missing JWT token",
-                        "schema": {
-                            "$ref": "#/definitions/api.APIResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal server error during calendar retrieval",
-                        "schema": {
-                            "$ref": "#/definitions/api.APIResponse"
-                        }
-                    }
-                }
-            },
-            "post": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "Create a new calendar for the authenticated user",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "calendar"
-                ],
-                "summary": "Create a new calendar",
-                "operationId": "createCalendar",
-                "parameters": [
-                    {
-                        "description": "Calendar data",
-                        "name": "calendar",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/entities.CreateCalendarRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "201": {
-                        "description": "Created",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/api.APIResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/entities.CalendarResponse"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/api.APIResponse"
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "$ref": "#/definitions/api.APIResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/api.APIResponse"
-                        }
-                    }
-                }
-            }
-        },
         "/calendar-entries": {
             "get": {
                 "security": [
@@ -207,7 +86,7 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "Create a new calendar entry with UTC timestamps. All datetime fields use ISO 8601 format in UTC (e.g., 2025-11-04T09:00:00Z). Stored as timestamptz in PostgreSQL, ensuring timezone-aware storage and retrieval.",
+                "description": "Create a new calendar entry with UTC timestamps. All datetime fields use ISO 8601 format in UTC (e.g., 2025-11-04T09:00:00Z). Stored as timestamptz in PostgreSQL, ensuring timezone-aware storage and retrieval.\n\n**Request Body Fields:**\n- ` + "`" + `calendar_id` + "`" + ` (required): ID of the calendar to create the entry in\n- ` + "`" + `series_id` + "`" + ` (optional): ID of the series this entry belongs to\n- ` + "`" + `title` + "`" + ` (required): Title of the calendar entry\n- ` + "`" + `is_exception` + "`" + ` (optional): Whether this is an exception to a recurring series\n- ` + "`" + `participants` + "`" + ` (optional): JSON array of participant objects\n- ` + "`" + `start_time` + "`" + ` (optional): Start time in ISO 8601 UTC format (e.g., 2025-11-04T09:00:00Z)\n- ` + "`" + `end_time` + "`" + ` (optional): End time in ISO 8601 UTC format\n- ` + "`" + `type` + "`" + ` (optional): Type of event (e.g., \"meeting\", \"appointment\")\n- ` + "`" + `description` + "`" + ` (optional): Detailed description of the event\n- ` + "`" + `location` + "`" + ` (optional): Location of the event\n- ` + "`" + `timezone` + "`" + ` (optional): Timezone identifier (e.g., \"Europe/Berlin\")\n- ` + "`" + `is_all_day` + "`" + ` (optional): Whether this is an all-day event",
                 "consumes": [
                     "application/json"
                 ],
@@ -550,7 +429,7 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "Create a new calendar series for recurring events. Start/end time fields use UTC ISO 8601 format (e.g., 2025-11-04T09:00:00Z). For recurring events, these represent the time portion that will be combined with calculated recurrence dates.",
+                "description": "Create a new calendar series for recurring events. Start/end time fields use UTC ISO 8601 format (e.g., 2025-11-04T09:00:00Z). For recurring events, these represent the time portion that will be combined with calculated recurrence dates.\n\n**Request Body Fields:**\n- ` + "`" + `calendar_id` + "`" + ` (required): ID of the calendar to create the series in\n- ` + "`" + `title` + "`" + ` (required): Title of the recurring series\n- ` + "`" + `participants` + "`" + ` (optional): JSON array of participant objects\n- ` + "`" + `interval_type` + "`" + ` (required): Type of recurrence - one of: \"none\", \"weekly\", \"monthly-date\", \"monthly-day\", \"yearly\"\n- ` + "`" + `interval_value` + "`" + ` (required): Number of intervals between occurrences (e.g., 2 = every 2 weeks for weekly type)\n- ` + "`" + `last_date` + "`" + ` (optional): End date for the recurring series in ISO 8601 UTC format (e.g., 2025-12-31T23:59:59Z)\n- ` + "`" + `start_time` + "`" + ` (optional): Start time for each occurrence in ISO 8601 UTC format\n- ` + "`" + `end_time` + "`" + ` (optional): End time for each occurrence in ISO 8601 UTC format\n- ` + "`" + `description` + "`" + ` (optional): Description of the series\n- ` + "`" + `location` + "`" + ` (optional): Location for all events in the series\n- ` + "`" + `timezone` + "`" + ` (optional): Timezone identifier (e.g., \"Europe/Berlin\")\n- ` + "`" + `external_uid` + "`" + ` (optional): External unique identifier for integration\n- ` + "`" + `external_calendar_uuid` + "`" + ` (optional): UUID of external calendar if imported",
                 "consumes": [
                     "application/json"
                 ],
@@ -822,53 +701,104 @@ const docTemplate = `{
                 }
             }
         },
-        "/calendar/free-slots": {
+        "/calendars": {
             "get": {
                 "security": [
                     {
                         "BearerAuth": []
                     }
                 ],
-                "description": "Find available time slots based on duration, interval, and maximum number",
+                "description": "Retrieve all calendars for the authenticated user with 2-level deep preloading including entries with their series and series with their entries",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "calendar-availability"
+                    "calendar"
                 ],
-                "summary": "Get free time slots",
-                "operationId": "getFreeSlots",
+                "summary": "Get calendars with complete metadata",
+                "operationId": "getCalendars",
+                "responses": {
+                    "200": {
+                        "description": "Returns calendars array with complete metadata including nested relationships",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/api.APIResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/entities.CalendarResponse"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized - invalid or missing JWT token",
+                        "schema": {
+                            "$ref": "#/definitions/api.APIResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error during calendar retrieval",
+                        "schema": {
+                            "$ref": "#/definitions/api.APIResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Create a new calendar for the authenticated user",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "calendar"
+                ],
+                "summary": "Create a new calendar",
+                "operationId": "createCalendar",
                 "parameters": [
                     {
-                        "type": "integer",
-                        "description": "Duration in minutes",
-                        "name": "duration",
-                        "in": "query",
-                        "required": true
-                    },
-                    {
-                        "type": "integer",
-                        "description": "Interval between slots in minutes",
-                        "name": "interval",
-                        "in": "query",
-                        "required": true
-                    },
-                    {
-                        "type": "integer",
-                        "description": "Maximum number of slots to return",
-                        "name": "number_max",
-                        "in": "query",
-                        "required": true
+                        "description": "Calendar data",
+                        "name": "calendar",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/entities.CreateCalendarRequest"
+                        }
                     }
                 ],
                 "responses": {
-                    "200": {
-                        "description": "OK",
+                    "201": {
+                        "description": "Created",
                         "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/entities.FreeSlot"
-                            }
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/api.APIResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/entities.CalendarResponse"
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     },
                     "400": {
@@ -892,7 +822,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/calendar/week": {
+        "/calendars/week": {
             "get": {
                 "security": [
                     {
@@ -948,7 +878,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/calendar/year": {
+        "/calendars/year": {
             "get": {
                 "security": [
                     {
@@ -1004,7 +934,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/calendar/{id}": {
+        "/calendars/{id}": {
             "get": {
                 "security": [
                     {
@@ -1213,7 +1143,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/calendar/{id}/import_holidays": {
+        "/calendars/{id}/import_holidays": {
             "post": {
                 "security": [
                     {
@@ -1686,6 +1616,12 @@ const docTemplate = `{
                         "type": "integer"
                     }
                 },
+                "position_in_series": {
+                    "type": "integer"
+                },
+                "series": {
+                    "$ref": "#/definitions/entities.CalendarSeriesResponse"
+                },
                 "series_id": {
                     "type": "integer"
                 },
@@ -1694,6 +1630,9 @@ const docTemplate = `{
                 },
                 "tenant_id": {
                     "type": "integer"
+                },
+                "timezone": {
+                    "type": "string"
                 },
                 "title": {
                     "type": "string"
@@ -1792,8 +1731,14 @@ const docTemplate = `{
                 "id": {
                     "type": "integer"
                 },
-                "interval": {
+                "interval_type": {
+                    "type": "string"
+                },
+                "interval_value": {
                     "type": "integer"
+                },
+                "last_date": {
+                    "type": "string"
                 },
                 "location": {
                     "type": "string"
@@ -1813,6 +1758,9 @@ const docTemplate = `{
                 "tenant_id": {
                     "type": "integer"
                 },
+                "timezone": {
+                    "type": "string"
+                },
                 "title": {
                     "type": "string"
                 },
@@ -1821,20 +1769,137 @@ const docTemplate = `{
                 },
                 "user_id": {
                     "type": "integer"
-                },
-                "weekday": {
-                    "type": "integer"
                 }
             }
         },
         "entities.CreateCalendarEntryRequest": {
-            "type": "object"
+            "type": "object",
+            "required": [
+                "calendar_id",
+                "title"
+            ],
+            "properties": {
+                "calendar_id": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "description": {
+                    "type": "string",
+                    "example": "Team meeting"
+                },
+                "end_time": {
+                    "type": "string",
+                    "example": "2025-11-04T10:00:00Z"
+                },
+                "is_all_day": {
+                    "type": "boolean",
+                    "example": false
+                },
+                "is_exception": {
+                    "type": "boolean",
+                    "example": false
+                },
+                "location": {
+                    "type": "string",
+                    "example": "Conference Room A"
+                },
+                "participants": {
+                    "type": "object"
+                },
+                "series_id": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "start_time": {
+                    "type": "string",
+                    "example": "2025-11-04T09:00:00Z"
+                },
+                "timezone": {
+                    "type": "string",
+                    "example": "Europe/Berlin"
+                },
+                "title": {
+                    "type": "string",
+                    "example": "Meeting"
+                },
+                "type": {
+                    "type": "string",
+                    "example": "meeting"
+                }
+            }
         },
         "entities.CreateCalendarRequest": {
             "type": "object"
         },
         "entities.CreateCalendarSeriesRequest": {
-            "type": "object"
+            "type": "object",
+            "required": [
+                "calendar_id",
+                "interval_type",
+                "interval_value",
+                "title"
+            ],
+            "properties": {
+                "calendar_id": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "description": {
+                    "type": "string",
+                    "example": "Weekly team meeting"
+                },
+                "end_time": {
+                    "type": "string",
+                    "example": "2025-11-04T10:00:00Z"
+                },
+                "external_calendar_uuid": {
+                    "type": "string",
+                    "example": "ext-cal-123"
+                },
+                "external_uid": {
+                    "type": "string",
+                    "example": "ext-123"
+                },
+                "interval_type": {
+                    "type": "string",
+                    "enum": [
+                        "none",
+                        "weekly",
+                        "monthly-date",
+                        "monthly-day",
+                        "yearly"
+                    ],
+                    "example": "weekly"
+                },
+                "interval_value": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "example": 1
+                },
+                "last_date": {
+                    "type": "string",
+                    "example": "2025-12-31T23:59:59Z"
+                },
+                "location": {
+                    "type": "string",
+                    "example": "Conference Room A"
+                },
+                "participants": {
+                    "type": "object"
+                },
+                "start_time": {
+                    "type": "string",
+                    "example": "2025-11-04T09:00:00Z"
+                },
+                "timezone": {
+                    "type": "string",
+                    "example": "Europe/Berlin"
+                },
+                "title": {
+                    "type": "string",
+                    "example": "Weekly Meeting"
+                }
+            }
         },
         "entities.CreateExternalCalendarRequest": {
             "type": "object"
@@ -1880,23 +1945,6 @@ const docTemplate = `{
                 },
                 "user_id": {
                     "type": "integer"
-                }
-            }
-        },
-        "entities.FreeSlot": {
-            "type": "object",
-            "properties": {
-                "duration": {
-                    "type": "integer",
-                    "example": 60
-                },
-                "end_time": {
-                    "type": "string",
-                    "example": "2025-01-15T10:00:00Z"
-                },
-                "start_time": {
-                    "type": "string",
-                    "example": "2025-01-15T09:00:00Z"
                 }
             }
         },
@@ -1983,13 +2031,103 @@ const docTemplate = `{
             }
         },
         "entities.UpdateCalendarEntryRequest": {
-            "type": "object"
+            "type": "object",
+            "properties": {
+                "description": {
+                    "type": "string",
+                    "example": "Updated team meeting"
+                },
+                "end_time": {
+                    "type": "string",
+                    "example": "2025-11-04T10:00:00Z"
+                },
+                "is_all_day": {
+                    "type": "boolean",
+                    "example": false
+                },
+                "is_exception": {
+                    "type": "boolean",
+                    "example": false
+                },
+                "location": {
+                    "type": "string",
+                    "example": "Conference Room A"
+                },
+                "participants": {
+                    "type": "object"
+                },
+                "position_in_series": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "start_time": {
+                    "type": "string",
+                    "example": "2025-11-04T09:00:00Z"
+                },
+                "timezone": {
+                    "type": "string",
+                    "example": "Europe/Berlin"
+                },
+                "title": {
+                    "type": "string",
+                    "example": "Updated Meeting"
+                },
+                "type": {
+                    "type": "string",
+                    "example": "meeting"
+                }
+            }
         },
         "entities.UpdateCalendarRequest": {
             "type": "object"
         },
         "entities.UpdateCalendarSeriesRequest": {
-            "type": "object"
+            "type": "object",
+            "properties": {
+                "description": {
+                    "type": "string",
+                    "example": "Weekly team meeting - updated"
+                },
+                "end_time": {
+                    "type": "string",
+                    "example": "2025-11-04T10:00:00Z"
+                },
+                "external_uid": {
+                    "type": "string",
+                    "example": "ext-123-updated"
+                },
+                "interval_type": {
+                    "type": "string",
+                    "example": "weekly"
+                },
+                "interval_value": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "last_date": {
+                    "type": "string",
+                    "example": "2025-12-31T23:59:59Z"
+                },
+                "location": {
+                    "type": "string",
+                    "example": "Conference Room B"
+                },
+                "participants": {
+                    "type": "object"
+                },
+                "start_time": {
+                    "type": "string",
+                    "example": "2025-11-04T09:00:00Z"
+                },
+                "timezone": {
+                    "type": "string",
+                    "example": "Europe/Berlin"
+                },
+                "title": {
+                    "type": "string",
+                    "example": "Weekly Meeting Updated"
+                }
+            }
         },
         "entities.UpdateExternalCalendarRequest": {
             "type": "object"

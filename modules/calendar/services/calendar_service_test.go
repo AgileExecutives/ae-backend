@@ -48,10 +48,8 @@ func createMockCalendar(tenantID, userID uint) entities.Calendar {
 }
 
 func createMockCalendarEntry(calendarID, seriesID uint) entities.CalendarEntry {
-	dateFrom := time.Date(2025, 11, 1, 0, 0, 0, 0, time.UTC)
-	dateTo := time.Date(2025, 11, 1, 0, 0, 0, 0, time.UTC)
-	timeFrom := time.Date(0, 1, 1, 9, 0, 0, 0, time.UTC)
-	timeTo := time.Date(0, 1, 1, 10, 0, 0, 0, time.UTC)
+	startTime := time.Date(2025, 11, 1, 9, 0, 0, 0, time.UTC)
+	endTime := time.Date(2025, 11, 1, 10, 0, 0, 0, time.UTC)
 
 	var seriesRef *uint
 	if seriesID > 0 {
@@ -59,22 +57,20 @@ func createMockCalendarEntry(calendarID, seriesID uint) entities.CalendarEntry {
 	}
 
 	return entities.CalendarEntry{
-		ID:          1,
-		TenantID:    1,
-		UserID:      1,
-		CalendarID:  calendarID,
-		SeriesID:    seriesRef,
-		Title:       "Test Meeting",
-		DateFrom:    &dateFrom,
-		DateTo:      &dateTo,
-		TimeFrom:    &timeFrom,
-		TimeTo:      &timeTo,
-		Timezone:    "UTC",
-		Type:        "meeting",
-		Description: "Test meeting description",
-		Location:    "Conference Room A",
-		CreatedAt:   time.Now(),
-		UpdatedAt:   time.Now(),
+		ID:           1,
+		TenantID:     1,
+		UserID:       1,
+		CalendarID:   calendarID,
+		SeriesID:     seriesRef,
+		Title:        "Test Meeting",
+		StartTime:    &startTime,
+		EndTime:      &endTime,
+		Timezone:     "UTC",
+		Type:         "meeting",
+		Description:  "Test meeting description",
+		Location:     "Conference Room A",
+		CreatedAt:    time.Now(),
+		UpdatedAt:    time.Now(),
 	}
 }
 
@@ -83,21 +79,21 @@ func createMockCalendarSeries(calendarID uint) entities.CalendarSeries {
 	timeEnd := time.Date(0, 1, 1, 10, 0, 0, 0, time.UTC)
 
 	return entities.CalendarSeries{
-		ID:          1,
-		CalendarID:  calendarID,
-		TenantID:    1,
-		UserID:      1,
-		Title:       "Test Series",
-		Weekday:     1, // Monday
-		Interval:    1,
-		TimeStart:   &timeStart,
-		TimeEnd:     &timeEnd,
-		Description: "Test Series Description",
-		Location:    "Test Location",
-		EntryUUID:   "test-series-uuid",
-		Sequence:    0,
-		CreatedAt:   time.Now(),
-		UpdatedAt:   time.Now(),
+		ID:            1,
+		CalendarID:    calendarID,
+		TenantID:      1,
+		UserID:        1,
+		Title:         "Test Series",
+		IntervalType:  "weekly",
+		IntervalValue: 1,
+		StartTime:     &timeStart,
+		EndTime:       &timeEnd,
+		Description:   "Test Series Description",
+		Location:      "Test Location",
+		EntryUUID:     "test-series-uuid",
+		Sequence:      0,
+		CreatedAt:     time.Now(),
+		UpdatedAt:     time.Now(),
 	}
 }
 

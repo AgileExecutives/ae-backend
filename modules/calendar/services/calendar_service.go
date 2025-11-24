@@ -243,6 +243,9 @@ func (s *CalendarService) UpdateCalendarEntry(id, tenantID, userID uint, req ent
 	if req.IsException != nil {
 		entry.IsException = *req.IsException
 	}
+	if req.PositionInSeries != nil {
+		entry.PositionInSeries = req.PositionInSeries
+	}
 	if req.Participants != nil {
 		entry.Participants = req.Participants
 	}
@@ -308,8 +311,9 @@ func (s *CalendarService) CreateCalendarSeries(req entities.CreateCalendarSeries
 		CalendarID:           req.CalendarID,
 		Title:                req.Title,
 		Participants:         req.Participants,
-		Weekday:              req.Weekday,
-		Interval:             req.Interval,
+		IntervalType:         req.IntervalType,
+		IntervalValue:        req.IntervalValue,
+		LastDate:             req.LastDate,
 		StartTime:            req.StartTime,
 		EndTime:              req.EndTime,
 		Description:          req.Description,
@@ -325,6 +329,200 @@ func (s *CalendarService) CreateCalendarSeries(req entities.CreateCalendarSeries
 	}
 
 	return &series, nil
+}
+
+// CreateCalendarSeriesWithEntries creates a new calendar series and generates all calendar entries based on recurrence rules
+func (s *CalendarService) CreateCalendarSeriesWithEntries(req entities.CreateCalendarSeriesRequest, tenantID, userID uint) (*entities.CalendarSeries, []entities.CalendarEntry, error) {
+	// Verify calendar belongs to user
+	var calendar entities.Calendar
+	if err := s.db.Where("id = ? AND tenant_id = ? AND user_id = ?", req.CalendarID, tenantID, userID).First(&calendar).Error; err != nil {
+		return nil, nil, fmt.Errorf("calendar not found or access denied")
+	}
+
+	series := entities.CalendarSeries{
+		TenantID:             tenantID,
+		UserID:               userID,
+		CalendarID:           req.CalendarID,
+		Title:                req.Title,
+		Participants:         req.Participants,
+		IntervalType:         req.IntervalType,
+		IntervalValue:        req.IntervalValue,
+		LastDate:             req.LastDate,
+		StartTime:            req.StartTime,
+		EndTime:              req.EndTime,
+		Description:          req.Description,
+		Location:             req.Location,
+		Timezone:             req.Timezone,
+		EntryUUID:            uuid.New().String(),
+		ExternalUID:          req.ExternalUID,
+		ExternalCalendarUUID: req.ExternalCalendarUUID,
+	}
+
+	if err := s.db.Create(&series).Error; err != nil {
+		return nil, nil, fmt.Errorf("failed to create calendar series: %w", err)
+	}
+
+	// Generate calendar entries based on interval type
+	entries, err := s.generateSeriesEntries(&series, tenantID, userID)
+	if err != nil {
+		// Rollback: delete the series if entry generation fails
+		s.db.Delete(&series)
+		return nil, nil, fmt.Errorf("failed to generate series entries: %w", err)
+	}
+
+	return &series, entries, nil
+}
+
+// generateSeriesEntries creates calendar entries for a series based on recurrence rules
+func (s *CalendarService) generateSeriesEntries(series *entities.CalendarSeries, tenantID, userID uint) ([]entities.CalendarEntry, error) {
+	if series.IntervalType == "none" {
+		return []entities.CalendarEntry{}, nil
+	}
+
+	if series.StartTime == nil || series.EndTime == nil {
+		return nil, fmt.Errorf("start_time and end_time are required for recurring series")
+	}
+
+	// Calculate the end date for generation
+	var endDate time.Time
+	if series.LastDate != nil {
+		endDate = *series.LastDate
+	} else {
+		// Default to 1 year from now if no last_date specified
+		endDate = time.Now().AddDate(1, 0, 0)
+	}
+
+	var entries []entities.CalendarEntry
+	position := 1
+	current := time.Now()
+
+	switch series.IntervalType {
+	case "weekly":
+		// Generate weekly occurrences
+		for current.Before(endDate) || current.Equal(endDate) {
+			startTime := time.Date(
+				current.Year(), current.Month(), current.Day(),
+				series.StartTime.Hour(), series.StartTime.Minute(), series.StartTime.Second(), 0,
+				time.UTC,
+			)
+			endTime := time.Date(
+				current.Year(), current.Month(), current.Day(),
+				series.EndTime.Hour(), series.EndTime.Minute(), series.EndTime.Second(), 0,
+				time.UTC,
+			)
+
+			entry := entities.CalendarEntry{
+				TenantID:         tenantID,
+				UserID:           userID,
+				CalendarID:       series.CalendarID,
+				SeriesID:         &series.ID,
+				Title:            series.Title,
+				PositionInSeries: &position,
+				Participants:     series.Participants,
+				StartTime:        &startTime,
+				EndTime:          &endTime,
+				Type:             "recurring",
+				Description:      series.Description,
+				Location:         series.Location,
+				Timezone:         series.Timezone,
+				IsAllDay:         false,
+			}
+
+			if err := s.db.Create(&entry).Error; err != nil {
+				return nil, fmt.Errorf("failed to create entry at position %d: %w", position, err)
+			}
+
+			entries = append(entries, entry)
+			current = current.AddDate(0, 0, 7*series.IntervalValue)
+			position++
+		}
+
+	case "monthly-date":
+		// Same day of month (e.g., 15th of every month)
+		startDay := current.Day()
+		for current.Before(endDate) || current.Equal(endDate) {
+			startTime := time.Date(
+				current.Year(), current.Month(), startDay,
+				series.StartTime.Hour(), series.StartTime.Minute(), series.StartTime.Second(), 0,
+				time.UTC,
+			)
+			endTime := time.Date(
+				current.Year(), current.Month(), startDay,
+				series.EndTime.Hour(), series.EndTime.Minute(), series.EndTime.Second(), 0,
+				time.UTC,
+			)
+
+			entry := entities.CalendarEntry{
+				TenantID:         tenantID,
+				UserID:           userID,
+				CalendarID:       series.CalendarID,
+				SeriesID:         &series.ID,
+				Title:            series.Title,
+				PositionInSeries: &position,
+				Participants:     series.Participants,
+				StartTime:        &startTime,
+				EndTime:          &endTime,
+				Type:             "recurring",
+				Description:      series.Description,
+				Location:         series.Location,
+				Timezone:         series.Timezone,
+				IsAllDay:         false,
+			}
+
+			if err := s.db.Create(&entry).Error; err != nil {
+				return nil, fmt.Errorf("failed to create entry at position %d: %w", position, err)
+			}
+
+			entries = append(entries, entry)
+			current = current.AddDate(0, series.IntervalValue, 0)
+			position++
+		}
+
+	case "yearly":
+		// Same date every year
+		for current.Before(endDate) || current.Equal(endDate) {
+			startTime := time.Date(
+				current.Year(), current.Month(), current.Day(),
+				series.StartTime.Hour(), series.StartTime.Minute(), series.StartTime.Second(), 0,
+				time.UTC,
+			)
+			endTime := time.Date(
+				current.Year(), current.Month(), current.Day(),
+				series.EndTime.Hour(), series.EndTime.Minute(), series.EndTime.Second(), 0,
+				time.UTC,
+			)
+
+			entry := entities.CalendarEntry{
+				TenantID:         tenantID,
+				UserID:           userID,
+				CalendarID:       series.CalendarID,
+				SeriesID:         &series.ID,
+				Title:            series.Title,
+				PositionInSeries: &position,
+				Participants:     series.Participants,
+				StartTime:        &startTime,
+				EndTime:          &endTime,
+				Type:             "recurring",
+				Description:      series.Description,
+				Location:         series.Location,
+				Timezone:         series.Timezone,
+				IsAllDay:         false,
+			}
+
+			if err := s.db.Create(&entry).Error; err != nil {
+				return nil, fmt.Errorf("failed to create entry at position %d: %w", position, err)
+			}
+
+			entries = append(entries, entry)
+			current = current.AddDate(series.IntervalValue, 0, 0)
+			position++
+		}
+
+	default:
+		return nil, fmt.Errorf("unsupported interval_type: %s", series.IntervalType)
+	}
+
+	return entries, nil
 }
 
 // GetCalendarSeriesByID returns a calendar series by ID
@@ -376,11 +574,14 @@ func (s *CalendarService) UpdateCalendarSeries(id, tenantID, userID uint, req en
 	if req.Participants != nil {
 		series.Participants = req.Participants
 	}
-	if req.Weekday != nil {
-		series.Weekday = *req.Weekday
+	if req.IntervalType != nil {
+		series.IntervalType = *req.IntervalType
 	}
-	if req.Interval != nil {
-		series.Interval = *req.Interval
+	if req.IntervalValue != nil {
+		series.IntervalValue = *req.IntervalValue
+	}
+	if req.LastDate != nil {
+		series.LastDate = req.LastDate
 	}
 	// Use new UTC timestamp fields if provided
 	if req.StartTime != nil {
@@ -419,6 +620,12 @@ func (s *CalendarService) DeleteCalendarSeries(id, tenantID, userID uint) error 
 		return fmt.Errorf("failed to get calendar series: %w", err)
 	}
 
+	// Delete all calendar entries associated with this series first
+	if err := s.db.Where("series_id = ? AND tenant_id = ? AND user_id = ?", id, tenantID, userID).Delete(&entities.CalendarEntry{}).Error; err != nil {
+		return fmt.Errorf("failed to delete series entries: %w", err)
+	}
+
+	// Then delete the series itself
 	if err := s.db.Delete(&series).Error; err != nil {
 		return fmt.Errorf("failed to delete calendar series: %w", err)
 	}

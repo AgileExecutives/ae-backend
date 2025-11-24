@@ -27,8 +27,9 @@ func NewRouteProvider(bookingHandler *handlers.BookingHandler, tokenMiddleware *
 
 // RegisterRoutes registers the booking management routes with the provided router group
 func (rp *RouteProvider) RegisterRoutes(router *gin.RouterGroup) {
-	// Public endpoint (no authentication) - just token validation
+	// Public endpoints (no authentication) - just token validation
 	router.GET("/booking/freeslots/:token", rp.tokenMiddleware.ValidateBookingToken(), rp.bookingHandler.GetFreeSlots)
+	router.GET("/client/:token", rp.tokenMiddleware.ValidateBookingToken(), rp.bookingHandler.GetClientByToken)
 
 	// Authenticated endpoints - wrap in auth middleware
 	authMiddleware := middleware.AuthMiddleware(rp.db)
@@ -65,5 +66,5 @@ func (rp *RouteProvider) GetMiddleware() []gin.HandlerFunc {
 
 // GetSwaggerTags returns swagger tags for the routes
 func (rp *RouteProvider) GetSwaggerTags() []string {
-	return []string{"booking-templates", "booking-slots"}
+	return []string{"booking"}
 }

@@ -78,10 +78,14 @@ func (s *FreeSlotsService) CalculateFreeSlots(req FreeSlotsRequest, template *en
 		WeeklyAvailability: weeklyAvailability,
 	}
 
+	// Convert template to response
+	templateResponse := template.ToResponse()
+
 	return &entities.FreeSlotsResponse{
 		Slots:     availableSlots,
 		MonthData: monthData,
 		Config:    config,
+		Template:  &templateResponse,
 	}, nil
 }
 
@@ -187,19 +191,13 @@ func (s *FreeSlotsService) generateAllSlots(req FreeSlotsRequest, template *enti
 			windowEndTime := time.Date(currentDate.Year(), currentDate.Month(), currentDate.Day(),
 				windowEnd.Hour(), windowEnd.Minute(), 0, 0, loc)
 
+			// Align initial slot start to allowed minutes if configured
+			if len(allowedMinutes) > 0 {
+				slotStart = alignToNextAllowed(slotStart)
+			}
+
 			// Generate slots
 			for slotStart.Before(windowEndTime) {
-				// Align to allowed start minutes if configured
-				if len(allowedMinutes) > 0 {
-					aligned := alignToNextAllowed(slotStart)
-					if !aligned.Equal(slotStart) {
-						slotStart = aligned
-					}
-					// If alignment pushes beyond window end, stop
-					if !slotStart.Before(windowEndTime) {
-						break
-					}
-				}
 
 				slotEnd := slotStart.Add(time.Duration(template.SlotDuration) * time.Minute)
 
@@ -234,8 +232,58 @@ func (s *FreeSlotsService) generateAllSlots(req FreeSlotsRequest, template *enti
 
 				slots = append(slots, slot)
 
-				// Move to next slot (with buffer time); alignment will be applied at loop start
-				slotStart = slotEnd.Add(time.Duration(template.BufferTime) * time.Minute)
+				// Move to next slot start time
+				if len(allowedMinutes) > 0 {
+					// When allowed minutes are configured, find the next allowed minute mark
+					// Buffer time determines minimum gap: if 0, slots can overlap; if >0, enforce gap
+					currentHour := slotStart.Hour()
+					found := false
+					
+					// If buffer time is 0, just find the next allowed minute after current start
+					// If buffer time > 0, find next allowed minute after (slotEnd + buffer)
+					var minNextStart time.Time
+					if template.BufferTime == 0 {
+						// Allow overlapping slots - just find next allowed minute mark
+						minNextStart = slotStart.Add(1 * time.Minute) // Just after current start
+					} else {
+						// Respect buffer time - next slot must start after current slot ends + buffer
+						minNextStart = slotEnd.Add(time.Duration(template.BufferTime) * time.Minute)
+					}
+					
+					// Try remaining allowed minutes in current hour
+					for _, am := range allowedMinutes {
+						nextTime := time.Date(slotStart.Year(), slotStart.Month(), slotStart.Day(), 
+							currentHour, am, 0, 0, slotStart.Location())
+						if (nextTime.After(minNextStart) || nextTime.Equal(minNextStart)) && nextTime.After(slotStart) {
+							slotStart = nextTime
+							found = true
+							break
+						}
+					}
+					
+					if !found {
+						// No allowed minute in current hour works, try next hours
+						for hour := currentHour + 1; hour < 24 && !found; hour++ {
+							for _, am := range allowedMinutes {
+								nextTime := time.Date(slotStart.Year(), slotStart.Month(), slotStart.Day(), 
+									hour, am, 0, 0, slotStart.Location())
+								if nextTime.After(minNextStart) || nextTime.Equal(minNextStart) {
+									slotStart = nextTime
+									found = true
+									break
+								}
+							}
+						}
+					}
+					
+					if !found {
+						// Couldn't find valid slot in this day, break the loop
+						break
+					}
+				} else {
+					// No allowed minutes restriction, advance by slot duration + buffer
+					slotStart = slotEnd.Add(time.Duration(template.BufferTime) * time.Minute)
+				}
 			}
 		}
 

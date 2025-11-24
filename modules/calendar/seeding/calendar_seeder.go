@@ -114,8 +114,8 @@ type CalendarTemplate struct {
 type RecurringSeriesTemplate struct {
 	Title              string                   `json:"title"`
 	Description        string                   `json:"description"`
-	Weekday            int                      `json:"weekday"`
-	Interval           int                      `json:"interval"`
+	IntervalType       string                   `json:"interval_type"`
+	IntervalValue      int                      `json:"interval_value"`
 	TimeStart          string                   `json:"time_start"`
 	TimeEnd            string                   `json:"time_end"`
 	Location           string                   `json:"location"`
@@ -207,14 +207,14 @@ func NewCalendarSeeder(db *gorm.DB) *CalendarSeeder {
 		},
 		RecurringTemplates: []RecurringSeriesTemplate{
 			{
-				Title:       "Weekly Supervision",
-				Description: "Weekly team supervision meeting",
-				Weekday:     1,
-				Interval:    1,
-				TimeStart:   "09:00",
-				TimeEnd:     "10:00",
-				Location:    "Supervision Room",
-				Type:        "supervision",
+				Title:         "Weekly Supervision",
+				Description:   "Weekly team supervision meeting",
+				IntervalType:  "weekly",
+				IntervalValue: 1,
+				TimeStart:     "09:00",
+				TimeEnd:       "10:00",
+				Location:      "Supervision Room",
+				Type:          "supervision",
 				Participants: []map[string]interface{}{
 					{"name": "Supervisor", "email": "supervisor@therapy.com"},
 					{"name": "Therapist", "email": "therapist@therapy.com"},
@@ -392,19 +392,20 @@ func (cs *CalendarSeeder) createRecurringSeries(calendar *entities.Calendar, sta
 			timeEnd.Hour(), timeEnd.Minute(), 0, 0, time.UTC)
 
 		series := &entities.CalendarSeries{
-			TenantID:     calendar.TenantID,
-			UserID:       calendar.UserID,
-			CalendarID:   calendar.ID,
-			Title:        template.Title,
-			Participants: participantsJSON,
-			Weekday:      template.Weekday,
-			Interval:     template.Interval,
-			StartTime:    &startTimeUTC,
-			EndTime:      &endTimeUTC,
-			Description:  template.Description,
-			Location:     template.Location,
-			Timezone:     "Europe/Berlin",
-			EntryUUID:    uuid.New().String(),
+			TenantID:      calendar.TenantID,
+			UserID:        calendar.UserID,
+			CalendarID:    calendar.ID,
+			Title:         template.Title,
+			Participants:  participantsJSON,
+			IntervalType:  template.IntervalType,
+			IntervalValue: template.IntervalValue,
+			LastDate:      &endDate,
+			StartTime:     &startTimeUTC,
+			EndTime:       &endTimeUTC,
+			Description:   template.Description,
+			Location:      template.Location,
+			Timezone:      "Europe/Berlin",
+			EntryUUID:     uuid.New().String(),
 		}
 
 		if err := cs.db.Create(series).Error; err != nil {
@@ -422,14 +423,17 @@ func (cs *CalendarSeeder) createRecurringSeries(calendar *entities.Calendar, sta
 
 // createSeriesEntries creates individual calendar entries for a recurring series
 func (cs *CalendarSeeder) createSeriesEntries(series *entities.CalendarSeries, startDate, endDate time.Time, eventType string) error {
-	current := startDate
-
-	// Find the first occurrence of the specified weekday
-	for current.Weekday() != time.Weekday(series.Weekday) {
-		current = current.AddDate(0, 0, 1)
+	if series.IntervalType != "weekly" {
+		// For now, only support weekly intervals in seeding
+		// Other interval types (monthly-date, monthly-day, yearly) can be added later
+		return nil
 	}
 
-	for current.Before(endDate) {
+	current := startDate
+	position := 1
+
+	// Weekly: advance to next occurrence based on interval_value
+	for current.Before(endDate) || current.Equal(endDate) {
 		// Create date and time (UTC)
 		eventDate := current
 
@@ -447,28 +451,30 @@ func (cs *CalendarSeeder) createSeriesEntries(series *entities.CalendarSeries, s
 		)
 
 		entry := &entities.CalendarEntry{
-			TenantID:     series.TenantID,
-			UserID:       series.UserID,
-			CalendarID:   series.CalendarID,
-			SeriesID:     &series.ID,
-			Title:        series.Title,
-			IsException:  false,
-			Participants: series.Participants,
-			StartTime:    &startTime,
-			EndTime:      &endTime,
-			Type:         eventType,
-			Description:  series.Description,
-			Location:     series.Location,
-			Timezone:     "Europe/Berlin",
-			IsAllDay:     false,
+			TenantID:         series.TenantID,
+			UserID:           series.UserID,
+			CalendarID:       series.CalendarID,
+			SeriesID:         &series.ID,
+			Title:            series.Title,
+			IsException:      false,
+			PositionInSeries: &position,
+			Participants:     series.Participants,
+			StartTime:        &startTime,
+			EndTime:          &endTime,
+			Type:             eventType,
+			Description:      series.Description,
+			Location:         series.Location,
+			Timezone:         "Europe/Berlin",
+			IsAllDay:         false,
 		}
 
 		if err := cs.db.Create(entry).Error; err != nil {
 			return fmt.Errorf("failed to create series entry: %w", err)
 		}
 
-		// Move to next occurrence (every N weeks based on interval)
-		current = current.AddDate(0, 0, 7*series.Interval)
+		// Move to next occurrence (every N weeks based on interval_value)
+		current = current.AddDate(0, 0, 7*series.IntervalValue)
+		position++
 	}
 
 	return nil
