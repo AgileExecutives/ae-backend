@@ -57,20 +57,20 @@ func createMockCalendarEntry(calendarID, seriesID uint) entities.CalendarEntry {
 	}
 
 	return entities.CalendarEntry{
-		ID:           1,
-		TenantID:     1,
-		UserID:       1,
-		CalendarID:   calendarID,
-		SeriesID:     seriesRef,
-		Title:        "Test Meeting",
-		StartTime:    &startTime,
-		EndTime:      &endTime,
-		Timezone:     "UTC",
-		Type:         "meeting",
-		Description:  "Test meeting description",
-		Location:     "Conference Room A",
-		CreatedAt:    time.Now(),
-		UpdatedAt:    time.Now(),
+		ID:          1,
+		TenantID:    1,
+		UserID:      1,
+		CalendarID:  calendarID,
+		SeriesID:    seriesRef,
+		Title:       "Test Meeting",
+		StartTime:   &startTime,
+		EndTime:     &endTime,
+		Timezone:    "UTC",
+		Type:        "meeting",
+		Description: "Test meeting description",
+		Location:    "Conference Room A",
+		CreatedAt:   time.Now(),
+		UpdatedAt:   time.Now(),
 	}
 }
 

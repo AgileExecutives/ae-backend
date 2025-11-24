@@ -63,7 +63,7 @@ type CalendarSeries struct {
 	Title                string          `gorm:"size:255;not null" json:"title" binding:"required" example:"Weekly Meeting"`
 	Participants         json.RawMessage `gorm:"type:json" json:"participants,omitempty" example:"[]"`
 	IntervalType         string          `gorm:"size:50;not null;default:'none'" json:"interval_type" example:"weekly"` // none, weekly, monthly-date, monthly-day, yearly
-	IntervalValue        int             `gorm:"not null;default:1" json:"interval_value" example:"2"`                    // number of intervals (e.g. weekly and 2 means every 2 weeks)
+	IntervalValue        int             `gorm:"not null;default:1" json:"interval_value" example:"2"`                  // number of intervals (e.g. weekly and 2 means every 2 weeks)
 	StartTime            *time.Time      `gorm:"column:start_time;type:timestamptz" json:"start_time,omitempty" example:"2025-11-04T09:00:00Z"`
 	EndTime              *time.Time      `gorm:"column:end_time;type:timestamptz" json:"end_time,omitempty" example:"2025-11-04T10:00:00Z"`
 	LastDate             *time.Time      `gorm:"column:last_date;type:timestamptz" json:"last_date,omitempty" example:"2025-12-31T23:59:59Z"` // end condition for recurring events
@@ -265,7 +265,7 @@ type CalendarSeriesResponse struct {
 
 // CalendarSeriesWithEntriesResponse represents the response for creating a series with auto-generated entries
 type CalendarSeriesWithEntriesResponse struct {
-	Series  CalendarSeriesResponse   `json:"series"`
+	Series  CalendarSeriesResponse  `json:"series"`
 	Entries []CalendarEntryResponse `json:"entries"`
 }
 

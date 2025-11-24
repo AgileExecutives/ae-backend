@@ -217,9 +217,9 @@ func (f *TestFixtures) CreateMockCalendarSeries() *entities.CalendarSeries {
 		LastDate:      &lastDate,
 		Description:   "Test Series Description",
 		Location:      "Test Location",
-		EntryUUID:   "test-series-uuid",
-		Sequence:    0,
-		CreatedAt:   time.Now(),
-		UpdatedAt:   time.Now(),
+		EntryUUID:     "test-series-uuid",
+		Sequence:      0,
+		CreatedAt:     time.Now(),
+		UpdatedAt:     time.Now(),
 	}
 }

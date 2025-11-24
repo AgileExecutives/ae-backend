@@ -238,7 +238,7 @@ func (s *FreeSlotsService) generateAllSlots(req FreeSlotsRequest, template *enti
 					// Buffer time determines minimum gap: if 0, slots can overlap; if >0, enforce gap
 					currentHour := slotStart.Hour()
 					found := false
-					
+
 					// If buffer time is 0, just find the next allowed minute after current start
 					// If buffer time > 0, find next allowed minute after (slotEnd + buffer)
 					var minNextStart time.Time
@@ -249,10 +249,10 @@ func (s *FreeSlotsService) generateAllSlots(req FreeSlotsRequest, template *enti
 						// Respect buffer time - next slot must start after current slot ends + buffer
 						minNextStart = slotEnd.Add(time.Duration(template.BufferTime) * time.Minute)
 					}
-					
+
 					// Try remaining allowed minutes in current hour
 					for _, am := range allowedMinutes {
-						nextTime := time.Date(slotStart.Year(), slotStart.Month(), slotStart.Day(), 
+						nextTime := time.Date(slotStart.Year(), slotStart.Month(), slotStart.Day(),
 							currentHour, am, 0, 0, slotStart.Location())
 						if (nextTime.After(minNextStart) || nextTime.Equal(minNextStart)) && nextTime.After(slotStart) {
 							slotStart = nextTime
@@ -260,12 +260,12 @@ func (s *FreeSlotsService) generateAllSlots(req FreeSlotsRequest, template *enti
 							break
 						}
 					}
-					
+
 					if !found {
 						// No allowed minute in current hour works, try next hours
 						for hour := currentHour + 1; hour < 24 && !found; hour++ {
 							for _, am := range allowedMinutes {
-								nextTime := time.Date(slotStart.Year(), slotStart.Month(), slotStart.Day(), 
+								nextTime := time.Date(slotStart.Year(), slotStart.Month(), slotStart.Day(),
 									hour, am, 0, 0, slotStart.Location())
 								if nextTime.After(minNextStart) || nextTime.Equal(minNextStart) {
 									slotStart = nextTime
@@ -275,7 +275,7 @@ func (s *FreeSlotsService) generateAllSlots(req FreeSlotsRequest, template *enti
 							}
 						}
 					}
-					
+
 					if !found {
 						// Couldn't find valid slot in this day, break the loop
 						break

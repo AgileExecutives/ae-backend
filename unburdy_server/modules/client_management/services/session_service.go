@@ -236,4 +236,3 @@ func (s *SessionService) BookSessions(req entities.BookSessionsRequest, tenantID
 
 	return &series.ID, sessions, nil
 }
-

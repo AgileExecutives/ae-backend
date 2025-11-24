@@ -76,31 +76,31 @@ type BookingTemplateResponse struct {
 // ToResponse converts BookingTemplate to BookingTemplateResponse
 func (bc *BookingTemplate) ToResponse() BookingTemplateResponse {
 	return BookingTemplateResponse{
-		ID:                  bc.ID,
-		UserID:              bc.UserID,
-		CalendarID:          bc.CalendarID,
-		TenantID:            bc.TenantID,
-		Name:                bc.Name,
-		Description:         bc.Description,
-		SlotDuration:        bc.SlotDuration,
-		BufferTime:          bc.BufferTime,
-		MaxSeriesBookings:   bc.MaxSeriesBookings,
-		AllowedIntervals:    bc.AllowedIntervals,
-		NumberOfIntervals:   bc.NumberOfIntervals,
-		WeeklyAvailability:  bc.WeeklyAvailability,
-		AdvanceBookingDays:  bc.AdvanceBookingDays,
-		MinNoticeHours:      bc.MinNoticeHours,
-		Timezone:            bc.Timezone,
-		MaxBookingsPerDay:   bc.MaxBookingsPerDay,
-		AllowBackToBack:     bc.AllowBackToBack,
-		BlockDates:          bc.BlockDates,
+		ID:                 bc.ID,
+		UserID:             bc.UserID,
+		CalendarID:         bc.CalendarID,
+		TenantID:           bc.TenantID,
+		Name:               bc.Name,
+		Description:        bc.Description,
+		SlotDuration:       bc.SlotDuration,
+		BufferTime:         bc.BufferTime,
+		MaxSeriesBookings:  bc.MaxSeriesBookings,
+		AllowedIntervals:   bc.AllowedIntervals,
+		NumberOfIntervals:  bc.NumberOfIntervals,
+		WeeklyAvailability: bc.WeeklyAvailability,
+		AdvanceBookingDays: bc.AdvanceBookingDays,
+		MinNoticeHours:     bc.MinNoticeHours,
+		Timezone:           bc.Timezone,
+		MaxBookingsPerDay:  bc.MaxBookingsPerDay,
+		AllowBackToBack:    bc.AllowBackToBack,
+		BlockDates:         bc.BlockDates,
 		AllowedStartMinutes: func() []int {
 			if bc.AllowedStartMinutes == nil {
 				return []int{}
 			}
 			return []int(bc.AllowedStartMinutes)
 		}(),
-		CreatedAt:           bc.CreatedAt.Format("2006-01-02T15:04:05Z07:00"),
-		UpdatedAt:           bc.UpdatedAt.Format("2006-01-02T15:04:05Z07:00"),
+		CreatedAt: bc.CreatedAt.Format("2006-01-02T15:04:05Z07:00"),
+		UpdatedAt: bc.UpdatedAt.Format("2006-01-02T15:04:05Z07:00"),
 	}
 }

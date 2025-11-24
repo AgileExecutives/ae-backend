@@ -503,18 +503,18 @@ func (h *BookingHandler) GetClientByToken(c *gin.Context) {
 
 	// Query client information from database
 	var client struct {
-		ID               uint       `json:"id"`
-		FirstName        string     `json:"first_name"`
-		LastName         string     `json:"last_name"`
-		Email            string     `json:"email"`
-		Phone            string     `json:"phone"`
-		DateOfBirth      *time.Time `json:"date_of_birth,omitempty"`
-		Gender           string     `json:"gender,omitempty"`
-		PrimaryLanguage  string     `json:"primary_language,omitempty"`
-		StreetAddress    string     `json:"street_address,omitempty"`
-		Zip              string     `json:"zip,omitempty"`
-		City             string     `json:"city,omitempty"`
-		Status           string     `json:"status"`
+		ID              uint       `json:"id"`
+		FirstName       string     `json:"first_name"`
+		LastName        string     `json:"last_name"`
+		Email           string     `json:"email"`
+		Phone           string     `json:"phone"`
+		DateOfBirth     *time.Time `json:"date_of_birth,omitempty"`
+		Gender          string     `json:"gender,omitempty"`
+		PrimaryLanguage string     `json:"primary_language,omitempty"`
+		StreetAddress   string     `json:"street_address,omitempty"`
+		Zip             string     `json:"zip,omitempty"`
+		City            string     `json:"city,omitempty"`
+		Status          string     `json:"status"`
 	}
 
 	err := h.db.Table("clients").

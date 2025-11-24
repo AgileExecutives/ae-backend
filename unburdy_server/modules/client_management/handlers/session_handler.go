@@ -325,4 +325,3 @@ func (h *SessionHandler) BookSessions(c *gin.Context) {
 
 	c.JSON(http.StatusCreated, baseAPI.SuccessResponse("Sessions booked successfully", response))
 }
-
