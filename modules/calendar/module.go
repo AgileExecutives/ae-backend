@@ -70,6 +70,7 @@ func (m *Module) Initialize(ctx core.ModuleContext) error {
 
 	// Initialize services
 	m.calendarService = services.NewCalendarService(ctx.DB)
+	m.calendarService.SetEventBus(ctx.EventBus)
 
 	// Initialize handlers
 	m.calendarHandler = handlers.NewCalendarHandler(m.calendarService)

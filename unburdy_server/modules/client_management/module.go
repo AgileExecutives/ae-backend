@@ -9,6 +9,7 @@ import (
 	"gorm.io/gorm"
 
 	"github.com/unburdy/unburdy-server-api/modules/client_management/entities"
+	"github.com/unburdy/unburdy-server-api/modules/client_management/events"
 	"github.com/unburdy/unburdy-server-api/modules/client_management/handlers"
 	"github.com/unburdy/unburdy-server-api/modules/client_management/routes"
 	"github.com/unburdy/unburdy-server-api/modules/client_management/services"
@@ -62,6 +63,7 @@ func (m *Module) GetEntitiesForMigration() []interface{} {
 // CoreModule implements the core.Module interface for bootstrap system integration
 type CoreModule struct {
 	db                  *gorm.DB
+	logger              core.Logger
 	clientHandlers      *handlers.ClientHandler
 	costProviderHandler *handlers.CostProviderHandler
 	sessionHandler      *handlers.SessionHandler
@@ -88,6 +90,7 @@ func (m *CoreModule) Dependencies() []string {
 func (m *CoreModule) Initialize(ctx core.ModuleContext) error {
 	ctx.Logger.Info("Initializing client management module...")
 	m.db = ctx.DB
+	m.logger = ctx.Logger
 
 	// Initialize modular services
 	clientService := services.NewClientService(ctx.DB)
@@ -133,7 +136,12 @@ func (m *CoreModule) Routes() []core.RouteProvider {
 }
 
 func (m *CoreModule) EventHandlers() []core.EventHandler {
-	return []core.EventHandler{}
+	if m.db == nil {
+		return []core.EventHandler{}
+	}
+	return []core.EventHandler{
+		events.NewCalendarEntryDeletedHandler(m.db, m.logger),
+	}
 }
 
 func (m *CoreModule) Services() []core.ServiceProvider {

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/ae-base-server/pkg/core"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 
@@ -12,12 +13,18 @@ import (
 )
 
 type CalendarService struct {
-	db *gorm.DB
+	db       *gorm.DB
+	eventBus core.EventBus
 }
 
 // NewCalendarService creates a new calendar service
 func NewCalendarService(db *gorm.DB) *CalendarService {
 	return &CalendarService{db: db}
+}
+
+// SetEventBus sets the event bus for the calendar service
+func (s *CalendarService) SetEventBus(eventBus core.EventBus) {
+	s.eventBus = eventBus
 }
 
 // Calendar CRUD Operations
@@ -290,6 +297,20 @@ func (s *CalendarService) DeleteCalendarEntry(id, tenantID, userID uint) error {
 
 	if err := s.db.Delete(&entry).Error; err != nil {
 		return fmt.Errorf("failed to delete calendar entry: %w", err)
+	}
+
+	// Publish calendar entry deleted event
+	if s.eventBus != nil {
+		event := map[string]interface{}{
+			"calendar_entry_id": entry.ID,
+			"tenant_id":         entry.TenantID,
+			"user_id":           entry.UserID,
+			"calendar_id":       entry.CalendarID,
+		}
+		if err := s.eventBus.Publish("calendar.entry.deleted", event); err != nil {
+			// Log error but don't fail the delete operation
+			fmt.Printf("Failed to publish calendar entry deleted event: %v\n", err)
+		}
 	}
 
 	return nil
