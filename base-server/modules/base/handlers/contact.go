@@ -40,7 +40,7 @@ func NewContactHandlers(db *gorm.DB, logger core.Logger) *ContactHandlers {
 // @Param type query string false "Filter by contact type (business, personal, etc)"
 // @Success 200 {object} models.APIResponse{data=models.ListResponse}
 // @Failure 500 {object} models.ErrorResponse
-// @Router /api/v1/contacts [get]
+// @Router /contacts [get]
 func (h *ContactHandlers) GetContacts(c *gin.Context) {
 	page, limit := utils.GetPaginationParams(c)
 	offset := utils.GetOffset(page, limit)
@@ -93,7 +93,7 @@ func (h *ContactHandlers) GetContacts(c *gin.Context) {
 // @Failure 400 {object} models.ErrorResponse
 // @Failure 404 {object} models.ErrorResponse
 // @Failure 500 {object} models.ErrorResponse
-// @Router /api/v1/contacts/{id} [get]
+// @Router /contacts/{id} [get]
 func (h *ContactHandlers) GetContact(c *gin.Context) {
 	id, err := utils.ValidateID(c, "id")
 	if err != nil {
@@ -123,7 +123,7 @@ func (h *ContactHandlers) GetContact(c *gin.Context) {
 // @Success 201 {object} models.APIResponse{data=models.ContactResponse}
 // @Failure 400 {object} models.ErrorResponse
 // @Failure 500 {object} models.ErrorResponse
-// @Router /api/v1/contacts [post]
+// @Router /contacts [post]
 func (h *ContactHandlers) CreateContact(c *gin.Context) {
 	var req models.ContactCreateRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -168,7 +168,7 @@ func (h *ContactHandlers) CreateContact(c *gin.Context) {
 // @Failure 400 {object} models.ErrorResponse
 // @Failure 404 {object} models.ErrorResponse
 // @Failure 500 {object} models.ErrorResponse
-// @Router /api/v1/contacts/{id} [put]
+// @Router /contacts/{id} [put]
 func (h *ContactHandlers) UpdateContact(c *gin.Context) {
 	id, err := utils.ValidateID(c, "id")
 	if err != nil {
@@ -244,7 +244,7 @@ func (h *ContactHandlers) UpdateContact(c *gin.Context) {
 // @Failure 400 {object} models.ErrorResponse
 // @Failure 404 {object} models.ErrorResponse
 // @Failure 500 {object} models.ErrorResponse
-// @Router /api/v1/contacts/{id} [delete]
+// @Router /contacts/{id} [delete]
 func (h *ContactHandlers) DeleteContact(c *gin.Context) {
 	id, err := utils.ValidateID(c, "id")
 	if err != nil {
@@ -277,7 +277,7 @@ func (h *ContactHandlers) DeleteContact(c *gin.Context) {
 // @Success 200 {object} models.APIResponse
 // @Failure 400 {object} models.ErrorResponse
 // @Failure 500 {object} models.ErrorResponse
-// @Router /api/v1/contacts/form [post]
+// @Router /contacts/form [post]
 func (h *ContactHandlers) SubmitContactForm(c *gin.Context) {
 	var req models.ContactFormRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -338,7 +338,7 @@ func (h *ContactHandlers) SubmitContactForm(c *gin.Context) {
 // @Security BearerAuth
 // @Success 200 {array} models.Newsletter
 // @Failure 500 {object} models.ErrorResponse
-// @Router /api/v1/contacts/newsletter [get]
+// @Router /contacts/newsletter [get]
 func (h *ContactHandlers) GetNewsletterSubscriptions(c *gin.Context) {
 	var newsletters []models.Newsletter
 	if err := h.db.Find(&newsletters).Error; err != nil {
@@ -360,7 +360,7 @@ func (h *ContactHandlers) GetNewsletterSubscriptions(c *gin.Context) {
 // @Failure 400 {object} models.ErrorResponse
 // @Failure 404 {object} models.ErrorResponse
 // @Failure 500 {object} models.ErrorResponse
-// @Router /api/v1/contacts/newsletter/{email} [delete]
+// @Router /contacts/newsletter/{email} [delete]
 func (h *ContactHandlers) UnsubscribeFromNewsletter(c *gin.Context) {
 	email := c.Query("email")
 	if email == "" {

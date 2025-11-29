@@ -631,8 +631,10 @@ func (s *CalendarService) UpdateCalendarSeries(id, tenantID, userID uint, req en
 	return &series, nil
 }
 
-// DeleteCalendarSeries soft deletes a calendar series
-func (s *CalendarService) DeleteCalendarSeries(id, tenantID, userID uint) error {
+// DeleteCalendarSeries soft deletes a calendar series with support for two modes:
+// 1. "all" - deletes the entire series and all associated entries
+// 2. "from_date" - deletes the series and entries from a specific date onwards
+func (s *CalendarService) DeleteCalendarSeries(id, tenantID, userID uint, req entities.DeleteCalendarSeriesRequest) error {
 	var series entities.CalendarSeries
 	if err := s.db.Where("id = ? AND tenant_id = ? AND user_id = ?", id, tenantID, userID).First(&series).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -641,6 +643,31 @@ func (s *CalendarService) DeleteCalendarSeries(id, tenantID, userID uint) error 
 		return fmt.Errorf("failed to get calendar series: %w", err)
 	}
 
+	// Validate request based on delete_mode
+	if req.DeleteMode == "from_date" {
+		if req.FromDate == nil {
+			return fmt.Errorf("from_date is required when delete_mode is 'from_date'")
+		}
+		// Ensure from_date is in UTC
+		fromDateUTC := req.FromDate.UTC()
+
+		// Delete entries from the specified date onwards
+		// Use start_time >= from_date to include entries starting on or after the date
+		if err := s.db.Where("series_id = ? AND tenant_id = ? AND user_id = ? AND start_time >= ?",
+			id, tenantID, userID, fromDateUTC).Delete(&entities.CalendarEntry{}).Error; err != nil {
+			return fmt.Errorf("failed to delete series entries from date: %w", err)
+		}
+
+		// Update the series last_date to end before the from_date
+		// This prevents new entries from being generated after this date
+		if err := s.db.Model(&series).Update("last_date", fromDateUTC.Add(-24*time.Hour)).Error; err != nil {
+			return fmt.Errorf("failed to update series last_date: %w", err)
+		}
+
+		return nil
+	}
+
+	// Default mode: "all" - delete all entries and the series itself
 	// Delete all calendar entries associated with this series first
 	if err := s.db.Where("series_id = ? AND tenant_id = ? AND user_id = ?", id, tenantID, userID).Delete(&entities.CalendarEntry{}).Error; err != nil {
 		return fmt.Errorf("failed to delete series entries: %w", err)

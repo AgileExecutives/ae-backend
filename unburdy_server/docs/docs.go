@@ -23,7 +23,7 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/api/v1/auth/change-password": {
+        "/auth/change-password": {
             "post": {
                 "security": [
                     {
@@ -83,7 +83,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/auth/forgot-password": {
+        "/auth/forgot-password": {
             "post": {
                 "description": "Send password reset email to user",
                 "consumes": [
@@ -129,7 +129,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/auth/login": {
+        "/auth/login": {
             "post": {
                 "description": "Authenticate user with username/email and password",
                 "consumes": [
@@ -188,7 +188,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/auth/logout": {
+        "/auth/logout": {
             "post": {
                 "security": [
                     {
@@ -229,7 +229,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/auth/me": {
+        "/auth/me": {
             "get": {
                 "security": [
                     {
@@ -276,7 +276,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/auth/new-password/{token}": {
+        "/auth/new-password/{token}": {
             "post": {
                 "description": "Reset user password with reset token",
                 "consumes": [
@@ -329,7 +329,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/auth/refresh": {
+        "/auth/refresh": {
             "post": {
                 "security": [
                     {
@@ -382,7 +382,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/auth/register": {
+        "/auth/register": {
             "post": {
                 "description": "Register a new user account",
                 "consumes": [
@@ -441,7 +441,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/auth/verify-email/{token}": {
+        "/auth/verify-email/{token}": {
             "get": {
                 "description": "Verify user email address with verification token",
                 "consumes": [
@@ -473,1639 +473,6 @@ const docTemplate = `{
                     },
                     "400": {
                         "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/v1/contacts": {
-            "get": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "Get paginated list of contacts with optional filters",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "contacts"
-                ],
-                "summary": "Get all contacts",
-                "operationId": "getContacts",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "default": 1,
-                        "description": "Page number",
-                        "name": "page",
-                        "in": "query"
-                    },
-                    {
-                        "type": "integer",
-                        "default": 20,
-                        "description": "Items per page",
-                        "name": "limit",
-                        "in": "query"
-                    },
-                    {
-                        "type": "boolean",
-                        "description": "Filter by active status",
-                        "name": "active",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "description": "Filter by contact type (business, personal, etc)",
-                        "name": "type",
-                        "in": "query"
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/github_com_ae-base-server_internal_models.APIResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ListResponse"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
-                        }
-                    }
-                }
-            },
-            "post": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "Create a new contact for the authenticated user",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "contacts"
-                ],
-                "summary": "Create new contact",
-                "operationId": "createContact",
-                "parameters": [
-                    {
-                        "description": "Contact data",
-                        "name": "contact",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/models.ContactCreateRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "201": {
-                        "description": "Created",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/github_com_ae-base-server_internal_models.APIResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/models.ContactResponse"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/v1/contacts/form": {
-            "post": {
-                "description": "Public endpoint to submit a contact form (no authentication required)",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "contacts"
-                ],
-                "summary": "Submit contact form",
-                "operationId": "submitContactForm",
-                "parameters": [
-                    {
-                        "description": "Contact form data",
-                        "name": "form",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ContactFormRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.APIResponse"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/v1/contacts/newsletter": {
-            "get": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "Get all newsletter subscriptions",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "contacts"
-                ],
-                "summary": "Get newsletter subscriptions",
-                "operationId": "getNewsletterSubscriptions",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/github_com_ae-base-server_internal_models.Newsletter"
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/v1/contacts/newsletter/{email}": {
-            "delete": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "Unsubscribe an email address from the newsletter",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "contacts"
-                ],
-                "summary": "Unsubscribe from newsletter",
-                "operationId": "unsubscribeFromNewsletter",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Email address to unsubscribe",
-                        "name": "email",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.APIResponse"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/v1/contacts/{id}": {
-            "get": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "Get a specific contact by ID",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "contacts"
-                ],
-                "summary": "Get contact by ID",
-                "operationId": "getContactById",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Contact ID (UUID)",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/github_com_ae-base-server_internal_models.APIResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/models.Contact"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
-                        }
-                    }
-                }
-            },
-            "put": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "Update an existing contact by ID",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "contacts"
-                ],
-                "summary": "Update contact",
-                "operationId": "updateContact",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Contact ID (UUID)",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "Updated contact data",
-                        "name": "contact",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/models.ContactUpdateRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/github_com_ae-base-server_internal_models.APIResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/models.ContactResponse"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
-                        }
-                    }
-                }
-            },
-            "delete": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "Soft delete a contact by ID",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "contacts"
-                ],
-                "summary": "Delete contact",
-                "operationId": "deleteContact",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Contact ID (UUID)",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.APIResponse"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/v1/customers": {
-            "get": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "Get a paginated list of all customers",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "customers"
-                ],
-                "summary": "Get all customers",
-                "operationId": "getCustomers",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "default": 1,
-                        "description": "Page number",
-                        "name": "page",
-                        "in": "query"
-                    },
-                    {
-                        "type": "integer",
-                        "default": 10,
-                        "description": "Items per page",
-                        "name": "limit",
-                        "in": "query"
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/github_com_ae-base-server_internal_models.APIResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ListResponse"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
-                        }
-                    }
-                }
-            },
-            "post": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "Create a new customer",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "customers"
-                ],
-                "summary": "Create a new customer",
-                "operationId": "createCustomer",
-                "parameters": [
-                    {
-                        "description": "Customer data",
-                        "name": "customer",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/models.CustomerRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "201": {
-                        "description": "Created",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/github_com_ae-base-server_internal_models.APIResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.CustomerResponse"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/v1/customers/{id}": {
-            "get": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "Get a specific customer by its ID",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "customers"
-                ],
-                "summary": "Get customer by ID",
-                "operationId": "getCustomerById",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "Customer ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/github_com_ae-base-server_internal_models.APIResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.CustomerResponse"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
-                        }
-                    }
-                }
-            },
-            "put": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "Update an existing customer by ID",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "customers"
-                ],
-                "summary": "Update a customer",
-                "operationId": "updateCustomer",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "Customer ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "Updated customer data",
-                        "name": "customer",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/models.CustomerRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/github_com_ae-base-server_internal_models.APIResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.CustomerResponse"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
-                        }
-                    }
-                }
-            },
-            "delete": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "Soft delete a customer by ID",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "customers"
-                ],
-                "summary": "Delete a customer",
-                "operationId": "deleteCustomer",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "Customer ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.APIResponse"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/v1/emails": {
-            "get": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "Get a paginated list of all emails",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "emails"
-                ],
-                "summary": "Get all emails",
-                "operationId": "getEmails",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "default": 1,
-                        "description": "Page number",
-                        "name": "page",
-                        "in": "query"
-                    },
-                    {
-                        "type": "integer",
-                        "default": 10,
-                        "description": "Items per page",
-                        "name": "limit",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "description": "Filter by email status",
-                        "name": "status",
-                        "in": "query"
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/github_com_ae-base-server_internal_models.APIResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ListResponse"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/v1/emails/send": {
-            "post": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "Create and queue an email for sending",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "emails"
-                ],
-                "summary": "Send an email",
-                "operationId": "sendEmail",
-                "parameters": [
-                    {
-                        "description": "Email send data",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.EmailSendRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "201": {
-                        "description": "Created",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/github_com_ae-base-server_internal_models.APIResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.EmailResponse"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/v1/emails/stats": {
-            "get": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "Get email statistics including counts by status",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "emails"
-                ],
-                "summary": "Get email statistics",
-                "operationId": "getEmailStats",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/github_com_ae-base-server_internal_models.APIResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "type": "object"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/v1/emails/{id}": {
-            "get": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "Get a specific email by its ID",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "emails"
-                ],
-                "summary": "Get email by ID",
-                "operationId": "getEmailById",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "Email ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/github_com_ae-base-server_internal_models.APIResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.EmailResponse"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/v1/health": {
-            "get": {
-                "description": "Check the health status of the API and database",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "health"
-                ],
-                "summary": "Health check",
-                "operationId": "healthCheck",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_ae-base-server_modules_base_models.HealthResponse"
-                        }
-                    },
-                    "503": {
-                        "description": "Service Unavailable",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_ae-base-server_modules_base_models.ErrorResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/v1/pdf/create": {
-            "post": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "Generate a PDF document based on a specified template and data",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "pdf"
-                ],
-                "summary": "Generate PDF from template",
-                "operationId": "createPdf",
-                "parameters": [
-                    {
-                        "description": "PDF generation request",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/github_com_ae-base-server_modules_pdf_handlers.PDFGenerateRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "PDF generated successfully",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_ae-base-server_modules_pdf_handlers.PDFGenerateResponse"
-                        }
-                    },
-                    "400": {
-                        "description": "Invalid request",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_ae-base-server_modules_pdf_handlers.ErrorResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Failed to generate PDF",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_ae-base-server_modules_pdf_handlers.ErrorResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/v1/ping": {
-            "get": {
-                "description": "Simple ping endpoint",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "health"
-                ],
-                "summary": "Ping check",
-                "operationId": "ping",
-                "responses": {
-                    "200": {
-                        "description": "pong",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/v1/plans": {
-            "get": {
-                "description": "Get a list of all available subscription plans",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "plans"
-                ],
-                "summary": "Get all plans",
-                "operationId": "getPlans",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/github_com_ae-base-server_internal_models.Plan"
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
-                        }
-                    }
-                }
-            },
-            "post": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "Create a new subscription plan (admin only)",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "plans"
-                ],
-                "summary": "Create a new plan",
-                "operationId": "createPlan",
-                "parameters": [
-                    {
-                        "description": "Plan data",
-                        "name": "plan",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/models.PlanRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "201": {
-                        "description": "Created",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/github_com_ae-base-server_internal_models.APIResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.Plan"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/v1/plans/{id}": {
-            "get": {
-                "description": "Get a specific subscription plan by its ID",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "plans"
-                ],
-                "summary": "Get plan by ID",
-                "operationId": "getPlanById",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "Plan ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/github_com_ae-base-server_internal_models.APIResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.Plan"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
-                        }
-                    }
-                }
-            },
-            "put": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "Update an existing subscription plan (admin only)",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "plans"
-                ],
-                "summary": "Update a plan",
-                "operationId": "updatePlan",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "Plan ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "Updated plan data",
-                        "name": "plan",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/models.PlanRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/github_com_ae-base-server_internal_models.APIResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.Plan"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
-                        }
-                    }
-                }
-            },
-            "delete": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "Delete a subscription plan (admin only)",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "plans"
-                ],
-                "summary": "Delete a plan",
-                "operationId": "deletePlan",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "Plan ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.APIResponse"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/v1/static": {
-            "get": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "Get a list of all JSON files available in the statics/json directory",
-                "tags": [
-                    "static"
-                ],
-                "summary": "List available static JSON files",
-                "operationId": "listStaticFiles",
-                "responses": {
-                    "200": {
-                        "description": "List of available JSON files",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": true
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": true
-                        }
-                    },
-                    "500": {
-                        "description": "Failed to read directory",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/api/v1/static/{filename}": {
-            "get": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "Securely serve JSON data files from statics/json directory only. Prevents access to other directories or file types.",
-                "tags": [
-                    "static"
-                ],
-                "summary": "Serve static JSON files (JSON only, security restricted)",
-                "operationId": "getStaticFile",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "example": "\"bundeslaender\"",
-                        "description": "JSON filename (without .json extension)",
-                        "name": "filename",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "JSON file content",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": true
-                        }
-                    },
-                    "400": {
-                        "description": "Invalid file name",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": true
-                        }
-                    },
-                    "404": {
-                        "description": "File not found",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Failed to read file",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/api/v1/user-settings": {
-            "get": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "Get settings for the authenticated user (creates default if not found)",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "user-settings"
-                ],
-                "summary": "Get user settings",
-                "operationId": "getUserSettings",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/github_com_ae-base-server_internal_models.APIResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/models.UserSettings"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
-                        }
-                    }
-                }
-            },
-            "put": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "Update settings for the authenticated user",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "user-settings"
-                ],
-                "summary": "Update user settings",
-                "operationId": "updateUserSettings",
-                "parameters": [
-                    {
-                        "description": "Updated settings",
-                        "name": "settings",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/models.UserSettingsUpdateRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/github_com_ae-base-server_internal_models.APIResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/models.UserSettings"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/v1/user-settings/reset": {
-            "post": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "Reset user settings to default values",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "user-settings"
-                ],
-                "summary": "Reset user settings",
-                "operationId": "resetUserSettings",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/github_com_ae-base-server_internal_models.APIResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/models.UserSettings"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
                         "schema": {
                             "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
                         }
@@ -3362,7 +1729,10 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "Delete a calendar series by ID",
+                "description": "Delete a calendar series with two options: 'all' deletes the entire series and all entries, 'from_date' deletes entries from a specific date onwards and updates the series end date. When using 'from_date' mode, provide the from_date in UTC ISO 8601 format (e.g., 2025-12-01T00:00:00Z).",
+                "consumes": [
+                    "application/json"
+                ],
                 "produces": [
                     "application/json"
                 ],
@@ -3378,6 +1748,15 @@ const docTemplate = `{
                         "name": "id",
                         "in": "path",
                         "required": true
+                    },
+                    {
+                        "description": "Delete options",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/entities.DeleteCalendarSeriesRequest"
+                        }
                     }
                 ],
                 "responses": {
@@ -4218,88 +2597,6 @@ const docTemplate = `{
                 }
             }
         },
-        "/clients/{client_id}/sessions": {
-            "get": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "Retrieve all sessions for a specific client with pagination",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "sessions"
-                ],
-                "summary": "Get sessions by client ID",
-                "operationId": "getSessionsByClient",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "Client ID",
-                        "name": "client_id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "integer",
-                        "default": 1,
-                        "description": "Page number",
-                        "name": "page",
-                        "in": "query"
-                    },
-                    {
-                        "type": "integer",
-                        "default": 10,
-                        "description": "Items per page",
-                        "name": "limit",
-                        "in": "query"
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/api.ListResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "type": "array",
-                                            "items": {
-                                                "$ref": "#/definitions/entities.SessionResponse"
-                                            }
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/api.APIResponse"
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "$ref": "#/definitions/api.APIResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/api.APIResponse"
-                        }
-                    }
-                }
-            }
-        },
         "/clients/{id}": {
             "get": {
                 "security": [
@@ -4528,6 +2825,563 @@ const docTemplate = `{
                         "description": "Internal server error",
                         "schema": {
                             "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.APIResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/clients/{id}/sessions": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Retrieve all sessions for a specific client with pagination",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "sessions"
+                ],
+                "summary": "Get sessions by client ID",
+                "operationId": "getSessionsByClient",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Client ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "default": 1,
+                        "description": "Page number",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 10,
+                        "description": "Items per page",
+                        "name": "limit",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/api.ListResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/entities.SessionResponse"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/api.APIResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/api.APIResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/api.APIResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/contacts": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Get paginated list of contacts with optional filters",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "contacts"
+                ],
+                "summary": "Get all contacts",
+                "operationId": "getContacts",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "default": 1,
+                        "description": "Page number",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 20,
+                        "description": "Items per page",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "Filter by active status",
+                        "name": "active",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by contact type (business, personal, etc)",
+                        "name": "type",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/github_com_ae-base-server_internal_models.APIResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ListResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Create a new contact for the authenticated user",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "contacts"
+                ],
+                "summary": "Create new contact",
+                "operationId": "createContact",
+                "parameters": [
+                    {
+                        "description": "Contact data",
+                        "name": "contact",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.ContactCreateRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/github_com_ae-base-server_internal_models.APIResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/models.ContactResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/contacts/form": {
+            "post": {
+                "description": "Public endpoint to submit a contact form (no authentication required)",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "contacts"
+                ],
+                "summary": "Submit contact form",
+                "operationId": "submitContactForm",
+                "parameters": [
+                    {
+                        "description": "Contact form data",
+                        "name": "form",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ContactFormRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.APIResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/contacts/newsletter": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Get all newsletter subscriptions",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "contacts"
+                ],
+                "summary": "Get newsletter subscriptions",
+                "operationId": "getNewsletterSubscriptions",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/github_com_ae-base-server_internal_models.Newsletter"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/contacts/newsletter/{email}": {
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Unsubscribe an email address from the newsletter",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "contacts"
+                ],
+                "summary": "Unsubscribe from newsletter",
+                "operationId": "unsubscribeFromNewsletter",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Email address to unsubscribe",
+                        "name": "email",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.APIResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/contacts/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Get a specific contact by ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "contacts"
+                ],
+                "summary": "Get contact by ID",
+                "operationId": "getContactById",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Contact ID (UUID)",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/github_com_ae-base-server_internal_models.APIResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/models.Contact"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Update an existing contact by ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "contacts"
+                ],
+                "summary": "Update contact",
+                "operationId": "updateContact",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Contact ID (UUID)",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Updated contact data",
+                        "name": "contact",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.ContactUpdateRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/github_com_ae-base-server_internal_models.APIResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/models.ContactResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Soft delete a contact by ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "contacts"
+                ],
+                "summary": "Delete contact",
+                "operationId": "deleteContact",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Contact ID (UUID)",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.APIResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
                         }
                     }
                 }
@@ -4955,6 +3809,522 @@ const docTemplate = `{
                 }
             }
         },
+        "/customers": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Get a paginated list of all customers",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "customers"
+                ],
+                "summary": "Get all customers",
+                "operationId": "getCustomers",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "default": 1,
+                        "description": "Page number",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 10,
+                        "description": "Items per page",
+                        "name": "limit",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/github_com_ae-base-server_internal_models.APIResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ListResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Create a new customer",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "customers"
+                ],
+                "summary": "Create a new customer",
+                "operationId": "createCustomer",
+                "parameters": [
+                    {
+                        "description": "Customer data",
+                        "name": "customer",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.CustomerRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/github_com_ae-base-server_internal_models.APIResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.CustomerResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/customers/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Get a specific customer by its ID",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "customers"
+                ],
+                "summary": "Get customer by ID",
+                "operationId": "getCustomerById",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Customer ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/github_com_ae-base-server_internal_models.APIResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.CustomerResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Update an existing customer by ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "customers"
+                ],
+                "summary": "Update a customer",
+                "operationId": "updateCustomer",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Customer ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Updated customer data",
+                        "name": "customer",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.CustomerRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/github_com_ae-base-server_internal_models.APIResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.CustomerResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Soft delete a customer by ID",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "customers"
+                ],
+                "summary": "Delete a customer",
+                "operationId": "deleteCustomer",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Customer ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.APIResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/emails": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Get a paginated list of all emails",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "emails"
+                ],
+                "summary": "Get all emails",
+                "operationId": "getEmails",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "default": 1,
+                        "description": "Page number",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 10,
+                        "description": "Items per page",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by email status",
+                        "name": "status",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/github_com_ae-base-server_internal_models.APIResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ListResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/emails/send": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Create and queue an email for sending",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "emails"
+                ],
+                "summary": "Send an email",
+                "operationId": "sendEmail",
+                "parameters": [
+                    {
+                        "description": "Email send data",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.EmailSendRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/github_com_ae-base-server_internal_models.APIResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.EmailResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/emails/stats": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Get email statistics including counts by status",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "emails"
+                ],
+                "summary": "Get email statistics",
+                "operationId": "getEmailStats",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/github_com_ae-base-server_internal_models.APIResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "object"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/emails/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Get a specific email by its ID",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "emails"
+                ],
+                "summary": "Get email by ID",
+                "operationId": "getEmailById",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Email ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/github_com_ae-base-server_internal_models.APIResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.EmailResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/external-calendars": {
             "get": {
                 "security": [
@@ -5298,6 +4668,360 @@ const docTemplate = `{
                 }
             }
         },
+        "/health": {
+            "get": {
+                "description": "Check the health status of the API and database",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "health"
+                ],
+                "summary": "Health check",
+                "operationId": "healthCheck",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_ae-base-server_modules_base_models.HealthResponse"
+                        }
+                    },
+                    "503": {
+                        "description": "Service Unavailable",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_ae-base-server_modules_base_models.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/pdf/create": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Generate a PDF document based on a specified template and data",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "pdf"
+                ],
+                "summary": "Generate PDF from template",
+                "operationId": "createPdf",
+                "parameters": [
+                    {
+                        "description": "PDF generation request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/github_com_ae-base-server_modules_pdf_handlers.PDFGenerateRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "PDF generated successfully",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_ae-base-server_modules_pdf_handlers.PDFGenerateResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_ae-base-server_modules_pdf_handlers.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to generate PDF",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_ae-base-server_modules_pdf_handlers.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/ping": {
+            "get": {
+                "description": "Simple ping endpoint",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "health"
+                ],
+                "summary": "Ping check",
+                "operationId": "ping",
+                "responses": {
+                    "200": {
+                        "description": "pong",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/plans": {
+            "get": {
+                "description": "Get a list of all available subscription plans",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "plans"
+                ],
+                "summary": "Get all plans",
+                "operationId": "getPlans",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/github_com_ae-base-server_internal_models.Plan"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Create a new subscription plan (admin only)",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "plans"
+                ],
+                "summary": "Create a new plan",
+                "operationId": "createPlan",
+                "parameters": [
+                    {
+                        "description": "Plan data",
+                        "name": "plan",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.PlanRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/github_com_ae-base-server_internal_models.APIResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.Plan"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/plans/{id}": {
+            "get": {
+                "description": "Get a specific subscription plan by its ID",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "plans"
+                ],
+                "summary": "Get plan by ID",
+                "operationId": "getPlanById",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Plan ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/github_com_ae-base-server_internal_models.APIResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.Plan"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Update an existing subscription plan (admin only)",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "plans"
+                ],
+                "summary": "Update a plan",
+                "operationId": "updatePlan",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Plan ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Updated plan data",
+                        "name": "plan",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.PlanRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/github_com_ae-base-server_internal_models.APIResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.Plan"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Delete a subscription plan (admin only)",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "plans"
+                ],
+                "summary": "Delete a plan",
+                "operationId": "deletePlan",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Plan ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.APIResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/sessions": {
             "get": {
                 "security": [
@@ -5448,7 +5172,7 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "Create a recurring calendar series and corresponding sessions for a client",
+                "description": "Create a recurring calendar series (if interval_type is provided) or a single calendar entry and corresponding sessions for a client. For single entries, omit interval_type or set it to \"none\". For recurring series, provide interval_type (weekly/monthly-date/monthly-day/yearly), interval_value, and last_date.",
                 "consumes": [
                     "application/json"
                 ],
@@ -5458,7 +5182,7 @@ const docTemplate = `{
                 "tags": [
                     "sessions"
                 ],
-                "summary": "Book multiple sessions",
+                "summary": "Book sessions for a client",
                 "operationId": "bookSessions",
                 "parameters": [
                     {
@@ -5498,6 +5222,149 @@ const docTemplate = `{
                     },
                     "401": {
                         "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/api.APIResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/api.APIResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/sessions/book/{token}": {
+            "post": {
+                "description": "Create sessions for a client using a booking token. This endpoint does NOT require authentication - the token itself is the authorization. The token contains client_id, calendar_id, tenant_id, and user_id.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "sessions"
+                ],
+                "summary": "Book sessions with token (public endpoint)",
+                "operationId": "bookSessionsWithToken",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Booking token (acts as authorization)",
+                        "name": "token",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Booking information (without client_id and calendar_id)",
+                        "name": "booking",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/entities.BookSessionsWithTokenRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/api.APIResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/entities.BookSessionsResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/api.APIResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Invalid or expired token",
+                        "schema": {
+                            "$ref": "#/definitions/api.APIResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/api.APIResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/sessions/by_entry/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Retrieve a session associated with a specific calendar entry",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "sessions"
+                ],
+                "summary": "Get session by calendar entry ID",
+                "operationId": "getSessionByCalendarEntry",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Calendar Entry ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/api.APIResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/entities.SessionResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/api.APIResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/api.APIResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
                         "schema": {
                             "$ref": "#/definitions/api.APIResponse"
                         }
@@ -5713,6 +5580,294 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/static": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Get a list of all JSON files available in the statics/json directory",
+                "tags": [
+                    "static"
+                ],
+                "summary": "List available static JSON files",
+                "operationId": "listStaticFiles",
+                "responses": {
+                    "200": {
+                        "description": "List of available JSON files",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to read directory",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/static/{filename}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Securely serve JSON data files from statics/json directory only. Prevents access to other directories or file types.",
+                "tags": [
+                    "static"
+                ],
+                "summary": "Serve static JSON files (JSON only, security restricted)",
+                "operationId": "getStaticFile",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "example": "\"bundeslaender\"",
+                        "description": "JSON filename (without .json extension)",
+                        "name": "filename",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "JSON file content",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid file name",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "404": {
+                        "description": "File not found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to read file",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/user-settings": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Get settings for the authenticated user (creates default if not found)",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "user-settings"
+                ],
+                "summary": "Get user settings",
+                "operationId": "getUserSettings",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/github_com_ae-base-server_internal_models.APIResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/models.UserSettings"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Update settings for the authenticated user",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "user-settings"
+                ],
+                "summary": "Update user settings",
+                "operationId": "updateUserSettings",
+                "parameters": [
+                    {
+                        "description": "Updated settings",
+                        "name": "settings",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.UserSettingsUpdateRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/github_com_ae-base-server_internal_models.APIResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/models.UserSettings"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/user-settings/reset": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Reset user settings to default values",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "user-settings"
+                ],
+                "summary": "Reset user settings",
+                "operationId": "resetUserSettings",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/github_com_ae-base-server_internal_models.APIResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/models.UserSettings"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
@@ -5747,8 +5902,6 @@ const docTemplate = `{
                 "client_id",
                 "duration_min",
                 "end_time",
-                "interval_type",
-                "interval_value",
                 "number_units",
                 "start_time",
                 "title",
@@ -5773,8 +5926,9 @@ const docTemplate = `{
                     "example": 60
                 },
                 "end_time": {
+                    "description": "UTC timestamp (RFC3339)",
                     "type": "string",
-                    "example": "2025-11-25T10:00:00Z"
+                    "example": "2025-11-26T10:00:00Z"
                 },
                 "interval_type": {
                     "type": "string",
@@ -5793,6 +5947,7 @@ const docTemplate = `{
                     "example": 1
                 },
                 "last_date": {
+                    "description": "UTC timestamp (RFC3339)",
                     "type": "string",
                     "example": "2025-12-31T23:59:59Z"
                 },
@@ -5806,10 +5961,12 @@ const docTemplate = `{
                     "example": 1
                 },
                 "start_time": {
+                    "description": "UTC timestamp (RFC3339)",
                     "type": "string",
-                    "example": "2025-11-25T09:00:00Z"
+                    "example": "2025-11-26T09:00:00Z"
                 },
                 "timezone": {
+                    "description": "For recurring events that follow local time",
                     "type": "string",
                     "example": "Europe/Berlin"
                 },
@@ -5834,6 +5991,81 @@ const docTemplate = `{
                     "items": {
                         "$ref": "#/definitions/entities.SessionResponse"
                     }
+                }
+            }
+        },
+        "entities.BookSessionsWithTokenRequest": {
+            "type": "object",
+            "required": [
+                "duration_min",
+                "end_time",
+                "number_units",
+                "start_time",
+                "title",
+                "type"
+            ],
+            "properties": {
+                "description": {
+                    "type": "string",
+                    "example": "Weekly therapy session"
+                },
+                "duration_min": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "example": 60
+                },
+                "end_time": {
+                    "description": "UTC timestamp (RFC3339)",
+                    "type": "string",
+                    "example": "2025-11-26T10:00:00Z"
+                },
+                "interval_type": {
+                    "type": "string",
+                    "enum": [
+                        "none",
+                        "weekly",
+                        "monthly-date",
+                        "monthly-day",
+                        "yearly"
+                    ],
+                    "example": "weekly"
+                },
+                "interval_value": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "example": 1
+                },
+                "last_date": {
+                    "description": "UTC timestamp (RFC3339)",
+                    "type": "string",
+                    "example": "2025-12-31T23:59:59Z"
+                },
+                "location": {
+                    "type": "string",
+                    "example": "Office 101"
+                },
+                "number_units": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "example": 1
+                },
+                "start_time": {
+                    "description": "UTC timestamp (RFC3339)",
+                    "type": "string",
+                    "example": "2025-11-26T09:00:00Z"
+                },
+                "timezone": {
+                    "description": "For recurring events that follow local time",
+                    "type": "string",
+                    "example": "Europe/Berlin"
+                },
+                "title": {
+                    "type": "string",
+                    "example": "Therapy Session"
+                },
+                "type": {
+                    "type": "string",
+                    "example": "therapy"
                 }
             }
         },
@@ -6563,6 +6795,8 @@ const docTemplate = `{
                 "client_id",
                 "duration_min",
                 "number_units",
+                "original_date",
+                "original_start_time",
                 "type"
             ],
             "properties": {
@@ -6587,6 +6821,16 @@ const docTemplate = `{
                     "type": "integer",
                     "minimum": 1,
                     "example": 1
+                },
+                "original_date": {
+                    "description": "UTC date from calendar entry",
+                    "type": "string",
+                    "example": "2025-11-26T00:00:00Z"
+                },
+                "original_start_time": {
+                    "description": "UTC start time from calendar entry",
+                    "type": "string",
+                    "example": "2025-11-26T10:00:00Z"
                 },
                 "status": {
                     "type": "string",
@@ -6630,6 +6874,28 @@ const docTemplate = `{
                 "status": {
                     "description": "\"available\", \"partial\", \"none\"",
                     "type": "string"
+                }
+            }
+        },
+        "entities.DeleteCalendarSeriesRequest": {
+            "type": "object",
+            "required": [
+                "delete_mode"
+            ],
+            "properties": {
+                "delete_mode": {
+                    "description": "DeleteMode specifies the deletion mode: \"all\" or \"from_date\"",
+                    "type": "string",
+                    "enum": [
+                        "all",
+                        "from_date"
+                    ],
+                    "example": "all"
+                },
+                "from_date": {
+                    "description": "FromDate is required when delete_mode is \"from_date\" - all entries from this date onwards will be deleted (UTC ISO 8601 format)",
+                    "type": "string",
+                    "example": "2025-12-01T00:00:00Z"
                 }
             }
         },
@@ -6802,6 +7068,7 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "calendar_entry_id": {
+                    "description": "Nullable - NULL if calendar entry was deleted",
                     "type": "integer"
                 },
                 "client_id": {
@@ -6821,6 +7088,14 @@ const docTemplate = `{
                 },
                 "number_units": {
                     "type": "integer"
+                },
+                "original_date": {
+                    "description": "UTC - Date of original calendar entry",
+                    "type": "string"
+                },
+                "original_start_time": {
+                    "description": "UTC - Start time from original calendar entry",
+                    "type": "string"
                 },
                 "status": {
                     "type": "string"
@@ -8576,52 +8851,16 @@ const docTemplate = `{
             "name": "authentication"
         },
         {
-            "description": "[Base Module] User account management operations within tenant context",
-            "name": "users"
-        },
-        {
-            "description": "[Base Module] Multi-tenant organization management and configuration",
-            "name": "tenants"
-        },
-        {
-            "description": "[Base Module] Public contact form submission and processing",
-            "name": "contact-form"
-        },
-        {
-            "description": "[Base Module] Newsletter subscription management and bulk operations",
-            "name": "newsletter"
-        },
-        {
-            "description": "[Customer Module] Customer relationship management and account operations",
-            "name": "customers"
-        },
-        {
-            "description": "[Customer Module] Subscription plan management and pricing configuration",
-            "name": "plans"
-        },
-        {
-            "description": "[Email Module] Email sending, tracking, and notification management with SMTP integration",
-            "name": "emails"
-        },
-        {
-            "description": "[PDF Module] Document generation from templates with ChromeDP integration",
-            "name": "pdf"
-        },
-        {
-            "description": "[System] Application health checks, system status, and monitoring endpoints",
-            "name": "health"
-        },
-        {
-            "description": "[System] Module registry, discovery, and runtime information endpoints",
-            "name": "modules"
-        },
-        {
             "description": "[Client Management Module] Client information management, therapy tracking, and client-specific operations",
             "name": "clients"
         },
         {
             "description": "[Client Management Module] Cost provider (insurance) management and approval tracking",
             "name": "cost-providers"
+        },
+        {
+            "description": "[Client Management Module] Session management, booking, and therapy session tracking",
+            "name": "sessions"
         },
         {
             "description": "[Calendar Module] Calendar management, scheduling, and event organization",
@@ -8644,16 +8883,12 @@ const docTemplate = `{
             "name": "calendar-views"
         },
         {
-            "description": "[Calendar Module] Availability checking and free slot discovery",
-            "name": "calendar-availability"
-        },
-        {
             "description": "[Calendar Module] Calendar utilities including holiday import and data management",
             "name": "calendar-utilities"
         },
         {
             "description": "[Booking Module] Booking template/configuration management for appointment scheduling",
-            "name": "booking-templates"
+            "name": "booking"
         }
     ]
 }`

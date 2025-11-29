@@ -31,7 +31,7 @@ func NewStaticHandlers(logger core.Logger) *StaticHandlers {
 // @Success 200 {object} map[string]interface{} "List of available JSON files"
 // @Failure 401 {object} map[string]interface{} "Unauthorized"
 // @Failure 500 {object} map[string]string "Failed to read directory"
-// @Router /api/v1/static [get]
+// @Router /static [get]
 func (h *StaticHandlers) ListStaticJSON(c *gin.Context) {
 	// Read the statics/json directory
 	entries, err := os.ReadDir("./statics/json")
@@ -73,7 +73,7 @@ func (h *StaticHandlers) ListStaticJSON(c *gin.Context) {
 // @Failure 401 {object} map[string]interface{} "Unauthorized"
 // @Failure 404 {object} map[string]string "File not found"
 // @Failure 500 {object} map[string]string "Failed to read file"
-// @Router /api/v1/static/{filename} [get]
+// @Router /static/{filename} [get]
 func (h *StaticHandlers) ServeStaticJSON(c *gin.Context) {
 	// Get the requested file name
 	fileName := c.Param("filename")

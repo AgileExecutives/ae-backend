@@ -31,7 +31,7 @@ func NewUserSettingsHandlers(db *gorm.DB, logger core.Logger) *UserSettingsHandl
 // @Success 200 {object} models.APIResponse{data=models.UserSettings}
 // @Failure 401 {object} models.ErrorResponse
 // @Failure 500 {object} models.ErrorResponse
-// @Router /api/v1/user-settings [get]
+// @Router /user-settings [get]
 func (h *UserSettingsHandlers) GetUserSettings(c *gin.Context) {
 	userID, exists := c.Get("userID")
 	if !exists {
@@ -75,7 +75,7 @@ func (h *UserSettingsHandlers) GetUserSettings(c *gin.Context) {
 // @Failure 400 {object} models.ErrorResponse
 // @Failure 401 {object} models.ErrorResponse
 // @Failure 500 {object} models.ErrorResponse
-// @Router /api/v1/user-settings [put]
+// @Router /user-settings [put]
 func (h *UserSettingsHandlers) UpdateUserSettings(c *gin.Context) {
 	userID, exists := c.Get("userID")
 	if !exists {
@@ -135,7 +135,7 @@ func (h *UserSettingsHandlers) UpdateUserSettings(c *gin.Context) {
 // @Failure 401 {object} models.ErrorResponse
 // @Failure 404 {object} models.ErrorResponse
 // @Failure 500 {object} models.ErrorResponse
-// @Router /api/v1/user-settings/reset [post]
+// @Router /user-settings/reset [post]
 func (h *UserSettingsHandlers) ResetUserSettings(c *gin.Context) {
 	userID, exists := c.Get("userID")
 	if !exists {

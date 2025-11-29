@@ -47,7 +47,7 @@ func NewAuthHandlers(db *gorm.DB, logger core.Logger) *AuthHandlers {
 // @Success 200 {object} models.APIResponse{data=models.LoginResponse}
 // @Failure 400 {object} models.ErrorResponse
 // @Failure 401 {object} models.ErrorResponse
-// @Router /api/v1/auth/login [post]
+// @Router /auth/login [post]
 func (h *AuthHandlers) Login(c *gin.Context) {
 	var req models.LoginRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -106,7 +106,7 @@ func (h *AuthHandlers) Login(c *gin.Context) {
 // @Success 201 {object} models.APIResponse{data=models.LoginResponse}
 // @Failure 400 {object} models.ErrorResponse
 // @Failure 409 {object} models.ErrorResponse
-// @Router /api/v1/auth/register [post]
+// @Router /auth/register [post]
 func (h *AuthHandlers) Register(c *gin.Context) {
 	var req models.UserCreateRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -320,7 +320,7 @@ func (h *AuthHandlers) Register(c *gin.Context) {
 // @Success 200 {object} models.APIResponse
 // @Failure 400 {object} models.ErrorResponse
 // @Failure 401 {object} models.ErrorResponse
-// @Router /api/v1/auth/logout [post]
+// @Router /auth/logout [post]
 func (h *AuthHandlers) Logout(c *gin.Context) {
 	// Get token from context (set by auth middleware)
 	tokenString, exists := c.Get("token")
@@ -372,7 +372,7 @@ func (h *AuthHandlers) Logout(c *gin.Context) {
 // @Success 200 {object} models.APIResponse{data=models.LoginResponse}
 // @Failure 400 {object} models.ErrorResponse
 // @Failure 401 {object} models.ErrorResponse
-// @Router /api/v1/auth/refresh [post]
+// @Router /auth/refresh [post]
 func (h *AuthHandlers) RefreshToken(c *gin.Context) {
 	// Get user from context
 	userInterface, exists := c.Get("user")
@@ -408,7 +408,7 @@ func (h *AuthHandlers) RefreshToken(c *gin.Context) {
 // @Security BearerAuth
 // @Success 200 {object} models.APIResponse{data=models.UserResponse}
 // @Failure 401 {object} models.ErrorResponse
-// @Router /api/v1/auth/me [get]
+// @Router /auth/me [get]
 func (h *AuthHandlers) Me(c *gin.Context) {
 	// Get user from context
 	userInterface, exists := c.Get("user")
@@ -437,7 +437,7 @@ func (h *AuthHandlers) Me(c *gin.Context) {
 // @Success 200 {object} models.APIResponse
 // @Failure 400 {object} models.ErrorResponse
 // @Failure 401 {object} models.ErrorResponse
-// @Router /api/v1/auth/change-password [post]
+// @Router /auth/change-password [post]
 func (h *AuthHandlers) ChangePassword(c *gin.Context) {
 	var req struct {
 		CurrentPassword string `json:"current_password" binding:"required"`
@@ -500,7 +500,7 @@ func (h *AuthHandlers) ChangePassword(c *gin.Context) {
 // @Param token path string true "Verification token"
 // @Success 200 {object} models.APIResponse
 // @Failure 400 {object} models.ErrorResponse
-// @Router /api/v1/auth/verify-email/{token} [get]
+// @Router /auth/verify-email/{token} [get]
 func (h *AuthHandlers) VerifyEmail(c *gin.Context) {
 	token := c.Param("token")
 	if token == "" {
@@ -552,7 +552,7 @@ func (h *AuthHandlers) VerifyEmail(c *gin.Context) {
 // @Param request body object{email=string} true "User email"
 // @Success 200 {object} models.APIResponse
 // @Failure 400 {object} models.ErrorResponse
-// @Router /api/v1/auth/forgot-password [post]
+// @Router /auth/forgot-password [post]
 func (h *AuthHandlers) ForgotPassword(c *gin.Context) {
 	var req struct {
 		Email string `json:"email" binding:"required,email"`
@@ -633,7 +633,7 @@ func (h *AuthHandlers) ForgotPassword(c *gin.Context) {
 // @Param request body object{new_password=string} true "New password"
 // @Success 200 {object} models.APIResponse
 // @Failure 400 {object} models.ErrorResponse
-// @Router /api/v1/auth/new-password/{token} [post]
+// @Router /auth/new-password/{token} [post]
 func (h *AuthHandlers) ResetPassword(c *gin.Context) {
 	token := c.Param("token")
 	if token == "" {

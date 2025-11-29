@@ -265,14 +265,18 @@ func TestCalendarService_DeleteCalendarSeries(t *testing.T) {
 		id            uint
 		tenantID      uint
 		userID        uint
+		req           entities.DeleteCalendarSeriesRequest
 		setupMock     func()
 		expectedError string
 	}{
 		{
-			name:     "successful series deletion",
+			name:     "successful series deletion - all mode",
 			id:       1,
 			tenantID: fixtures.TenantID,
 			userID:   fixtures.UserID,
+			req: entities.DeleteCalendarSeriesRequest{
+				DeleteMode: "all",
+			},
 			setupMock: func() {
 				mockSeries := fixtures.CreateMockCalendarSeries()
 
@@ -281,7 +285,7 @@ func TestCalendarService_DeleteCalendarSeries(t *testing.T) {
 				mockDB.On("First", mock.AnythingOfType("*entities.CalendarSeries")).Return(nil, true, mockSeries)
 
 				// Mock deleting related entries
-				mockDB.On("Where", "series_id = ?", uint(1)).Return(mockDB)
+				mockDB.On("Where", "series_id = ? AND tenant_id = ? AND user_id = ?", uint(1), fixtures.TenantID, fixtures.UserID).Return(mockDB)
 				mockDB.On("Delete", mock.AnythingOfType("*entities.CalendarEntry")).Return(nil)
 
 				// Mock deleting the series
@@ -294,6 +298,9 @@ func TestCalendarService_DeleteCalendarSeries(t *testing.T) {
 			id:       999,
 			tenantID: fixtures.TenantID,
 			userID:   fixtures.UserID,
+			req: entities.DeleteCalendarSeriesRequest{
+				DeleteMode: "all",
+			},
 			setupMock: func() {
 				mockDB.On("Where", "id = ? AND tenant_id = ? AND user_id = ?", uint(999), fixtures.TenantID, fixtures.UserID).Return(mockDB)
 				mockDB.On("First", mock.AnythingOfType("*entities.CalendarSeries")).Return(gorm.ErrRecordNotFound, false, nil)
@@ -312,7 +319,7 @@ func TestCalendarService_DeleteCalendarSeries(t *testing.T) {
 			tt.setupMock()
 
 			// Execute
-			err := service.DeleteCalendarSeries(tt.id, tt.tenantID, tt.userID)
+			err := service.DeleteCalendarSeries(tt.id, tt.tenantID, tt.userID, tt.req)
 
 			// Assert
 			if tt.expectedError != "" {

@@ -94,6 +94,43 @@ func (h *SessionHandler) GetSession(c *gin.Context) {
 	c.JSON(http.StatusOK, baseAPI.SuccessResponse("Session retrieved successfully", session.ToResponse()))
 }
 
+// GetSessionByCalendarEntry handles retrieving a session by calendar entry ID
+// @Summary Get session by calendar entry ID
+// @Description Retrieve a session associated with a specific calendar entry
+// @Tags sessions
+// @ID getSessionByCalendarEntry
+// @Produce json
+// @Security BearerAuth
+// @Param id path int true "Calendar Entry ID"
+// @Success 200 {object} baseAPI.APIResponse{data=entities.SessionResponse}
+// @Failure 400 {object} baseAPI.APIResponse
+// @Failure 401 {object} baseAPI.APIResponse
+// @Failure 404 {object} baseAPI.APIResponse
+// @Failure 500 {object} baseAPI.APIResponse
+// @Router /sessions/by_entry/{id} [get]
+func (h *SessionHandler) GetSessionByCalendarEntry(c *gin.Context) {
+	idStr := c.Param("id")
+	id, err := strconv.ParseUint(idStr, 10, 32)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, baseAPI.ErrorResponseFunc("Invalid request", "Invalid calendar entry ID"))
+		return
+	}
+
+	tenantID, err := baseAPI.GetTenantID(c)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, baseAPI.ErrorResponseFunc("Unauthorized", "Unable to get tenant ID: "+err.Error()))
+		return
+	}
+
+	session, err := h.sessionService.GetSessionByCalendarEntryID(uint(id), tenantID)
+	if err != nil {
+		c.JSON(http.StatusNotFound, baseAPI.ErrorResponseFunc("Not found", err.Error()))
+		return
+	}
+
+	c.JSON(http.StatusOK, baseAPI.SuccessResponse("Session retrieved successfully", session.ToResponse()))
+}
+
 // GetAllSessions handles retrieving all sessions with pagination
 // @Summary Get all sessions
 // @Description Retrieve all sessions with pagination
@@ -274,9 +311,9 @@ func (h *SessionHandler) DeleteSession(c *gin.Context) {
 	c.JSON(http.StatusOK, baseAPI.SuccessResponse("Session deleted successfully", nil))
 }
 
-// BookSessions creates a calendar series and sessions for a client
-// @Summary Book multiple sessions
-// @Description Create a recurring calendar series and corresponding sessions for a client
+// BookSessions creates a calendar series or single entry with sessions for a client
+// @Summary Book sessions for a client
+// @Description Create a recurring calendar series (if interval_type is provided) or a single calendar entry and corresponding sessions for a client. For single entries, omit interval_type or set it to "none". For recurring series, provide interval_type (weekly/monthly-date/monthly-day/yearly), interval_value, and last_date.
 // @Tags sessions
 // @ID bookSessions
 // @Accept json
@@ -319,7 +356,57 @@ func (h *SessionHandler) BookSessions(c *gin.Context) {
 	}
 
 	response := entities.BookSessionsResponse{
-		SeriesID: *seriesID,
+		SeriesID: seriesID,
+		Sessions: responses,
+	}
+
+	c.JSON(http.StatusCreated, baseAPI.SuccessResponse("Sessions booked successfully", response))
+}
+
+// BookSessionsWithToken creates sessions using a booking token
+// @Summary Book sessions with token (public endpoint)
+// @Description Create sessions for a client using a booking token. This endpoint does NOT require authentication - the token itself is the authorization. The token contains client_id, calendar_id, tenant_id, and user_id.
+// @Tags sessions
+// @ID bookSessionsWithToken
+// @Accept json
+// @Produce json
+// @Param token path string true "Booking token (acts as authorization)"
+// @Param booking body entities.BookSessionsWithTokenRequest true "Booking information (without client_id and calendar_id)"
+// @Success 201 {object} baseAPI.APIResponse{data=entities.BookSessionsResponse}
+// @Failure 400 {object} baseAPI.APIResponse
+// @Failure 404 {object} baseAPI.APIResponse "Invalid or expired token"
+// @Failure 500 {object} baseAPI.APIResponse
+// @Router /sessions/book/{token} [post]
+func (h *SessionHandler) BookSessionsWithToken(c *gin.Context) {
+	token := c.Param("token")
+	if token == "" {
+		c.JSON(http.StatusBadRequest, baseAPI.ErrorResponseFunc("Invalid request", "Token is required"))
+		return
+	}
+
+	var req entities.BookSessionsWithTokenRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, baseAPI.ErrorResponseFunc("Invalid request", err.Error()))
+		return
+	}
+
+	seriesID, sessions, err := h.sessionService.BookSessionsWithToken(token, req)
+	if err != nil {
+		if err.Error() == "invalid or expired booking token" {
+			c.JSON(http.StatusNotFound, baseAPI.ErrorResponseFunc("Invalid token", err.Error()))
+			return
+		}
+		c.JSON(http.StatusInternalServerError, baseAPI.ErrorResponseFunc("Internal server error", err.Error()))
+		return
+	}
+
+	responses := make([]entities.SessionResponse, len(sessions))
+	for i, session := range sessions {
+		responses[i] = session.ToResponse()
+	}
+
+	response := entities.BookSessionsResponse{
+		SeriesID: seriesID,
 		Sessions: responses,
 	}
 

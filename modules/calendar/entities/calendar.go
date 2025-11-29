@@ -182,6 +182,14 @@ type UpdateCalendarSeriesRequest struct {
 	ExternalUID   *string         `json:"external_uid,omitempty" example:"ext-123-updated"`
 }
 
+// DeleteCalendarSeriesRequest represents the request payload for deleting a calendar series
+type DeleteCalendarSeriesRequest struct {
+	// DeleteMode specifies the deletion mode: "all" or "from_date"
+	DeleteMode string `json:"delete_mode" binding:"required,oneof=all from_date" example:"all"`
+	// FromDate is required when delete_mode is "from_date" - all entries from this date onwards will be deleted (UTC ISO 8601 format)
+	FromDate *time.Time `json:"from_date,omitempty" example:"2025-12-01T00:00:00Z"`
+}
+
 // CreateExternalCalendarRequest represents the request payload for creating an external calendar
 type CreateExternalCalendarRequest struct {
 	CalendarID uint            `json:"calendar_id" binding:"required" example:"1"`

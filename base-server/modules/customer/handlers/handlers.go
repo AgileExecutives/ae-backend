@@ -36,7 +36,7 @@ func NewCustomerHandlers(db *gorm.DB, logger core.Logger) *CustomerHandlers {
 // @Param limit query int false "Items per page" default(10)
 // @Success 200 {object} models.APIResponse{data=models.ListResponse}
 // @Failure 400 {object} models.ErrorResponse
-// @Router /api/v1/customers [get]
+// @Router /customers [get]
 func (h *CustomerHandlers) GetCustomers(c *gin.Context) {
 	// Get user from context for tenant isolation
 	userInterface, exists := c.Get("user")
@@ -106,7 +106,7 @@ func (h *CustomerHandlers) GetCustomers(c *gin.Context) {
 // @Success 200 {object} models.APIResponse{data=models.CustomerResponse}
 // @Failure 400 {object} models.ErrorResponse
 // @Failure 404 {object} models.ErrorResponse
-// @Router /api/v1/customers/{id} [get]
+// @Router /customers/{id} [get]
 func (h *CustomerHandlers) GetCustomer(c *gin.Context) {
 	// Get user from context for tenant isolation
 	userInterface, exists := c.Get("user")
@@ -147,7 +147,7 @@ func (h *CustomerHandlers) GetCustomer(c *gin.Context) {
 // @Param customer body models.CustomerRequest true "Customer data"
 // @Success 201 {object} models.APIResponse{data=models.CustomerResponse}
 // @Failure 400 {object} models.ErrorResponse
-// @Router /api/v1/customers [post]
+// @Router /customers [post]
 func (h *CustomerHandlers) CreateCustomer(c *gin.Context) {
 	// Get user from context for tenant isolation
 	userInterface, exists := c.Get("user")
@@ -214,7 +214,7 @@ func (h *CustomerHandlers) CreateCustomer(c *gin.Context) {
 // @Success 200 {object} models.APIResponse{data=models.CustomerResponse}
 // @Failure 400 {object} models.ErrorResponse
 // @Failure 404 {object} models.ErrorResponse
-// @Router /api/v1/customers/{id} [put]
+// @Router /customers/{id} [put]
 func (h *CustomerHandlers) UpdateCustomer(c *gin.Context) {
 	// Get user from context for tenant isolation
 	userInterface, exists := c.Get("user")
@@ -315,7 +315,7 @@ func (h *CustomerHandlers) UpdateCustomer(c *gin.Context) {
 // @Success 200 {object} models.APIResponse
 // @Failure 400 {object} models.ErrorResponse
 // @Failure 404 {object} models.ErrorResponse
-// @Router /api/v1/customers/{id} [delete]
+// @Router /customers/{id} [delete]
 func (h *CustomerHandlers) DeleteCustomer(c *gin.Context) {
 	// Get user from context for tenant isolation
 	userInterface, exists := c.Get("user")
@@ -371,7 +371,7 @@ func NewPlanHandlers(db *gorm.DB, logger core.Logger) *PlanHandlers {
 // @Produce json
 // @Success 200 {array} models.Plan
 // @Failure 500 {object} models.ErrorResponse
-// @Router /api/v1/plans [get]
+// @Router /plans [get]
 func (h *PlanHandlers) GetPlans(c *gin.Context) {
 	page, limit := utils.GetPaginationParams(c)
 	offset := utils.GetOffset(page, limit)
@@ -431,7 +431,7 @@ func (h *PlanHandlers) GetPlans(c *gin.Context) {
 // @Success 200 {object} models.APIResponse{data=models.Plan}
 // @Failure 400 {object} models.ErrorResponse
 // @Failure 404 {object} models.ErrorResponse
-// @Router /api/v1/plans/{id} [get]
+// @Router /plans/{id} [get]
 func (h *PlanHandlers) GetPlan(c *gin.Context) {
 	id, err := utils.ValidateID(c, "id")
 	if err != nil {
@@ -463,7 +463,7 @@ func (h *PlanHandlers) GetPlan(c *gin.Context) {
 // @Param plan body models.PlanRequest true "Plan data"
 // @Success 201 {object} models.APIResponse{data=models.Plan}
 // @Failure 400 {object} models.ErrorResponse
-// @Router /api/v1/plans [post]
+// @Router /plans [post]
 func (h *PlanHandlers) CreatePlan(c *gin.Context) {
 	var req models.PlanCreateRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -531,7 +531,7 @@ func (h *PlanHandlers) CreatePlan(c *gin.Context) {
 // @Success 200 {object} models.APIResponse{data=models.Plan}
 // @Failure 400 {object} models.ErrorResponse
 // @Failure 404 {object} models.ErrorResponse
-// @Router /api/v1/plans/{id} [put]
+// @Router /plans/{id} [put]
 func (h *PlanHandlers) UpdatePlan(c *gin.Context) {
 	id, err := utils.ValidateID(c, "id")
 	if err != nil {
@@ -603,7 +603,7 @@ func (h *PlanHandlers) UpdatePlan(c *gin.Context) {
 // @Success 200 {object} models.APIResponse
 // @Failure 400 {object} models.ErrorResponse
 // @Failure 404 {object} models.ErrorResponse
-// @Router /api/v1/plans/{id} [delete]
+// @Router /plans/{id} [delete]
 func (h *PlanHandlers) DeletePlan(c *gin.Context) {
 	id, err := utils.ValidateID(c, "id")
 	if err != nil {

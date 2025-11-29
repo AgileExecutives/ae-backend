@@ -83,11 +83,13 @@ func (m *Module) Initialize(ctx core.ModuleContext) error {
 	// Use a JWT secret (should be configured via environment variable in production)
 	// For now, use a default that should be replaced in production
 	jwtSecret := "booking-link-secret-key-change-in-production"
-	ctx.Logger.Warn("Using default JWT secret for booking links. Set JWT_SECRET environment variable in production.")
 
-	// Initialize services
+	// Initialize services (bookingLinkService may already be created by the service provider)
 	m.bookingService = services.NewBookingService(ctx.DB)
-	m.bookingLinkService = services.NewBookingLinkService(ctx.DB, jwtSecret)
+	if m.bookingLinkService == nil {
+		ctx.Logger.Warn("Using default JWT secret for booking links. Set JWT_SECRET environment variable in production.")
+		m.bookingLinkService = services.NewBookingLinkService(ctx.DB, jwtSecret)
+	}
 	m.freeSlotsSvc = services.NewFreeSlotsService(ctx.DB)
 
 	// Initialize middleware
@@ -153,7 +155,33 @@ func (m *Module) Middleware() []core.MiddlewareProvider {
 
 // Services returns service providers
 func (m *Module) Services() []core.ServiceProvider {
-	return []core.ServiceProvider{}
+	return []core.ServiceProvider{
+		&bookingLinkServiceProvider{module: m},
+	}
+}
+
+// bookingLinkServiceProvider implements core.ServiceProvider for BookingLinkService
+type bookingLinkServiceProvider struct {
+	module *Module
+}
+
+func (p *bookingLinkServiceProvider) ServiceName() string {
+	return "booking-link-service"
+}
+
+func (p *bookingLinkServiceProvider) ServiceInterface() interface{} {
+	return p.module.bookingLinkService
+}
+
+func (p *bookingLinkServiceProvider) Factory(ctx core.ModuleContext) (interface{}, error) {
+	// Create the service here during the factory call
+	// Use a JWT secret (should be configured via environment variable in production)
+	jwtSecret := "booking-link-secret-key-change-in-production"
+	ctx.Logger.Warn("Creating booking link service with default JWT secret. Set JWT_SECRET environment variable in production.")
+
+	// Create and store the service in the module for later use
+	p.module.bookingLinkService = services.NewBookingLinkService(ctx.DB, jwtSecret)
+	return p.module.bookingLinkService, nil
 }
 
 // SwaggerPaths returns Swagger documentation paths

@@ -8,6 +8,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 
+	bookingServices "github.com/unburdy/booking-module/services"
 	"github.com/unburdy/unburdy-server-api/modules/client_management/entities"
 	"github.com/unburdy/unburdy-server-api/modules/client_management/events"
 	"github.com/unburdy/unburdy-server-api/modules/client_management/handlers"
@@ -43,7 +44,8 @@ func NewModule(db *gorm.DB) baseAPI.ModuleRouteProvider {
 // RegisterRoutes implements baseAPI.ModuleRouteProvider
 func (m *Module) RegisterRoutes(router *gin.RouterGroup) {
 	// Directly call the method to avoid any interface conflicts
-	m.routeProvider.RegisterRoutes(router)
+	// Pass nil context since old interface doesn't support public routes
+	m.routeProvider.RegisterRoutes(router, nil)
 }
 
 // GetPrefix implements baseAPI.ModuleRouteProvider
@@ -84,7 +86,7 @@ func (m *CoreModule) Version() string {
 }
 
 func (m *CoreModule) Dependencies() []string {
-	return []string{"base"} // Depends on base module for users/tenants
+	return []string{"base", "booking"} // Depends on base module for users/tenants and booking for token validation
 }
 
 func (m *CoreModule) Initialize(ctx core.ModuleContext) error {
@@ -96,6 +98,21 @@ func (m *CoreModule) Initialize(ctx core.ModuleContext) error {
 	clientService := services.NewClientService(ctx.DB)
 	costProviderService := services.NewCostProviderService(ctx.DB)
 	sessionService := services.NewSessionService(ctx.DB)
+
+	// Try to get booking link service from service registry (if available)
+	// This is optional - if booking module isn't loaded, token booking won't work
+	if bookingLinkSvcRaw, ok := ctx.Services.Get("booking-link-service"); ok {
+		ctx.Logger.Info("Booking link service found in registry, injecting into session service")
+		// Type assert to the actual BookingLinkService type
+		if bookingLinkSvc, ok := bookingLinkSvcRaw.(*bookingServices.BookingLinkService); ok {
+			sessionService.SetBookingLinkService(bookingLinkSvc)
+			ctx.Logger.Info("Successfully injected booking link service into session service")
+		} else {
+			ctx.Logger.Error("Booking link service found but type assertion failed")
+		}
+	} else {
+		ctx.Logger.Warn("Booking link service not found in registry - token-based booking will not be available")
+	}
 
 	// Initialize handlers
 	m.clientHandlers = handlers.NewClientHandler(clientService)
@@ -166,7 +183,7 @@ type clientManagementRouteAdapter struct {
 }
 
 func (a *clientManagementRouteAdapter) RegisterRoutes(router *gin.RouterGroup, ctx core.ModuleContext) {
-	a.provider.RegisterRoutes(router)
+	a.provider.RegisterRoutes(router, &ctx)
 }
 
 func (a *clientManagementRouteAdapter) GetPrefix() string {

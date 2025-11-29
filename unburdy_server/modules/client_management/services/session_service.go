@@ -7,18 +7,25 @@ import (
 
 	"gorm.io/gorm"
 
+	bookingServices "github.com/unburdy/booking-module/services"
 	calendarEntities "github.com/unburdy/calendar-module/entities"
 	calendarServices "github.com/unburdy/calendar-module/services"
 	"github.com/unburdy/unburdy-server-api/modules/client_management/entities"
 )
 
 type SessionService struct {
-	db *gorm.DB
+	db                 *gorm.DB
+	bookingLinkService *bookingServices.BookingLinkService
 }
 
 // NewSessionService creates a new session service
 func NewSessionService(db *gorm.DB) *SessionService {
 	return &SessionService{db: db}
+}
+
+// SetBookingLinkService sets the booking link service for token validation
+func (s *SessionService) SetBookingLinkService(bookingLinkService *bookingServices.BookingLinkService) {
+	s.bookingLinkService = bookingLinkService
 }
 
 // CreateSession creates a new session
@@ -32,21 +39,35 @@ func (s *SessionService) CreateSession(req entities.CreateSessionRequest, tenant
 		return nil, fmt.Errorf("failed to verify client: %w", err)
 	}
 
+	// Parse original date and start time (UTC)
+	originalDate, err := time.Parse(time.RFC3339, req.OriginalDate)
+	if err != nil {
+		return nil, fmt.Errorf("invalid original_date format (expected RFC3339/UTC): %w", err)
+	}
+
+	originalStartTime, err := time.Parse(time.RFC3339, req.OriginalStartTime)
+	if err != nil {
+		return nil, fmt.Errorf("invalid original_start_time format (expected RFC3339/UTC): %w", err)
+	}
+
 	// Set default status if not provided
 	status := req.Status
 	if status == "" {
 		status = "scheduled"
 	}
 
+	calendarEntryID := req.CalendarEntryID
 	session := entities.Session{
-		TenantID:        tenantID,
-		ClientID:        req.ClientID,
-		CalendarEntryID: req.CalendarEntryID,
-		DurationMin:     req.DurationMin,
-		Type:            req.Type,
-		NumberUnits:     req.NumberUnits,
-		Status:          status,
-		Documentation:   req.Documentation,
+		TenantID:          tenantID,
+		ClientID:          req.ClientID,
+		CalendarEntryID:   &calendarEntryID,
+		OriginalDate:      originalDate.UTC(),
+		OriginalStartTime: originalStartTime.UTC(),
+		DurationMin:       req.DurationMin,
+		Type:              req.Type,
+		NumberUnits:       req.NumberUnits,
+		Status:            status,
+		Documentation:     req.Documentation,
 	}
 
 	if err := s.db.Create(&session).Error; err != nil {
@@ -56,19 +77,31 @@ func (s *SessionService) CreateSession(req entities.CreateSessionRequest, tenant
 	return &session, nil
 }
 
-// GetSessionByID returns a session by ID
+// GetSessionByID retrieves a session by ID
 func (s *SessionService) GetSessionByID(id, tenantID uint) (*entities.Session, error) {
 	var session entities.Session
 	if err := s.db.Where("id = ? AND tenant_id = ?", id, tenantID).First(&session).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, fmt.Errorf("session with ID %d not found", id)
 		}
-		return nil, fmt.Errorf("failed to fetch session: %w", err)
+		return nil, fmt.Errorf("failed to get session: %w", err)
 	}
 	return &session, nil
 }
 
-// GetAllSessions returns all sessions for a tenant with pagination
+// GetSessionByCalendarEntryID retrieves a session by calendar entry ID
+func (s *SessionService) GetSessionByCalendarEntryID(calendarEntryID, tenantID uint) (*entities.Session, error) {
+	var session entities.Session
+	if err := s.db.Where("calendar_entry_id = ? AND tenant_id = ?", calendarEntryID, tenantID).First(&session).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, fmt.Errorf("session with calendar entry ID %d not found", calendarEntryID)
+		}
+		return nil, fmt.Errorf("failed to get session: %w", err)
+	}
+	return &session, nil
+}
+
+// GetAllSessions retrieves all sessions with pagination
 func (s *SessionService) GetAllSessions(page, limit int, tenantID uint) ([]entities.Session, int, error) {
 	var sessions []entities.Session
 	var total int64
@@ -167,62 +200,127 @@ func (s *SessionService) BookSessions(req entities.BookSessionsRequest, tenantID
 		return nil, nil, fmt.Errorf("failed to verify client: %w", err)
 	}
 
-	// Parse time fields
+	// Verify calendar exists and user has access to it
+	var calendar struct {
+		ID       uint
+		TenantID uint
+		UserID   uint
+	}
+	if err := s.db.Table("calendars").
+		Select("id, tenant_id, user_id").
+		Where("id = ? AND tenant_id = ? AND user_id = ? AND deleted_at IS NULL", req.CalendarID, tenantID, userID).
+		First(&calendar).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, nil, fmt.Errorf("calendar with ID %d not found or access denied", req.CalendarID)
+		}
+		return nil, nil, fmt.Errorf("failed to verify calendar: %w", err)
+	}
+
+	// Parse time fields and ensure UTC
 	var startTime, endTime, lastDate *time.Time
 
 	if st, err := time.Parse(time.RFC3339, req.StartTime); err == nil {
-		startTime = &st
+		utcTime := st.UTC()
+		startTime = &utcTime
 	} else {
-		return nil, nil, fmt.Errorf("invalid start_time format: %w", err)
+		return nil, nil, fmt.Errorf("invalid start_time format (expected RFC3339/UTC): %w", err)
 	}
 
 	if et, err := time.Parse(time.RFC3339, req.EndTime); err == nil {
-		endTime = &et
+		utcTime := et.UTC()
+		endTime = &utcTime
 	} else {
-		return nil, nil, fmt.Errorf("invalid end_time format: %w", err)
+		return nil, nil, fmt.Errorf("invalid end_time format (expected RFC3339/UTC): %w", err)
 	}
 
 	if req.LastDate != "" {
 		if ld, err := time.Parse(time.RFC3339, req.LastDate); err == nil {
-			lastDate = &ld
+			utcTime := ld.UTC()
+			lastDate = &utcTime
 		} else {
-			return nil, nil, fmt.Errorf("invalid last_date format: %w", err)
+			return nil, nil, fmt.Errorf("invalid last_date format (expected RFC3339/UTC): %w", err)
 		}
 	}
 
-	// Create calendar series request
-	seriesReq := calendarEntities.CreateCalendarSeriesRequest{
-		CalendarID:    req.CalendarID,
-		Title:         req.Title,
-		IntervalType:  req.IntervalType,
-		IntervalValue: req.IntervalValue,
-		LastDate:      lastDate,
-		StartTime:     startTime,
-		EndTime:       endTime,
-		Description:   req.Description,
-		Location:      req.Location,
-		Timezone:      req.Timezone,
-	}
-
-	// Call calendar service to create series with entries
 	calendarService := calendarServices.NewCalendarService(s.db)
-	series, entries, err := calendarService.CreateCalendarSeriesWithEntries(seriesReq, tenantID, userID)
-	if err != nil {
-		return nil, nil, fmt.Errorf("failed to create calendar series: %w", err)
+	var entries []calendarEntities.CalendarEntry
+	var seriesID *uint
+
+	// Check if this is a recurring series or a single entry
+	if req.IntervalType != "" && req.IntervalType != "none" {
+		// Create recurring series with multiple entries
+		seriesReq := calendarEntities.CreateCalendarSeriesRequest{
+			CalendarID:    req.CalendarID,
+			Title:         req.Title,
+			IntervalType:  req.IntervalType,
+			IntervalValue: req.IntervalValue,
+			LastDate:      lastDate,
+			StartTime:     startTime,
+			EndTime:       endTime,
+			Description:   req.Description,
+			Location:      req.Location,
+			Timezone:      req.Timezone,
+		}
+
+		series, generatedEntries, err := calendarService.CreateCalendarSeriesWithEntries(seriesReq, tenantID, userID)
+		if err != nil {
+			return nil, nil, fmt.Errorf("failed to create calendar series: %w", err)
+		}
+		seriesID = &series.ID
+		entries = generatedEntries
+	} else {
+		// Create single calendar entry (no series)
+		entryReq := calendarEntities.CreateCalendarEntryRequest{
+			CalendarID:  req.CalendarID,
+			Title:       req.Title,
+			StartTime:   startTime,
+			EndTime:     endTime,
+			Description: req.Description,
+			Location:    req.Location,
+			Timezone:    req.Timezone,
+		}
+
+		entry, err := calendarService.CreateCalendarEntry(entryReq, tenantID, userID)
+		if err != nil {
+			return nil, nil, fmt.Errorf("failed to create calendar entry: %w", err)
+		}
+		entries = []calendarEntities.CalendarEntry{*entry}
 	}
 
 	// Create sessions for each calendar entry
 	var sessions []entities.Session
 	for _, entry := range entries {
+		// Extract original date and start time from calendar entry
+		// Ensure they are in UTC
+		var originalDate, originalStartTime time.Time
+		if entry.StartTime != nil {
+			originalStartTime = entry.StartTime.UTC()
+			// Set original date to the date part of start time (at midnight UTC)
+			originalDate = time.Date(
+				entry.StartTime.Year(),
+				entry.StartTime.Month(),
+				entry.StartTime.Day(),
+				0, 0, 0, 0, time.UTC,
+			)
+		} else {
+			// Fallback if start time is not set (shouldn't happen)
+			now := time.Now().UTC()
+			originalStartTime = now
+			originalDate = time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, time.UTC)
+		}
+
+		entryID := entry.ID
 		session := entities.Session{
-			TenantID:        tenantID,
-			ClientID:        req.ClientID,
-			CalendarEntryID: entry.ID,
-			DurationMin:     req.DurationMin,
-			Type:            req.Type,
-			NumberUnits:     req.NumberUnits,
-			Status:          "scheduled",
-			Documentation:   "",
+			TenantID:          tenantID,
+			ClientID:          req.ClientID,
+			CalendarEntryID:   &entryID,
+			OriginalDate:      originalDate,
+			OriginalStartTime: originalStartTime,
+			DurationMin:       req.DurationMin,
+			Type:              req.Type,
+			NumberUnits:       req.NumberUnits,
+			Status:            "scheduled",
+			Documentation:     "",
 		}
 
 		if err := s.db.Create(&session).Error; err != nil {
@@ -234,5 +332,40 @@ func (s *SessionService) BookSessions(req entities.BookSessionsRequest, tenantID
 		sessions = append(sessions, session)
 	}
 
-	return &series.ID, sessions, nil
+	return seriesID, sessions, nil
+}
+
+// BookSessionsWithToken creates sessions using a booking token (retrieves client_id and calendar_id from token)
+func (s *SessionService) BookSessionsWithToken(token string, req entities.BookSessionsWithTokenRequest) (*uint, []entities.Session, error) {
+	// Validate the booking link service is configured
+	if s.bookingLinkService == nil {
+		return nil, nil, fmt.Errorf("booking link service not configured")
+	}
+
+	// Validate the token using the booking link service
+	claims, err := s.bookingLinkService.ValidateBookingLink(token)
+	if err != nil {
+		return nil, nil, fmt.Errorf("invalid or expired booking token: %w", err)
+	}
+
+	// Create the full BookSessionsRequest with data from token claims
+	fullReq := entities.BookSessionsRequest{
+		ClientID:      claims.ClientID,
+		CalendarID:    claims.CalendarID,
+		Title:         req.Title,
+		Description:   req.Description,
+		IntervalType:  req.IntervalType,
+		IntervalValue: req.IntervalValue,
+		LastDate:      req.LastDate,
+		StartTime:     req.StartTime,
+		EndTime:       req.EndTime,
+		DurationMin:   req.DurationMin,
+		Type:          req.Type,
+		NumberUnits:   req.NumberUnits,
+		Location:      req.Location,
+		Timezone:      req.Timezone,
+	}
+
+	// Use the existing BookSessions method with tenant and user from token
+	return s.BookSessions(fullReq, claims.TenantID, claims.UserID)
 }

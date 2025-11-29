@@ -41,41 +41,14 @@ import (
 // @tag.name authentication
 // @tag.description [Base Module] Authentication and user management endpoints including login, registration, password reset, and token management
 
-// @tag.name users
-// @tag.description [Base Module] User account management operations within tenant context
-
-// @tag.name tenants
-// @tag.description [Base Module] Multi-tenant organization management and configuration
-
-// @tag.name contact-form
-// @tag.description [Base Module] Public contact form submission and processing
-
-// @tag.name newsletter
-// @tag.description [Base Module] Newsletter subscription management and bulk operations
-
-// @tag.name customers
-// @tag.description [Customer Module] Customer relationship management and account operations
-
-// @tag.name plans
-// @tag.description [Customer Module] Subscription plan management and pricing configuration
-
-// @tag.name emails
-// @tag.description [Email Module] Email sending, tracking, and notification management with SMTP integration
-
-// @tag.name pdf
-// @tag.description [PDF Module] Document generation from templates with ChromeDP integration
-
-// @tag.name health
-// @tag.description [System] Application health checks, system status, and monitoring endpoints
-
-// @tag.name modules
-// @tag.description [System] Module registry, discovery, and runtime information endpoints
-
 // @tag.name clients
 // @tag.description [Client Management Module] Client information management, therapy tracking, and client-specific operations
 
 // @tag.name cost-providers
 // @tag.description [Client Management Module] Cost provider (insurance) management and approval tracking
+
+// @tag.name sessions
+// @tag.description [Client Management Module] Session management, booking, and therapy session tracking
 
 // @tag.name calendar
 // @tag.description [Calendar Module] Calendar management, scheduling, and event organization
@@ -92,13 +65,10 @@ import (
 // @tag.name calendar-views
 // @tag.description [Calendar Module] Calendar views including week, year, and custom period views
 
-// @tag.name calendar-availability
-// @tag.description [Calendar Module] Availability checking and free slot discovery
-
 // @tag.name calendar-utilities
 // @tag.description [Calendar Module] Calendar utilities including holiday import and data management
 
-// @tag.name booking-templates
+// @tag.name booking
 // @tag.description [Booking Module] Booking template/configuration management for appointment scheduling
 
 func main() {
@@ -133,9 +103,9 @@ func main() {
 		email.NewEmailModule(),            // Email management and notifications
 		pdf.NewPDFModule(),                // PDF generation services
 		static.NewStaticModule(),          // Static JSON file serving
-		client_management.NewCoreModule(), // Client management (unburdy-specific)
 		calendar.NewCoreModule(),          // Calendar management (unburdy-specific)
 		booking.NewCoreModule(),           // Booking management (unburdy-specific)
+		client_management.NewCoreModule(), // Client management (unburdy-specific) - depends on booking
 	}
 
 	for _, module := range modules {

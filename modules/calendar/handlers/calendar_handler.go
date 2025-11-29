@@ -696,11 +696,13 @@ func (h *CalendarHandler) UpdateCalendarSeries(c *gin.Context) {
 // DeleteCalendarSeries deletes a calendar series
 // @Summary Delete calendar series
 // @ID deleteCalendarSeries
-// @Description Delete a calendar series by ID
+// @Description Delete a calendar series with two options: 'all' deletes the entire series and all entries, 'from_date' deletes entries from a specific date onwards and updates the series end date. When using 'from_date' mode, provide the from_date in UTC ISO 8601 format (e.g., 2025-12-01T00:00:00Z).
 // @Tags calendar-series
+// @Accept json
 // @Produce json
 // @Security BearerAuth
 // @Param id path int true "Calendar Series ID"
+// @Param request body entities.DeleteCalendarSeriesRequest true "Delete options"
 // @Success 200 {object} baseAPI.APIResponse
 // @Failure 400 {object} baseAPI.APIResponse
 // @Failure 401 {object} baseAPI.APIResponse
@@ -715,6 +717,12 @@ func (h *CalendarHandler) DeleteCalendarSeries(c *gin.Context) {
 		return
 	}
 
+	var req entities.DeleteCalendarSeriesRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, baseAPI.ErrorResponseFunc("Invalid request", err.Error()))
+		return
+	}
+
 	tenantID, err := baseAPI.GetTenantID(c)
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, baseAPI.ErrorResponseFunc("Unauthorized", "Unable to get tenant ID: "+err.Error()))
@@ -726,13 +734,17 @@ func (h *CalendarHandler) DeleteCalendarSeries(c *gin.Context) {
 		return
 	}
 
-	err = h.service.DeleteCalendarSeries(uint(id), tenantID, userID)
+	err = h.service.DeleteCalendarSeries(uint(id), tenantID, userID, req)
 	if err != nil {
 		c.JSON(http.StatusNotFound, baseAPI.ErrorResponseFunc("Internal server error", err.Error()))
 		return
 	}
 
-	c.JSON(http.StatusOK, baseAPI.SuccessMessageResponse("Calendar series deleted successfully"))
+	if req.DeleteMode == "from_date" {
+		c.JSON(http.StatusOK, baseAPI.SuccessMessageResponse("Calendar series entries deleted from specified date"))
+	} else {
+		c.JSON(http.StatusOK, baseAPI.SuccessMessageResponse("Calendar series deleted successfully"))
+	}
 }
 
 // External Calendar CRUD Handlers

@@ -75,7 +75,7 @@ type ErrorResponse struct {
 // @Success 200 {object} PDFGenerateResponse "PDF generated successfully"
 // @Failure 400 {object} ErrorResponse "Invalid request"
 // @Failure 500 {object} ErrorResponse "Failed to generate PDF"
-// @Router /api/v1/pdf/create [post]
+// @Router /pdf/create [post]
 func (h *PDFHandler) GeneratePDFFromTemplate(c *gin.Context) {
 	var requestBody PDFGenerateRequest
 

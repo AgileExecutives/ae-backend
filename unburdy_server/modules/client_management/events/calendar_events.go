@@ -30,20 +30,37 @@ func (h *CalendarEntryDeletedHandler) EventType() string {
 func (h *CalendarEntryDeletedHandler) Handle(event interface{}) error {
 	payload, ok := event.(map[string]interface{})
 	if !ok {
+		h.logger.Error("Invalid event payload type", "event", event)
 		return fmt.Errorf("invalid event payload type")
 	}
 
-	calendarEntryID, ok := payload["calendar_entry_id"].(uint)
-	if !ok {
+	// Try to extract calendar_entry_id - handle both uint and float64 types
+	var calendarEntryID uint
+	switch v := payload["calendar_entry_id"].(type) {
+	case uint:
+		calendarEntryID = v
+	case float64:
+		calendarEntryID = uint(v)
+	case int:
+		calendarEntryID = uint(v)
+	default:
+		h.logger.Error("calendar_entry_id not found or invalid type in event payload", "type", fmt.Sprintf("%T", v), "payload", payload)
 		return fmt.Errorf("calendar_entry_id not found or invalid type in event payload")
 	}
 
 	h.logger.Info("Processing calendar entry deleted event", "calendar_entry_id", calendarEntryID)
 
-	// Update all sessions with this calendar_entry_id to canceled status if they are scheduled
+	// Update all sessions with this calendar_entry_id:
+	// - Set status to 'canceled'
+	// - Set calendar_entry_id to NULL (unlink from deleted entry)
+	// - Add cancellation note to documentation
 	result := h.db.Table("sessions").
 		Where("calendar_entry_id = ? AND status = ?", calendarEntryID, "scheduled").
-		Update("status", "canceled")
+		Updates(map[string]interface{}{
+			"status":            "canceled",
+			"calendar_entry_id": nil,
+			"documentation":     gorm.Expr("CASE WHEN documentation = '' OR documentation IS NULL THEN ?::text ELSE CONCAT(documentation, ?::text, ?::text) END", "Calendar entry deleted", "\n", "Calendar entry deleted"),
+		})
 
 	if result.Error != nil {
 		h.logger.Error("Failed to cancel sessions for deleted calendar entry", "error", result.Error, "calendar_entry_id", calendarEntryID)

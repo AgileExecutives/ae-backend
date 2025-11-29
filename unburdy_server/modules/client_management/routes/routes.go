@@ -1,6 +1,7 @@
 package routes
 
 import (
+	"github.com/ae-base-server/pkg/core"
 	"github.com/ae-base-server/pkg/middleware"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
@@ -27,8 +28,15 @@ func NewRouteProvider(clientHandler *handlers.ClientHandler, costProviderHandler
 }
 
 // RegisterRoutes registers the client management routes with the provided router group
-func (rp *RouteProvider) RegisterRoutes(router *gin.RouterGroup) {
+func (rp *RouteProvider) RegisterRoutes(router *gin.RouterGroup, ctx *core.ModuleContext) {
 	// Note: Auth middleware is already applied at the router group level
+
+	// Register public token booking route on base router (bypass auth middleware)
+	// The token itself is the authorization - no JWT authentication required
+	if ctx != nil && ctx.Router != nil {
+		ctx.Router.POST("/api/v1/sessions/book/:token", rp.sessionHandler.BookSessionsWithToken)
+	}
+
 	// Client management endpoints (authenticated)
 	clients := router.Group("/clients")
 	{
@@ -58,6 +66,7 @@ func (rp *RouteProvider) RegisterRoutes(router *gin.RouterGroup) {
 		sessions.POST("", rp.sessionHandler.CreateSession)
 		sessions.POST("/book", rp.sessionHandler.BookSessions)
 		sessions.GET("", rp.sessionHandler.GetAllSessions)
+		sessions.GET("/by_entry/:id", rp.sessionHandler.GetSessionByCalendarEntry)
 		sessions.GET("/:id", rp.sessionHandler.GetSession)
 		sessions.PUT("/:id", rp.sessionHandler.UpdateSession)
 		sessions.DELETE("/:id", rp.sessionHandler.DeleteSession)
