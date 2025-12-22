@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"fmt"
 	"net/http"
 	"strconv"
 
@@ -392,6 +393,9 @@ func (h *SessionHandler) BookSessionsWithToken(c *gin.Context) {
 
 	seriesID, sessions, err := h.sessionService.BookSessionsWithToken(token, req)
 	if err != nil {
+		// Log the full error for debugging
+		fmt.Printf("Error booking sessions with token: %v\n", err)
+
 		if err.Error() == "invalid or expired booking token" {
 			c.JSON(http.StatusNotFound, baseAPI.ErrorResponseFunc("Invalid token", err.Error()))
 			return

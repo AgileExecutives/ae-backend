@@ -99,7 +99,7 @@ func (m *EmailModule) EventHandlers() []core.EventHandler {
 func (m *EmailModule) Services() []core.ServiceProvider {
 	return []core.ServiceProvider{
 		&EmailServiceProvider{
-			emailService: m.emailService,
+			module: m,
 		},
 	}
 }
@@ -120,7 +120,7 @@ func (m *EmailModule) SwaggerPaths() []string {
 
 // EmailServiceProvider provides the email service for dependency injection
 type EmailServiceProvider struct {
-	emailService *services.EmailService
+	module *EmailModule
 }
 
 // ServiceName returns the service name
@@ -130,10 +130,14 @@ func (p *EmailServiceProvider) ServiceName() string {
 
 // ServiceInterface returns the service interface
 func (p *EmailServiceProvider) ServiceInterface() interface{} {
-	return p.emailService
+	return p.module.emailService
 }
 
 // Factory creates the service instance
 func (p *EmailServiceProvider) Factory(ctx core.ModuleContext) (interface{}, error) {
-	return p.emailService, nil
+	// Create email service if not already created
+	if p.module.emailService == nil {
+		p.module.emailService = services.NewEmailService()
+	}
+	return p.module.emailService, nil
 }

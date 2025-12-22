@@ -10,15 +10,16 @@ type FreeSlotsResponse struct {
 
 // TimeSlot represents an individual available time slot
 type TimeSlot struct {
-	ID        string `json:"id"`          // Unique identifier (e.g., "slot-2025-11-05-09-00")
-	StartTime string `json:"start_time"`  // ISO datetime (e.g., "2025-11-05T09:00:00+01:00")
-	EndTime   string `json:"end_time"`    // ISO datetime (e.g., "2025-11-05T09:30:00+01:00")
-	Date      string `json:"date"`        // YYYY-MM-DD format
-	Time      string `json:"time"`        // HH:mm format
-	Duration  int    `json:"duration"`    // Duration in minutes
-	Available bool   `json:"available"`   // Is this slot available?
-	TimeOfDay string `json:"time_of_day"` // "morning", "afternoon", "evening"
-	Timezone  string `json:"timezone"`    // e.g., "Europe/Berlin"
+	ID                   string `json:"id"`                    // Unique identifier (e.g., "slot-2025-11-05-09-00")
+	StartTime            string `json:"start_time"`            // ISO datetime (e.g., "2025-11-05T09:00:00+01:00")
+	EndTime              string `json:"end_time"`              // ISO datetime (e.g., "2025-11-05T09:30:00+01:00")
+	Date                 string `json:"date"`                  // YYYY-MM-DD format
+	Time                 string `json:"time"`                  // HH:mm format
+	Duration             int    `json:"duration"`              // Duration in minutes
+	Available            bool   `json:"available"`             // Is this slot available?
+	TimeOfDay            string `json:"time_of_day"`           // "morning", "afternoon", "evening"
+	Timezone             string `json:"timezone"`              // e.g., "Europe/Berlin"
+	AvailableRecurrences int    `json:"available_recurrences"` // Number of available recurrences for series bookings (0 if not series)
 }
 
 // MonthData provides month overview for calendar grid display

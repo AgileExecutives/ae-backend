@@ -49,7 +49,7 @@ func (h *CalendarEntryDeletedHandler) Handle(event interface{}) error {
 	}
 
 	h.logger.Info("Processing calendar entry deleted event", "calendar_entry_id", calendarEntryID)
-
+	fmt.Printf("Processing calendar entry deleted event: calendar_entry_id=%d\n", calendarEntryID)
 	// Update all sessions with this calendar_entry_id:
 	// - Set status to 'canceled'
 	// - Set calendar_entry_id to NULL (unlink from deleted entry)

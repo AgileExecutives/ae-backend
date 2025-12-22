@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Terminbestätigung - {{.AppName}}</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background-color: #ffffff;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        .header {
+            text-align: center;
+            border-bottom: 3px solid #4CAF50;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+        .logo {
+            font-size: 28px;
+            font-weight: bold;
+            color: #4CAF50;
+            margin-bottom: 5px;
+        }
+        .title {
+            font-size: 24px;
+            color: #2c3e50;
+            margin: 20px 0 10px;
+        }
+        .subtitle {
+            font-size: 16px;
+            color: #7f8c8d;
+        }
+        .success-icon {
+            text-align: center;
+            font-size: 60px;
+            color: #4CAF50;
+            margin: 20px 0;
+        }
+        .appointment-box {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 8px;
+            margin: 25px 0;
+        }
+        .appointment-box h3 {
+            margin-top: 0;
+            font-size: 18px;
+            border-bottom: 1px solid rgba(255,255,255,0.3);
+            padding-bottom: 10px;
+        }
+        .appointment-item {
+            background-color: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+            border-left: 4px solid #fff;
+        }
+        .appointment-date {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        .appointment-time {
+            font-size: 16px;
+            opacity: 0.9;
+        }
+        .appointment-details {
+            background-color: #f8f9fa;
+            padding: 20px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        .detail-row {
+            display: flex;
+            padding: 10px 0;
+            border-bottom: 1px solid #e9ecef;
+        }
+        .detail-row:last-child {
+            border-bottom: none;
+        }
+        .detail-label {
+            font-weight: bold;
+            color: #495057;
+            min-width: 140px;
+        }
+        .detail-value {
+            color: #6c757d;
+        }
+        .info-box {
+            background-color: #e7f3ff;
+            border-left: 4px solid #2196F3;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+        .info-box h4 {
+            margin-top: 0;
+            color: #1976D2;
+            font-size: 16px;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #e9ecef;
+            color: #6c757d;
+            font-size: 14px;
+        }
+        .footer a {
+            color: #4CAF50;
+            text-decoration: none;
+        }
+        .series-count {
+            background-color: #4CAF50;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            display: inline-block;
+            font-size: 14px;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">{{.AppName}}</div>
+            <div class="title">Terminbestätigung</div>
+            <div class="subtitle">Ihre Buchung wurde erfolgreich bestätigt</div>
+        </div>
+
+        <div class="success-icon">✓</div>
+
+        <p>Liebe/r {{.CustomData.ClientName}},</p>
+
+        <p>vielen Dank für Ihre Buchung. Ihre Termine wurden erfolgreich eingetragen.</p>
+
+        {{if .CustomData.IsSeries}}
+        <div class="appointment-box">
+            <h3>Ihre Terminserie <span class="series-count">{{.CustomData.AppointmentCount}} Termine</span></h3>
+            {{range .CustomData.Appointments}}
+            <div class="appointment-item">
+                <div class="appointment-date">📅 {{.Date}}</div>
+                <div class="appointment-time">🕐 {{.TimeFrom}} - {{.TimeTo}} Uhr</div>
+            </div>
+            {{end}}
+        </div>
+        {{else}}
+        <div class="appointment-box">
+            <h3>Ihr Termin</h3>
+            <div class="appointment-item">
+                <div class="appointment-date">📅 {{.CustomData.AppointmentDate}}</div>
+                <div class="appointment-time">🕐 {{.CustomData.TimeFrom}} - {{.CustomData.TimeTo}} Uhr</div>
+            </div>
+        </div>
+        {{end}}
+
+        <div class="appointment-details">
+            <div class="detail-row">
+                <div class="detail-label">Titel:</div>
+                <div class="detail-value">{{.CustomData.Title}}</div>
+            </div>
+            {{if .CustomData.Description}}
+            <div class="detail-row">
+                <div class="detail-label">Beschreibung:</div>
+                <div class="detail-value">{{.CustomData.Description}}</div>
+            </div>
+            {{end}}
+            <div class="detail-row">
+                <div class="detail-label">Dauer:</div>
+                <div class="detail-value">{{.CustomData.Duration}} Minuten</div>
+            </div>
+            {{if .CustomData.Location}}
+            <div class="detail-row">
+                <div class="detail-label">Ort:</div>
+                <div class="detail-value">{{.CustomData.Location}}</div>
+            </div>
+            {{end}}
+            <div class="detail-row">
+                <div class="detail-label">Typ:</div>
+                <div class="detail-value">{{.CustomData.Type}}</div>
+            </div>
+        </div>
+
+        <div class="info-box">
+            <h4>📝 Wichtige Hinweise</h4>
+            <ul style="margin: 10px 0; padding-left: 20px;">
+                <li>Bitte erscheinen Sie pünktlich zu Ihrem Termin</li>
+                <li>Bei Verhinderung sagen Sie bitte mindestens 24 Stunden vorher ab</li>
+                <li>Bringen Sie bitte relevante Unterlagen mit</li>
+            </ul>
+        </div>
+
+        <p>Wir freuen uns auf Ihren Besuch!</p>
+
+        <p>Mit freundlichen Grüßen<br>
+        <strong>{{.CompanyName}}</strong></p>
+
+        <div class="footer">
+            <p>Diese E-Mail wurde automatisch generiert. Bitte antworten Sie nicht darauf.</p>
+            <p>Bei Fragen erreichen Sie uns unter <a href="mailto:{{.SupportEmail}}">{{.SupportEmail}}</a></p>
+            <p style="margin-top: 15px; font-size: 12px;">{{.CompanyName}} | {{.CompanyAddress}}</p>
+        </div>
+    </div>
+</body>
+</html>

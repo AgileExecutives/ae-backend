@@ -135,7 +135,7 @@ func TestPermanentTokenNoExpiration(t *testing.T) {
 		CalendarID: 10,
 		TemplateID: 1,
 		ClientID:   123,
-		Purpose:    entities.PermanentBookingLink,
+		Purpose:    entities.TimedBookingLink,
 		IssuedAt:   time.Now().Add(-48 * time.Hour).Unix(), // 2 days ago
 		// No ExpiresAt for permanent tokens
 	}
@@ -147,7 +147,7 @@ func TestPermanentTokenNoExpiration(t *testing.T) {
 	validatedClaims, err := service.ValidateBookingLink(token)
 	assert.NoError(t, err)
 	assert.NotNil(t, validatedClaims)
-	assert.Equal(t, entities.PermanentBookingLink, validatedClaims.Purpose)
+	assert.Equal(t, entities.TimedBookingLink, validatedClaims.Purpose)
 }
 
 // TestInvalidTokenFormat tests validation of malformed tokens

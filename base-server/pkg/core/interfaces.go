@@ -2,6 +2,7 @@ package core
 
 import (
 	"context"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
@@ -29,13 +30,14 @@ type Module interface {
 
 // ModuleContext provides dependencies to modules
 type ModuleContext struct {
-	DB       *gorm.DB
-	Router   *gin.Engine
-	EventBus EventBus
-	Config   interface{}
-	Logger   Logger
-	Services ServiceRegistry
-	Auth     AuthService
+	DB           *gorm.DB
+	Router       *gin.Engine
+	EventBus     EventBus
+	Config       interface{}
+	Logger       Logger
+	Services     ServiceRegistry
+	Auth         AuthService
+	TokenService TokenService
 }
 
 // Entity represents a database entity with migrations
@@ -108,6 +110,19 @@ type AuthService interface {
 	GetCurrentUser(c *gin.Context) (interface{}, error)
 	RequireAuth() gin.HandlerFunc
 	RequireRole(roles ...string) gin.HandlerFunc
+}
+
+// TokenService defines generic token generation and validation service
+// Modules can use this to generate tokens with custom payloads
+type TokenService interface {
+	// GenerateToken generates a JWT token with custom claims implementing jwt.Claims
+	GenerateToken(claims interface{}) (string, error)
+	// ValidateToken validates a JWT token and populates the provided claims structure
+	ValidateToken(tokenString string, claims interface{}) error
+	// ParseTokenID extracts the token ID without full validation
+	ParseTokenID(tokenString string) (string, error)
+	// GetTokenExpiration extracts expiration time without full validation
+	GetTokenExpiration(tokenString string) (time.Time, error)
 }
 
 // ServiceRegistry manages service discovery

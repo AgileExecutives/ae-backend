@@ -30,12 +30,13 @@ const (
 type EmailTemplate string
 
 const (
-	TemplateVerification  EmailTemplate = "verification"
-	TemplatePasswordReset EmailTemplate = "password_reset"
-	TemplateWelcome       EmailTemplate = "welcome"
-	TemplateInvoice       EmailTemplate = "invoice"
-	TemplateAppointment   EmailTemplate = "appointment"
-	TemplateNotification  EmailTemplate = "notification"
+	TemplateVerification        EmailTemplate = "verification"
+	TemplatePasswordReset       EmailTemplate = "password_reset"
+	TemplateWelcome             EmailTemplate = "welcome"
+	TemplateInvoice             EmailTemplate = "invoice"
+	TemplateAppointment         EmailTemplate = "appointment"
+	TemplateBookingConfirmation EmailTemplate = "booking_confirmation"
+	TemplateNotification        EmailTemplate = "notification"
 )
 
 // EmailData contains data to be passed to email templates
@@ -81,12 +82,13 @@ func (e *EmailService) loadTemplates() {
 	templatesDir := utils.GetEnv("EMAIL_TEMPLATES_DIR", "./statics/email_templates")
 
 	templates := map[EmailTemplate]string{
-		TemplateVerification:  "email_verification.html",
-		TemplatePasswordReset: "password_reset.html",
-		TemplateWelcome:       "welcome.html",
-		TemplateInvoice:       "invoice.html",
-		TemplateAppointment:   "appointment.html",
-		TemplateNotification:  "notification.html",
+		TemplateVerification:        "email_verification.html",
+		TemplatePasswordReset:       "password_reset.html",
+		TemplateWelcome:             "welcome.html",
+		TemplateInvoice:             "invoice.html",
+		TemplateAppointment:         "appointment.html",
+		TemplateBookingConfirmation: "booking_confirmation.html",
+		TemplateNotification:        "notification.html",
 	}
 
 	for templateType, filename := range templates {

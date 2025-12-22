@@ -83,6 +83,7 @@ type Client struct {
 	AdmissionDate        *time.Time     `gorm:"type:date" json:"admission_date,omitempty" example:"2025-01-01"`
 	ReferralSource       string         `gorm:"size:255" json:"referral_source,omitempty" example:"Doctor Smith"`
 	Notes                string         `gorm:"type:text" json:"notes,omitempty" example:"Additional notes about the client"`
+	Timezone             string         `gorm:"size:100;default:'Europe/Berlin'" json:"timezone" example:"Europe/Berlin"`
 	CreatedAt            time.Time      `json:"created_at"`
 	UpdatedAt            time.Time      `json:"updated_at"`
 	DeletedAt            gorm.DeletedAt `gorm:"index" json:"-"`
@@ -118,6 +119,7 @@ type CreateClientRequest struct {
 	AdmissionDate        NullableDate `json:"admission_date,omitempty" example:"2025-01-01"`
 	ReferralSource       string       `json:"referral_source,omitempty" example:"Doctor Smith"`
 	Notes                string       `json:"notes,omitempty" example:"Additional notes about the client"`
+	Timezone             string       `json:"timezone,omitempty" example:"Europe/Berlin"`
 }
 
 // UpdateClientRequest represents the request payload for updating a client
@@ -150,6 +152,7 @@ type UpdateClientRequest struct {
 	AdmissionDate        *NullableDate `json:"admission_date,omitempty" example:"2025-01-01"`
 	ReferralSource       *string       `json:"referral_source,omitempty" example:"Doctor Smith"`
 	Notes                *string       `json:"notes,omitempty" example:"Additional notes about the client"`
+	Timezone             *string       `json:"timezone,omitempty" example:"Europe/Berlin"`
 }
 
 // ClientResponse represents the response format for client data
@@ -185,6 +188,7 @@ type ClientResponse struct {
 	AdmissionDate        *time.Time            `json:"admission_date,omitempty"`
 	ReferralSource       string                `json:"referral_source,omitempty"`
 	Notes                string                `json:"notes,omitempty"`
+	Timezone             string                `json:"timezone"`
 	CreatedAt            time.Time             `json:"created_at"`
 	UpdatedAt            time.Time             `json:"updated_at"`
 }
@@ -229,6 +233,7 @@ func (c *Client) ToResponse() ClientResponse {
 		AdmissionDate:        c.AdmissionDate,
 		ReferralSource:       c.ReferralSource,
 		Notes:                c.Notes,
+		Timezone:             c.Timezone,
 		CreatedAt:            c.CreatedAt,
 		UpdatedAt:            c.UpdatedAt,
 	}

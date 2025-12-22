@@ -100,7 +100,7 @@ func TestSessionCancellationOnCalendarEntryDeletion(t *testing.T) {
 	t.Logf("Created calendar entry with ID: %d", calendarEntry.ID)
 
 	// Step 4: Create a session linked to the calendar entry
-	sessionService := services.NewSessionService(db)
+\tsessionService := services.NewSessionService(db, nil)
 	session, err := sessionService.CreateSession(entities.CreateSessionRequest{
 		ClientID:          client.ID,
 		CalendarEntryID:   calendarEntry.ID,

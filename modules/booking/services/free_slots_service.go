@@ -66,6 +66,11 @@ func (s *FreeSlotsService) CalculateFreeSlots(req FreeSlotsRequest, template *en
 	// Filter out slots that conflict with existing entries
 	availableSlots := s.filterConflictingSlots(allSlots, existingEntries, template.BufferTime)
 
+	// Calculate available recurrences for series bookings
+	if len(template.AllowedIntervals) > 0 && template.MaxSeriesBookings > 0 {
+		availableSlots = s.calculateAvailableRecurrences(availableSlots, existingEntries, template, req.EndDate, loc)
+	}
+
 	// Generate month data
 	monthData := s.generateMonthData(availableSlots, req.StartDate, loc)
 
@@ -442,4 +447,134 @@ func (s *FreeSlotsService) determineInterval(intervals []entities.IntervalType) 
 	default:
 		return "none"
 	}
+}
+
+// calculateAvailableRecurrences calculates how many future recurrences are available for each slot
+func (s *FreeSlotsService) calculateAvailableRecurrences(slots []entities.TimeSlot, existingEntries []CalendarEntry, template *entities.BookingTemplate, endDate time.Time, loc *time.Location) []entities.TimeSlot {
+	// For each slot, calculate the number of available recurrences
+	for i := range slots {
+		slot := &slots[i]
+
+		// Parse slot start time
+		slotStart, err := time.ParseInLocation(time.RFC3339, slot.StartTime, loc)
+		if err != nil {
+			continue
+		}
+
+		// Parse slot end time
+		slotEnd, err := time.ParseInLocation(time.RFC3339, slot.EndTime, loc)
+		if err != nil {
+			continue
+		}
+
+		slotDuration := slotEnd.Sub(slotStart)
+
+		// Calculate available recurrences for each allowed interval type
+		maxRecurrences := 0
+		for _, intervalType := range template.AllowedIntervals {
+			recurrences := s.countAvailableRecurrences(slotStart, slotEnd, slotDuration, intervalType, template.MaxSeriesBookings, existingEntries, endDate, loc, template.BufferTime)
+			if recurrences > maxRecurrences {
+				maxRecurrences = recurrences
+			}
+		}
+
+		slot.AvailableRecurrences = maxRecurrences
+	}
+
+	return slots
+}
+
+// countAvailableRecurrences counts how many recurrences of a specific interval type are available
+func (s *FreeSlotsService) countAvailableRecurrences(slotStart, slotEnd time.Time, duration time.Duration, intervalType entities.IntervalType, maxBookings int, existingEntries []CalendarEntry, endDate time.Time, loc *time.Location, bufferTime int) int {
+	count := 0
+	currentStart := slotStart
+
+	// Check up to maxBookings recurrences
+	for count < maxBookings {
+		// Check if we're beyond the search end date
+		if currentStart.After(endDate) {
+			break
+		}
+
+		currentEnd := currentStart.Add(duration)
+
+		// Check if this slot conflicts with any existing entries
+		conflicts := false
+		for _, entry := range existingEntries {
+			// Entry times are already parsed as *time.Time
+			if entry.StartTime == nil || entry.EndTime == nil {
+				continue
+			}
+
+			entryStart := *entry.StartTime
+			entryEnd := *entry.EndTime
+
+			// Apply buffer time
+			bufferDuration := time.Duration(bufferTime) * time.Minute
+
+			// Check for overlap (with buffer)
+			if currentStart.Before(entryEnd.Add(bufferDuration)) && currentEnd.Add(bufferDuration).After(entryStart) {
+				conflicts = true
+				break
+			}
+		}
+
+		if !conflicts {
+			count++
+		}
+
+		// Move to next recurrence based on interval type
+		var shouldContinue bool
+		switch intervalType {
+		case entities.IntervalWeekly:
+			currentStart = currentStart.AddDate(0, 0, 7)
+			shouldContinue = true
+		case entities.IntervalMonthlyDate:
+			// Same date next month
+			currentStart = currentStart.AddDate(0, 1, 0)
+			shouldContinue = true
+		case entities.IntervalMonthlyDay:
+			// Same weekday, same week of month
+			currentStart = s.addMonthSameWeekday(currentStart)
+			shouldContinue = true
+		case entities.IntervalYearly:
+			currentStart = currentStart.AddDate(1, 0, 0)
+			shouldContinue = true
+		case entities.IntervalNone:
+			// Only count once for non-recurring
+			shouldContinue = false
+		default:
+			shouldContinue = false
+		}
+
+		if !shouldContinue {
+			break
+		}
+	}
+
+	return count
+}
+
+// addMonthSameWeekday adds one month while keeping the same weekday and week of month
+func (s *FreeSlotsService) addMonthSameWeekday(t time.Time) time.Time {
+	// Get the weekday and the week of the month
+	weekday := t.Weekday()
+	weekOfMonth := (t.Day()-1)/7 + 1
+
+	// Move to next month, first day
+	nextMonth := time.Date(t.Year(), t.Month()+1, 1, t.Hour(), t.Minute(), t.Second(), t.Nanosecond(), t.Location())
+
+	// Find the first occurrence of the same weekday in the next month
+	daysUntilWeekday := (int(weekday) - int(nextMonth.Weekday()) + 7) % 7
+	firstOccurrence := nextMonth.AddDate(0, 0, daysUntilWeekday)
+
+	// Add weeks to get to the same week of the month
+	targetDate := firstOccurrence.AddDate(0, 0, (weekOfMonth-1)*7)
+
+	// If we've gone past the end of the month, use the last occurrence
+	if targetDate.Month() != nextMonth.Month() {
+		targetDate = targetDate.AddDate(0, 0, -7)
+	}
+
+	return targetDate
 }

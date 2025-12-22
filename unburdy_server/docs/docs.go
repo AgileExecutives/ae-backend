@@ -6520,19 +6520,27 @@ const docTemplate = `{
                 "client_id": {
                     "type": "integer"
                 },
+                "max_use_count": {
+                    "description": "Maximum number of uses (0 = unlimited, 1 = one-time)",
+                    "type": "integer"
+                },
                 "template_id": {
                     "type": "integer"
                 },
                 "token_purpose": {
                     "enum": [
                         "one-time-booking-link",
-                        "permanent-booking-link"
+                        "timed-booking-link"
                     ],
                     "allOf": [
                         {
                             "$ref": "#/definitions/entities.TokenPurpose"
                         }
                     ]
+                },
+                "validity_days": {
+                    "description": "Number of days token is valid (default: 180 for timed links, 1 for one-time)",
+                    "type": "integer"
                 }
             }
         },
@@ -7160,6 +7168,10 @@ const docTemplate = `{
                     "description": "Is this slot available?",
                     "type": "boolean"
                 },
+                "available_recurrences": {
+                    "description": "Number of available recurrences for series bookings (0 if not series)",
+                    "type": "integer"
+                },
                 "date": {
                     "description": "YYYY-MM-DD format",
                     "type": "string"
@@ -7198,11 +7210,11 @@ const docTemplate = `{
             "type": "string",
             "enum": [
                 "one-time-booking-link",
-                "permanent-booking-link"
+                "timed-booking-link"
             ],
             "x-enum-varnames": [
                 "OneTimeBookingLink",
-                "PermanentBookingLink"
+                "TimedBookingLink"
             ]
         },
         "entities.UnburdyHolidaysData": {

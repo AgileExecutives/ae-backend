@@ -348,7 +348,24 @@ func (h *BookingHandler) CreateBookingLink(c *gin.Context) {
 		return
 	}
 
-	token, err := h.bookingLinkSvc.GenerateBookingLink(req.TemplateID, req.ClientID, tenantID, req.Purpose)
+	// Apply default validity days if not specified
+	validityDays := req.ValidityDays
+	if validityDays == 0 {
+		if req.Purpose == entities.TimedBookingLink {
+			validityDays = 180 // Default 180 days for timed links
+		}
+		// One-time links get default 1 day (24 hours) in the service
+	}
+
+	// Generate booking link with options
+	token, err := h.bookingLinkSvc.GenerateBookingLinkWithOptions(
+		req.TemplateID,
+		req.ClientID,
+		tenantID,
+		req.Purpose,
+		req.MaxUseCount,
+		validityDays,
+	)
 	if err != nil {
 		if err.Error() == "booking template not found" {
 			c.JSON(http.StatusNotFound, baseAPI.ErrorResponseFunc("", err.Error()))
@@ -365,9 +382,12 @@ func (h *BookingHandler) CreateBookingLink(c *gin.Context) {
 	}
 	bookingURL := frontendURL + "/booking/" + token
 
-	// Calculate expiry for one-time links
+	// Calculate expiry
 	var expiresAt *time.Time
-	if req.Purpose == entities.OneTimeBookingLink {
+	if req.ValidityDays > 0 {
+		expiry := time.Now().AddDate(0, 0, req.ValidityDays)
+		expiresAt = &expiry
+	} else if req.Purpose == entities.OneTimeBookingLink {
 		expiry := time.Now().Add(24 * time.Hour)
 		expiresAt = &expiry
 	}

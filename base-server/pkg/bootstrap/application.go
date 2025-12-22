@@ -197,18 +197,22 @@ func (app *Application) initializeCoreServices() error {
 		db:        db,
 	}
 
+	// Token Service - shared JWT token service for all modules
+	tokenService := auth.NewTokenService(app.config.JWT.Secret)
+
 	// Service Registry
 	services := core.NewServiceRegistry()
 
 	// Create module context
 	app.context = core.ModuleContext{
-		DB:       db,
-		Router:   router,
-		EventBus: eventBus,
-		Config:   app.config,
-		Logger:   app.logger,
-		Services: services,
-		Auth:     authService,
+		DB:           db,
+		Router:       router,
+		EventBus:     eventBus,
+		Config:       app.config,
+		Logger:       app.logger,
+		Services:     services,
+		Auth:         authService,
+		TokenService: tokenService,
 	}
 
 	app.server = router

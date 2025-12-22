@@ -51,8 +51,10 @@ func (m *BookingTokenMiddleware) ValidateBookingToken() gin.HandlerFunc {
 			return
 		}
 
-		// Check if token is blacklisted
+		// Generate token ID for tracking
 		tokenID := generateTokenID(token)
+
+		// Check if token is blacklisted
 		var blacklistedToken struct {
 			ID        uint
 			TokenID   string
@@ -73,7 +75,7 @@ func (m *BookingTokenMiddleware) ValidateBookingToken() gin.HandlerFunc {
 		}
 
 		// Additional validation: Check if it's a valid booking purpose
-		if claims.Purpose != entities.OneTimeBookingLink && claims.Purpose != entities.PermanentBookingLink {
+		if claims.Purpose != entities.OneTimeBookingLink && claims.Purpose != entities.TimedBookingLink {
 			c.JSON(http.StatusUnauthorized, baseAPI.ErrorResponseFunc("Invalid token", "Invalid token purpose"))
 			c.Abort()
 			return

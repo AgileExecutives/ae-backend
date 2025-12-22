@@ -6,7 +6,7 @@ Successfully implemented a `/booking/link` endpoint that generates self-containe
 ## What Was Implemented
 
 ### 1. Entity Definitions (`entities/booking_link.go`)
-- **TokenPurpose enum**: `OneTimeBookingLink`, `PermanentBookingLink`
+- **TokenPurpose enum**: `OneTimeBookingLink`, `TimedBookingLink`
 - **BookingLinkClaims**: JWT claims structure with:
   - tenant_id, user_id, calendar_id, template_id, client_id
   - purpose (one-time or permanent)

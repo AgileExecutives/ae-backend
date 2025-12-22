@@ -23,7 +23,8 @@ Creates a booking link token for a client to book appointments.
 **Request Fields:**
 - `template_id` (uint, required): The ID of the booking template to use
 - `client_id` (uint, required): The ID of the client who will use this link
-- `token_purpose` (string, required): Either `"one-time-booking-link"` or `"permanent-booking-link"`
+- `token_purpose` (string, required): Either `"one-time-booking-link"` or `"timed-booking-link"`
+- `validity_days` (int, optional): Number of days the token is valid (default: 180 for timed-booking-link)
 
 **Response (201 Created):**
 ```json
@@ -55,10 +56,10 @@ Creates a booking link token for a client to book appointments.
 - Expires after 24 hours
 - Intended for single use (validation on use should be implemented)
 
-### Permanent Booking Link
-- Purpose: `"permanent-booking-link"`
-- No expiration
-- Can be used multiple times
+### Timed Booking Link
+- Purpose: `"timed-booking-link"`
+- Default expiration: 180 days
+- Can be used multiple times within the validity period
 
 ## JWT Token Structure
 

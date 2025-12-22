@@ -48,6 +48,7 @@ func (s *ClientService) CreateClient(req entities.CreateClientRequest, tenantID 
 		AdmissionDate:        req.AdmissionDate.Time,
 		ReferralSource:       req.ReferralSource,
 		Notes:                req.Notes,
+		Timezone:             req.Timezone,
 	}
 
 	// Set default values if not provided
@@ -56,6 +57,9 @@ func (s *ClientService) CreateClient(req entities.CreateClientRequest, tenantID 
 	}
 	if client.Status == "" {
 		client.Status = "waiting"
+	}
+	if client.Timezone == "" {
+		client.Timezone = "Europe/Berlin"
 	}
 	if req.InvoicedIndividually != nil {
 		client.InvoicedIndividually = *req.InvoicedIndividually
@@ -200,6 +204,9 @@ func (s *ClientService) UpdateClient(id, tenantID uint, req entities.UpdateClien
 	}
 	if req.Notes != nil {
 		client.Notes = *req.Notes
+	}
+	if req.Timezone != nil {
+		client.Timezone = *req.Timezone
 	}
 
 	if err := s.db.Save(&client).Error; err != nil {

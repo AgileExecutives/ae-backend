@@ -7,6 +7,7 @@ import (
 
 	"gorm.io/gorm"
 
+	emailServices "github.com/ae-base-server/modules/email/services"
 	bookingServices "github.com/unburdy/booking-module/services"
 	calendarEntities "github.com/unburdy/calendar-module/entities"
 	calendarServices "github.com/unburdy/calendar-module/services"
@@ -16,11 +17,20 @@ import (
 type SessionService struct {
 	db                 *gorm.DB
 	bookingLinkService *bookingServices.BookingLinkService
+	emailService       *emailServices.EmailService
 }
 
 // NewSessionService creates a new session service
-func NewSessionService(db *gorm.DB) *SessionService {
-	return &SessionService{db: db}
+func NewSessionService(db *gorm.DB, emailService *emailServices.EmailService) *SessionService {
+	if emailService == nil {
+		fmt.Println("⚠️ NewSessionService: emailService is NIL!")
+	} else {
+		fmt.Println("✅ NewSessionService: emailService is SET!")
+	}
+	return &SessionService{
+		db:           db,
+		emailService: emailService,
+	}
 }
 
 // SetBookingLinkService sets the booking link service for token validation
@@ -367,5 +377,115 @@ func (s *SessionService) BookSessionsWithToken(token string, req entities.BookSe
 	}
 
 	// Use the existing BookSessions method with tenant and user from token
-	return s.BookSessions(fullReq, claims.TenantID, claims.UserID)
+	seriesID, sessions, err := s.BookSessions(fullReq, claims.TenantID, claims.UserID)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	// After successful booking, invalidate one-time tokens to prevent reuse
+	if err := s.bookingLinkService.InvalidateOneTimeToken(token, claims); err != nil {
+		// Log the error but don't fail the booking - it already succeeded
+		// In production, you might want to log this with proper logging
+		fmt.Printf("Warning: failed to invalidate one-time token: %v\n", err)
+	}
+
+	// Send confirmation email to client
+	if err := s.sendBookingConfirmationEmail(claims.ClientID, claims.TenantID, fullReq, sessions); err != nil {
+		// Log the error but don't fail the booking - it already succeeded
+		fmt.Printf("Warning: failed to send confirmation email: %v\n", err)
+	}
+
+	return seriesID, sessions, nil
+}
+
+// sendBookingConfirmationEmail sends a confirmation email to the client after successful booking
+func (s *SessionService) sendBookingConfirmationEmail(clientID, tenantID uint, req entities.BookSessionsRequest, sessions []entities.Session) error {
+	fmt.Printf("📧 sendBookingConfirmationEmail called - emailService is nil: %v\n", s.emailService == nil)
+	if s.emailService == nil {
+		return fmt.Errorf("email service not configured")
+	}
+
+	// Fetch client information to get email address
+	var client entities.Client
+	if err := s.db.Where("id = ? AND tenant_id = ?", clientID, tenantID).First(&client).Error; err != nil {
+		return fmt.Errorf("failed to fetch client: %w", err)
+	}
+
+	// Determine which email to use (prefer primary email, fall back to contact email)
+	recipientEmail := client.Email
+	if recipientEmail == "" {
+		recipientEmail = client.ContactEmail
+	}
+	if recipientEmail == "" {
+		return fmt.Errorf("no email address found for client")
+	}
+
+	// Prepare email data
+	clientName := fmt.Sprintf("%s %s", client.FirstName, client.LastName)
+	isSeries := len(sessions) > 1
+
+	// Use client's timezone for displaying times
+	timezone := client.Timezone
+	if timezone == "" {
+		timezone = "Europe/Berlin"
+	}
+
+	loc, err := time.LoadLocation(timezone)
+	if err != nil {
+		// Fallback to Europe/Berlin if timezone is invalid
+		loc, _ = time.LoadLocation("Europe/Berlin")
+	}
+
+	// Build appointments list for series
+	// Times in DB are in UTC, convert to local timezone for display
+	var appointments []map[string]interface{}
+	if isSeries {
+		for _, session := range sessions {
+			if session.OriginalStartTime.IsZero() {
+				continue
+			}
+			// Convert UTC time to local timezone
+			localStartTime := session.OriginalStartTime.In(loc)
+			// Calculate end time from start time + duration
+			endTime := localStartTime.Add(time.Duration(session.DurationMin) * time.Minute)
+			appointments = append(appointments, map[string]interface{}{
+				"Date":     localStartTime.Format("02.01.2006"),
+				"TimeFrom": localStartTime.Format("15:04"),
+				"TimeTo":   endTime.Format("15:04"),
+			})
+		}
+	}
+
+	// Prepare single appointment data
+	var appointmentDate, timeFrom, timeTo string
+	if len(sessions) > 0 && !sessions[0].OriginalStartTime.IsZero() {
+		localStartTime := sessions[0].OriginalStartTime.In(loc)
+		appointmentDate = localStartTime.Format("02.01.2006")
+		timeFrom = localStartTime.Format("15:04")
+		endTime := localStartTime.Add(time.Duration(sessions[0].DurationMin) * time.Minute)
+		timeTo = endTime.Format("15:04")
+	}
+
+	// Prepare email data
+	emailData := emailServices.EmailData{
+		RecipientName: clientName,
+		Subject:       fmt.Sprintf("Terminbestätigung - %s", req.Title),
+		CustomData: map[string]interface{}{
+			"ClientName":       clientName,
+			"Title":            req.Title,
+			"Description":      req.Description,
+			"Duration":         req.DurationMin,
+			"Location":         req.Location,
+			"Type":             req.Type,
+			"IsSeries":         isSeries,
+			"AppointmentCount": len(sessions),
+			"Appointments":     appointments,
+			"AppointmentDate":  appointmentDate,
+			"TimeFrom":         timeFrom,
+			"TimeTo":           timeTo,
+		},
+	}
+
+	// Send email using template
+	return s.emailService.SendTemplateEmail(recipientEmail, emailServices.TemplateBookingConfirmation, emailData)
 }

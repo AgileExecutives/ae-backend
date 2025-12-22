@@ -5,6 +5,7 @@ import (
 
 	"github.com/ae-base-server/pkg/core"
 	"github.com/gin-gonic/gin"
+	"github.com/golang-jwt/jwt/v5"
 	"gorm.io/gorm"
 
 	"github.com/unburdy/booking-module/entities"
@@ -80,16 +81,35 @@ func (m *Module) Initialize(ctx core.ModuleContext) error {
 	// Store database reference
 	m.db = ctx.DB
 
-	// Use a JWT secret (should be configured via environment variable in production)
-	// For now, use a default that should be replaced in production
-	jwtSecret := "booking-link-secret-key-change-in-production"
-
-	// Initialize services (bookingLinkService may already be created by the service provider)
+	// Initialize services
 	m.bookingService = services.NewBookingService(ctx.DB)
-	if m.bookingLinkService == nil {
-		ctx.Logger.Warn("Using default JWT secret for booking links. Set JWT_SECRET environment variable in production.")
-		m.bookingLinkService = services.NewBookingLinkService(ctx.DB, jwtSecret)
+
+	// Try to get BookingLinkService from service registry (created by Factory)
+	// If not available, create it directly
+	if bookingLinkSvcRaw, ok := ctx.Services.Get("booking-link-service"); ok {
+		ctx.Logger.Info("✅ Initialize: Found BookingLinkService in service registry")
+		if bookingLinkSvc, ok := bookingLinkSvcRaw.(*services.BookingLinkService); ok {
+			m.bookingLinkService = bookingLinkSvc
+			ctx.Logger.Info("✅ Initialize: Using BookingLinkService from registry")
+		} else {
+			ctx.Logger.Error("❌ Initialize: BookingLinkService type assertion failed")
+		}
 	}
+
+	// If service not in registry, create it (shouldn't happen in normal flow)
+	if m.bookingLinkService == nil {
+		ctx.Logger.Warn("⚠️ Initialize: BookingLinkService not in registry, creating directly")
+		if ctx.TokenService != nil {
+			ctx.Logger.Info("Using unified TokenService for booking link generation")
+			tokenServiceAdapter := &tokenServiceAdapter{service: ctx.TokenService}
+			m.bookingLinkService = services.NewBookingLinkServiceWithTokenService(ctx.DB, tokenServiceAdapter)
+		} else {
+			jwtSecret := "booking-link-secret-key-change-in-production"
+			ctx.Logger.Warn("TokenService not available - using legacy booking token implementation")
+			m.bookingLinkService = services.NewBookingLinkService(ctx.DB, jwtSecret)
+		}
+	}
+
 	m.freeSlotsSvc = services.NewFreeSlotsService(ctx.DB)
 
 	// Initialize middleware
@@ -174,13 +194,18 @@ func (p *bookingLinkServiceProvider) ServiceInterface() interface{} {
 }
 
 func (p *bookingLinkServiceProvider) Factory(ctx core.ModuleContext) (interface{}, error) {
-	// Create the service here during the factory call
-	// Use a JWT secret (should be configured via environment variable in production)
-	jwtSecret := "booking-link-secret-key-change-in-production"
-	ctx.Logger.Warn("Creating booking link service with default JWT secret. Set JWT_SECRET environment variable in production.")
-
-	// Create and store the service in the module for later use
-	p.module.bookingLinkService = services.NewBookingLinkService(ctx.DB, jwtSecret)
+	// Create service with unified TokenService if available
+	if ctx.TokenService != nil {
+		ctx.Logger.Info("✅ Factory: Creating BookingLinkService with unified TokenService")
+		tokenServiceAdapter := &tokenServiceAdapter{service: ctx.TokenService}
+		p.module.bookingLinkService = services.NewBookingLinkServiceWithTokenService(ctx.DB, tokenServiceAdapter)
+	} else {
+		// Fallback to legacy implementation (should not happen in modern setup)
+		ctx.Logger.Warn("⚠️ Factory: TokenService not available - using legacy booking token implementation")
+		jwtSecret := "booking-link-secret-key-change-in-production"
+		p.module.bookingLinkService = services.NewBookingLinkService(ctx.DB, jwtSecret)
+	}
+	ctx.Logger.Info("✅ Factory: BookingLinkService created and stored in module")
 	return p.module.bookingLinkService, nil
 }
 
@@ -225,4 +250,17 @@ func (a *bookingRouteAdapter) GetMiddleware() []gin.HandlerFunc {
 
 func (a *bookingRouteAdapter) GetSwaggerTags() []string {
 	return a.provider.GetSwaggerTags()
+}
+
+// tokenServiceAdapter adapts the base TokenService to BookingLinkService interface
+type tokenServiceAdapter struct {
+	service core.TokenService
+}
+
+func (a *tokenServiceAdapter) GenerateToken(claims jwt.Claims) (string, error) {
+	return a.service.GenerateToken(interface{}(claims))
+}
+
+func (a *tokenServiceAdapter) ValidateToken(tokenString string, claims jwt.Claims) error {
+	return a.service.ValidateToken(tokenString, interface{}(claims))
 }

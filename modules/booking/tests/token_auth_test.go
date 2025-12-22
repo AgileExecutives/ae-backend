@@ -126,7 +126,7 @@ func TestValidateBookingToken_ValidTokenFromQuery(t *testing.T) {
 	bookingLinkSvc, middleware := setupTestServices(t, db)
 
 	// Generate a valid token
-	token, err := bookingLinkSvc.GenerateBookingLink(1, 123, 1, entities.PermanentBookingLink)
+	token, err := bookingLinkSvc.GenerateBookingLink(1, 123, 1, entities.TimedBookingLink)
 	require.NoError(t, err)
 
 	router := setupGin()
@@ -136,7 +136,7 @@ func TestValidateBookingToken_ValidTokenFromQuery(t *testing.T) {
 
 		bookingClaims, ok := claims.(*entities.BookingLinkClaims)
 		assert.True(t, ok)
-		assert.Equal(t, entities.PermanentBookingLink, bookingClaims.Purpose)
+		assert.Equal(t, entities.TimedBookingLink, bookingClaims.Purpose)
 
 		c.JSON(http.StatusOK, gin.H{"status": "success"})
 	})
@@ -222,7 +222,7 @@ func TestValidateBookingToken_BlacklistedToken(t *testing.T) {
 	bookingLinkSvc, middleware := setupTestServices(t, db)
 
 	// Generate a valid token
-	token, err := bookingLinkSvc.GenerateBookingLink(1, 123, 1, entities.PermanentBookingLink)
+	token, err := bookingLinkSvc.GenerateBookingLink(1, 123, 1, entities.TimedBookingLink)
 	require.NoError(t, err)
 
 	// Blacklist the token
@@ -247,7 +247,7 @@ func TestValidateBookingToken_ExpiredBlacklistEntry(t *testing.T) {
 	bookingLinkSvc, middleware := setupTestServices(t, db)
 
 	// Generate a valid token
-	token, err := bookingLinkSvc.GenerateBookingLink(1, 123, 1, entities.PermanentBookingLink)
+	token, err := bookingLinkSvc.GenerateBookingLink(1, 123, 1, entities.TimedBookingLink)
 	require.NoError(t, err)
 
 	// Blacklist the token with an expiry in the past
@@ -416,7 +416,7 @@ func TestBlacklistToken_Success(t *testing.T) {
 	db := setupTestDB(t)
 	bookingLinkSvc, middleware := setupTestServices(t, db)
 
-	token, err := bookingLinkSvc.GenerateBookingLink(1, 123, 1, entities.PermanentBookingLink)
+	token, err := bookingLinkSvc.GenerateBookingLink(1, 123, 1, entities.TimedBookingLink)
 	require.NoError(t, err)
 
 	expiresAt := time.Now().Add(24 * time.Hour)
@@ -434,7 +434,7 @@ func TestBlacklistToken_MultipleTokens(t *testing.T) {
 	db := setupTestDB(t)
 	bookingLinkSvc, middleware := setupTestServices(t, db)
 
-	token1, err := bookingLinkSvc.GenerateBookingLink(1, 123, 1, entities.PermanentBookingLink)
+	token1, err := bookingLinkSvc.GenerateBookingLink(1, 123, 1, entities.TimedBookingLink)
 	require.NoError(t, err)
 
 	token2, err := bookingLinkSvc.GenerateBookingLink(1, 456, 1, entities.OneTimeBookingLink)
@@ -458,7 +458,7 @@ func TestMiddleware_ChainedRequests(t *testing.T) {
 	bookingLinkSvc, middleware := setupTestServices(t, db)
 
 	// Generate a permanent token
-	token, err := bookingLinkSvc.GenerateBookingLink(1, 123, 1, entities.PermanentBookingLink)
+	token, err := bookingLinkSvc.GenerateBookingLink(1, 123, 1, entities.TimedBookingLink)
 	require.NoError(t, err)
 
 	router := setupGin()
@@ -520,7 +520,7 @@ func TestValidateBookingToken_PermanentToken(t *testing.T) {
 	bookingLinkSvc, middleware := setupTestServices(t, db)
 
 	// Generate a permanent token
-	token, err := bookingLinkSvc.GenerateBookingLink(1, 999, 1, entities.PermanentBookingLink)
+	token, err := bookingLinkSvc.GenerateBookingLink(1, 999, 1, entities.TimedBookingLink)
 	require.NoError(t, err)
 
 	router := setupGin()
@@ -528,7 +528,7 @@ func TestValidateBookingToken_PermanentToken(t *testing.T) {
 		claims, _ := c.Get("booking_claims")
 		bookingClaims := claims.(*entities.BookingLinkClaims)
 
-		assert.Equal(t, entities.PermanentBookingLink, bookingClaims.Purpose)
+		assert.Equal(t, entities.TimedBookingLink, bookingClaims.Purpose)
 		c.JSON(http.StatusOK, gin.H{"status": "success"})
 	})
 

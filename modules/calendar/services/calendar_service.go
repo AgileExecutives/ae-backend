@@ -415,7 +415,8 @@ func (s *CalendarService) generateSeriesEntries(series *entities.CalendarSeries,
 
 	var entries []entities.CalendarEntry
 	position := 1
-	current := time.Now()
+	// Start from the series start time, not from today
+	current := *series.StartTime
 
 	switch series.IntervalType {
 	case "weekly":
@@ -432,13 +433,15 @@ func (s *CalendarService) generateSeriesEntries(series *entities.CalendarSeries,
 				time.UTC,
 			)
 
+			// Create a copy of position for this entry
+			positionCopy := position
 			entry := entities.CalendarEntry{
 				TenantID:         tenantID,
 				UserID:           userID,
 				CalendarID:       series.CalendarID,
 				SeriesID:         &series.ID,
 				Title:            series.Title,
-				PositionInSeries: &position,
+				PositionInSeries: &positionCopy,
 				Participants:     series.Participants,
 				StartTime:        &startTime,
 				EndTime:          &endTime,
@@ -473,13 +476,15 @@ func (s *CalendarService) generateSeriesEntries(series *entities.CalendarSeries,
 				time.UTC,
 			)
 
+			// Create a copy of position for this entry
+			positionCopy := position
 			entry := entities.CalendarEntry{
 				TenantID:         tenantID,
 				UserID:           userID,
 				CalendarID:       series.CalendarID,
 				SeriesID:         &series.ID,
 				Title:            series.Title,
-				PositionInSeries: &position,
+				PositionInSeries: &positionCopy,
 				Participants:     series.Participants,
 				StartTime:        &startTime,
 				EndTime:          &endTime,
@@ -513,13 +518,15 @@ func (s *CalendarService) generateSeriesEntries(series *entities.CalendarSeries,
 				time.UTC,
 			)
 
+			// Create a copy of position for this entry
+			positionCopy := position
 			entry := entities.CalendarEntry{
 				TenantID:         tenantID,
 				UserID:           userID,
 				CalendarID:       series.CalendarID,
 				SeriesID:         &series.ID,
 				Title:            series.Title,
-				PositionInSeries: &position,
+				PositionInSeries: &positionCopy,
 				Participants:     series.Participants,
 				StartTime:        &startTime,
 				EndTime:          &endTime,
@@ -651,11 +658,33 @@ func (s *CalendarService) DeleteCalendarSeries(id, tenantID, userID uint, req en
 		// Ensure from_date is in UTC
 		fromDateUTC := req.FromDate.UTC()
 
-		// Delete entries from the specified date onwards
-		// Use start_time >= from_date to include entries starting on or after the date
+		// Get all entries from the specified date onwards
+		var entries []entities.CalendarEntry
 		if err := s.db.Where("series_id = ? AND tenant_id = ? AND user_id = ? AND start_time >= ?",
-			id, tenantID, userID, fromDateUTC).Delete(&entities.CalendarEntry{}).Error; err != nil {
-			return fmt.Errorf("failed to delete series entries from date: %w", err)
+			id, tenantID, userID, fromDateUTC).Find(&entries).Error; err != nil {
+			return fmt.Errorf("failed to fetch series entries from date: %w", err)
+		}
+
+		// Delete each entry individually to fire events for session cancellation
+		for _, entry := range entries {
+			if err := s.db.Delete(&entry).Error; err != nil {
+				return fmt.Errorf("failed to delete calendar entry %d: %w", entry.ID, err)
+			}
+
+			// Publish calendar entry deleted event for each entry
+			if s.eventBus != nil {
+				event := map[string]interface{}{
+					"calendar_entry_id": entry.ID,
+					"tenant_id":         entry.TenantID,
+					"user_id":           entry.UserID,
+					"calendar_id":       entry.CalendarID,
+				}
+				fmt.Printf("event to publish: delete calendar entry %d\n", entry.ID)
+				if err := s.eventBus.Publish("calendar.entry.deleted", event); err != nil {
+					// Log error but don't fail the delete operation
+					fmt.Printf("Failed to publish calendar entry deleted event: %v\n", err)
+				}
+			}
 		}
 
 		// Update the series last_date to end before the from_date
@@ -668,9 +697,31 @@ func (s *CalendarService) DeleteCalendarSeries(id, tenantID, userID uint, req en
 	}
 
 	// Default mode: "all" - delete all entries and the series itself
-	// Delete all calendar entries associated with this series first
-	if err := s.db.Where("series_id = ? AND tenant_id = ? AND user_id = ?", id, tenantID, userID).Delete(&entities.CalendarEntry{}).Error; err != nil {
-		return fmt.Errorf("failed to delete series entries: %w", err)
+	// Get all calendar entries associated with this series
+	var entries []entities.CalendarEntry
+	if err := s.db.Where("series_id = ? AND tenant_id = ? AND user_id = ?", id, tenantID, userID).Find(&entries).Error; err != nil {
+		return fmt.Errorf("failed to fetch series entries: %w", err)
+	}
+
+	// Delete each entry individually to fire events for session cancellation
+	for _, entry := range entries {
+		if err := s.db.Delete(&entry).Error; err != nil {
+			return fmt.Errorf("failed to delete calendar entry %d: %w", entry.ID, err)
+		}
+
+		// Publish calendar entry deleted event for each entry
+		if s.eventBus != nil {
+			event := map[string]interface{}{
+				"calendar_entry_id": entry.ID,
+				"tenant_id":         entry.TenantID,
+				"user_id":           entry.UserID,
+				"calendar_id":       entry.CalendarID,
+			}
+			if err := s.eventBus.Publish("calendar.entry.deleted", event); err != nil {
+				// Log error but don't fail the delete operation
+				fmt.Printf("Failed to publish calendar entry deleted event: %v\n", err)
+			}
+		}
 	}
 
 	// Then delete the series itself
