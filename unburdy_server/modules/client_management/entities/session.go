@@ -130,3 +130,11 @@ func (s *Session) ToResponse() SessionResponse {
 		UpdatedAt:         s.UpdatedAt.UTC(),
 	}
 }
+
+// SessionDetailResponse represents a detailed session response with client and session navigation
+type SessionDetailResponse struct {
+	SessionResponse
+	Client          *ClientResponse  `json:"client,omitempty"`
+	PreviousSession *SessionResponse `json:"previous_session,omitempty"`
+	NextSession     *SessionResponse `json:"next_session,omitempty"`
+}

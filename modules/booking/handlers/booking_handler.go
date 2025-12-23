@@ -42,8 +42,8 @@ func NewBookingHandler(service *services.BookingService, bookingLinkSvc *service
 // @Failure 401 {object} baseAPI.APIResponse
 // @Failure 500 {object} baseAPI.APIResponse
 // @Security BearerAuth
-// @Router /booking/templates [post]
 // @ID createBookingTemplate
+// @Router /booking/templates [post]
 func (h *BookingHandler) CreateConfiguration(c *gin.Context) {
 	tenantID, err := baseAPI.GetTenantID(c)
 	if err != nil {
@@ -78,8 +78,8 @@ func (h *BookingHandler) CreateConfiguration(c *gin.Context) {
 // @Failure 404 {object} baseAPI.APIResponse
 // @Failure 500 {object} baseAPI.APIResponse
 // @Security BearerAuth
-// @Router /booking/templates/{id} [get]
 // @ID getBookingTemplate
+// @Router /booking/templates/{id} [get]
 func (h *BookingHandler) GetConfiguration(c *gin.Context) {
 	tenantID, err := baseAPI.GetTenantID(c)
 	if err != nil {
@@ -115,8 +115,8 @@ func (h *BookingHandler) GetConfiguration(c *gin.Context) {
 // @Failure 401 {object} baseAPI.APIResponse
 // @Failure 500 {object} baseAPI.APIResponse
 // @Security BearerAuth
-// @Router /booking/templates [get]
 // @ID listBookingTemplates
+// @Router /booking/templates [get]
 func (h *BookingHandler) GetAllConfigurations(c *gin.Context) {
 	tenantID, err := baseAPI.GetTenantID(c)
 	if err != nil {
@@ -150,8 +150,8 @@ func (h *BookingHandler) GetAllConfigurations(c *gin.Context) {
 // @Failure 401 {object} baseAPI.APIResponse
 // @Failure 500 {object} baseAPI.APIResponse
 // @Security BearerAuth
-// @Router /booking/templates/by-user [get]
 // @ID listBookingTemplatesByUser
+// @Router /booking/templates/by-user [get]
 func (h *BookingHandler) GetConfigurationsByUser(c *gin.Context) {
 	tenantID, err := baseAPI.GetTenantID(c)
 	if err != nil {
@@ -196,8 +196,8 @@ func (h *BookingHandler) GetConfigurationsByUser(c *gin.Context) {
 // @Failure 401 {object} baseAPI.APIResponse
 // @Failure 500 {object} baseAPI.APIResponse
 // @Security BearerAuth
-// @Router /booking/templates/by-calendar [get]
 // @ID listBookingTemplatesByCalendar
+// @Router /booking/templates/by-calendar [get]
 func (h *BookingHandler) GetConfigurationsByCalendar(c *gin.Context) {
 	tenantID, err := baseAPI.GetTenantID(c)
 	if err != nil {
@@ -246,8 +246,8 @@ func (h *BookingHandler) GetConfigurationsByCalendar(c *gin.Context) {
 // @Failure 404 {object} baseAPI.APIResponse
 // @Failure 500 {object} baseAPI.APIResponse
 // @Security BearerAuth
-// @Router /booking/templates/{id} [put]
 // @ID updateBookingTemplate
+// @Router /booking/templates/{id} [put]
 func (h *BookingHandler) UpdateConfiguration(c *gin.Context) {
 	tenantID, err := baseAPI.GetTenantID(c)
 	if err != nil {
@@ -292,8 +292,8 @@ func (h *BookingHandler) UpdateConfiguration(c *gin.Context) {
 // @Failure 404 {object} baseAPI.APIResponse
 // @Failure 500 {object} baseAPI.APIResponse
 // @Security BearerAuth
-// @Router /booking/templates/{id} [delete]
 // @ID deleteBookingTemplate
+// @Router /booking/templates/{id} [delete]
 func (h *BookingHandler) DeleteConfiguration(c *gin.Context) {
 	tenantID, err := baseAPI.GetTenantID(c)
 	if err != nil {
@@ -333,8 +333,8 @@ func (h *BookingHandler) DeleteConfiguration(c *gin.Context) {
 // @Failure 404 {object} baseAPI.APIResponse
 // @Failure 500 {object} baseAPI.APIResponse
 // @Security BearerAuth
-// @Router /booking/link [post]
 // @ID createBookingLink
+// @Router /booking/link [post]
 func (h *BookingHandler) CreateBookingLink(c *gin.Context) {
 	tenantID, err := baseAPI.GetTenantID(c)
 	if err != nil {
@@ -416,8 +416,8 @@ func (h *BookingHandler) CreateBookingLink(c *gin.Context) {
 // @Failure 401 {object} baseAPI.APIResponse
 // @Failure 404 {object} baseAPI.APIResponse
 // @Failure 500 {object} baseAPI.APIResponse
-// @Router /booking/freeslots/{token} [get]
 // @ID getBookingFreeSlots
+// @Router /booking/freeslots/{token} [get]
 func (h *BookingHandler) GetFreeSlots(c *gin.Context) {
 	// Get booking claims from middleware (already validated)
 	claimsInterface, exists := c.Get("booking_claims")

@@ -199,6 +199,87 @@ func (s *SessionService) DeleteSession(id, tenantID uint) error {
 	return nil
 }
 
+// GetDetailedSessionsUpcoming7Days retrieves all sessions for 7 days starting from the given date with detailed client information
+// including previous and next sessions for each client. If startDate is nil, uses current date.
+func (s *SessionService) GetDetailedSessionsUpcoming7Days(tenantID uint, startDate *time.Time) ([]entities.SessionDetailResponse, error) {
+	var now time.Time
+	if startDate != nil {
+		now = startDate.UTC()
+	} else {
+		now = time.Now().UTC()
+	}
+	sevenDaysFromNow := now.AddDate(0, 0, 7)
+
+	// Get all sessions in the next 7 days
+	var sessions []entities.Session
+	if err := s.db.Where("tenant_id = ? AND original_start_time >= ? AND original_start_time < ?",
+		tenantID, now, sevenDaysFromNow).
+		Order("original_start_time ASC").
+		Find(&sessions).Error; err != nil {
+		return nil, fmt.Errorf("failed to get sessions: %w", err)
+	}
+
+	// Build response with client details and session navigation
+	var detailedSessions []entities.SessionDetailResponse
+	clientCache := make(map[uint]*entities.ClientResponse)
+
+	for _, session := range sessions {
+		sessionResp := session.ToResponse()
+
+		// Get or fetch client
+		var clientResp *entities.ClientResponse
+		if cached, exists := clientCache[session.ClientID]; exists {
+			clientResp = cached
+		} else {
+			// Fetch client
+			var client entities.Client
+			if err := s.db.Where("id = ? AND tenant_id = ?", session.ClientID, tenantID).First(&client).Error; err != nil {
+				// Skip if client not found, don't fail entire request
+				continue
+			}
+
+			resp := client.ToResponse()
+			clientResp = &resp
+			clientCache[session.ClientID] = clientResp
+		}
+
+		// Get previous session (most recent session before this one for this client)
+		var prevSession entities.Session
+		err := s.db.Where("client_id = ? AND tenant_id = ? AND original_start_time < ?",
+			session.ClientID, tenantID, session.OriginalStartTime).
+			Order("original_start_time DESC").
+			First(&prevSession).Error
+
+		var prevSessionResp *entities.SessionResponse
+		if err == nil {
+			resp := prevSession.ToResponse()
+			prevSessionResp = &resp
+		}
+
+		// Get next session (earliest session after this one for this client)
+		var nextSession entities.Session
+		err = s.db.Where("client_id = ? AND tenant_id = ? AND original_start_time > ?",
+			session.ClientID, tenantID, session.OriginalStartTime).
+			Order("original_start_time ASC").
+			First(&nextSession).Error
+
+		var nextSessionResp *entities.SessionResponse
+		if err == nil {
+			resp := nextSession.ToResponse()
+			nextSessionResp = &resp
+		}
+
+		detailedSessions = append(detailedSessions, entities.SessionDetailResponse{
+			SessionResponse: sessionResp,
+			Client:          clientResp,
+			PreviousSession: prevSessionResp,
+			NextSession:     nextSessionResp,
+		})
+	}
+
+	return detailedSessions, nil
+}
+
 // BookSessions creates a calendar series and corresponding sessions for a client
 func (s *SessionService) BookSessions(req entities.BookSessionsRequest, tenantID, userID uint) (*uint, []entities.Session, error) {
 	// Verify client exists and belongs to tenant

@@ -66,6 +66,7 @@ func (rp *RouteProvider) RegisterRoutes(router *gin.RouterGroup, ctx *core.Modul
 		sessions.POST("", rp.sessionHandler.CreateSession)
 		sessions.POST("/book", rp.sessionHandler.BookSessions)
 		sessions.GET("", rp.sessionHandler.GetAllSessions)
+		sessions.GET("/detail", rp.sessionHandler.GetDetailedSessionsUpcoming)
 		sessions.GET("/by_entry/:id", rp.sessionHandler.GetSessionByCalendarEntry)
 		sessions.GET("/:id", rp.sessionHandler.GetSession)
 		sessions.PUT("/:id", rp.sessionHandler.UpdateSession)

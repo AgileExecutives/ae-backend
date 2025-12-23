@@ -85,19 +85,26 @@ func (s *ClientService) GetClientByID(id, tenantID uint) (*entities.Client, erro
 }
 
 // GetAllClients returns all clients with pagination for a tenant with preloaded cost providers
-func (s *ClientService) GetAllClients(page, limit int, tenantID uint) ([]entities.Client, int, error) {
+// Optionally filters by status if provided
+func (s *ClientService) GetAllClients(page, limit int, tenantID uint, status string) ([]entities.Client, int, error) {
 	var clients []entities.Client
 	var total int64
 
 	offset := (page - 1) * limit
 
+	// Build query
+	query := s.db.Model(&entities.Client{}).Where("tenant_id = ?", tenantID)
+	if status != "" {
+		query = query.Where("status = ?", status)
+	}
+
 	// Count total records for the tenant
-	if err := s.db.Model(&entities.Client{}).Where("tenant_id = ?", tenantID).Count(&total).Error; err != nil {
+	if err := query.Count(&total).Error; err != nil {
 		return nil, 0, fmt.Errorf("failed to count clients: %w", err)
 	}
 
 	// Get paginated records for the tenant with preloaded cost provider
-	if err := s.db.Preload("CostProvider").Where("tenant_id = ?", tenantID).Offset(offset).Limit(limit).Find(&clients).Error; err != nil {
+	if err := query.Preload("CostProvider").Offset(offset).Limit(limit).Find(&clients).Error; err != nil {
 		return nil, 0, fmt.Errorf("failed to fetch clients: %w", err)
 	}
 

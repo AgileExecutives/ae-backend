@@ -487,9 +487,10 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "booking-slots"
+                    "booking"
                 ],
                 "summary": "Get available time slots for booking",
+                "operationId": "getBookingFreeSlots",
                 "parameters": [
                     {
                         "type": "string",
@@ -500,14 +501,12 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
-                        "example": "\"2025-11-01\"",
                         "description": "Start date for slot search (YYYY-MM-DD)",
                         "name": "start",
                         "in": "query"
                     },
                     {
                         "type": "string",
-                        "example": "\"2025-11-30\"",
                         "description": "End date for slot search (YYYY-MM-DD)",
                         "name": "end",
                         "in": "query"
@@ -574,9 +573,10 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "booking-templates"
+                    "booking"
                 ],
                 "summary": "Create a booking link",
+                "operationId": "createBookingLink",
                 "parameters": [
                     {
                         "description": "Booking link data",
@@ -646,9 +646,10 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "booking-templates"
+                    "booking"
                 ],
                 "summary": "Get all booking configurations",
+                "operationId": "listBookingTemplates",
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -699,12 +700,24 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "booking-templates"
+                    "booking"
                 ],
                 "summary": "Create a new booking configuration",
+                "operationId": "createBookingTemplate",
                 "parameters": [
                     {
-                        "description": "Booking configuration data (includes allowed_start_minutes)",
+                        "description": "Allowed minute marks within the hour (e.g., [0,15,30,45])",
+                        "name": "allowed_start_minutes",
+                        "in": "body",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "type": "integer"
+                            }
+                        }
+                    },
+                    {
+                        "description": "Booking configuration data",
                         "name": "configuration",
                         "in": "body",
                         "required": true,
@@ -901,9 +914,10 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "booking-templates"
+                    "booking"
                 ],
                 "summary": "Get a booking configuration by ID",
+                "operationId": "getBookingTemplate",
                 "parameters": [
                     {
                         "type": "integer",
@@ -972,9 +986,10 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "booking-templates"
+                    "booking"
                 ],
                 "summary": "Update a booking configuration",
+                "operationId": "updateBookingTemplate",
                 "parameters": [
                     {
                         "type": "integer",
@@ -984,7 +999,18 @@ const docTemplate = `{
                         "required": true
                     },
                     {
-                        "description": "Updated configuration data (allowed_start_minutes optional)",
+                        "description": "Allowed minute marks within the hour (e.g., [0,15,30,45])",
+                        "name": "allowed_start_minutes",
+                        "in": "body",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "type": "integer"
+                            }
+                        }
+                    },
+                    {
+                        "description": "Updated configuration data",
                         "name": "configuration",
                         "in": "body",
                         "required": true,
@@ -1044,14 +1070,15 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "Soft delete a booking configuration by ID",
+                "description": "Delete a booking configuration by ID",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "booking-templates"
+                    "booking"
                 ],
                 "summary": "Delete a booking configuration",
+                "operationId": "deleteBookingTemplate",
                 "parameters": [
                     {
                         "type": "integer",
@@ -2382,7 +2409,7 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "Retrieve all clients with optional pagination",
+                "description": "Retrieve all clients with optional pagination and status filtering",
                 "produces": [
                     "application/json"
                 ],
@@ -2404,6 +2431,12 @@ const docTemplate = `{
                         "default": 200,
                         "description": "Number of clients per page (respects DEFAULT_PAGE_LIMIT and MAX_PAGE_LIMIT env vars)",
                         "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by client status (waiting, active, archived)",
+                        "name": "status",
                         "in": "query"
                     }
                 ],
@@ -5378,6 +5411,73 @@ const docTemplate = `{
                 }
             }
         },
+        "/sessions/detail": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Retrieve all sessions scheduled for 7 days starting from the specified date (or current date if not specified) with detailed client information including their previous and next sessions",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "sessions"
+                ],
+                "summary": "Get detailed sessions for upcoming 7 days",
+                "operationId": "getDetailedSessionsUpcoming",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Start date (YYYY-MM-DD format, e.g., 2025-12-23). Defaults to current date if not provided.",
+                        "name": "date",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/api.APIResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/entities.SessionDetailResponse"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/api.APIResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/api.APIResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/api.APIResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/sessions/{id}": {
             "get": {
                 "security": [
@@ -6463,6 +6563,9 @@ const docTemplate = `{
                 "therapy_title": {
                     "type": "string"
                 },
+                "timezone": {
+                    "type": "string"
+                },
                 "unit_price": {
                     "type": "number"
                 },
@@ -7068,6 +7171,62 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "time.Time": {
+                    "type": "string"
+                }
+            }
+        },
+        "entities.SessionDetailResponse": {
+            "type": "object",
+            "properties": {
+                "calendar_entry_id": {
+                    "description": "Nullable - NULL if calendar entry was deleted",
+                    "type": "integer"
+                },
+                "client": {
+                    "$ref": "#/definitions/entities.ClientResponse"
+                },
+                "client_id": {
+                    "type": "integer"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "documentation": {
+                    "type": "string"
+                },
+                "duration_min": {
+                    "type": "integer"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "next_session": {
+                    "$ref": "#/definitions/entities.SessionResponse"
+                },
+                "number_units": {
+                    "type": "integer"
+                },
+                "original_date": {
+                    "description": "UTC - Date of original calendar entry",
+                    "type": "string"
+                },
+                "original_start_time": {
+                    "description": "UTC - Start time from original calendar entry",
+                    "type": "string"
+                },
+                "previous_session": {
+                    "$ref": "#/definitions/entities.SessionResponse"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "tenant_id": {
+                    "type": "integer"
+                },
+                "type": {
+                    "type": "string"
+                },
+                "updated_at": {
                     "type": "string"
                 }
             }

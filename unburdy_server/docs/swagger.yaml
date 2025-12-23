@@ -414,6 +414,8 @@ definitions:
         type: integer
       therapy_title:
         type: string
+      timezone:
+        type: string
       unit_price:
         type: number
       updated_at:
@@ -853,6 +855,44 @@ definitions:
   entities.NullableDate:
     properties:
       time.Time:
+        type: string
+    type: object
+  entities.SessionDetailResponse:
+    properties:
+      calendar_entry_id:
+        description: Nullable - NULL if calendar entry was deleted
+        type: integer
+      client:
+        $ref: '#/definitions/entities.ClientResponse'
+      client_id:
+        type: integer
+      created_at:
+        type: string
+      documentation:
+        type: string
+      duration_min:
+        type: integer
+      id:
+        type: integer
+      next_session:
+        $ref: '#/definitions/entities.SessionResponse'
+      number_units:
+        type: integer
+      original_date:
+        description: UTC - Date of original calendar entry
+        type: string
+      original_start_time:
+        description: UTC - Start time from original calendar entry
+        type: string
+      previous_session:
+        $ref: '#/definitions/entities.SessionResponse'
+      status:
+        type: string
+      tenant_id:
+        type: integer
+      type:
+        type: string
+      updated_at:
         type: string
     type: object
   entities.SessionResponse:
@@ -2395,6 +2435,7 @@ paths:
     get:
       description: Retrieve available time slots based on a booking link token. Token
         is validated and must not be blacklisted.
+      operationId: getBookingFreeSlots
       parameters:
       - description: Booking link token
         in: path
@@ -2402,12 +2443,10 @@ paths:
         required: true
         type: string
       - description: Start date for slot search (YYYY-MM-DD)
-        example: '"2025-11-01"'
         in: query
         name: start
         type: string
       - description: End date for slot search (YYYY-MM-DD)
-        example: '"2025-11-30"'
         in: query
         name: end
         type: string
@@ -2441,12 +2480,13 @@ paths:
             $ref: '#/definitions/api.APIResponse'
       summary: Get available time slots for booking
       tags:
-      - booking-slots
+      - booking
   /booking/link:
     post:
       consumes:
       - application/json
       description: Generate a booking link token for a client to book appointments
+      operationId: createBookingLink
       parameters:
       - description: Booking link data
         in: body
@@ -2486,10 +2526,11 @@ paths:
       - BearerAuth: []
       summary: Create a booking link
       tags:
-      - booking-templates
+      - booking
   /booking/templates:
     get:
       description: Retrieve all booking configurations for the tenant
+      operationId: listBookingTemplates
       produces:
       - application/json
       responses:
@@ -2516,13 +2557,21 @@ paths:
       - BearerAuth: []
       summary: Get all booking configurations
       tags:
-      - booking-templates
+      - booking
     post:
       consumes:
       - application/json
       description: Create a new booking configuration/template for a user's calendar
+      operationId: createBookingTemplate
       parameters:
-      - description: Booking configuration data (includes allowed_start_minutes)
+      - description: Allowed minute marks within the hour (e.g., [0,15,30,45])
+        in: body
+        name: allowed_start_minutes
+        schema:
+          items:
+            type: integer
+          type: array
+      - description: Booking configuration data
         in: body
         name: configuration
         required: true
@@ -2556,10 +2605,11 @@ paths:
       - BearerAuth: []
       summary: Create a new booking configuration
       tags:
-      - booking-templates
+      - booking
   /booking/templates/{id}:
     delete:
-      description: Soft delete a booking configuration by ID
+      description: Delete a booking configuration by ID
+      operationId: deleteBookingTemplate
       parameters:
       - description: Configuration ID
         in: path
@@ -2593,9 +2643,10 @@ paths:
       - BearerAuth: []
       summary: Delete a booking configuration
       tags:
-      - booking-templates
+      - booking
     get:
       description: Retrieve a specific booking configuration by ID
+      operationId: getBookingTemplate
       parameters:
       - description: Configuration ID
         in: path
@@ -2634,18 +2685,26 @@ paths:
       - BearerAuth: []
       summary: Get a booking configuration by ID
       tags:
-      - booking-templates
+      - booking
     put:
       consumes:
       - application/json
       description: Update an existing booking configuration
+      operationId: updateBookingTemplate
       parameters:
       - description: Configuration ID
         in: path
         name: id
         required: true
         type: integer
-      - description: Updated configuration data (allowed_start_minutes optional)
+      - description: Allowed minute marks within the hour (e.g., [0,15,30,45])
+        in: body
+        name: allowed_start_minutes
+        schema:
+          items:
+            type: integer
+          type: array
+      - description: Updated configuration data
         in: body
         name: configuration
         required: true
@@ -2683,7 +2742,7 @@ paths:
       - BearerAuth: []
       summary: Update a booking configuration
       tags:
-      - booking-templates
+      - booking
   /booking/templates/by-calendar:
     get:
       description: Retrieve all booking configurations for a specific calendar
@@ -3608,7 +3667,7 @@ paths:
       - clients
   /clients:
     get:
-      description: Retrieve all clients with optional pagination
+      description: Retrieve all clients with optional pagination and status filtering
       operationId: getClients
       parameters:
       - default: 1
@@ -3622,6 +3681,10 @@ paths:
         in: query
         name: limit
         type: integer
+      - description: Filter by client status (waiting, active, archived)
+        in: query
+        name: status
+        type: string
       produces:
       - application/json
       responses:
@@ -5588,6 +5651,49 @@ paths:
       security:
       - BearerAuth: []
       summary: Get session by calendar entry ID
+      tags:
+      - sessions
+  /sessions/detail:
+    get:
+      description: Retrieve all sessions scheduled for 7 days starting from the specified
+        date (or current date if not specified) with detailed client information including
+        their previous and next sessions
+      operationId: getDetailedSessionsUpcoming
+      parameters:
+      - description: Start date (YYYY-MM-DD format, e.g., 2025-12-23). Defaults to
+          current date if not provided.
+        in: query
+        name: date
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/api.APIResponse'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/entities.SessionDetailResponse'
+                  type: array
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api.APIResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/api.APIResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api.APIResponse'
+      security:
+      - BearerAuth: []
+      summary: Get detailed sessions for upcoming 7 days
       tags:
       - sessions
   /static:

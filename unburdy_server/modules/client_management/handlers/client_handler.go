@@ -98,12 +98,13 @@ func (h *ClientHandler) GetClient(c *gin.Context) {
 
 // GetAllClients handles retrieving all clients with pagination
 // @Summary Get all clients
-// @Description Retrieve all clients with optional pagination
+// @Description Retrieve all clients with optional pagination and status filtering
 // @Tags clients
 // @ID getClients
 // @Produce json
 // @Param page query int false "Page number" default(1)
 // @Param limit query int false "Number of clients per page (respects DEFAULT_PAGE_LIMIT and MAX_PAGE_LIMIT env vars)" default(200)
+// @Param status query string false "Filter by client status (waiting, active, archived)"
 // @Success 200 {object} models.APIResponse{data=models.ListResponse} "Clients retrieved successfully"
 // @Failure 401 {object} models.APIResponse "Unauthorized"
 // @Failure 500 {object} models.APIResponse "Internal server error"
@@ -111,6 +112,7 @@ func (h *ClientHandler) GetClient(c *gin.Context) {
 // @Router /clients [get]
 func (h *ClientHandler) GetAllClients(c *gin.Context) {
 	page, limit := utils.GetPaginationParams(c)
+	status := c.Query("status")
 
 	tenantID, err := baseAPI.GetTenantID(c)
 	if err != nil {
@@ -118,7 +120,7 @@ func (h *ClientHandler) GetAllClients(c *gin.Context) {
 		return
 	}
 
-	clients, total, err := h.clientService.GetAllClients(page, limit, tenantID)
+	clients, total, err := h.clientService.GetAllClients(page, limit, tenantID, status)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, models.ErrorResponseFunc("Failed to retrieve clients", err.Error()))
 		return

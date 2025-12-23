@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
+	"time"
 
 	baseAPI "github.com/ae-base-server/api"
 	"github.com/gin-gonic/gin"
@@ -310,6 +311,46 @@ func (h *SessionHandler) DeleteSession(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, baseAPI.SuccessResponse("Session deleted successfully", nil))
+}
+
+// GetDetailedSessionsUpcoming handles retrieving detailed sessions for the next 7 days
+// @Summary Get detailed sessions for upcoming 7 days
+// @Description Retrieve all sessions scheduled for 7 days starting from the specified date (or current date if not specified) with detailed client information including their previous and next sessions
+// @Tags sessions
+// @ID getDetailedSessionsUpcoming
+// @Produce json
+// @Security BearerAuth
+// @Param date query string false "Start date (YYYY-MM-DD format, e.g., 2025-12-23). Defaults to current date if not provided."
+// @Success 200 {object} baseAPI.APIResponse{data=[]entities.SessionDetailResponse}
+// @Failure 400 {object} baseAPI.APIResponse
+// @Failure 401 {object} baseAPI.APIResponse
+// @Failure 500 {object} baseAPI.APIResponse
+// @Router /sessions/detail [get]
+func (h *SessionHandler) GetDetailedSessionsUpcoming(c *gin.Context) {
+	tenantID, err := baseAPI.GetTenantID(c)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, baseAPI.ErrorResponseFunc("Unauthorized", "Unable to get tenant ID: "+err.Error()))
+		return
+	}
+
+	// Parse optional date parameter
+	var startDate *time.Time
+	if dateStr := c.Query("date"); dateStr != "" {
+		parsedDate, err := time.Parse("2006-01-02", dateStr)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, baseAPI.ErrorResponseFunc("Invalid request", "Invalid date format. Use YYYY-MM-DD format (e.g., 2025-12-23)"))
+			return
+		}
+		startDate = &parsedDate
+	}
+
+	detailedSessions, err := h.sessionService.GetDetailedSessionsUpcoming7Days(tenantID, startDate)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, baseAPI.ErrorResponseFunc("Internal server error", err.Error()))
+		return
+	}
+
+	c.JSON(http.StatusOK, baseAPI.SuccessResponse("Detailed sessions retrieved successfully", detailedSessions))
 }
 
 // BookSessions creates a calendar series or single entry with sessions for a client
