@@ -30,14 +30,16 @@ func NewModule(db *gorm.DB) baseAPI.ModuleRouteProvider {
 	costProviderService := services.NewCostProviderService(db)
 	// Pass nil for email service in legacy module (email won't work but won't crash)
 	sessionService := services.NewSessionService(db, nil)
+	invoiceService := services.NewInvoiceService(db)
 
 	// Initialize handlers
 	clientHandler := handlers.NewClientHandler(clientService)
 	costProviderHandler := handlers.NewCostProviderHandler(costProviderService)
 	sessionHandler := handlers.NewSessionHandler(sessionService)
+	invoiceHandler := handlers.NewInvoiceHandler(invoiceService)
 
 	// Initialize route provider with database for auth middleware
-	routeProvider := routes.NewRouteProvider(clientHandler, costProviderHandler, sessionHandler, db)
+	routeProvider := routes.NewRouteProvider(clientHandler, costProviderHandler, sessionHandler, invoiceHandler, db)
 
 	return &Module{
 		routeProvider: routeProvider,
@@ -62,6 +64,8 @@ func (m *Module) GetEntitiesForMigration() []interface{} {
 		&entities.Client{},
 		&entities.CostProvider{},
 		&entities.Session{},
+		&entities.Invoice{},
+		&entities.InvoiceItem{},
 	}
 }
 
@@ -72,6 +76,7 @@ type CoreModule struct {
 	clientHandlers      *handlers.ClientHandler
 	costProviderHandler *handlers.CostProviderHandler
 	sessionHandler      *handlers.SessionHandler
+	invoiceHandler      *handlers.InvoiceHandler
 	routeProvider       *routes.RouteProvider
 }
 
@@ -143,13 +148,17 @@ func (m *CoreModule) Initialize(ctx core.ModuleContext) error {
 		ctx.Logger.Warn("⚠️ Client Management: Booking link service not found in registry - token-based booking will not be available")
 	}
 
+	// Initialize invoice service
+	invoiceService := services.NewInvoiceService(ctx.DB)
+
 	// Initialize handlers
 	m.clientHandlers = handlers.NewClientHandler(clientService)
 	m.costProviderHandler = handlers.NewCostProviderHandler(costProviderService)
 	m.sessionHandler = handlers.NewSessionHandler(sessionService)
+	m.invoiceHandler = handlers.NewInvoiceHandler(invoiceService)
 
 	// Initialize route provider with database for auth middleware
-	m.routeProvider = routes.NewRouteProvider(m.clientHandlers, m.costProviderHandler, m.sessionHandler, ctx.DB)
+	m.routeProvider = routes.NewRouteProvider(m.clientHandlers, m.costProviderHandler, m.sessionHandler, m.invoiceHandler, ctx.DB)
 
 	ctx.Logger.Info("Client management module initialized successfully")
 	return nil
@@ -169,6 +178,9 @@ func (m *CoreModule) Entities() []core.Entity {
 	return []core.Entity{
 		entities.NewClientEntity(),
 		entities.NewCostProviderEntity(),
+		entities.NewSessionEntity(),
+		entities.NewInvoiceEntity(),
+		entities.NewInvoiceItemEntity(),
 	}
 }
 
@@ -203,6 +215,7 @@ func (m *CoreModule) SwaggerPaths() []string {
 		"/clients",
 		"/cost-providers",
 		"/sessions",
+		"/invoices",
 	}
 }
 

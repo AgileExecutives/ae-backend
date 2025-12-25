@@ -100,7 +100,7 @@ func TestSessionCancellationOnCalendarEntryDeletion(t *testing.T) {
 	t.Logf("Created calendar entry with ID: %d", calendarEntry.ID)
 
 	// Step 4: Create a session linked to the calendar entry
-\tsessionService := services.NewSessionService(db, nil)
+	sessionService := services.NewSessionService(db, nil)
 	session, err := sessionService.CreateSession(entities.CreateSessionRequest{
 		ClientID:          client.ID,
 		CalendarEntryID:   calendarEntry.ID,
@@ -205,7 +205,7 @@ func TestSessionSeriesCancellationOnCalendarEntryDeletion(t *testing.T) {
 
 	// Step 4: Create sessions for each calendar entry using BookSessions
 	// (BookSessions automatically extracts original_date and original_start_time from calendar entries)
-	sessionService := services.NewSessionService(db)
+	sessionService := services.NewSessionService(db, nil)
 	createdSessions := make([]entities.Session, 0, len(entries))
 
 	for i, entry := range entries {
@@ -317,7 +317,7 @@ func TestSessionNotCanceledIfAlreadyConducted(t *testing.T) {
 	require.NoError(t, err)
 
 	// Create session with "conducted" status
-	sessionService := services.NewSessionService(db)
+	sessionService := services.NewSessionService(db, nil)
 	session, err := sessionService.CreateSession(entities.CreateSessionRequest{
 		ClientID:          client.ID,
 		CalendarEntryID:   calendarEntry.ID,

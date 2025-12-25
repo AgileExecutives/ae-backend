@@ -12,18 +12,21 @@ require (
 	github.com/stretchr/testify v1.11.1
 	github.com/unburdy/booking-module v0.0.0
 	github.com/unburdy/calendar-module v0.0.0
+	github.com/unburdy/organization-module v0.0.0
 	gorm.io/driver/postgres v1.6.0
 	gorm.io/driver/sqlite v1.6.0
 	gorm.io/gorm v1.30.0
 )
 
 require (
+	filippo.io/edwards25519 v1.1.0 // indirect
 	github.com/chromedp/cdproto v0.0.0-20250803210736-d308e07a266d // indirect
 	github.com/chromedp/chromedp v0.14.2 // indirect
 	github.com/chromedp/sysutil v1.1.0 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/gin-contrib/cors v1.7.6 // indirect
 	github.com/go-json-experiment/json v0.0.0-20250725192818-e39067aee2d2 // indirect
+	github.com/go-sql-driver/mysql v1.8.1 // indirect
 	github.com/gobwas/httphead v0.1.0 // indirect
 	github.com/gobwas/pool v0.2.1 // indirect
 	github.com/gobwas/ws v1.4.0 // indirect
@@ -34,6 +37,8 @@ require (
 	github.com/swaggo/files v1.0.1 // indirect
 	github.com/swaggo/gin-swagger v1.6.1 // indirect
 	github.com/ulule/limiter/v3 v3.11.2 // indirect
+	gorm.io/datatypes v1.2.6 // indirect
+	gorm.io/driver/mysql v1.5.6 // indirect
 )
 
 require (
@@ -89,3 +94,5 @@ replace github.com/ae-base-server => ../base-server
 replace github.com/unburdy/booking-module => ../modules/booking
 
 replace github.com/unburdy/calendar-module => ../modules/calendar
+
+replace github.com/unburdy/organization-module => ../modules/organization

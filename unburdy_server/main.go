@@ -15,6 +15,7 @@ import (
 	"github.com/joho/godotenv"
 	booking "github.com/unburdy/booking-module"
 	calendar "github.com/unburdy/calendar-module"
+	organization "github.com/unburdy/organization-module"
 	_ "github.com/unburdy/unburdy-server-api/docs" // swagger docs - unburdy-specific
 	"github.com/unburdy/unburdy-server-api/modules/client_management"
 )
@@ -71,6 +72,9 @@ import (
 // @tag.name booking
 // @tag.description [Booking Module] Booking template/configuration management for appointment scheduling
 
+// @tag.name organizations
+// @tag.description [Organization Module] Organization management including billing, tax, and bank account information
+
 func main() {
 	// Load .env file
 	if err := godotenv.Load(); err != nil {
@@ -105,6 +109,7 @@ func main() {
 		static.NewStaticModule(),          // Static JSON file serving
 		calendar.NewCoreModule(),          // Calendar management (unburdy-specific)
 		booking.NewCoreModule(),           // Booking management (unburdy-specific)
+		organization.NewCoreModule(),      // Organization management (unburdy-specific)
 		client_management.NewCoreModule(), // Client management (unburdy-specific) - depends on booking
 	}
 

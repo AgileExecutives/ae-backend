@@ -14,15 +14,17 @@ type RouteProvider struct {
 	clientHandler       *handlers.ClientHandler
 	costProviderHandler *handlers.CostProviderHandler
 	sessionHandler      *handlers.SessionHandler
+	invoiceHandler      *handlers.InvoiceHandler
 	db                  *gorm.DB
 }
 
 // NewRouteProvider creates a new route provider
-func NewRouteProvider(clientHandler *handlers.ClientHandler, costProviderHandler *handlers.CostProviderHandler, sessionHandler *handlers.SessionHandler, db *gorm.DB) *RouteProvider {
+func NewRouteProvider(clientHandler *handlers.ClientHandler, costProviderHandler *handlers.CostProviderHandler, sessionHandler *handlers.SessionHandler, invoiceHandler *handlers.InvoiceHandler, db *gorm.DB) *RouteProvider {
 	return &RouteProvider{
 		clientHandler:       clientHandler,
 		costProviderHandler: costProviderHandler,
 		sessionHandler:      sessionHandler,
+		invoiceHandler:      invoiceHandler,
 		db:                  db,
 	}
 }
@@ -72,6 +74,17 @@ func (rp *RouteProvider) RegisterRoutes(router *gin.RouterGroup, ctx *core.Modul
 		sessions.PUT("/:id", rp.sessionHandler.UpdateSession)
 		sessions.DELETE("/:id", rp.sessionHandler.DeleteSession)
 	}
+
+	// Invoice management endpoints (authenticated)
+	invoices := router.Group("/invoices")
+	{
+		invoices.GET("/clientsessions", rp.invoiceHandler.GetClientsWithUnbilledSessions)
+		invoices.POST("", rp.invoiceHandler.CreateInvoice)
+		invoices.GET("", rp.invoiceHandler.GetAllInvoices)
+		invoices.GET("/:id", rp.invoiceHandler.GetInvoice)
+		invoices.PUT("/:id", rp.invoiceHandler.UpdateInvoice)
+		invoices.DELETE("/:id", rp.invoiceHandler.DeleteInvoice)
+	}
 }
 
 // GetPrefix returns the route prefix for client management endpoints
@@ -88,5 +101,5 @@ func (rp *RouteProvider) GetMiddleware() []gin.HandlerFunc {
 
 // GetSwaggerTags returns swagger tags for the routes
 func (rp *RouteProvider) GetSwaggerTags() []string {
-	return []string{"clients", "cost-providers", "sessions"}
+	return []string{"clients", "cost-providers", "sessions", "invoices"}
 }
