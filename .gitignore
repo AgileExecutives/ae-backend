@@ -1,3 +1,8 @@
 .DS_Store
 **/.DS_Store
 bearer-tokens.json
+.gitignore
+unburdy_server/unburdy-server-api
+minimal-server/minimal-server
+tmp/**
+

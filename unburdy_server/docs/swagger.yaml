@@ -16,6 +16,57 @@ definitions:
       pagination:
         $ref: '#/definitions/github_com_ae-base-server_internal_models.PaginationResponse'
     type: object
+  api.OrganizationResponse:
+    properties:
+      additional_payment_methods:
+        items:
+          type: integer
+        type: array
+      bankaccount_bank:
+        type: string
+      bankaccount_bic:
+        type: string
+      bankaccount_iban:
+        type: string
+      bankaccount_owner:
+        type: string
+      city:
+        type: string
+      created_at:
+        type: string
+      email:
+        type: string
+      id:
+        type: integer
+      invoice_content:
+        items:
+          type: integer
+        type: array
+      name:
+        type: string
+      owner_name:
+        type: string
+      owner_title:
+        type: string
+      phone:
+        type: string
+      street_address:
+        type: string
+      tax_id:
+        type: string
+      tax_rate:
+        type: number
+      tax_ustid:
+        type: string
+      tenant_id:
+        type: integer
+      unit_price:
+        type: number
+      updated_at:
+        type: string
+      zip:
+        type: string
+    type: object
   entities.BookSessionsRequest:
     properties:
       calendar_id:
@@ -746,80 +797,6 @@ definitions:
     type: object
   entities.CreateExternalCalendarRequest:
     type: object
-  entities.CreateInvoiceRequest:
-    properties:
-      client_id:
-        example: 1
-        type: integer
-      session_ids:
-        example:
-        - 1
-        - 2
-        - 3
-        items:
-          type: integer
-        type: array
-    required:
-    - client_id
-    - session_ids
-    type: object
-  entities.CreateOrganizationRequest:
-    properties:
-      additional_payment_methods:
-        type: object
-      bankaccount_bank:
-        example: Deutsche Bank
-        type: string
-      bankaccount_bic:
-        example: DEUTDEFF
-        type: string
-      bankaccount_iban:
-        example: DE89370400440532013000
-        type: string
-      bankaccount_owner:
-        example: Acme Corporation
-        type: string
-      city:
-        example: New York
-        type: string
-      email:
-        example: info@acme.com
-        type: string
-      invoice_content:
-        type: object
-      name:
-        example: Acme Corporation
-        type: string
-      owner_name:
-        example: John Doe
-        type: string
-      owner_title:
-        example: CEO
-        type: string
-      phone:
-        example: +1-555-0123
-        type: string
-      street_address:
-        example: 123 Business St
-        type: string
-      tax_id:
-        example: TAX123456
-        type: string
-      tax_rate:
-        example: 19
-        type: number
-      tax_ustid:
-        example: DE123456789
-        type: string
-      unit_price:
-        example: 150
-        type: number
-      zip:
-        example: "12345"
-        type: string
-    required:
-    - name
-    type: object
   entities.CreateSessionRequest:
     properties:
       calendar_entry_id:
@@ -938,18 +915,6 @@ definitions:
       updated_at:
         type: string
     type: object
-  entities.ErrorResponse:
-    properties:
-      error:
-        example: Detailed error information
-        type: string
-      message:
-        example: Error message
-        type: string
-      success:
-        example: false
-        type: boolean
-    type: object
   entities.ExternalCalendarResponse:
     properties:
       calendar_id:
@@ -1049,7 +1014,7 @@ definitions:
   entities.InvoiceAPIResponse:
     properties:
       data:
-        $ref: '#/definitions/entities.InvoiceResponse'
+        $ref: '#/definitions/github_com_unburdy_unburdy-server-api_modules_client_management_entities.InvoiceResponse'
       message:
         example: Invoice retrieved successfully
         type: string
@@ -1066,26 +1031,26 @@ definitions:
         example: true
         type: boolean
     type: object
-  entities.InvoiceItemResponse:
+  entities.InvoiceItemData:
     properties:
-      created_at:
+      description:
         type: string
-      id:
-        type: integer
-      invoice_id:
-        type: integer
-      session:
-        $ref: '#/definitions/entities.SessionResponse'
-      session_id:
-        type: integer
-      updated_at:
-        type: string
+      quantity:
+        type: number
+      tax_rate:
+        type: number
+      unit_price:
+        type: number
+    required:
+    - description
+    - quantity
+    - unit_price
     type: object
   entities.InvoiceListAPIResponse:
     properties:
       data:
         items:
-          $ref: '#/definitions/entities.InvoiceResponse'
+          $ref: '#/definitions/github_com_unburdy_unburdy-server-api_modules_client_management_entities.InvoiceResponse'
         type: array
       limit:
         example: 10
@@ -1103,69 +1068,6 @@ definitions:
         example: 100
         type: integer
     type: object
-  entities.InvoiceResponse:
-    properties:
-      client:
-        $ref: '#/definitions/entities.ClientResponse'
-      client_id:
-        type: integer
-      cost_provider:
-        $ref: '#/definitions/entities.CostProviderResponse'
-      cost_provider_id:
-        type: integer
-      created_at:
-        type: string
-      id:
-        type: integer
-      invoice_date:
-        type: string
-      invoice_items:
-        items:
-          $ref: '#/definitions/entities.InvoiceItemResponse'
-        type: array
-      invoice_number:
-        type: string
-      latest_reminder:
-        type: string
-      num_reminders:
-        type: integer
-      number_units:
-        type: integer
-      organization:
-        $ref: '#/definitions/entities.OrganizationResponse'
-      organization_id:
-        type: integer
-      payed_date:
-        type: string
-      status:
-        $ref: '#/definitions/entities.InvoiceStatus'
-      sum_amount:
-        type: number
-      tax_amount:
-        type: number
-      tenant_id:
-        type: integer
-      total_amount:
-        type: number
-      updated_at:
-        type: string
-      user_id:
-        type: integer
-    type: object
-  entities.InvoiceStatus:
-    enum:
-    - draft
-    - generated
-    - sent
-    - reminder
-    - payed
-    type: string
-    x-enum-varnames:
-    - InvoiceStatusDraft
-    - InvoiceStatusGenerated
-    - InvoiceStatusSent
-    - InvoiceStatusReminder
-    - InvoiceStatusPayed
   entities.MonthData:
     properties:
       days:
@@ -1183,101 +1085,6 @@ definitions:
   entities.NullableDate:
     properties:
       time.Time:
-        type: string
-    type: object
-  entities.OrganizationAPIResponse:
-    properties:
-      data:
-        $ref: '#/definitions/entities.OrganizationResponse'
-      message:
-        example: Organization retrieved successfully
-        type: string
-      success:
-        example: true
-        type: boolean
-    type: object
-  entities.OrganizationDeleteResponse:
-    properties:
-      message:
-        example: Organization deleted successfully
-        type: string
-      success:
-        example: true
-        type: boolean
-    type: object
-  entities.OrganizationListAPIResponse:
-    properties:
-      data:
-        items:
-          $ref: '#/definitions/entities.OrganizationResponse'
-        type: array
-      limit:
-        example: 10
-        type: integer
-      message:
-        example: Organizations retrieved successfully
-        type: string
-      page:
-        example: 1
-        type: integer
-      success:
-        example: true
-        type: boolean
-      total:
-        example: 100
-        type: integer
-    type: object
-  entities.OrganizationResponse:
-    properties:
-      additional_payment_methods:
-        items:
-          type: integer
-        type: array
-      bankaccount_bank:
-        type: string
-      bankaccount_bic:
-        type: string
-      bankaccount_iban:
-        type: string
-      bankaccount_owner:
-        type: string
-      city:
-        type: string
-      created_at:
-        type: string
-      email:
-        type: string
-      id:
-        type: integer
-      invoice_content:
-        items:
-          type: integer
-        type: array
-      name:
-        type: string
-      owner_name:
-        type: string
-      owner_title:
-        type: string
-      phone:
-        type: string
-      street_address:
-        type: string
-      tax_id:
-        type: string
-      tax_rate:
-        type: number
-      tax_ustid:
-        type: string
-      tenant_id:
-        type: integer
-      unit_price:
-        type: number
-      updated_at:
-        type: string
-      user_id:
-        type: integer
-      zip:
         type: string
     type: object
   entities.SessionDetailResponse:
@@ -1617,76 +1424,6 @@ definitions:
     type: object
   entities.UpdateExternalCalendarRequest:
     type: object
-  entities.UpdateInvoiceRequest:
-    properties:
-      session_ids:
-        example:
-        - 1
-        - 2
-        - 3
-        items:
-          type: integer
-        type: array
-      status:
-        allOf:
-        - $ref: '#/definitions/entities.InvoiceStatus'
-        example: sent
-    type: object
-  entities.UpdateOrganizationRequest:
-    properties:
-      additional_payment_methods:
-        type: object
-      bankaccount_bank:
-        example: Deutsche Bank
-        type: string
-      bankaccount_bic:
-        example: DEUTDEFF
-        type: string
-      bankaccount_iban:
-        example: DE89370400440532013000
-        type: string
-      bankaccount_owner:
-        example: Acme Corporation
-        type: string
-      city:
-        example: New York
-        type: string
-      email:
-        example: info@acme.com
-        type: string
-      invoice_content:
-        type: object
-      name:
-        example: Acme Corporation
-        type: string
-      owner_name:
-        example: John Doe
-        type: string
-      owner_title:
-        example: CEO
-        type: string
-      phone:
-        example: +1-555-0123
-        type: string
-      street_address:
-        example: 123 Business St
-        type: string
-      tax_id:
-        example: TAX123456
-        type: string
-      tax_rate:
-        example: 19
-        type: number
-      tax_ustid:
-        example: DE123456789
-        type: string
-      unit_price:
-        example: 150
-        type: number
-      zip:
-        example: "12345"
-        type: string
-    type: object
   entities.UpdateSessionRequest:
     properties:
       documentation:
@@ -1964,6 +1701,8 @@ definitions:
     properties:
       created_at:
         type: string
+      customer_id:
+        type: integer
       id:
         type: integer
       name:
@@ -2019,6 +1758,8 @@ definitions:
         type: integer
       last_name:
         type: string
+      organization_id:
+        type: integer
       role:
         type: string
       tenant:
@@ -2084,6 +1825,173 @@ definitions:
         example: true
         type: boolean
     type: object
+  github_com_unburdy_documents-module_handlers.ErrorResponse:
+    properties:
+      error:
+        example: Error message
+        type: string
+      success:
+        example: false
+        type: boolean
+    type: object
+  github_com_unburdy_invoice-module_entities.CreateInvoiceRequest:
+    properties:
+      currency:
+        type: string
+      customer_address:
+        type: string
+      customer_email:
+        type: string
+      customer_name:
+        type: string
+      customer_tax_id:
+        type: string
+      due_date:
+        type: string
+      internal_note:
+        type: string
+      invoice_date:
+        type: string
+      invoice_number:
+        type: string
+      items:
+        items:
+          $ref: '#/definitions/entities.InvoiceItemData'
+        minItems: 1
+        type: array
+      notes:
+        type: string
+      organization_id:
+        type: integer
+      payment_method:
+        type: string
+      payment_terms:
+        type: string
+      tax_rate:
+        type: number
+      template_html:
+        description: HTML template for PDF generation
+        type: string
+    required:
+    - customer_name
+    - invoice_date
+    - invoice_number
+    - items
+    - organization_id
+    type: object
+  github_com_unburdy_invoice-module_entities.InvoiceItemResponse:
+    properties:
+      amount:
+        type: number
+      description:
+        type: string
+      id:
+        type: integer
+      position:
+        type: integer
+      quantity:
+        type: number
+      tax_rate:
+        type: number
+      unit_price:
+        type: number
+    type: object
+  github_com_unburdy_invoice-module_entities.InvoiceResponse:
+    properties:
+      created_at:
+        type: string
+      currency:
+        type: string
+      customer_address:
+        type: string
+      customer_email:
+        type: string
+      customer_name:
+        type: string
+      customer_tax_id:
+        type: string
+      document_id:
+        type: integer
+      due_date:
+        type: string
+      id:
+        type: integer
+      invoice_date:
+        type: string
+      invoice_number:
+        type: string
+      items:
+        items:
+          $ref: '#/definitions/github_com_unburdy_invoice-module_entities.InvoiceItemResponse'
+        type: array
+      notes:
+        type: string
+      organization_id:
+        type: integer
+      payment_date:
+        type: string
+      payment_method:
+        type: string
+      payment_terms:
+        type: string
+      status:
+        $ref: '#/definitions/github_com_unburdy_invoice-module_entities.InvoiceStatus'
+      subtotal_amount:
+        type: number
+      tax_amount:
+        type: number
+      tax_rate:
+        type: number
+      tenant_id:
+        type: integer
+      total_amount:
+        type: number
+      updated_at:
+        type: string
+      user_id:
+        type: integer
+    type: object
+  github_com_unburdy_invoice-module_entities.InvoiceStatus:
+    enum:
+    - draft
+    - sent
+    - paid
+    - overdue
+    - cancelled
+    type: string
+    x-enum-varnames:
+    - InvoiceStatusDraft
+    - InvoiceStatusSent
+    - InvoiceStatusPaid
+    - InvoiceStatusOverdue
+    - InvoiceStatusCancelled
+  github_com_unburdy_invoice-module_entities.UpdateInvoiceRequest:
+    properties:
+      customer_address:
+        type: string
+      customer_email:
+        type: string
+      customer_name:
+        type: string
+      due_date:
+        type: string
+      internal_note:
+        type: string
+      items:
+        items:
+          $ref: '#/definitions/entities.InvoiceItemData'
+        type: array
+      notes:
+        type: string
+      payment_date:
+        type: string
+      payment_method:
+        type: string
+      payment_terms:
+        type: string
+      status:
+        $ref: '#/definitions/github_com_unburdy_invoice-module_entities.InvoiceStatus'
+    type: object
   github_com_unburdy_unburdy-server-api_internal_models.APIResponse:
     properties:
       data: {}
@@ -2120,14 +2028,115 @@ definitions:
       total_pages:
         type: integer
     type: object
-  github_com_unburdy_unburdy-server-api_modules_documents_handlers.ErrorResponse:
+  github_com_unburdy_unburdy-server-api_modules_client_management_entities.CreateInvoiceRequest:
     properties:
-      error:
-        example: Error message
+      client_id:
+        example: 1
+        type: integer
+      session_ids:
+        example:
+        - 1
+        - 2
+        - 3
+        items:
+          type: integer
+        type: array
+    required:
+    - client_id
+    - session_ids
+    type: object
+  github_com_unburdy_unburdy-server-api_modules_client_management_entities.InvoiceItemResponse:
+    properties:
+      created_at:
         type: string
-      success:
-        example: false
-        type: boolean
+      id:
+        type: integer
+      invoice_id:
+        type: integer
+      session:
+        $ref: '#/definitions/entities.SessionResponse'
+      session_id:
+        type: integer
+      updated_at:
+        type: string
+    type: object
+  github_com_unburdy_unburdy-server-api_modules_client_management_entities.InvoiceResponse:
+    properties:
+      client:
+        $ref: '#/definitions/entities.ClientResponse'
+      client_id:
+        type: integer
+      cost_provider:
+        $ref: '#/definitions/entities.CostProviderResponse'
+      cost_provider_id:
+        type: integer
+      created_at:
+        type: string
+      id:
+        type: integer
+      invoice_date:
+        type: string
+      invoice_items:
+        items:
+          $ref: '#/definitions/github_com_unburdy_unburdy-server-api_modules_client_management_entities.InvoiceItemResponse'
+        type: array
+      invoice_number:
+        type: string
+      latest_reminder:
+        type: string
+      num_reminders:
+        type: integer
+      number_units:
+        type: integer
+      organization:
+        $ref: '#/definitions/api.OrganizationResponse'
+      organization_id:
+        type: integer
+      payed_date:
+        type: string
+      status:
+        $ref: '#/definitions/github_com_unburdy_unburdy-server-api_modules_client_management_entities.InvoiceStatus'
+      sum_amount:
+        type: number
+      tax_amount:
+        type: number
+      tenant_id:
+        type: integer
+      total_amount:
+        type: number
+      updated_at:
+        type: string
+      user_id:
+        type: integer
+    type: object
+  github_com_unburdy_unburdy-server-api_modules_client_management_entities.InvoiceStatus:
+    enum:
+    - draft
+    - generated
+    - sent
+    - reminder
+    - payed
+    type: string
+    x-enum-varnames:
+    - InvoiceStatusDraft
+    - InvoiceStatusGenerated
+    - InvoiceStatusSent
+    - InvoiceStatusReminder
+    - InvoiceStatusPayed
+  github_com_unburdy_unburdy-server-api_modules_client_management_entities.UpdateInvoiceRequest:
+    properties:
+      session_ids:
+        example:
+        - 1
+        - 2
+        - 3
+        items:
+          type: integer
+        type: array
+      status:
+        allOf:
+        - $ref: '#/definitions/github_com_unburdy_unburdy-server-api_modules_client_management_entities.InvoiceStatus'
+        example: sent
     type: object
   gorm.DeletedAt:
     properties:
@@ -2136,6 +2145,28 @@ definitions:
       valid:
         description: Valid is true if Time is not NULL
         type: boolean
+    type: object
+  handlers.CreateInvoiceFromSessionsRequest:
+    properties:
+      client:
+        $ref: '#/definitions/entities.ClientWithUnbilledSessionsResponse'
+      due_date:
+        description: RFC3339 format
+        type: string
+      invoice_date:
+        description: RFC3339 format
+        type: string
+      invoice_number:
+        type: string
+      organization_id:
+        type: integer
+      template_id:
+        type: integer
+    required:
+    - client
+    - invoice_date
+    - invoice_number
+    - organization_id
     type: object
   handlers.CreateTemplateRequest:
     properties:
@@ -2165,8 +2196,8 @@ definitions:
         type: string
       variables:
         example:
-        - invoice_number
         - customer_name
+        - date
         items:
           type: string
         type: array
@@ -2635,6 +2666,63 @@ definitions:
     required:
     - organization
     type: object
+  models.CreateOrganizationRequest:
+    properties:
+      additional_payment_methods:
+        type: object
+      bankaccount_bank:
+        example: Deutsche Bank
+        type: string
+      bankaccount_bic:
+        example: DEUTDEFF
+        type: string
+      bankaccount_iban:
+        example: DE89370400440532013000
+        type: string
+      bankaccount_owner:
+        example: Acme Corporation
+        type: string
+      city:
+        example: New York
+        type: string
+      email:
+        example: info@acme.com
+        type: string
+      invoice_content:
+        type: object
+      name:
+        example: Acme Corporation
+        type: string
+      owner_name:
+        example: John Doe
+        type: string
+      owner_title:
+        example: CEO
+        type: string
+      phone:
+        example: +1-555-0123
+        type: string
+      street_address:
+        example: 123 Business St
+        type: string
+      tax_id:
+        example: TAX123456
+        type: string
+      tax_rate:
+        example: 19
+        type: number
+      tax_ustid:
+        example: DE123456789
+        type: string
+      unit_price:
+        example: 150
+        type: number
+      zip:
+        example: "12345"
+        type: string
+    required:
+    - name
+    type: object
   models.CustomerRequest:
     properties:
       company_name:
@@ -2652,6 +2740,99 @@ definitions:
     required:
     - email
     - name
+    type: object
+  models.OrganizationAPIResponse:
+    properties:
+      data:
+        $ref: '#/definitions/models.OrganizationResponse'
+      message:
+        example: Organization retrieved successfully
+        type: string
+      success:
+        example: true
+        type: boolean
+    type: object
+  models.OrganizationDeleteResponse:
+    properties:
+      message:
+        example: Organization deleted successfully
+        type: string
+      success:
+        example: true
+        type: boolean
+    type: object
+  models.OrganizationListAPIResponse:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/models.OrganizationResponse'
+        type: array
+      limit:
+        example: 10
+        type: integer
+      message:
+        example: Organizations retrieved successfully
+        type: string
+      page:
+        example: 1
+        type: integer
+      success:
+        example: true
+        type: boolean
+      total:
+        example: 100
+        type: integer
+    type: object
+  models.OrganizationResponse:
+    properties:
+      additional_payment_methods:
+        items:
+          type: integer
+        type: array
+      bankaccount_bank:
+        type: string
+      bankaccount_bic:
+        type: string
+      bankaccount_iban:
+        type: string
+      bankaccount_owner:
+        type: string
+      city:
+        type: string
+      created_at:
+        type: string
+      email:
+        type: string
+      id:
+        type: integer
+      invoice_content:
+        items:
+          type: integer
+        type: array
+      name:
+        type: string
+      owner_name:
+        type: string
+      owner_title:
+        type: string
+      phone:
+        type: string
+      street_address:
+        type: string
+      tax_id:
+        type: string
+      tax_rate:
+        type: number
+      tax_ustid:
+        type: string
+      tenant_id:
+        type: integer
+      unit_price:
+        type: number
+      updated_at:
+        type: string
+      zip:
+        type: string
     type: object
   models.PlanRequest:
     properties:
@@ -2803,6 +2984,61 @@ definitions:
       street_address:
         example: 456 Insurance Blvd
         type: string
+      zip:
+        example: "12345"
+        type: string
+    type: object
+  models.UpdateOrganizationRequest:
+    properties:
+      additional_payment_methods:
+        type: object
+      bankaccount_bank:
+        example: Deutsche Bank
+        type: string
+      bankaccount_bic:
+        example: DEUTDEFF
+        type: string
+      bankaccount_iban:
+        example: DE89370400440532013000
+        type: string
+      bankaccount_owner:
+        example: Acme Corporation
+        type: string
+      city:
+        example: New York
+        type: string
+      email:
+        example: info@acme.com
+        type: string
+      invoice_content:
+        type: object
+      name:
+        example: Acme Corporation
+        type: string
+      owner_name:
+        example: John Doe
+        type: string
+      owner_title:
+        example: CEO
+        type: string
+      phone:
+        example: +1-555-0123
+        type: string
+      street_address:
+        example: 123 Business St
+        type: string
+      tax_id:
+        example: TAX123456
+        type: string
+      tax_rate:
+        example: 19
+        type: number
+      tax_ustid:
+        example: DE123456789
+        type: string
+      unit_price:
+        example: 150
+        type: number
       zip:
         example: "12345"
         type: string
@@ -4395,6 +4631,264 @@ paths:
       summary: Get calendar year view
       tags:
       - calendar-views
+  /client-invoices:
+    get:
+      description: Retrieve all invoices for the authenticated user with pagination
+        and all associations preloaded
+      operationId: getInvoices
+      parameters:
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 10
+        description: Number of items per page
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/entities.InvoiceListAPIResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get all invoices
+      tags:
+      - client-invoices
+    post:
+      consumes:
+      - application/json
+      description: Create a new invoice with invoice items for specified sessions
+      operationId: createInvoice
+      parameters:
+      - description: Invoice information with client ID and session IDs
+        in: body
+        name: invoice
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_unburdy_unburdy-server-api_modules_client_management_entities.CreateInvoiceRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/entities.InvoiceAPIResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Create a new invoice
+      tags:
+      - client-invoices
+  /client-invoices/{id}:
+    delete:
+      description: Delete an invoice and all its invoice items by ID
+      operationId: deleteInvoice
+      parameters:
+      - description: Invoice ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/entities.InvoiceDeleteResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Delete an invoice
+      tags:
+      - client-invoices
+    get:
+      description: Retrieve a specific invoice by ID with all associations preloaded
+      operationId: getInvoiceById
+      parameters:
+      - description: Invoice ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/entities.InvoiceAPIResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get an invoice by ID
+      tags:
+      - client-invoices
+    put:
+      consumes:
+      - application/json
+      description: Update an invoice's status or invoice items (not both at once)
+      operationId: updateInvoice
+      parameters:
+      - description: Invoice ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Updated invoice information (status OR session_ids)
+        in: body
+        name: invoice
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_unburdy_unburdy-server-api_modules_client_management_entities.UpdateInvoiceRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/entities.InvoiceAPIResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Update an invoice
+      tags:
+      - client-invoices
+  /client-invoices/from-sessions:
+    post:
+      consumes:
+      - application/json
+      description: Adapts session data and creates an invoice in the invoice module
+      parameters:
+      - description: Invoice from sessions request
+        in: body
+        name: invoice
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.CreateInvoiceFromSessionsRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Invoice created successfully
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Invalid request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Client or sessions not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Create invoice from sessions
+      tags:
+      - client-invoices
+  /client-invoices/unbilled-sessions:
+    get:
+      description: Retrieve all clients that have sessions not yet associated with
+        any invoice
+      operationId: getClientsWithUnbilledSessions
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/entities.ClientSessionsAPIResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get clients with unbilled sessions
+      tags:
+      - client-invoices
   /client/{token}:
     get:
       description: Retrieve client details from any valid JWT token containing client_id
@@ -5595,19 +6089,19 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_modules_documents_handlers.ErrorResponse'
+            $ref: '#/definitions/github_com_unburdy_documents-module_handlers.ErrorResponse'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_modules_documents_handlers.ErrorResponse'
+            $ref: '#/definitions/github_com_unburdy_documents-module_handlers.ErrorResponse'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_modules_documents_handlers.ErrorResponse'
+            $ref: '#/definitions/github_com_unburdy_documents-module_handlers.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_modules_documents_handlers.ErrorResponse'
+            $ref: '#/definitions/github_com_unburdy_documents-module_handlers.ErrorResponse'
       security:
       - BearerAuth: []
       summary: Delete document
@@ -5674,19 +6168,19 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_modules_documents_handlers.ErrorResponse'
+            $ref: '#/definitions/github_com_unburdy_documents-module_handlers.ErrorResponse'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_modules_documents_handlers.ErrorResponse'
+            $ref: '#/definitions/github_com_unburdy_documents-module_handlers.ErrorResponse'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_modules_documents_handlers.ErrorResponse'
+            $ref: '#/definitions/github_com_unburdy_documents-module_handlers.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_modules_documents_handlers.ErrorResponse'
+            $ref: '#/definitions/github_com_unburdy_documents-module_handlers.ErrorResponse'
       security:
       - BearerAuth: []
       summary: Download document
@@ -6079,19 +6573,26 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/handlers.SuccessResponse'
+            additionalProperties: true
+            type: object
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_modules_documents_handlers.ErrorResponse'
+            additionalProperties:
+              type: string
+            type: object
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_modules_documents_handlers.ErrorResponse'
+            additionalProperties:
+              type: string
+            type: object
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_modules_documents_handlers.ErrorResponse'
+            additionalProperties:
+              type: string
+            type: object
       security:
       - BearerAuth: []
       summary: Get current sequence
@@ -6120,15 +6621,21 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_modules_documents_handlers.ErrorResponse'
+            additionalProperties:
+              type: string
+            type: object
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_modules_documents_handlers.ErrorResponse'
+            additionalProperties:
+              type: string
+            type: object
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_modules_documents_handlers.ErrorResponse'
+            additionalProperties:
+              type: string
+            type: object
       security:
       - BearerAuth: []
       summary: Generate next invoice number
@@ -6166,19 +6673,26 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/handlers.SuccessResponse'
+            additionalProperties: true
+            type: object
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_modules_documents_handlers.ErrorResponse'
+            additionalProperties:
+              type: string
+            type: object
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_modules_documents_handlers.ErrorResponse'
+            additionalProperties:
+              type: string
+            type: object
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_modules_documents_handlers.ErrorResponse'
+            additionalProperties:
+              type: string
+            type: object
       security:
       - BearerAuth: []
       summary: Get invoice number history
@@ -6205,19 +6719,26 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/handlers.SuccessResponse'
+            additionalProperties: true
+            type: object
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_modules_documents_handlers.ErrorResponse'
+            additionalProperties:
+              type: string
+            type: object
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_modules_documents_handlers.ErrorResponse'
+            additionalProperties:
+              type: string
+            type: object
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_modules_documents_handlers.ErrorResponse'
+            additionalProperties:
+              type: string
+            type: object
       security:
       - BearerAuth: []
       summary: Void invoice number
@@ -6225,19 +6746,31 @@ paths:
       - Invoice Numbers
   /invoices:
     get:
-      description: Retrieve all invoices for the authenticated user with pagination
-        and all associations preloaded
-      operationId: getInvoices
+      description: Get a paginated list of invoices with optional filters
       parameters:
+      - description: Filter by organization ID
+        in: query
+        name: organization_id
+        type: integer
+      - description: Filter by status
+        enum:
+        - draft
+        - sent
+        - paid
+        - overdue
+        - cancelled
+        in: query
+        name: status
+        type: string
       - default: 1
         description: Page number
         in: query
         name: page
         type: integer
-      - default: 10
-        description: Number of items per page
+      - default: 20
+        description: Page size
         in: query
-        name: limit
+        name: page_size
         type: integer
       produces:
       - application/json
@@ -6245,60 +6778,75 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/entities.InvoiceListAPIResponse'
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse'
+            additionalProperties:
+              type: string
+            type: object
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse'
+            additionalProperties:
+              type: string
+            type: object
       security:
       - BearerAuth: []
-      summary: Get all invoices
+      summary: List invoices
       tags:
-      - invoices
+      - Invoices
     post:
       consumes:
       - application/json
-      description: Create a new invoice with invoice items for specified sessions
-      operationId: createInvoice
+      description: Create a new invoice with line items
       parameters:
-      - description: Invoice information with client ID and session IDs
+      - description: Invoice data
         in: body
         name: invoice
         required: true
         schema:
-          $ref: '#/definitions/entities.CreateInvoiceRequest'
+          $ref: '#/definitions/github_com_unburdy_invoice-module_entities.CreateInvoiceRequest'
       produces:
       - application/json
       responses:
         "201":
           description: Created
           schema:
-            $ref: '#/definitions/entities.InvoiceAPIResponse'
+            $ref: '#/definitions/github_com_unburdy_invoice-module_entities.InvoiceResponse'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse'
+            additionalProperties:
+              type: string
+            type: object
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse'
+            additionalProperties:
+              type: string
+            type: object
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse'
+            additionalProperties:
+              type: string
+            type: object
       security:
       - BearerAuth: []
       summary: Create a new invoice
       tags:
-      - invoices
+      - Invoices
   /invoices/{id}:
     delete:
-      description: Delete an invoice and all its invoice items by ID
-      operationId: deleteInvoice
+      description: Soft delete an invoice by ID
       parameters:
       - description: Invoice ID
         in: path
@@ -6311,31 +6859,33 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/entities.InvoiceDeleteResponse'
+            additionalProperties: true
+            type: object
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse'
+            additionalProperties:
+              type: string
+            type: object
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse'
-        "404":
-          description: Not Found
-          schema:
-            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse'
+            additionalProperties:
+              type: string
+            type: object
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse'
+            additionalProperties:
+              type: string
+            type: object
       security:
       - BearerAuth: []
-      summary: Delete an invoice
+      summary: Delete invoice
       tags:
-      - invoices
+      - Invoices
     get:
-      description: Retrieve a specific invoice by ID with all associations preloaded
-      operationId: getInvoiceById
+      description: Retrieve a single invoice by its ID
       parameters:
       - description: Invoice ID
         in: path
@@ -6348,98 +6898,126 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/entities.InvoiceAPIResponse'
+            $ref: '#/definitions/github_com_unburdy_invoice-module_entities.InvoiceResponse'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse'
+            additionalProperties:
+              type: string
+            type: object
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse'
+            additionalProperties:
+              type: string
+            type: object
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse'
+            additionalProperties:
+              type: string
+            type: object
       security:
       - BearerAuth: []
-      summary: Get an invoice by ID
+      summary: Get invoice by ID
       tags:
-      - invoices
+      - Invoices
     put:
       consumes:
       - application/json
-      description: Update an invoice's status or invoice items (not both at once)
-      operationId: updateInvoice
+      description: Update an existing invoice's details
       parameters:
       - description: Invoice ID
         in: path
         name: id
         required: true
         type: integer
-      - description: Updated invoice information (status OR session_ids)
+      - description: Updated invoice data
         in: body
         name: invoice
         required: true
         schema:
-          $ref: '#/definitions/entities.UpdateInvoiceRequest'
+          $ref: '#/definitions/github_com_unburdy_invoice-module_entities.UpdateInvoiceRequest'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/entities.InvoiceAPIResponse'
+            $ref: '#/definitions/github_com_unburdy_invoice-module_entities.InvoiceResponse'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse'
+            additionalProperties:
+              type: string
+            type: object
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse'
-        "404":
-          description: Not Found
-          schema:
-            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse'
+            additionalProperties:
+              type: string
+            type: object
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse'
+            additionalProperties:
+              type: string
+            type: object
       security:
       - BearerAuth: []
-      summary: Update an invoice
+      summary: Update invoice
       tags:
-      - invoices
-  /invoices/clientsessions:
-    get:
-      description: Retrieve all clients that have sessions not yet associated with
-        any invoice
-      operationId: getClientsWithUnbilledSessions
+      - Invoices
+  /invoices/{id}/mark-paid:
+    post:
+      consumes:
+      - application/json
+      description: Mark an invoice as paid with payment date
+      parameters:
+      - description: Invoice ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Payment date (RFC3339 format)
+        in: body
+        name: payment
+        required: true
+        schema:
+          additionalProperties:
+            type: string
+          type: object
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/entities.ClientSessionsAPIResponse'
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse'
+            additionalProperties:
+              type: string
+            type: object
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse'
+            additionalProperties:
+              type: string
+            type: object
       security:
       - BearerAuth: []
-      summary: Get clients with unbilled sessions
+      summary: Mark invoice as paid
       tags:
-      - invoices
+      - Invoices
   /organizations:
     get:
       description: Retrieve all organizations for the authenticated user with pagination
@@ -6461,15 +7039,15 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/entities.OrganizationListAPIResponse'
+            $ref: '#/definitions/models.OrganizationListAPIResponse'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/entities.ErrorResponse'
+            $ref: '#/definitions/github_com_ae-base-server_internal_models.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/entities.ErrorResponse'
+            $ref: '#/definitions/github_com_ae-base-server_internal_models.ErrorResponse'
       security:
       - BearerAuth: []
       summary: Get all organizations
@@ -6486,26 +7064,26 @@ paths:
         name: organization
         required: true
         schema:
-          $ref: '#/definitions/entities.CreateOrganizationRequest'
+          $ref: '#/definitions/models.CreateOrganizationRequest'
       produces:
       - application/json
       responses:
         "201":
           description: Created
           schema:
-            $ref: '#/definitions/entities.OrganizationAPIResponse'
+            $ref: '#/definitions/models.OrganizationAPIResponse'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/entities.ErrorResponse'
+            $ref: '#/definitions/github_com_ae-base-server_internal_models.ErrorResponse'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/entities.ErrorResponse'
+            $ref: '#/definitions/github_com_ae-base-server_internal_models.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/entities.ErrorResponse'
+            $ref: '#/definitions/github_com_ae-base-server_internal_models.ErrorResponse'
       security:
       - BearerAuth: []
       summary: Create a new organization
@@ -6527,23 +7105,23 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/entities.OrganizationDeleteResponse'
+            $ref: '#/definitions/models.OrganizationDeleteResponse'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/entities.ErrorResponse'
+            $ref: '#/definitions/github_com_ae-base-server_internal_models.ErrorResponse'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/entities.ErrorResponse'
+            $ref: '#/definitions/github_com_ae-base-server_internal_models.ErrorResponse'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/entities.ErrorResponse'
+            $ref: '#/definitions/github_com_ae-base-server_internal_models.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/entities.ErrorResponse'
+            $ref: '#/definitions/github_com_ae-base-server_internal_models.ErrorResponse'
       security:
       - BearerAuth: []
       summary: Delete an organization
@@ -6564,23 +7142,23 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/entities.OrganizationAPIResponse'
+            $ref: '#/definitions/models.OrganizationAPIResponse'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/entities.ErrorResponse'
+            $ref: '#/definitions/github_com_ae-base-server_internal_models.ErrorResponse'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/entities.ErrorResponse'
+            $ref: '#/definitions/github_com_ae-base-server_internal_models.ErrorResponse'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/entities.ErrorResponse'
+            $ref: '#/definitions/github_com_ae-base-server_internal_models.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/entities.ErrorResponse'
+            $ref: '#/definitions/github_com_ae-base-server_internal_models.ErrorResponse'
       security:
       - BearerAuth: []
       summary: Get an organization by ID
@@ -6602,30 +7180,30 @@ paths:
         name: organization
         required: true
         schema:
-          $ref: '#/definitions/entities.UpdateOrganizationRequest'
+          $ref: '#/definitions/models.UpdateOrganizationRequest'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/entities.OrganizationAPIResponse'
+            $ref: '#/definitions/models.OrganizationAPIResponse'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/entities.ErrorResponse'
+            $ref: '#/definitions/github_com_ae-base-server_internal_models.ErrorResponse'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/entities.ErrorResponse'
+            $ref: '#/definitions/github_com_ae-base-server_internal_models.ErrorResponse'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/entities.ErrorResponse'
+            $ref: '#/definitions/github_com_ae-base-server_internal_models.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/entities.ErrorResponse'
+            $ref: '#/definitions/github_com_ae-base-server_internal_models.ErrorResponse'
       security:
       - BearerAuth: []
       summary: Update an organization
@@ -6743,54 +7321,6 @@ paths:
             additionalProperties: true
             type: object
       summary: Generate PDF from HTML
-      tags:
-      - PDFs
-  /pdfs/invoice:
-    post:
-      consumes:
-      - application/json
-      description: Generate a PDF invoice using the default invoice template
-      operationId: generateInvoicePDF
-      parameters:
-      - description: Organization ID (for template selection)
-        in: query
-        name: organization_id
-        type: integer
-      - description: Invoice data
-        in: body
-        name: request
-        required: true
-        schema:
-          additionalProperties: true
-          type: object
-      produces:
-      - application/pdf
-      responses:
-        "200":
-          description: PDF file
-          schema:
-            type: file
-        "400":
-          description: Bad Request
-          schema:
-            additionalProperties: true
-            type: object
-        "401":
-          description: Unauthorized
-          schema:
-            additionalProperties: true
-            type: object
-        "404":
-          description: Not Found
-          schema:
-            additionalProperties: true
-            type: object
-        "500":
-          description: Internal Server Error
-          schema:
-            additionalProperties: true
-            type: object
-      summary: Generate invoice PDF
       tags:
       - PDFs
   /ping:
@@ -7463,11 +7993,15 @@ paths:
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_modules_documents_handlers.ErrorResponse'
+            additionalProperties:
+              type: string
+            type: object
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_modules_documents_handlers.ErrorResponse'
+            additionalProperties:
+              type: string
+            type: object
       summary: List templates
       tags:
       - Templates
@@ -7493,15 +8027,21 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_modules_documents_handlers.ErrorResponse'
+            additionalProperties:
+              type: string
+            type: object
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_modules_documents_handlers.ErrorResponse'
+            additionalProperties:
+              type: string
+            type: object
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_modules_documents_handlers.ErrorResponse'
+            additionalProperties:
+              type: string
+            type: object
       security:
       - BearerAuth: []
       summary: Create template
@@ -7639,15 +8179,21 @@ paths:
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_modules_documents_handlers.ErrorResponse'
+            additionalProperties:
+              type: string
+            type: object
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_modules_documents_handlers.ErrorResponse'
+            additionalProperties:
+              type: string
+            type: object
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_modules_documents_handlers.ErrorResponse'
+            additionalProperties:
+              type: string
+            type: object
       summary: Get template content
       tags:
       - Templates

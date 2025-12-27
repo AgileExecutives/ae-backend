@@ -11,21 +11,23 @@ import (
 
 // RouteProvider provides routing functionality for client management
 type RouteProvider struct {
-	clientHandler       *handlers.ClientHandler
-	costProviderHandler *handlers.CostProviderHandler
-	sessionHandler      *handlers.SessionHandler
-	invoiceHandler      *handlers.InvoiceHandler
-	db                  *gorm.DB
+	clientHandler         *handlers.ClientHandler
+	costProviderHandler   *handlers.CostProviderHandler
+	sessionHandler        *handlers.SessionHandler
+	invoiceHandler        *handlers.InvoiceHandler
+	invoiceAdapterHandler *handlers.InvoiceAdapterHandler
+	db                    *gorm.DB
 }
 
 // NewRouteProvider creates a new route provider
-func NewRouteProvider(clientHandler *handlers.ClientHandler, costProviderHandler *handlers.CostProviderHandler, sessionHandler *handlers.SessionHandler, invoiceHandler *handlers.InvoiceHandler, db *gorm.DB) *RouteProvider {
+func NewRouteProvider(clientHandler *handlers.ClientHandler, costProviderHandler *handlers.CostProviderHandler, sessionHandler *handlers.SessionHandler, invoiceHandler *handlers.InvoiceHandler, invoiceAdapterHandler *handlers.InvoiceAdapterHandler, db *gorm.DB) *RouteProvider {
 	return &RouteProvider{
-		clientHandler:       clientHandler,
-		costProviderHandler: costProviderHandler,
-		sessionHandler:      sessionHandler,
-		invoiceHandler:      invoiceHandler,
-		db:                  db,
+		clientHandler:         clientHandler,
+		costProviderHandler:   costProviderHandler,
+		sessionHandler:        sessionHandler,
+		invoiceHandler:        invoiceHandler,
+		invoiceAdapterHandler: invoiceAdapterHandler,
+		db:                    db,
 	}
 }
 
@@ -75,15 +77,15 @@ func (rp *RouteProvider) RegisterRoutes(router *gin.RouterGroup, ctx *core.Modul
 		sessions.DELETE("/:id", rp.sessionHandler.DeleteSession)
 	}
 
-	// Invoice management endpoints (authenticated)
-	invoices := router.Group("/invoices")
+	// Client invoice management endpoints (authenticated)
+	clientInvoices := router.Group("/client-invoices")
 	{
-		invoices.GET("/clientsessions", rp.invoiceHandler.GetClientsWithUnbilledSessions)
-		invoices.POST("", rp.invoiceHandler.CreateInvoice)
-		invoices.GET("", rp.invoiceHandler.GetAllInvoices)
-		invoices.GET("/:id", rp.invoiceHandler.GetInvoice)
-		invoices.PUT("/:id", rp.invoiceHandler.UpdateInvoice)
-		invoices.DELETE("/:id", rp.invoiceHandler.DeleteInvoice)
+		clientInvoices.GET("/unbilled-sessions", rp.invoiceHandler.GetClientsWithUnbilledSessions)
+		clientInvoices.POST("/from-sessions", rp.invoiceAdapterHandler.CreateInvoiceFromSessions)
+		clientInvoices.GET("", rp.invoiceHandler.GetAllInvoices)
+		clientInvoices.GET("/:id", rp.invoiceHandler.GetInvoice)
+		clientInvoices.PUT("/:id", rp.invoiceHandler.UpdateInvoice)
+		clientInvoices.DELETE("/:id", rp.invoiceHandler.DeleteInvoice)
 	}
 }
 

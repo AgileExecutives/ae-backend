@@ -198,7 +198,6 @@ DELETE /api/v1/documents/:id
 ## 📋 Next Steps (Priorities 3-5)
 
 ### Priority 3: Invoice Number Service (Day 5-6)
-- [ ] Redis-backed invoice number sequence
 - [ ] PostgreSQL persistence for audit trail
 - [ ] Concurrent request handling
 - [ ] Number format configuration (prefix, padding)
@@ -247,7 +246,6 @@ curl http://localhost:8080/api/v1/documents/1/download \
 ## 📦 Dependencies
 
 - `github.com/minio/minio-go/v7` - S3-compatible storage
-- `github.com/redis/go-redis/v9` - Redis client (for invoice numbers)
 - `gorm.io/gorm` - ORM and migrations
 - `gorm.io/datatypes` - JSONB support
 - `github.com/gin-gonic/gin` - HTTP framework

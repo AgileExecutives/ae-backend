@@ -55,7 +55,7 @@ func (r *DocumentRoutes) RegisterRoutes(router *gin.RouterGroup, ctx core.Module
 
 // GetPrefix returns the base path for document routes
 func (r *DocumentRoutes) GetPrefix() string {
-	return "/api/v1"
+	return ""
 }
 
 // GetMiddleware returns middleware to apply to all document routes

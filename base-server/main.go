@@ -8,6 +8,8 @@ import (
 	"github.com/ae-base-server/modules/base"
 	"github.com/ae-base-server/modules/customer"
 	"github.com/ae-base-server/modules/email"
+	invoicenumber "github.com/ae-base-server/modules/invoice_number"
+	"github.com/ae-base-server/modules/organization"
 	"github.com/ae-base-server/modules/pdf"
 	"github.com/ae-base-server/modules/static"
 	"github.com/ae-base-server/pkg/bootstrap"
@@ -100,11 +102,13 @@ func main() {
 
 	// Register modules in dependency order
 	modules := []core.Module{
-		base.NewBaseModule(),         // Base authentication and user management
-		customer.NewCustomerModule(), // Customer and plan management
-		email.NewEmailModule(),       // Email management and notifications
-		pdf.NewPDFModule(),           // PDF generation services
-		static.NewStaticModule(),     // Static JSON file serving
+		base.NewBaseModule(),                   // Base authentication and user management
+		customer.NewCustomerModule(),           // Customer and plan management
+		organization.NewOrganizationModule(),   // Organization management within tenants
+		invoicenumber.NewInvoiceNumberModule(), // Invoice number generation
+		email.NewEmailModule(),                 // Email management and notifications
+		pdf.NewPDFModule(),                     // PDF generation services
+		static.NewStaticModule(),               // Static JSON file serving
 	}
 
 	for _, module := range modules {

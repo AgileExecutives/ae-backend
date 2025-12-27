@@ -15,10 +15,11 @@ import (
 	"github.com/joho/godotenv"
 	booking "github.com/unburdy/booking-module"
 	calendar "github.com/unburdy/calendar-module"
-	organization "github.com/unburdy/organization-module"
+	documents "github.com/unburdy/documents-module"
+	invoice "github.com/unburdy/invoice-module"
+	templates "github.com/unburdy/templates-module"
 	_ "github.com/unburdy/unburdy-server-api/docs" // swagger docs - unburdy-specific
 	"github.com/unburdy/unburdy-server-api/modules/client_management"
-	documents "github.com/unburdy/unburdy-server-api/modules/documents"
 )
 
 // @title Unburdy Server API
@@ -120,10 +121,11 @@ func main() {
 		email.NewEmailModule(),            // Email management and notifications
 		pdf.NewPDFModule(),                // PDF generation services
 		static.NewStaticModule(),          // Static JSON file serving
-		documents.NewCoreModule(),         // Documents, templates, invoices, PDF generation
+		templates.NewCoreModule(),         // Template management for emails and PDFs
+		documents.NewCoreModule(),         // Document storage and PDF generation (depends on templates)
+		invoice.NewCoreModule(),           // Invoice PDF generation (depends on templates and documents)
 		calendar.NewCoreModule(),          // Calendar management (unburdy-specific)
 		booking.NewCoreModule(),           // Booking management (unburdy-specific)
-		organization.NewCoreModule(),      // Organization management (unburdy-specific)
 		client_management.NewCoreModule(), // Client management (unburdy-specific) - depends on booking
 	}
 

@@ -25,12 +25,14 @@ import (
 	// Calendar seeding
 	calendarSeeding "github.com/unburdy/calendar-module/seeding"
 
-	// Documents module
-	documentEntities "github.com/unburdy/unburdy-server-api/modules/documents/entities"
-	"github.com/unburdy/unburdy-server-api/modules/documents/services"
-	"github.com/unburdy/unburdy-server-api/modules/documents/services/storage"
+	// Documents and Templates modules
+	invoiceNumberServices "github.com/ae-base-server/modules/invoice_number/services"
+	documentEntities "github.com/unburdy/documents-module/entities"
+	documentServices "github.com/unburdy/documents-module/services"
+	"github.com/unburdy/documents-module/services/storage"
+	templateEntities "github.com/unburdy/templates-module/entities"
+	templateServices "github.com/unburdy/templates-module/services"
 
-	"github.com/redis/go-redis/v9"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
@@ -119,6 +121,11 @@ func main() {
 		// Step 2: Seed base-server data (tenants, users, plans)
 		if err := seedBaseData(db); err != nil {
 			log.Printf("⚠️  Warning: Base data seeding failed (may already exist): %v", err)
+		}
+
+		// Step 2.5: Seed organizations from seed-data.json
+		if err := seedOrganizations(db); err != nil {
+			log.Printf("⚠️  Warning: Organizations seeding failed: %v", err)
 		}
 
 		// Step 3: Seed application-specific data (cost providers, clients)
@@ -211,6 +218,61 @@ func seedBaseData(db *gorm.DB) error {
 
 	log.Printf("📋 Using seed file: %s", seedFile)
 	return baseAPI.SeedBaseData(db)
+}
+
+// seedOrganizations seeds organizations from seed-data.json
+func seedOrganizations(db *gorm.DB) error {
+	log.Println("🏢 Seeding organizations...")
+
+	// Load organizations from seed-data.json
+	seedFile := findSeedDataFile()
+	if seedFile == "" {
+		return fmt.Errorf("seed-data.json not found")
+	}
+
+	data, err := os.ReadFile(seedFile)
+	if err != nil {
+		return fmt.Errorf("failed to read seed-data.json: %w", err)
+	}
+
+	var seedData struct {
+		Organizations []struct {
+			TenantID uint   `json:"tenant_id"`
+			Name     string `json:"name"`
+		} `json:"organizations"`
+	}
+
+	if err := json.Unmarshal(data, &seedData); err != nil {
+		return fmt.Errorf("failed to parse seed-data.json: %w", err)
+	}
+
+	// Import the organization module entities
+	// We need to use a type assertion here since it's a different module
+	type Organization struct {
+		ID       uint
+		TenantID uint
+		Name     string
+	}
+
+	// Create organizations
+	var orgCount int64
+	db.Table("organizations").Count(&orgCount)
+	if orgCount == 0 {
+		for _, orgData := range seedData.Organizations {
+			org := Organization{
+				TenantID: orgData.TenantID,
+				Name:     orgData.Name,
+			}
+			if err := db.Table("organizations").Create(&org).Error; err != nil {
+				return fmt.Errorf("failed to create organization %s: %w", orgData.Name, err)
+			}
+			log.Printf("✅ Created organization: %s (Tenant ID: %d)", orgData.Name, orgData.TenantID)
+		}
+	} else {
+		log.Println("⏭️  Organizations already exist, skipping...")
+	}
+
+	return nil
 }
 
 // seedAppData seeds application-specific data (cost providers, clients)
@@ -525,24 +587,13 @@ func seedDocumentsData(db *gorm.DB) error {
 		return fmt.Errorf("failed to initialize MinIO storage: %w", err)
 	}
 
-	// Initialize Redis client for invoice numbers
-	redisClient := redis.NewClient(&redis.Options{
-		Addr:     getEnv("REDIS_ADDR", "localhost:6379"),
-		Password: getEnv("REDIS_PASSWORD", "redis123"),
-		DB:       0,
-	})
-	defer redisClient.Close()
-
-	// Test Redis connection
-	ctx := context.Background()
-	if err := redisClient.Ping(ctx).Err(); err != nil {
-		log.Printf("⚠️  Warning: Redis connection failed: %v", err)
-	}
-
 	// Initialize services
-	templateService := services.NewTemplateService(db, minioStorage)
-	invoiceNumberService := services.NewInvoiceNumberService(db, redisClient)
-	pdfService := services.NewPDFService(db, minioStorage, templateService)
+	templateService := templateServices.NewTemplateService(db, minioStorage)
+	invoiceNumberService := baseAPI.NewInvoiceNumberService(db)
+	pdfService := documentServices.NewPDFService(db, minioStorage, templateService)
+
+	// Create context for operations
+	ctx := context.Background()
 
 	// Step 1: Seed invoice template
 	log.Println("📝 Creating invoice template...")
@@ -590,7 +641,7 @@ func seedDocumentsData(db *gorm.DB) error {
 }
 
 // seedInvoiceTemplate creates a sample invoice template
-func seedInvoiceTemplate(ctx context.Context, service *services.TemplateService, tenantID uint) (*documentEntities.Template, error) {
+func seedInvoiceTemplate(ctx context.Context, service *templateServices.TemplateService, tenantID uint) (*templateEntities.Template, error) {
 	// Check if template already exists
 	templates, count, err := service.ListTemplates(ctx, tenantID, nil, "invoice", nil, 1, 1)
 	if err == nil && count > 0 {
@@ -813,7 +864,7 @@ func seedInvoiceTemplate(ctx context.Context, service *services.TemplateService,
 </body>
 </html>`
 
-	req := &services.CreateTemplateRequest{
+	req := &templateServices.CreateTemplateRequest{
 		TenantID:     tenantID,
 		TemplateType: "invoice",
 		Name:         "Standard Therapy Invoice",
@@ -856,7 +907,7 @@ func seedInvoiceTemplate(ctx context.Context, service *services.TemplateService,
 }
 
 // seedEmailTemplate creates a sample email template
-func seedEmailTemplate(ctx context.Context, service *services.TemplateService, tenantID uint) (*documentEntities.Template, error) {
+func seedEmailTemplate(ctx context.Context, service *templateServices.TemplateService, tenantID uint) (*templateEntities.Template, error) {
 	htmlContent := `<!DOCTYPE html>
 <html>
 <head>
@@ -886,7 +937,7 @@ func seedEmailTemplate(ctx context.Context, service *services.TemplateService, t
 </body>
 </html>`
 
-	req := &services.CreateTemplateRequest{
+	req := &templateServices.CreateTemplateRequest{
 		TenantID:     tenantID,
 		TemplateType: "email",
 		Name:         "Standard Email Template",
@@ -909,11 +960,11 @@ func seedEmailTemplate(ctx context.Context, service *services.TemplateService, t
 }
 
 // seedInvoiceNumbers generates sample invoice numbers
-func seedInvoiceNumbers(ctx context.Context, service *services.InvoiceNumberService, tenantID uint) ([]string, error) {
+func seedInvoiceNumbers(ctx context.Context, service *baseAPI.InvoiceNumberService, tenantID uint) ([]string, error) {
 	var invoiceNumbers []string
 
 	// Use default invoice config
-	config := services.DefaultInvoiceConfig()
+	config := invoiceNumberServices.DefaultInvoiceConfig()
 
 	// Generate 5 invoice numbers for current month
 	for i := 0; i < 5; i++ {
@@ -930,7 +981,7 @@ func seedInvoiceNumbers(ctx context.Context, service *services.InvoiceNumberServ
 }
 
 // seedSampleInvoices generates sample invoice PDFs
-func seedSampleInvoices(ctx context.Context, db *gorm.DB, pdfService *services.PDFService, templateID uint, invoiceNumbers []string, tenantID, userID uint) error {
+func seedSampleInvoices(ctx context.Context, db *gorm.DB, pdfService *documentServices.PDFService, templateID uint, invoiceNumbers []string, tenantID, userID uint) error {
 	// Get some clients for realistic invoice data
 	var clients []entities.Client
 	db.Limit(3).Find(&clients)
@@ -981,7 +1032,7 @@ func seedSampleInvoices(ctx context.Context, db *gorm.DB, pdfService *services.P
 		}
 
 		// Generate PDF using the template
-		req := &services.GeneratePDFFromTemplateRequest{
+		req := &documentServices.GeneratePDFFromTemplateRequest{
 			TenantID:     tenantID,
 			UserID:       userID,
 			TemplateID:   templateID,
@@ -1020,14 +1071,12 @@ func showDocumentsStatistics(db *gorm.DB) {
 	log.Println("\n📊 Documents Module Statistics")
 	log.Println("==============================")
 
-	var totalTemplates, totalDocuments, totalInvoiceNumbers int64
-	db.Model(&documentEntities.Template{}).Count(&totalTemplates)
+	var totalTemplates, totalDocuments int64
+	db.Model(&templateEntities.Template{}).Count(&totalTemplates)
 	db.Model(&documentEntities.Document{}).Count(&totalDocuments)
-	db.Model(&documentEntities.InvoiceNumberLog{}).Count(&totalInvoiceNumbers)
 
 	log.Printf("📝 Total templates: %d", totalTemplates)
 	log.Printf("📄 Total documents: %d", totalDocuments)
-	log.Printf("🔢 Total invoice numbers: %d", totalInvoiceNumbers)
 
 	// Template breakdown
 	if totalTemplates > 0 {
@@ -1036,7 +1085,7 @@ func showDocumentsStatistics(db *gorm.DB) {
 			TemplateType string
 			Count        int64
 		}
-		db.Model(&documentEntities.Template{}).
+		db.Model(&templateEntities.Template{}).
 			Select("template_type, COUNT(*) as count").
 			Group("template_type").
 			Find(&templateTypes)
@@ -1123,9 +1172,18 @@ func seedSessions(db *gorm.DB) error {
 	conductedCount := 0
 	scheduledCount := 0
 	canceledCount := 0
+	sessionsWithoutCalendar := 0
 
 	// Create sessions for entries, determining status based on date
+	// IMPORTANT: Each session MUST have a calendar entry
 	for i, entry := range calendarEntries {
+		// Validate that calendar entry has required fields
+		if entry.ID == 0 || entry.StartTime == nil {
+			log.Printf("  ⚠️  Skipping invalid calendar entry (ID: %d)", entry.ID)
+			sessionsWithoutCalendar++
+			continue
+		}
+
 		// Assign clients round-robin
 		client := clients[i%len(clients)]
 
@@ -1154,11 +1212,12 @@ func seedSessions(db *gorm.DB) error {
 			durationMin = int(entry.EndTime.Sub(*entry.StartTime).Minutes())
 		}
 
-		// Create session
+		// Create session linked to calendar entry
+		// The CalendarEntryID is required and links this session to the appointment
 		session := entities.Session{
 			TenantID:          entry.TenantID,
 			ClientID:          client.ID,
-			CalendarEntryID:   &entry.ID,
+			CalendarEntryID:   &entry.ID, // REQUIRED: Links session to calendar appointment
 			OriginalDate:      *entry.StartTime,
 			OriginalStartTime: *entry.StartTime,
 			DurationMin:       durationMin,
@@ -1169,7 +1228,8 @@ func seedSessions(db *gorm.DB) error {
 		}
 
 		if err := db.Create(&session).Error; err != nil {
-			log.Printf("  ❌ Failed to create session for entry %d: %v", entry.ID, err)
+			log.Printf("  ❌ Failed to create session for calendar entry %d: %v", entry.ID, err)
+			sessionsWithoutCalendar++
 			continue
 		}
 
@@ -1181,7 +1241,12 @@ func seedSessions(db *gorm.DB) error {
 		}
 	}
 
-	log.Printf("✅ Created %d sessions (%d conducted, %d scheduled, %d canceled)",
+	// Verify all sessions have calendar entries
+	if sessionsWithoutCalendar > 0 {
+		log.Printf("⚠️  Warning: %d sessions could not be linked to calendar entries", sessionsWithoutCalendar)
+	}
+
+	log.Printf("✅ Created %d sessions (all linked to calendar entries: %d conducted, %d scheduled, %d canceled)",
 		createdSessions,
 		conductedCount,
 		scheduledCount,
@@ -1256,14 +1321,12 @@ func seedInvoices(db *gorm.DB) error {
 			type Organization struct {
 				ID        uint `gorm:"primaryKey"`
 				TenantID  uint
-				UserID    uint
 				Name      string
 				CreatedAt time.Time
 				UpdatedAt time.Time
 			}
 			defaultOrg := Organization{
 				TenantID: tenant.ID,
-				UserID:   user.ID,
 				Name:     "Therapiepraxis Mustermann",
 			}
 			if err := db.Table("organizations").Create(&defaultOrg).Error; err != nil {

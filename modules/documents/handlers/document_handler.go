@@ -204,11 +204,11 @@ func (h *DocumentHandler) GetDocument(c *gin.Context) {
 // @ID downloadDocument
 // @Produce json
 // @Param id path int true "Document ID"
-// @Success 200 {object} map[string]interface{}{success=bool,download_url=string,expires_in=int}
-// @Failure 400 {object} map[string]interface{}
-// @Failure 401 {object} map[string]interface{}
-// @Failure 404 {object} map[string]interface{}
-// @Failure 500 {object} map[string]interface{}
+// @Success 200 {object} DownloadURLResponse
+// @Failure 400 {object} ErrorResponse
+// @Failure 401 {object} ErrorResponse
+// @Failure 404 {object} ErrorResponse
+// @Failure 500 {object} ErrorResponse
 // @Router /documents/{id}/download [get]
 // @Security BearerAuth
 func (h *DocumentHandler) DownloadDocument(c *gin.Context) {
@@ -292,11 +292,11 @@ func (h *DocumentHandler) ListDocuments(c *gin.Context) {
 // @ID deleteDocument
 // @Produce json
 // @Param id path int true "Document ID"
-// @Success 200 {object} map[string]interface{}{success=bool,message=string}
-// @Failure 400 {object} map[string]interface{}
-// @Failure 401 {object} map[string]interface{}
-// @Failure 404 {object} map[string]interface{}
-// @Failure 500 {object} map[string]interface{}
+// @Success 200 {object} SuccessResponse
+// @Failure 400 {object} ErrorResponse
+// @Failure 401 {object} ErrorResponse
+// @Failure 404 {object} ErrorResponse
+// @Failure 500 {object} ErrorResponse
 // @Router /documents/{id} [delete]
 // @Security BearerAuth
 func (h *DocumentHandler) DeleteDocument(c *gin.Context) {

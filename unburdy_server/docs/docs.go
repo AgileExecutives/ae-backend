@@ -2333,6 +2333,401 @@ const docTemplate = `{
                 }
             }
         },
+        "/client-invoices": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Retrieve all invoices for the authenticated user with pagination and all associations preloaded",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "client-invoices"
+                ],
+                "summary": "Get all invoices",
+                "operationId": "getInvoices",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "default": 1,
+                        "description": "Page number",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 10,
+                        "description": "Number of items per page",
+                        "name": "limit",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/entities.InvoiceListAPIResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Create a new invoice with invoice items for specified sessions",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "client-invoices"
+                ],
+                "summary": "Create a new invoice",
+                "operationId": "createInvoice",
+                "parameters": [
+                    {
+                        "description": "Invoice information with client ID and session IDs",
+                        "name": "invoice",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_modules_client_management_entities.CreateInvoiceRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/entities.InvoiceAPIResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/client-invoices/from-sessions": {
+            "post": {
+                "description": "Adapts session data and creates an invoice in the invoice module",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "client-invoices"
+                ],
+                "summary": "Create invoice from sessions",
+                "parameters": [
+                    {
+                        "description": "Invoice from sessions request",
+                        "name": "invoice",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/handlers.CreateInvoiceFromSessionsRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Invoice created successfully",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Client or sessions not found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/client-invoices/unbilled-sessions": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Retrieve all clients that have sessions not yet associated with any invoice",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "client-invoices"
+                ],
+                "summary": "Get clients with unbilled sessions",
+                "operationId": "getClientsWithUnbilledSessions",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/entities.ClientSessionsAPIResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/client-invoices/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Retrieve a specific invoice by ID with all associations preloaded",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "client-invoices"
+                ],
+                "summary": "Get an invoice by ID",
+                "operationId": "getInvoiceById",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Invoice ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/entities.InvoiceAPIResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Update an invoice's status or invoice items (not both at once)",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "client-invoices"
+                ],
+                "summary": "Update an invoice",
+                "operationId": "updateInvoice",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Invoice ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Updated invoice information (status OR session_ids)",
+                        "name": "invoice",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_modules_client_management_entities.UpdateInvoiceRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/entities.InvoiceAPIResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Delete an invoice and all its invoice items by ID",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "client-invoices"
+                ],
+                "summary": "Delete an invoice",
+                "operationId": "deleteInvoice",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Invoice ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/entities.InvoiceDeleteResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/client/{token}": {
             "get": {
                 "description": "Retrieve client details from any valid JWT token containing client_id",
@@ -4323,25 +4718,25 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_modules_documents_handlers.ErrorResponse"
+                            "$ref": "#/definitions/github_com_unburdy_documents-module_handlers.ErrorResponse"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_modules_documents_handlers.ErrorResponse"
+                            "$ref": "#/definitions/github_com_unburdy_documents-module_handlers.ErrorResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_modules_documents_handlers.ErrorResponse"
+                            "$ref": "#/definitions/github_com_unburdy_documents-module_handlers.ErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_modules_documents_handlers.ErrorResponse"
+                            "$ref": "#/definitions/github_com_unburdy_documents-module_handlers.ErrorResponse"
                         }
                     }
                 }
@@ -4382,25 +4777,25 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_modules_documents_handlers.ErrorResponse"
+                            "$ref": "#/definitions/github_com_unburdy_documents-module_handlers.ErrorResponse"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_modules_documents_handlers.ErrorResponse"
+                            "$ref": "#/definitions/github_com_unburdy_documents-module_handlers.ErrorResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_modules_documents_handlers.ErrorResponse"
+                            "$ref": "#/definitions/github_com_unburdy_documents-module_handlers.ErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_modules_documents_handlers.ErrorResponse"
+                            "$ref": "#/definitions/github_com_unburdy_documents-module_handlers.ErrorResponse"
                         }
                     }
                 }
@@ -5044,25 +5439,35 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/handlers.SuccessResponse"
+                            "type": "object",
+                            "additionalProperties": true
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_modules_documents_handlers.ErrorResponse"
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_modules_documents_handlers.ErrorResponse"
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_modules_documents_handlers.ErrorResponse"
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
                         }
                     }
                 }
@@ -5108,19 +5513,28 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_modules_documents_handlers.ErrorResponse"
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_modules_documents_handlers.ErrorResponse"
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_modules_documents_handlers.ErrorResponse"
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
                         }
                     }
                 }
@@ -5179,25 +5593,35 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/handlers.SuccessResponse"
+                            "type": "object",
+                            "additionalProperties": true
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_modules_documents_handlers.ErrorResponse"
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_modules_documents_handlers.ErrorResponse"
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_modules_documents_handlers.ErrorResponse"
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
                         }
                     }
                 }
@@ -5240,25 +5664,35 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/handlers.SuccessResponse"
+                            "type": "object",
+                            "additionalProperties": true
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_modules_documents_handlers.ErrorResponse"
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_modules_documents_handlers.ErrorResponse"
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_modules_documents_handlers.ErrorResponse"
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
                         }
                     }
                 }
@@ -5271,16 +5705,34 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "Retrieve all invoices for the authenticated user with pagination and all associations preloaded",
+                "description": "Get a paginated list of invoices with optional filters",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "invoices"
+                    "Invoices"
                 ],
-                "summary": "Get all invoices",
-                "operationId": "getInvoices",
+                "summary": "List invoices",
                 "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Filter by organization ID",
+                        "name": "organization_id",
+                        "in": "query"
+                    },
+                    {
+                        "enum": [
+                            "draft",
+                            "sent",
+                            "paid",
+                            "overdue",
+                            "cancelled"
+                        ],
+                        "type": "string",
+                        "description": "Filter by status",
+                        "name": "status",
+                        "in": "query"
+                    },
                     {
                         "type": "integer",
                         "default": 1,
@@ -5290,9 +5742,9 @@ const docTemplate = `{
                     },
                     {
                         "type": "integer",
-                        "default": 10,
-                        "description": "Number of items per page",
-                        "name": "limit",
+                        "default": 20,
+                        "description": "Page size",
+                        "name": "page_size",
                         "in": "query"
                     }
                 ],
@@ -5300,19 +5752,35 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/entities.InvoiceListAPIResponse"
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse"
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse"
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
                         }
                     }
                 }
@@ -5323,7 +5791,7 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "Create a new invoice with invoice items for specified sessions",
+                "description": "Create a new invoice with line items",
                 "consumes": [
                     "application/json"
                 ],
@@ -5331,18 +5799,17 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "invoices"
+                    "Invoices"
                 ],
                 "summary": "Create a new invoice",
-                "operationId": "createInvoice",
                 "parameters": [
                     {
-                        "description": "Invoice information with client ID and session IDs",
+                        "description": "Invoice data",
                         "name": "invoice",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/entities.CreateInvoiceRequest"
+                            "$ref": "#/definitions/github_com_unburdy_invoice-module_entities.CreateInvoiceRequest"
                         }
                     }
                 ],
@@ -5350,63 +5817,34 @@ const docTemplate = `{
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/entities.InvoiceAPIResponse"
+                            "$ref": "#/definitions/github_com_unburdy_invoice-module_entities.InvoiceResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse"
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse"
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/invoices/clientsessions": {
-            "get": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "Retrieve all clients that have sessions not yet associated with any invoice",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "invoices"
-                ],
-                "summary": "Get clients with unbilled sessions",
-                "operationId": "getClientsWithUnbilledSessions",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/entities.ClientSessionsAPIResponse"
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse"
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
                         }
                     }
                 }
@@ -5419,15 +5857,14 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "Retrieve a specific invoice by ID with all associations preloaded",
+                "description": "Retrieve a single invoice by its ID",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "invoices"
+                    "Invoices"
                 ],
-                "summary": "Get an invoice by ID",
-                "operationId": "getInvoiceById",
+                "summary": "Get invoice by ID",
                 "parameters": [
                     {
                         "type": "integer",
@@ -5441,31 +5878,34 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/entities.InvoiceAPIResponse"
+                            "$ref": "#/definitions/github_com_unburdy_invoice-module_entities.InvoiceResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse"
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse"
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse"
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
                         }
                     }
                 }
@@ -5476,7 +5916,7 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "Update an invoice's status or invoice items (not both at once)",
+                "description": "Update an existing invoice's details",
                 "consumes": [
                     "application/json"
                 ],
@@ -5484,10 +5924,9 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "invoices"
+                    "Invoices"
                 ],
-                "summary": "Update an invoice",
-                "operationId": "updateInvoice",
+                "summary": "Update invoice",
                 "parameters": [
                     {
                         "type": "integer",
@@ -5497,12 +5936,12 @@ const docTemplate = `{
                         "required": true
                     },
                     {
-                        "description": "Updated invoice information (status OR session_ids)",
+                        "description": "Updated invoice data",
                         "name": "invoice",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/entities.UpdateInvoiceRequest"
+                            "$ref": "#/definitions/github_com_unburdy_invoice-module_entities.UpdateInvoiceRequest"
                         }
                     }
                 ],
@@ -5510,31 +5949,34 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/entities.InvoiceAPIResponse"
+                            "$ref": "#/definitions/github_com_unburdy_invoice-module_entities.InvoiceResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse"
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse"
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse"
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse"
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
                         }
                     }
                 }
@@ -5545,15 +5987,14 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "Delete an invoice and all its invoice items by ID",
+                "description": "Soft delete an invoice by ID",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "invoices"
+                    "Invoices"
                 ],
-                "summary": "Delete an invoice",
-                "operationId": "deleteInvoice",
+                "summary": "Delete invoice",
                 "parameters": [
                     {
                         "type": "integer",
@@ -5567,31 +6008,112 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/entities.InvoiceDeleteResponse"
+                            "type": "object",
+                            "additionalProperties": true
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse"
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse"
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse"
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse"
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/invoices/{id}/mark-paid": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Mark an invoice as paid with payment date",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Invoices"
+                ],
+                "summary": "Mark invoice as paid",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Invoice ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Payment date (RFC3339 format)",
+                        "name": "payment",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
                         }
                     }
                 }
@@ -5633,19 +6155,19 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/entities.OrganizationListAPIResponse"
+                            "$ref": "#/definitions/models.OrganizationListAPIResponse"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/entities.ErrorResponse"
+                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/entities.ErrorResponse"
+                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
                         }
                     }
                 }
@@ -5675,7 +6197,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/entities.CreateOrganizationRequest"
+                            "$ref": "#/definitions/models.CreateOrganizationRequest"
                         }
                     }
                 ],
@@ -5683,25 +6205,25 @@ const docTemplate = `{
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/entities.OrganizationAPIResponse"
+                            "$ref": "#/definitions/models.OrganizationAPIResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/entities.ErrorResponse"
+                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/entities.ErrorResponse"
+                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/entities.ErrorResponse"
+                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
                         }
                     }
                 }
@@ -5736,31 +6258,31 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/entities.OrganizationAPIResponse"
+                            "$ref": "#/definitions/models.OrganizationAPIResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/entities.ErrorResponse"
+                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/entities.ErrorResponse"
+                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/entities.ErrorResponse"
+                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/entities.ErrorResponse"
+                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
                         }
                     }
                 }
@@ -5797,7 +6319,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/entities.UpdateOrganizationRequest"
+                            "$ref": "#/definitions/models.UpdateOrganizationRequest"
                         }
                     }
                 ],
@@ -5805,31 +6327,31 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/entities.OrganizationAPIResponse"
+                            "$ref": "#/definitions/models.OrganizationAPIResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/entities.ErrorResponse"
+                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/entities.ErrorResponse"
+                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/entities.ErrorResponse"
+                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/entities.ErrorResponse"
+                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
                         }
                     }
                 }
@@ -5862,31 +6384,31 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/entities.OrganizationDeleteResponse"
+                            "$ref": "#/definitions/models.OrganizationDeleteResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/entities.ErrorResponse"
+                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/entities.ErrorResponse"
+                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/entities.ErrorResponse"
+                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/entities.ErrorResponse"
+                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
                         }
                     }
                 }
@@ -6048,76 +6570,6 @@ const docTemplate = `{
                     },
                     "401": {
                         "description": "Unauthorized",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": true
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": true
-                        }
-                    }
-                }
-            }
-        },
-        "/pdfs/invoice": {
-            "post": {
-                "description": "Generate a PDF invoice using the default invoice template",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/pdf"
-                ],
-                "tags": [
-                    "PDFs"
-                ],
-                "summary": "Generate invoice PDF",
-                "operationId": "generateInvoicePDF",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "Organization ID (for template selection)",
-                        "name": "organization_id",
-                        "in": "query"
-                    },
-                    {
-                        "description": "Invoice data",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": true
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "PDF file",
-                        "schema": {
-                            "type": "file"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": true
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": true
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
@@ -7195,13 +7647,19 @@ const docTemplate = `{
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_modules_documents_handlers.ErrorResponse"
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_modules_documents_handlers.ErrorResponse"
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
                         }
                     }
                 }
@@ -7245,19 +7703,28 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_modules_documents_handlers.ErrorResponse"
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_modules_documents_handlers.ErrorResponse"
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_modules_documents_handlers.ErrorResponse"
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
                         }
                     }
                 }
@@ -7512,19 +7979,28 @@ const docTemplate = `{
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_modules_documents_handlers.ErrorResponse"
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_modules_documents_handlers.ErrorResponse"
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_modules_documents_handlers.ErrorResponse"
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
                         }
                     }
                 }
@@ -7928,6 +8404,83 @@ const docTemplate = `{
                 "data": {},
                 "pagination": {
                     "$ref": "#/definitions/github_com_ae-base-server_internal_models.PaginationResponse"
+                }
+            }
+        },
+        "api.OrganizationResponse": {
+            "type": "object",
+            "properties": {
+                "additional_payment_methods": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "bankaccount_bank": {
+                    "type": "string"
+                },
+                "bankaccount_bic": {
+                    "type": "string"
+                },
+                "bankaccount_iban": {
+                    "type": "string"
+                },
+                "bankaccount_owner": {
+                    "type": "string"
+                },
+                "city": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "invoice_content": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "name": {
+                    "type": "string"
+                },
+                "owner_name": {
+                    "type": "string"
+                },
+                "owner_title": {
+                    "type": "string"
+                },
+                "phone": {
+                    "type": "string"
+                },
+                "street_address": {
+                    "type": "string"
+                },
+                "tax_id": {
+                    "type": "string"
+                },
+                "tax_rate": {
+                    "type": "number"
+                },
+                "tax_ustid": {
+                    "type": "string"
+                },
+                "tenant_id": {
+                    "type": "integer"
+                },
+                "unit_price": {
+                    "type": "number"
+                },
+                "updated_at": {
+                    "type": "string"
+                },
+                "zip": {
+                    "type": "string"
                 }
             }
         },
@@ -8967,108 +9520,6 @@ const docTemplate = `{
         "entities.CreateExternalCalendarRequest": {
             "type": "object"
         },
-        "entities.CreateInvoiceRequest": {
-            "type": "object",
-            "required": [
-                "client_id",
-                "session_ids"
-            ],
-            "properties": {
-                "client_id": {
-                    "type": "integer",
-                    "example": 1
-                },
-                "session_ids": {
-                    "type": "array",
-                    "items": {
-                        "type": "integer"
-                    },
-                    "example": [
-                        1,
-                        2,
-                        3
-                    ]
-                }
-            }
-        },
-        "entities.CreateOrganizationRequest": {
-            "type": "object",
-            "required": [
-                "name"
-            ],
-            "properties": {
-                "additional_payment_methods": {
-                    "type": "object"
-                },
-                "bankaccount_bank": {
-                    "type": "string",
-                    "example": "Deutsche Bank"
-                },
-                "bankaccount_bic": {
-                    "type": "string",
-                    "example": "DEUTDEFF"
-                },
-                "bankaccount_iban": {
-                    "type": "string",
-                    "example": "DE89370400440532013000"
-                },
-                "bankaccount_owner": {
-                    "type": "string",
-                    "example": "Acme Corporation"
-                },
-                "city": {
-                    "type": "string",
-                    "example": "New York"
-                },
-                "email": {
-                    "type": "string",
-                    "example": "info@acme.com"
-                },
-                "invoice_content": {
-                    "type": "object"
-                },
-                "name": {
-                    "type": "string",
-                    "example": "Acme Corporation"
-                },
-                "owner_name": {
-                    "type": "string",
-                    "example": "John Doe"
-                },
-                "owner_title": {
-                    "type": "string",
-                    "example": "CEO"
-                },
-                "phone": {
-                    "type": "string",
-                    "example": "+1-555-0123"
-                },
-                "street_address": {
-                    "type": "string",
-                    "example": "123 Business St"
-                },
-                "tax_id": {
-                    "type": "string",
-                    "example": "TAX123456"
-                },
-                "tax_rate": {
-                    "type": "number",
-                    "example": 19
-                },
-                "tax_ustid": {
-                    "type": "string",
-                    "example": "DE123456789"
-                },
-                "unit_price": {
-                    "type": "number",
-                    "example": 150
-                },
-                "zip": {
-                    "type": "string",
-                    "example": "12345"
-                }
-            }
-        },
         "entities.CreateSessionRequest": {
             "type": "object",
             "required": [
@@ -9231,23 +9682,6 @@ const docTemplate = `{
                 }
             }
         },
-        "entities.ErrorResponse": {
-            "type": "object",
-            "properties": {
-                "error": {
-                    "type": "string",
-                    "example": "Detailed error information"
-                },
-                "message": {
-                    "type": "string",
-                    "example": "Error message"
-                },
-                "success": {
-                    "type": "boolean",
-                    "example": false
-                }
-            }
-        },
         "entities.ExternalCalendarResponse": {
             "type": "object",
             "properties": {
@@ -9389,7 +9823,7 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "data": {
-                    "$ref": "#/definitions/entities.InvoiceResponse"
+                    "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_modules_client_management_entities.InvoiceResponse"
                 },
                 "message": {
                     "type": "string",
@@ -9414,26 +9848,25 @@ const docTemplate = `{
                 }
             }
         },
-        "entities.InvoiceItemResponse": {
+        "entities.InvoiceItemData": {
             "type": "object",
+            "required": [
+                "description",
+                "quantity",
+                "unit_price"
+            ],
             "properties": {
-                "created_at": {
+                "description": {
                     "type": "string"
                 },
-                "id": {
-                    "type": "integer"
+                "quantity": {
+                    "type": "number"
                 },
-                "invoice_id": {
-                    "type": "integer"
+                "tax_rate": {
+                    "type": "number"
                 },
-                "session": {
-                    "$ref": "#/definitions/entities.SessionResponse"
-                },
-                "session_id": {
-                    "type": "integer"
-                },
-                "updated_at": {
-                    "type": "string"
+                "unit_price": {
+                    "type": "number"
                 }
             }
         },
@@ -9443,7 +9876,7 @@ const docTemplate = `{
                 "data": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/entities.InvoiceResponse"
+                        "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_modules_client_management_entities.InvoiceResponse"
                     }
                 },
                 "limit": {
@@ -9467,97 +9900,6 @@ const docTemplate = `{
                     "example": 100
                 }
             }
-        },
-        "entities.InvoiceResponse": {
-            "type": "object",
-            "properties": {
-                "client": {
-                    "$ref": "#/definitions/entities.ClientResponse"
-                },
-                "client_id": {
-                    "type": "integer"
-                },
-                "cost_provider": {
-                    "$ref": "#/definitions/entities.CostProviderResponse"
-                },
-                "cost_provider_id": {
-                    "type": "integer"
-                },
-                "created_at": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "integer"
-                },
-                "invoice_date": {
-                    "type": "string"
-                },
-                "invoice_items": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/entities.InvoiceItemResponse"
-                    }
-                },
-                "invoice_number": {
-                    "type": "string"
-                },
-                "latest_reminder": {
-                    "type": "string"
-                },
-                "num_reminders": {
-                    "type": "integer"
-                },
-                "number_units": {
-                    "type": "integer"
-                },
-                "organization": {
-                    "$ref": "#/definitions/entities.OrganizationResponse"
-                },
-                "organization_id": {
-                    "type": "integer"
-                },
-                "payed_date": {
-                    "type": "string"
-                },
-                "status": {
-                    "$ref": "#/definitions/entities.InvoiceStatus"
-                },
-                "sum_amount": {
-                    "type": "number"
-                },
-                "tax_amount": {
-                    "type": "number"
-                },
-                "tenant_id": {
-                    "type": "integer"
-                },
-                "total_amount": {
-                    "type": "number"
-                },
-                "updated_at": {
-                    "type": "string"
-                },
-                "user_id": {
-                    "type": "integer"
-                }
-            }
-        },
-        "entities.InvoiceStatus": {
-            "type": "string",
-            "enum": [
-                "draft",
-                "generated",
-                "sent",
-                "reminder",
-                "payed"
-            ],
-            "x-enum-varnames": [
-                "InvoiceStatusDraft",
-                "InvoiceStatusGenerated",
-                "InvoiceStatusSent",
-                "InvoiceStatusReminder",
-                "InvoiceStatusPayed"
-            ]
         },
         "entities.MonthData": {
             "type": "object",
@@ -9583,146 +9925,6 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "time.Time": {
-                    "type": "string"
-                }
-            }
-        },
-        "entities.OrganizationAPIResponse": {
-            "type": "object",
-            "properties": {
-                "data": {
-                    "$ref": "#/definitions/entities.OrganizationResponse"
-                },
-                "message": {
-                    "type": "string",
-                    "example": "Organization retrieved successfully"
-                },
-                "success": {
-                    "type": "boolean",
-                    "example": true
-                }
-            }
-        },
-        "entities.OrganizationDeleteResponse": {
-            "type": "object",
-            "properties": {
-                "message": {
-                    "type": "string",
-                    "example": "Organization deleted successfully"
-                },
-                "success": {
-                    "type": "boolean",
-                    "example": true
-                }
-            }
-        },
-        "entities.OrganizationListAPIResponse": {
-            "type": "object",
-            "properties": {
-                "data": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/entities.OrganizationResponse"
-                    }
-                },
-                "limit": {
-                    "type": "integer",
-                    "example": 10
-                },
-                "message": {
-                    "type": "string",
-                    "example": "Organizations retrieved successfully"
-                },
-                "page": {
-                    "type": "integer",
-                    "example": 1
-                },
-                "success": {
-                    "type": "boolean",
-                    "example": true
-                },
-                "total": {
-                    "type": "integer",
-                    "example": 100
-                }
-            }
-        },
-        "entities.OrganizationResponse": {
-            "type": "object",
-            "properties": {
-                "additional_payment_methods": {
-                    "type": "array",
-                    "items": {
-                        "type": "integer"
-                    }
-                },
-                "bankaccount_bank": {
-                    "type": "string"
-                },
-                "bankaccount_bic": {
-                    "type": "string"
-                },
-                "bankaccount_iban": {
-                    "type": "string"
-                },
-                "bankaccount_owner": {
-                    "type": "string"
-                },
-                "city": {
-                    "type": "string"
-                },
-                "created_at": {
-                    "type": "string"
-                },
-                "email": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "integer"
-                },
-                "invoice_content": {
-                    "type": "array",
-                    "items": {
-                        "type": "integer"
-                    }
-                },
-                "name": {
-                    "type": "string"
-                },
-                "owner_name": {
-                    "type": "string"
-                },
-                "owner_title": {
-                    "type": "string"
-                },
-                "phone": {
-                    "type": "string"
-                },
-                "street_address": {
-                    "type": "string"
-                },
-                "tax_id": {
-                    "type": "string"
-                },
-                "tax_rate": {
-                    "type": "number"
-                },
-                "tax_ustid": {
-                    "type": "string"
-                },
-                "tenant_id": {
-                    "type": "integer"
-                },
-                "unit_price": {
-                    "type": "number"
-                },
-                "updated_at": {
-                    "type": "string"
-                },
-                "user_id": {
-                    "type": "integer"
-                },
-                "zip": {
                     "type": "string"
                 }
             }
@@ -10205,105 +10407,6 @@ const docTemplate = `{
         "entities.UpdateExternalCalendarRequest": {
             "type": "object"
         },
-        "entities.UpdateInvoiceRequest": {
-            "type": "object",
-            "properties": {
-                "session_ids": {
-                    "type": "array",
-                    "items": {
-                        "type": "integer"
-                    },
-                    "example": [
-                        1,
-                        2,
-                        3
-                    ]
-                },
-                "status": {
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/entities.InvoiceStatus"
-                        }
-                    ],
-                    "example": "sent"
-                }
-            }
-        },
-        "entities.UpdateOrganizationRequest": {
-            "type": "object",
-            "properties": {
-                "additional_payment_methods": {
-                    "type": "object"
-                },
-                "bankaccount_bank": {
-                    "type": "string",
-                    "example": "Deutsche Bank"
-                },
-                "bankaccount_bic": {
-                    "type": "string",
-                    "example": "DEUTDEFF"
-                },
-                "bankaccount_iban": {
-                    "type": "string",
-                    "example": "DE89370400440532013000"
-                },
-                "bankaccount_owner": {
-                    "type": "string",
-                    "example": "Acme Corporation"
-                },
-                "city": {
-                    "type": "string",
-                    "example": "New York"
-                },
-                "email": {
-                    "type": "string",
-                    "example": "info@acme.com"
-                },
-                "invoice_content": {
-                    "type": "object"
-                },
-                "name": {
-                    "type": "string",
-                    "example": "Acme Corporation"
-                },
-                "owner_name": {
-                    "type": "string",
-                    "example": "John Doe"
-                },
-                "owner_title": {
-                    "type": "string",
-                    "example": "CEO"
-                },
-                "phone": {
-                    "type": "string",
-                    "example": "+1-555-0123"
-                },
-                "street_address": {
-                    "type": "string",
-                    "example": "123 Business St"
-                },
-                "tax_id": {
-                    "type": "string",
-                    "example": "TAX123456"
-                },
-                "tax_rate": {
-                    "type": "number",
-                    "example": 19
-                },
-                "tax_ustid": {
-                    "type": "string",
-                    "example": "DE123456789"
-                },
-                "unit_price": {
-                    "type": "number",
-                    "example": 150
-                },
-                "zip": {
-                    "type": "string",
-                    "example": "12345"
-                }
-            }
-        },
         "entities.UpdateSessionRequest": {
             "type": "object",
             "properties": {
@@ -10710,6 +10813,9 @@ const docTemplate = `{
                 "created_at": {
                     "type": "string"
                 },
+                "customer_id": {
+                    "type": "integer"
+                },
                 "id": {
                     "type": "integer"
                 },
@@ -10789,6 +10895,9 @@ const docTemplate = `{
                 },
                 "last_name": {
                     "type": "string"
+                },
+                "organization_id": {
+                    "type": "integer"
                 },
                 "role": {
                     "type": "string"
@@ -10886,6 +10995,251 @@ const docTemplate = `{
                 }
             }
         },
+        "github_com_unburdy_documents-module_handlers.ErrorResponse": {
+            "type": "object",
+            "properties": {
+                "error": {
+                    "type": "string",
+                    "example": "Error message"
+                },
+                "success": {
+                    "type": "boolean",
+                    "example": false
+                }
+            }
+        },
+        "github_com_unburdy_invoice-module_entities.CreateInvoiceRequest": {
+            "type": "object",
+            "required": [
+                "customer_name",
+                "invoice_date",
+                "invoice_number",
+                "items",
+                "organization_id"
+            ],
+            "properties": {
+                "currency": {
+                    "type": "string"
+                },
+                "customer_address": {
+                    "type": "string"
+                },
+                "customer_email": {
+                    "type": "string"
+                },
+                "customer_name": {
+                    "type": "string"
+                },
+                "customer_tax_id": {
+                    "type": "string"
+                },
+                "due_date": {
+                    "type": "string"
+                },
+                "internal_note": {
+                    "type": "string"
+                },
+                "invoice_date": {
+                    "type": "string"
+                },
+                "invoice_number": {
+                    "type": "string"
+                },
+                "items": {
+                    "type": "array",
+                    "minItems": 1,
+                    "items": {
+                        "$ref": "#/definitions/entities.InvoiceItemData"
+                    }
+                },
+                "notes": {
+                    "type": "string"
+                },
+                "organization_id": {
+                    "type": "integer"
+                },
+                "payment_method": {
+                    "type": "string"
+                },
+                "payment_terms": {
+                    "type": "string"
+                },
+                "tax_rate": {
+                    "type": "number"
+                },
+                "template_html": {
+                    "description": "HTML template for PDF generation",
+                    "type": "string"
+                }
+            }
+        },
+        "github_com_unburdy_invoice-module_entities.InvoiceItemResponse": {
+            "type": "object",
+            "properties": {
+                "amount": {
+                    "type": "number"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "position": {
+                    "type": "integer"
+                },
+                "quantity": {
+                    "type": "number"
+                },
+                "tax_rate": {
+                    "type": "number"
+                },
+                "unit_price": {
+                    "type": "number"
+                }
+            }
+        },
+        "github_com_unburdy_invoice-module_entities.InvoiceResponse": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "currency": {
+                    "type": "string"
+                },
+                "customer_address": {
+                    "type": "string"
+                },
+                "customer_email": {
+                    "type": "string"
+                },
+                "customer_name": {
+                    "type": "string"
+                },
+                "customer_tax_id": {
+                    "type": "string"
+                },
+                "document_id": {
+                    "type": "integer"
+                },
+                "due_date": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "invoice_date": {
+                    "type": "string"
+                },
+                "invoice_number": {
+                    "type": "string"
+                },
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/github_com_unburdy_invoice-module_entities.InvoiceItemResponse"
+                    }
+                },
+                "notes": {
+                    "type": "string"
+                },
+                "organization_id": {
+                    "type": "integer"
+                },
+                "payment_date": {
+                    "type": "string"
+                },
+                "payment_method": {
+                    "type": "string"
+                },
+                "payment_terms": {
+                    "type": "string"
+                },
+                "status": {
+                    "$ref": "#/definitions/github_com_unburdy_invoice-module_entities.InvoiceStatus"
+                },
+                "subtotal_amount": {
+                    "type": "number"
+                },
+                "tax_amount": {
+                    "type": "number"
+                },
+                "tax_rate": {
+                    "type": "number"
+                },
+                "tenant_id": {
+                    "type": "integer"
+                },
+                "total_amount": {
+                    "type": "number"
+                },
+                "updated_at": {
+                    "type": "string"
+                },
+                "user_id": {
+                    "type": "integer"
+                }
+            }
+        },
+        "github_com_unburdy_invoice-module_entities.InvoiceStatus": {
+            "type": "string",
+            "enum": [
+                "draft",
+                "sent",
+                "paid",
+                "overdue",
+                "cancelled"
+            ],
+            "x-enum-varnames": [
+                "InvoiceStatusDraft",
+                "InvoiceStatusSent",
+                "InvoiceStatusPaid",
+                "InvoiceStatusOverdue",
+                "InvoiceStatusCancelled"
+            ]
+        },
+        "github_com_unburdy_invoice-module_entities.UpdateInvoiceRequest": {
+            "type": "object",
+            "properties": {
+                "customer_address": {
+                    "type": "string"
+                },
+                "customer_email": {
+                    "type": "string"
+                },
+                "customer_name": {
+                    "type": "string"
+                },
+                "due_date": {
+                    "type": "string"
+                },
+                "internal_note": {
+                    "type": "string"
+                },
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/entities.InvoiceItemData"
+                    }
+                },
+                "notes": {
+                    "type": "string"
+                },
+                "payment_date": {
+                    "type": "string"
+                },
+                "payment_method": {
+                    "type": "string"
+                },
+                "payment_terms": {
+                    "type": "string"
+                },
+                "status": {
+                    "$ref": "#/definitions/github_com_unburdy_invoice-module_entities.InvoiceStatus"
+                }
+            }
+        },
         "github_com_unburdy_unburdy-server-api_internal_models.APIResponse": {
             "type": "object",
             "properties": {
@@ -10941,16 +11295,165 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_unburdy_unburdy-server-api_modules_documents_handlers.ErrorResponse": {
+        "github_com_unburdy_unburdy-server-api_modules_client_management_entities.CreateInvoiceRequest": {
+            "type": "object",
+            "required": [
+                "client_id",
+                "session_ids"
+            ],
+            "properties": {
+                "client_id": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "session_ids": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    },
+                    "example": [
+                        1,
+                        2,
+                        3
+                    ]
+                }
+            }
+        },
+        "github_com_unburdy_unburdy-server-api_modules_client_management_entities.InvoiceItemResponse": {
             "type": "object",
             "properties": {
-                "error": {
-                    "type": "string",
-                    "example": "Error message"
+                "created_at": {
+                    "type": "string"
                 },
-                "success": {
-                    "type": "boolean",
-                    "example": false
+                "id": {
+                    "type": "integer"
+                },
+                "invoice_id": {
+                    "type": "integer"
+                },
+                "session": {
+                    "$ref": "#/definitions/entities.SessionResponse"
+                },
+                "session_id": {
+                    "type": "integer"
+                },
+                "updated_at": {
+                    "type": "string"
+                }
+            }
+        },
+        "github_com_unburdy_unburdy-server-api_modules_client_management_entities.InvoiceResponse": {
+            "type": "object",
+            "properties": {
+                "client": {
+                    "$ref": "#/definitions/entities.ClientResponse"
+                },
+                "client_id": {
+                    "type": "integer"
+                },
+                "cost_provider": {
+                    "$ref": "#/definitions/entities.CostProviderResponse"
+                },
+                "cost_provider_id": {
+                    "type": "integer"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "invoice_date": {
+                    "type": "string"
+                },
+                "invoice_items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_modules_client_management_entities.InvoiceItemResponse"
+                    }
+                },
+                "invoice_number": {
+                    "type": "string"
+                },
+                "latest_reminder": {
+                    "type": "string"
+                },
+                "num_reminders": {
+                    "type": "integer"
+                },
+                "number_units": {
+                    "type": "integer"
+                },
+                "organization": {
+                    "$ref": "#/definitions/api.OrganizationResponse"
+                },
+                "organization_id": {
+                    "type": "integer"
+                },
+                "payed_date": {
+                    "type": "string"
+                },
+                "status": {
+                    "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_modules_client_management_entities.InvoiceStatus"
+                },
+                "sum_amount": {
+                    "type": "number"
+                },
+                "tax_amount": {
+                    "type": "number"
+                },
+                "tenant_id": {
+                    "type": "integer"
+                },
+                "total_amount": {
+                    "type": "number"
+                },
+                "updated_at": {
+                    "type": "string"
+                },
+                "user_id": {
+                    "type": "integer"
+                }
+            }
+        },
+        "github_com_unburdy_unburdy-server-api_modules_client_management_entities.InvoiceStatus": {
+            "type": "string",
+            "enum": [
+                "draft",
+                "generated",
+                "sent",
+                "reminder",
+                "payed"
+            ],
+            "x-enum-varnames": [
+                "InvoiceStatusDraft",
+                "InvoiceStatusGenerated",
+                "InvoiceStatusSent",
+                "InvoiceStatusReminder",
+                "InvoiceStatusPayed"
+            ]
+        },
+        "github_com_unburdy_unburdy-server-api_modules_client_management_entities.UpdateInvoiceRequest": {
+            "type": "object",
+            "properties": {
+                "session_ids": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    },
+                    "example": [
+                        1,
+                        2,
+                        3
+                    ]
+                },
+                "status": {
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_modules_client_management_entities.InvoiceStatus"
+                        }
+                    ],
+                    "example": "sent"
                 }
             }
         },
@@ -10963,6 +11466,37 @@ const docTemplate = `{
                 "valid": {
                     "description": "Valid is true if Time is not NULL",
                     "type": "boolean"
+                }
+            }
+        },
+        "handlers.CreateInvoiceFromSessionsRequest": {
+            "type": "object",
+            "required": [
+                "client",
+                "invoice_date",
+                "invoice_number",
+                "organization_id"
+            ],
+            "properties": {
+                "client": {
+                    "$ref": "#/definitions/entities.ClientWithUnbilledSessionsResponse"
+                },
+                "due_date": {
+                    "description": "RFC3339 format",
+                    "type": "string"
+                },
+                "invoice_date": {
+                    "description": "RFC3339 format",
+                    "type": "string"
+                },
+                "invoice_number": {
+                    "type": "string"
+                },
+                "organization_id": {
+                    "type": "integer"
+                },
+                "template_id": {
+                    "type": "integer"
                 }
             }
         },
@@ -11012,8 +11546,8 @@ const docTemplate = `{
                         "type": "string"
                     },
                     "example": [
-                        "invoice_number",
-                        "customer_name"
+                        "customer_name",
+                        "date"
                     ]
                 }
             }
@@ -11676,6 +12210,84 @@ const docTemplate = `{
                 }
             }
         },
+        "models.CreateOrganizationRequest": {
+            "type": "object",
+            "required": [
+                "name"
+            ],
+            "properties": {
+                "additional_payment_methods": {
+                    "type": "object"
+                },
+                "bankaccount_bank": {
+                    "type": "string",
+                    "example": "Deutsche Bank"
+                },
+                "bankaccount_bic": {
+                    "type": "string",
+                    "example": "DEUTDEFF"
+                },
+                "bankaccount_iban": {
+                    "type": "string",
+                    "example": "DE89370400440532013000"
+                },
+                "bankaccount_owner": {
+                    "type": "string",
+                    "example": "Acme Corporation"
+                },
+                "city": {
+                    "type": "string",
+                    "example": "New York"
+                },
+                "email": {
+                    "type": "string",
+                    "example": "info@acme.com"
+                },
+                "invoice_content": {
+                    "type": "object"
+                },
+                "name": {
+                    "type": "string",
+                    "example": "Acme Corporation"
+                },
+                "owner_name": {
+                    "type": "string",
+                    "example": "John Doe"
+                },
+                "owner_title": {
+                    "type": "string",
+                    "example": "CEO"
+                },
+                "phone": {
+                    "type": "string",
+                    "example": "+1-555-0123"
+                },
+                "street_address": {
+                    "type": "string",
+                    "example": "123 Business St"
+                },
+                "tax_id": {
+                    "type": "string",
+                    "example": "TAX123456"
+                },
+                "tax_rate": {
+                    "type": "number",
+                    "example": 19
+                },
+                "tax_ustid": {
+                    "type": "string",
+                    "example": "DE123456789"
+                },
+                "unit_price": {
+                    "type": "number",
+                    "example": 150
+                },
+                "zip": {
+                    "type": "string",
+                    "example": "12345"
+                }
+            }
+        },
         "models.CustomerRequest": {
             "type": "object",
             "required": [
@@ -11698,6 +12310,143 @@ const docTemplate = `{
                 "phone": {
                     "type": "string",
                     "example": "+1-555-123-4567"
+                }
+            }
+        },
+        "models.OrganizationAPIResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/models.OrganizationResponse"
+                },
+                "message": {
+                    "type": "string",
+                    "example": "Organization retrieved successfully"
+                },
+                "success": {
+                    "type": "boolean",
+                    "example": true
+                }
+            }
+        },
+        "models.OrganizationDeleteResponse": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string",
+                    "example": "Organization deleted successfully"
+                },
+                "success": {
+                    "type": "boolean",
+                    "example": true
+                }
+            }
+        },
+        "models.OrganizationListAPIResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.OrganizationResponse"
+                    }
+                },
+                "limit": {
+                    "type": "integer",
+                    "example": 10
+                },
+                "message": {
+                    "type": "string",
+                    "example": "Organizations retrieved successfully"
+                },
+                "page": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "success": {
+                    "type": "boolean",
+                    "example": true
+                },
+                "total": {
+                    "type": "integer",
+                    "example": 100
+                }
+            }
+        },
+        "models.OrganizationResponse": {
+            "type": "object",
+            "properties": {
+                "additional_payment_methods": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "bankaccount_bank": {
+                    "type": "string"
+                },
+                "bankaccount_bic": {
+                    "type": "string"
+                },
+                "bankaccount_iban": {
+                    "type": "string"
+                },
+                "bankaccount_owner": {
+                    "type": "string"
+                },
+                "city": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "invoice_content": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "name": {
+                    "type": "string"
+                },
+                "owner_name": {
+                    "type": "string"
+                },
+                "owner_title": {
+                    "type": "string"
+                },
+                "phone": {
+                    "type": "string"
+                },
+                "street_address": {
+                    "type": "string"
+                },
+                "tax_id": {
+                    "type": "string"
+                },
+                "tax_rate": {
+                    "type": "number"
+                },
+                "tax_ustid": {
+                    "type": "string"
+                },
+                "tenant_id": {
+                    "type": "integer"
+                },
+                "unit_price": {
+                    "type": "number"
+                },
+                "updated_at": {
+                    "type": "string"
+                },
+                "zip": {
+                    "type": "string"
                 }
             }
         },
@@ -11907,6 +12656,81 @@ const docTemplate = `{
                 "street_address": {
                     "type": "string",
                     "example": "456 Insurance Blvd"
+                },
+                "zip": {
+                    "type": "string",
+                    "example": "12345"
+                }
+            }
+        },
+        "models.UpdateOrganizationRequest": {
+            "type": "object",
+            "properties": {
+                "additional_payment_methods": {
+                    "type": "object"
+                },
+                "bankaccount_bank": {
+                    "type": "string",
+                    "example": "Deutsche Bank"
+                },
+                "bankaccount_bic": {
+                    "type": "string",
+                    "example": "DEUTDEFF"
+                },
+                "bankaccount_iban": {
+                    "type": "string",
+                    "example": "DE89370400440532013000"
+                },
+                "bankaccount_owner": {
+                    "type": "string",
+                    "example": "Acme Corporation"
+                },
+                "city": {
+                    "type": "string",
+                    "example": "New York"
+                },
+                "email": {
+                    "type": "string",
+                    "example": "info@acme.com"
+                },
+                "invoice_content": {
+                    "type": "object"
+                },
+                "name": {
+                    "type": "string",
+                    "example": "Acme Corporation"
+                },
+                "owner_name": {
+                    "type": "string",
+                    "example": "John Doe"
+                },
+                "owner_title": {
+                    "type": "string",
+                    "example": "CEO"
+                },
+                "phone": {
+                    "type": "string",
+                    "example": "+1-555-0123"
+                },
+                "street_address": {
+                    "type": "string",
+                    "example": "123 Business St"
+                },
+                "tax_id": {
+                    "type": "string",
+                    "example": "TAX123456"
+                },
+                "tax_rate": {
+                    "type": "number",
+                    "example": 19
+                },
+                "tax_ustid": {
+                    "type": "string",
+                    "example": "DE123456789"
+                },
+                "unit_price": {
+                    "type": "number",
+                    "example": 150
                 },
                 "zip": {
                     "type": "string",

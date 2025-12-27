@@ -37,9 +37,10 @@ func NewModule(db *gorm.DB) baseAPI.ModuleRouteProvider {
 	costProviderHandler := handlers.NewCostProviderHandler(costProviderService)
 	sessionHandler := handlers.NewSessionHandler(sessionService)
 	invoiceHandler := handlers.NewInvoiceHandler(invoiceService)
+	invoiceAdapterHandler := handlers.NewInvoiceAdapterHandler(db, "")
 
 	// Initialize route provider with database for auth middleware
-	routeProvider := routes.NewRouteProvider(clientHandler, costProviderHandler, sessionHandler, invoiceHandler, db)
+	routeProvider := routes.NewRouteProvider(clientHandler, costProviderHandler, sessionHandler, invoiceHandler, invoiceAdapterHandler, db)
 
 	return &Module{
 		routeProvider: routeProvider,
@@ -71,13 +72,14 @@ func (m *Module) GetEntitiesForMigration() []interface{} {
 
 // CoreModule implements the core.Module interface for bootstrap system integration
 type CoreModule struct {
-	db                  *gorm.DB
-	logger              core.Logger
-	clientHandlers      *handlers.ClientHandler
-	costProviderHandler *handlers.CostProviderHandler
-	sessionHandler      *handlers.SessionHandler
-	invoiceHandler      *handlers.InvoiceHandler
-	routeProvider       *routes.RouteProvider
+	db                    *gorm.DB
+	logger                core.Logger
+	clientHandlers        *handlers.ClientHandler
+	costProviderHandler   *handlers.CostProviderHandler
+	sessionHandler        *handlers.SessionHandler
+	invoiceHandler        *handlers.InvoiceHandler
+	invoiceAdapterHandler *handlers.InvoiceAdapterHandler
+	routeProvider         *routes.RouteProvider
 }
 
 // NewCoreModule creates a new client management module compatible with bootstrap system
@@ -157,8 +159,12 @@ func (m *CoreModule) Initialize(ctx core.ModuleContext) error {
 	m.sessionHandler = handlers.NewSessionHandler(sessionService)
 	m.invoiceHandler = handlers.NewInvoiceHandler(invoiceService)
 
+	// Initialize invoice adapter handler (for invoice module integration)
+	// TODO: Get invoice module URL from config
+	m.invoiceAdapterHandler = handlers.NewInvoiceAdapterHandler(ctx.DB, "")
+
 	// Initialize route provider with database for auth middleware
-	m.routeProvider = routes.NewRouteProvider(m.clientHandlers, m.costProviderHandler, m.sessionHandler, m.invoiceHandler, ctx.DB)
+	m.routeProvider = routes.NewRouteProvider(m.clientHandlers, m.costProviderHandler, m.sessionHandler, m.invoiceHandler, m.invoiceAdapterHandler, ctx.DB)
 
 	ctx.Logger.Info("Client management module initialized successfully")
 	return nil
@@ -215,7 +221,7 @@ func (m *CoreModule) SwaggerPaths() []string {
 		"/clients",
 		"/cost-providers",
 		"/sessions",
-		"/invoices",
+		"/client-invoices",
 	}
 }
 

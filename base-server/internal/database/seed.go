@@ -20,15 +20,30 @@ import (
 
 // SeedData represents the structure of seed data from JSON
 type SeedData struct {
-	Tenants []SeedTenant `json:"tenants"`
-	Plans   []SeedPlan   `json:"plans"`
-	Users   []SeedUser   `json:"users"`
+	Customers     []SeedCustomer     `json:"customers"`
+	Tenants       []SeedTenant       `json:"tenants"`
+	Organizations []SeedOrganization `json:"organizations"`
+	Plans         []SeedPlan         `json:"plans"`
+	Users         []SeedUser         `json:"users"`
+}
+
+// SeedCustomer represents customer seed data
+type SeedCustomer struct {
+	Name  string `json:"name"`
+	Email string `json:"email"`
 }
 
 // SeedTenant represents tenant seed data
 type SeedTenant struct {
-	Name string `json:"name"`
-	Slug string `json:"slug"`
+	CustomerID uint   `json:"customer_id"`
+	Name       string `json:"name"`
+	Slug       string `json:"slug"`
+}
+
+// SeedOrganization represents organization seed data
+type SeedOrganization struct {
+	TenantID uint   `json:"tenant_id"`
+	Name     string `json:"name"`
 }
 
 // SeedPlan represents plan seed data
@@ -47,15 +62,16 @@ type SeedPlan struct {
 
 // SeedUser represents user seed data
 type SeedUser struct {
-	Username      string `json:"username"`
-	Email         string `json:"email"`
-	Password      string `json:"password"`
-	FirstName     string `json:"first_name"`
-	LastName      string `json:"last_name"`
-	Role          string `json:"role"`
-	Active        bool   `json:"active"`
-	TenantSlug    string `json:"tenant_slug"`
-	EmailVerified bool   `json:"email_verified"`
+	Username       string `json:"username"`
+	Email          string `json:"email"`
+	Password       string `json:"password"`
+	FirstName      string `json:"first_name"`
+	LastName       string `json:"last_name"`
+	Role           string `json:"role"`
+	Active         bool   `json:"active"`
+	TenantSlug     string `json:"tenant_slug"`
+	OrganizationID uint   `json:"organization_id"`
+	EmailVerified  bool   `json:"email_verified"`
 }
 
 // loadSeedData loads seed data from JSON file
@@ -101,19 +117,54 @@ func Seed(db *gorm.DB) error {
 		return fmt.Errorf("failed to load seed data: %w", err)
 	}
 
+	// Create customers first
+	var customerCount int64
+	db.Model(&models.Customer{}).Count(&customerCount)
+	if customerCount == 0 {
+		for _, customerData := range seedData.Customers {
+			customer := models.Customer{
+				Name:   customerData.Name,
+				Email:  customerData.Email,
+				Active: true,
+				Status: "active",
+			}
+			if err := db.Create(&customer).Error; err != nil {
+				return fmt.Errorf("failed to create customer %s: %w", customerData.Name, err)
+			}
+			log.Printf("Created customer: %s", customerData.Name)
+		}
+	}
+
 	// Create tenants
 	var tenantCount int64
 	db.Model(&models.Tenant{}).Count(&tenantCount)
 	if tenantCount == 0 {
 		for _, tenantData := range seedData.Tenants {
 			tenant := models.Tenant{
-				Name: tenantData.Name,
-				Slug: tenantData.Slug,
+				CustomerID: tenantData.CustomerID,
+				Name:       tenantData.Name,
+				Slug:       tenantData.Slug,
 			}
 			if err := db.Create(&tenant).Error; err != nil {
 				return fmt.Errorf("failed to create tenant %s: %w", tenantData.Name, err)
 			}
 			log.Printf("Created tenant: %s", tenantData.Name)
+		}
+	}
+
+	// Create organizations
+	var organizationCount int64
+	db.Model(&models.Organization{}).Count(&organizationCount)
+	if organizationCount == 0 {
+		for _, orgData := range seedData.Organizations {
+			organization := models.Organization{
+				TenantID: orgData.TenantID,
+				Name:     orgData.Name,
+			}
+			if err := db.Create(&organization).Error; err != nil {
+				return fmt.Errorf("failed to create organization %s: %w", orgData.Name, err)
+			}
+			log.Printf("Created organization: %s", orgData.Name)
 		}
 	}
 
@@ -165,15 +216,16 @@ func Seed(db *gorm.DB) error {
 			}
 
 			user := models.User{
-				Username:      userData.Username,
-				Email:         userData.Email,
-				PasswordHash:  string(hashedPassword),
-				FirstName:     userData.FirstName,
-				LastName:      userData.LastName,
-				TenantID:      tenant.ID,
-				Role:          userData.Role,
-				Active:        userData.Active,
-				EmailVerified: userData.EmailVerified,
+				Username:       userData.Username,
+				Email:          userData.Email,
+				PasswordHash:   string(hashedPassword),
+				FirstName:      userData.FirstName,
+				LastName:       userData.LastName,
+				TenantID:       tenant.ID,
+				OrganizationID: userData.OrganizationID,
+				Role:           userData.Role,
+				Active:         userData.Active,
+				EmailVerified:  userData.EmailVerified,
 			}
 
 			// Set EmailVerifiedAt if email is verified

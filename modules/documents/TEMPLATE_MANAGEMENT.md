@@ -482,17 +482,13 @@ UpdateTemplate(winnerID, {is_default: true})
 ### Entities Registered
 - `entities.NewDocumentEntity()`
 - `entities.NewTemplateEntity()` ← **Email/PDF templates**
-- `entities.NewInvoiceNumberEntity()`
-- `entities.NewInvoiceNumberLogEntity()`
 
 ### Routes Registered
 - `/api/v1/documents` (DocumentRoutes)
-- `/api/v1/invoice-numbers` (InvoiceNumberRoutes)
 - `/api/v1/templates` ← **Template management** (TemplateRoutes)
 
 ### Services Available
 - `DocumentService` - Document storage
-- `InvoiceNumberService` - Sequential number generation
 - `TemplateService` ← **Template management**
 
 ## Testing

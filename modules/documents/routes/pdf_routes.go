@@ -32,14 +32,12 @@ func (r *PDFRoutes) RegisterRoutes(router *gin.RouterGroup, ctx core.ModuleConte
 		// Generate PDF from template
 		pdfs.POST("/from-template", handler.GeneratePDFFromTemplate)
 
-		// Generate invoice PDF (convenience endpoint)
-		pdfs.POST("/invoice", handler.GenerateInvoicePDF)
 	}
 }
 
 // GetPrefix returns the base path for PDF routes
 func (r *PDFRoutes) GetPrefix() string {
-	return "/api/v1"
+	return ""
 }
 
 // GetMiddleware returns middleware to apply to all PDF routes

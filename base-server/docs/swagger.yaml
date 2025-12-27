@@ -228,6 +228,8 @@ definitions:
     properties:
       created_at:
         type: string
+      customer_id:
+        type: integer
       id:
         type: integer
       name:
@@ -283,6 +285,8 @@ definitions:
         type: integer
       last_name:
         type: string
+      organization_id:
+        type: integer
       role:
         type: string
       tenant:
@@ -355,6 +359,61 @@ definitions:
       valid:
         description: Valid is true if Time is not NULL
         type: boolean
+    type: object
+  handlers.GenerateInvoiceNumberRequest:
+    properties:
+      month:
+        example: 12
+        type: integer
+      month_format:
+        description: '"MM", "M", or ""'
+        example: MM
+        type: string
+      organization_id:
+        example: 10
+        type: integer
+      padding:
+        description: e.g., 4 for "0001"
+        example: 4
+        type: integer
+      prefix:
+        example: INV
+        type: string
+      reset_monthly:
+        description: pointer to distinguish false from not set
+        example: false
+        type: boolean
+      separator:
+        description: e.g., "-"
+        example: '-'
+        type: string
+      year:
+        example: 2025
+        type: integer
+      year_format:
+        description: '"YYYY" or "YY"'
+        example: YYYY
+        type: string
+    required:
+    - organization_id
+    type: object
+  handlers.InvoiceNumberResponse:
+    properties:
+      invoice_number:
+        example: INV-2025-0001
+        type: string
+      month:
+        example: 12
+        type: integer
+      sequence:
+        example: 1
+        type: integer
+      success:
+        example: true
+        type: boolean
+      year:
+        example: 2025
+        type: integer
     type: object
   models.Contact:
     properties:
@@ -480,6 +539,63 @@ definitions:
       zip:
         type: string
     type: object
+  models.CreateOrganizationRequest:
+    properties:
+      additional_payment_methods:
+        type: object
+      bankaccount_bank:
+        example: Deutsche Bank
+        type: string
+      bankaccount_bic:
+        example: DEUTDEFF
+        type: string
+      bankaccount_iban:
+        example: DE89370400440532013000
+        type: string
+      bankaccount_owner:
+        example: Acme Corporation
+        type: string
+      city:
+        example: New York
+        type: string
+      email:
+        example: info@acme.com
+        type: string
+      invoice_content:
+        type: object
+      name:
+        example: Acme Corporation
+        type: string
+      owner_name:
+        example: John Doe
+        type: string
+      owner_title:
+        example: CEO
+        type: string
+      phone:
+        example: +1-555-0123
+        type: string
+      street_address:
+        example: 123 Business St
+        type: string
+      tax_id:
+        example: TAX123456
+        type: string
+      tax_rate:
+        example: 19
+        type: number
+      tax_ustid:
+        example: DE123456789
+        type: string
+      unit_price:
+        example: 150
+        type: number
+      zip:
+        example: "12345"
+        type: string
+    required:
+    - name
+    type: object
   models.CustomerRequest:
     properties:
       company_name:
@@ -497,6 +613,99 @@ definitions:
     required:
     - email
     - name
+    type: object
+  models.OrganizationAPIResponse:
+    properties:
+      data:
+        $ref: '#/definitions/models.OrganizationResponse'
+      message:
+        example: Organization retrieved successfully
+        type: string
+      success:
+        example: true
+        type: boolean
+    type: object
+  models.OrganizationDeleteResponse:
+    properties:
+      message:
+        example: Organization deleted successfully
+        type: string
+      success:
+        example: true
+        type: boolean
+    type: object
+  models.OrganizationListAPIResponse:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/models.OrganizationResponse'
+        type: array
+      limit:
+        example: 10
+        type: integer
+      message:
+        example: Organizations retrieved successfully
+        type: string
+      page:
+        example: 1
+        type: integer
+      success:
+        example: true
+        type: boolean
+      total:
+        example: 100
+        type: integer
+    type: object
+  models.OrganizationResponse:
+    properties:
+      additional_payment_methods:
+        items:
+          type: integer
+        type: array
+      bankaccount_bank:
+        type: string
+      bankaccount_bic:
+        type: string
+      bankaccount_iban:
+        type: string
+      bankaccount_owner:
+        type: string
+      city:
+        type: string
+      created_at:
+        type: string
+      email:
+        type: string
+      id:
+        type: integer
+      invoice_content:
+        items:
+          type: integer
+        type: array
+      name:
+        type: string
+      owner_name:
+        type: string
+      owner_title:
+        type: string
+      phone:
+        type: string
+      street_address:
+        type: string
+      tax_id:
+        type: string
+      tax_rate:
+        type: number
+      tax_ustid:
+        type: string
+      tenant_id:
+        type: integer
+      unit_price:
+        type: number
+      updated_at:
+        type: string
+      zip:
+        type: string
     type: object
   models.PlanRequest:
     properties:
@@ -542,6 +751,61 @@ definitions:
       price:
         type: number
       slug:
+        type: string
+    type: object
+  models.UpdateOrganizationRequest:
+    properties:
+      additional_payment_methods:
+        type: object
+      bankaccount_bank:
+        example: Deutsche Bank
+        type: string
+      bankaccount_bic:
+        example: DEUTDEFF
+        type: string
+      bankaccount_iban:
+        example: DE89370400440532013000
+        type: string
+      bankaccount_owner:
+        example: Acme Corporation
+        type: string
+      city:
+        example: New York
+        type: string
+      email:
+        example: info@acme.com
+        type: string
+      invoice_content:
+        type: object
+      name:
+        example: Acme Corporation
+        type: string
+      owner_name:
+        example: John Doe
+        type: string
+      owner_title:
+        example: CEO
+        type: string
+      phone:
+        example: +1-555-0123
+        type: string
+      street_address:
+        example: 123 Business St
+        type: string
+      tax_id:
+        example: TAX123456
+        type: string
+      tax_rate:
+        example: 19
+        type: number
+      tax_ustid:
+        example: DE123456789
+        type: string
+      unit_price:
+        example: 150
+        type: number
+      zip:
+        example: "12345"
         type: string
     type: object
   models.UserSettings:
@@ -598,7 +862,7 @@ info:
   title: AE Base Server - Modular API
   version: "2.0"
 paths:
-  /api/v1/auth/change-password:
+  /auth/change-password:
     post:
       consumes:
       - application/json
@@ -636,7 +900,7 @@ paths:
       summary: Change password
       tags:
       - authentication
-  /api/v1/auth/forgot-password:
+  /auth/forgot-password:
     post:
       consumes:
       - application/json
@@ -666,7 +930,7 @@ paths:
       summary: Request password reset
       tags:
       - authentication
-  /api/v1/auth/login:
+  /auth/login:
     post:
       consumes:
       - application/json
@@ -702,7 +966,7 @@ paths:
       summary: User login
       tags:
       - authentication
-  /api/v1/auth/logout:
+  /auth/logout:
     post:
       consumes:
       - application/json
@@ -728,7 +992,7 @@ paths:
       summary: User logout
       tags:
       - authentication
-  /api/v1/auth/me:
+  /auth/me:
     get:
       consumes:
       - application/json
@@ -755,7 +1019,7 @@ paths:
       summary: Get current user
       tags:
       - authentication
-  /api/v1/auth/new-password/{token}:
+  /auth/new-password/{token}:
     post:
       consumes:
       - application/json
@@ -790,7 +1054,7 @@ paths:
       summary: Reset password
       tags:
       - authentication
-  /api/v1/auth/refresh:
+  /auth/refresh:
     post:
       consumes:
       - application/json
@@ -821,7 +1085,7 @@ paths:
       summary: Refresh access token
       tags:
       - authentication
-  /api/v1/auth/register:
+  /auth/register:
     post:
       consumes:
       - application/json
@@ -857,7 +1121,7 @@ paths:
       summary: User registration
       tags:
       - authentication
-  /api/v1/auth/verify-email/{token}:
+  /auth/verify-email/{token}:
     get:
       consumes:
       - application/json
@@ -883,7 +1147,7 @@ paths:
       summary: Verify email address
       tags:
       - authentication
-  /api/v1/contacts:
+  /contacts:
     get:
       consumes:
       - application/json
@@ -966,7 +1230,7 @@ paths:
       summary: Create new contact
       tags:
       - contacts
-  /api/v1/contacts/{id}:
+  /contacts/{id}:
     delete:
       consumes:
       - application/json
@@ -1088,7 +1352,7 @@ paths:
       summary: Update contact
       tags:
       - contacts
-  /api/v1/contacts/form:
+  /contacts/form:
     post:
       consumes:
       - application/json
@@ -1119,7 +1383,7 @@ paths:
       summary: Submit contact form
       tags:
       - contacts
-  /api/v1/contacts/newsletter:
+  /contacts/newsletter:
     get:
       consumes:
       - application/json
@@ -1143,7 +1407,7 @@ paths:
       summary: Get newsletter subscriptions
       tags:
       - contacts
-  /api/v1/contacts/newsletter/{email}:
+  /contacts/newsletter/{email}:
     delete:
       consumes:
       - application/json
@@ -1179,7 +1443,7 @@ paths:
       summary: Unsubscribe from newsletter
       tags:
       - contacts
-  /api/v1/customers:
+  /customers:
     get:
       description: Get a paginated list of all customers
       operationId: getCustomers
@@ -1248,7 +1512,7 @@ paths:
       summary: Create a new customer
       tags:
       - customers
-  /api/v1/customers/{id}:
+  /customers/{id}:
     delete:
       description: Soft delete a customer by ID
       operationId: deleteCustomer
@@ -1354,7 +1618,7 @@ paths:
       summary: Update a customer
       tags:
       - customers
-  /api/v1/emails:
+  /emails:
     get:
       description: Get a paginated list of all emails
       operationId: getEmails
@@ -1394,7 +1658,7 @@ paths:
       summary: Get all emails
       tags:
       - emails
-  /api/v1/emails/{id}:
+  /emails/{id}:
     get:
       description: Get a specific email by its ID
       operationId: getEmailById
@@ -1429,7 +1693,7 @@ paths:
       summary: Get email by ID
       tags:
       - emails
-  /api/v1/emails/send:
+  /emails/send:
     post:
       consumes:
       - application/json
@@ -1463,7 +1727,7 @@ paths:
       summary: Send an email
       tags:
       - emails
-  /api/v1/emails/stats:
+  /emails/stats:
     get:
       description: Get email statistics including counts by status
       operationId: getEmailStats
@@ -1488,7 +1752,7 @@ paths:
       summary: Get email statistics
       tags:
       - emails
-  /api/v1/health:
+  /health:
     get:
       description: Check the health status of the API and database
       operationId: healthCheck
@@ -1506,7 +1770,393 @@ paths:
       summary: Health check
       tags:
       - health
-  /api/v1/pdf/create:
+  /invoice-numbers/current:
+    get:
+      description: Get the current invoice number sequence for an organization
+      operationId: getCurrentInvoiceSequence
+      parameters:
+      - description: Organization ID
+        in: query
+        name: organization_id
+        required: true
+        type: integer
+      - description: Year (defaults to current year)
+        in: query
+        name: year
+        type: integer
+      - description: Month (defaults to current month)
+        in: query
+        name: month
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get current sequence
+      tags:
+      - Invoice Numbers
+  /invoice-numbers/generate:
+    post:
+      consumes:
+      - application/json
+      description: Generate the next sequential invoice number for an organization
+      operationId: generateInvoiceNumber
+      parameters:
+      - description: Invoice number configuration
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.GenerateInvoiceNumberRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.InvoiceNumberResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Generate next invoice number
+      tags:
+      - Invoice Numbers
+  /invoice-numbers/history:
+    get:
+      description: Retrieve the history of generated invoice numbers
+      operationId: getInvoiceNumberHistory
+      parameters:
+      - description: Organization ID
+        in: query
+        name: organization_id
+        required: true
+        type: integer
+      - description: Filter by year
+        in: query
+        name: year
+        type: integer
+      - description: Filter by month
+        in: query
+        name: month
+        type: integer
+      - description: Page number (default 1)
+        in: query
+        name: page
+        type: integer
+      - description: Page size (default 20)
+        in: query
+        name: page_size
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get invoice number history
+      tags:
+      - Invoice Numbers
+  /invoice-numbers/void:
+    post:
+      consumes:
+      - application/json
+      description: Mark an invoice number as voided in the audit log
+      operationId: voidInvoiceNumber
+      parameters:
+      - description: Invoice number to void
+        in: body
+        name: request
+        required: true
+        schema:
+          additionalProperties:
+            type: string
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Void invoice number
+      tags:
+      - Invoice Numbers
+  /organizations:
+    get:
+      description: Retrieve all organizations for the authenticated user with pagination
+      operationId: getOrganizations
+      parameters:
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 10
+        description: Number of items per page
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.OrganizationListAPIResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_ae-base-server_internal_models.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_ae-base-server_internal_models.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get all organizations
+      tags:
+      - organizations
+    post:
+      consumes:
+      - application/json
+      description: Create a new organization with the provided information
+      operationId: createOrganization
+      parameters:
+      - description: Organization information
+        in: body
+        name: organization
+        required: true
+        schema:
+          $ref: '#/definitions/models.CreateOrganizationRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/models.OrganizationAPIResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_ae-base-server_internal_models.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_ae-base-server_internal_models.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_ae-base-server_internal_models.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Create a new organization
+      tags:
+      - organizations
+  /organizations/{id}:
+    delete:
+      description: Delete an organization by ID
+      operationId: deleteOrganization
+      parameters:
+      - description: Organization ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.OrganizationDeleteResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_ae-base-server_internal_models.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_ae-base-server_internal_models.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_ae-base-server_internal_models.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_ae-base-server_internal_models.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Delete an organization
+      tags:
+      - organizations
+    get:
+      description: Retrieve a specific organization by ID
+      operationId: getOrganizationById
+      parameters:
+      - description: Organization ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.OrganizationAPIResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_ae-base-server_internal_models.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_ae-base-server_internal_models.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_ae-base-server_internal_models.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_ae-base-server_internal_models.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get an organization by ID
+      tags:
+      - organizations
+    put:
+      consumes:
+      - application/json
+      description: Update an organization's information
+      operationId: updateOrganization
+      parameters:
+      - description: Organization ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Updated organization information
+        in: body
+        name: organization
+        required: true
+        schema:
+          $ref: '#/definitions/models.UpdateOrganizationRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.OrganizationAPIResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_ae-base-server_internal_models.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_ae-base-server_internal_models.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_ae-base-server_internal_models.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_ae-base-server_internal_models.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Update an organization
+      tags:
+      - organizations
+  /pdf/create:
     post:
       consumes:
       - application/json
@@ -1539,7 +2189,7 @@ paths:
       summary: Generate PDF from template
       tags:
       - pdf
-  /api/v1/ping:
+  /ping:
     get:
       description: Simple ping endpoint
       operationId: ping
@@ -1553,7 +2203,7 @@ paths:
       summary: Ping check
       tags:
       - health
-  /api/v1/plans:
+  /plans:
     get:
       description: Get a list of all available subscription plans
       operationId: getPlans
@@ -1606,7 +2256,7 @@ paths:
       summary: Create a new plan
       tags:
       - plans
-  /api/v1/plans/{id}:
+  /plans/{id}:
     delete:
       description: Delete a subscription plan (admin only)
       operationId: deletePlan
@@ -1710,7 +2360,7 @@ paths:
       summary: Update a plan
       tags:
       - plans
-  /api/v1/static:
+  /static:
     get:
       description: Get a list of all JSON files available in the statics/json directory
       operationId: listStaticFiles
@@ -1736,7 +2386,7 @@ paths:
       summary: List available static JSON files
       tags:
       - static
-  /api/v1/static/{filename}:
+  /static/{filename}:
     get:
       description: Securely serve JSON data files from statics/json directory only.
         Prevents access to other directories or file types.
@@ -1782,7 +2432,7 @@ paths:
       summary: Serve static JSON files (JSON only, security restricted)
       tags:
       - static
-  /api/v1/user-settings:
+  /user-settings:
     get:
       consumes:
       - application/json
@@ -1855,7 +2505,7 @@ paths:
       summary: Update user settings
       tags:
       - user-settings
-  /api/v1/user-settings/reset:
+  /user-settings/reset:
     post:
       consumes:
       - application/json

@@ -9,20 +9,18 @@ import (
 	"github.com/unburdy/documents-module/routes"
 	"github.com/unburdy/documents-module/services"
 	"github.com/unburdy/documents-module/services/storage"
+	templateServices "github.com/unburdy/templates-module/services"
 )
 
 // CoreModule implements the core.Module interface for the documents module
 type CoreModule struct {
-	documentService      *services.DocumentService
-	invoiceNumberService *services.InvoiceNumberService
-	templateService      *services.TemplateService
-	pdfService           *services.PDFService
-	documentRoutes       *routes.DocumentRoutes
-	invoiceNumberRoutes  *routes.InvoiceNumberRoutes
-	templateRoutes       *routes.TemplateRoutes
-	pdfRoutes            *routes.PDFRoutes
-	redisClient          *redis.Client
-	minioStorage         storage.DocumentStorage
+	documentService *services.DocumentService
+	pdfService      *services.PDFService
+	documentRoutes  *routes.DocumentRoutes
+	pdfRoutes       *routes.PDFRoutes
+	redisClient     *redis.Client
+	minioStorage    storage.DocumentStorage
+	templateService *templateServices.TemplateService // From templates module
 }
 
 // NewCoreModule creates a new documents module instance
@@ -42,7 +40,7 @@ func (m *CoreModule) Version() string {
 
 // Dependencies returns module dependencies
 func (m *CoreModule) Dependencies() []string {
-	return []string{"database", "auth"}
+	return []string{"base", "templates"} // Depends on base module for auth and templates for template service
 }
 
 // Initialize sets up the module with dependencies
@@ -70,7 +68,7 @@ func (m *CoreModule) Initialize(ctx core.ModuleContext) error {
 
 	// Test Redis connection
 	if err := m.redisClient.Ping(context.Background()).Err(); err != nil {
-		ctx.Logger.Warn("Redis connection failed, invoice number caching will be limited:", err)
+		ctx.Logger.Warn("Redis connection failed:", err)
 	}
 
 	// Store storage for later use
@@ -78,14 +76,13 @@ func (m *CoreModule) Initialize(ctx core.ModuleContext) error {
 
 	// Initialize services
 	m.documentService = services.NewDocumentService(ctx.DB, minioStorage)
-	m.invoiceNumberService = services.NewInvoiceNumberService(ctx.DB, m.redisClient)
-	m.templateService = services.NewTemplateService(ctx.DB, minioStorage)
-	m.pdfService = services.NewPDFService(ctx.DB, minioStorage, m.templateService)
+
+	// Note: Template service should be injected from templates module
+	// PDF service will work with nil template service for HTML-only generation
+	m.pdfService = services.NewPDFService(ctx.DB, minioStorage, nil)
 
 	// Initialize routes
 	m.documentRoutes = routes.NewDocumentRoutes(m.documentService)
-	m.invoiceNumberRoutes = routes.NewInvoiceNumberRoutes(m.invoiceNumberService)
-	m.templateRoutes = routes.NewTemplateRoutes(m.templateService)
 	m.pdfRoutes = routes.NewPDFRoutes(m.pdfService)
 
 	return nil
@@ -108,9 +105,6 @@ func (m *CoreModule) Stop(ctx context.Context) error {
 func (m *CoreModule) Entities() []core.Entity {
 	return []core.Entity{
 		entities.NewDocumentEntity(),
-		entities.NewTemplateEntity(),
-		entities.NewInvoiceNumberEntity(),
-		entities.NewInvoiceNumberLogEntity(),
 	}
 }
 
@@ -119,12 +113,6 @@ func (m *CoreModule) Routes() []core.RouteProvider {
 	providers := []core.RouteProvider{}
 	if m.documentRoutes != nil {
 		providers = append(providers, m.documentRoutes)
-	}
-	if m.invoiceNumberRoutes != nil {
-		providers = append(providers, m.invoiceNumberRoutes)
-	}
-	if m.templateRoutes != nil {
-		providers = append(providers, m.templateRoutes)
 	}
 	if m.pdfRoutes != nil {
 		providers = append(providers, m.pdfRoutes)

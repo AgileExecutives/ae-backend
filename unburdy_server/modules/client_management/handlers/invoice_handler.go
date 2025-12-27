@@ -27,7 +27,7 @@ func NewInvoiceHandler(service *services.InvoiceService) *InvoiceHandler {
 // CreateInvoice handles creating a new invoice
 // @Summary Create a new invoice
 // @Description Create a new invoice with invoice items for specified sessions
-// @Tags invoices
+// @Tags client-invoices
 // @ID createInvoice
 // @Accept json
 // @Produce json
@@ -37,7 +37,7 @@ func NewInvoiceHandler(service *services.InvoiceService) *InvoiceHandler {
 // @Failure 401 {object} models.ErrorResponse
 // @Failure 500 {object} models.ErrorResponse
 // @Security BearerAuth
-// @Router /invoices [post]
+// @Router /client-invoices [post]
 func (h *InvoiceHandler) CreateInvoice(c *gin.Context) {
 	var req entities.CreateInvoiceRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -69,7 +69,7 @@ func (h *InvoiceHandler) CreateInvoice(c *gin.Context) {
 // GetInvoice handles retrieving an invoice by ID
 // @Summary Get an invoice by ID
 // @Description Retrieve a specific invoice by ID with all associations preloaded
-// @Tags invoices
+// @Tags client-invoices
 // @ID getInvoiceById
 // @Produce json
 // @Param id path int true "Invoice ID"
@@ -79,7 +79,7 @@ func (h *InvoiceHandler) CreateInvoice(c *gin.Context) {
 // @Failure 404 {object} models.ErrorResponse
 // @Failure 500 {object} models.ErrorResponse
 // @Security BearerAuth
-// @Router /invoices/{id} [get]
+// @Router /client-invoices/{id} [get]
 func (h *InvoiceHandler) GetInvoice(c *gin.Context) {
 	id, err := strconv.ParseUint(c.Param("id"), 10, 32)
 	if err != nil {
@@ -111,7 +111,7 @@ func (h *InvoiceHandler) GetInvoice(c *gin.Context) {
 // GetAllInvoices handles retrieving all invoices with pagination
 // @Summary Get all invoices
 // @Description Retrieve all invoices for the authenticated user with pagination and all associations preloaded
-// @Tags invoices
+// @Tags client-invoices
 // @ID getInvoices
 // @Produce json
 // @Param page query int false "Page number" default(1)
@@ -120,7 +120,7 @@ func (h *InvoiceHandler) GetInvoice(c *gin.Context) {
 // @Failure 401 {object} models.ErrorResponse
 // @Failure 500 {object} models.ErrorResponse
 // @Security BearerAuth
-// @Router /invoices [get]
+// @Router /client-invoices [get]
 func (h *InvoiceHandler) GetAllInvoices(c *gin.Context) {
 	page, limit := utils.GetPaginationParams(c)
 
@@ -153,7 +153,7 @@ func (h *InvoiceHandler) GetAllInvoices(c *gin.Context) {
 // UpdateInvoice handles updating an invoice
 // @Summary Update an invoice
 // @Description Update an invoice's status or invoice items (not both at once)
-// @Tags invoices
+// @Tags client-invoices
 // @ID updateInvoice
 // @Accept json
 // @Produce json
@@ -165,7 +165,7 @@ func (h *InvoiceHandler) GetAllInvoices(c *gin.Context) {
 // @Failure 404 {object} models.ErrorResponse
 // @Failure 500 {object} models.ErrorResponse
 // @Security BearerAuth
-// @Router /invoices/{id} [put]
+// @Router /client-invoices/{id} [put]
 func (h *InvoiceHandler) UpdateInvoice(c *gin.Context) {
 	id, err := strconv.ParseUint(c.Param("id"), 10, 32)
 	if err != nil {
@@ -203,7 +203,7 @@ func (h *InvoiceHandler) UpdateInvoice(c *gin.Context) {
 // DeleteInvoice handles deleting an invoice
 // @Summary Delete an invoice
 // @Description Delete an invoice and all its invoice items by ID
-// @Tags invoices
+// @Tags client-invoices
 // @ID deleteInvoice
 // @Produce json
 // @Param id path int true "Invoice ID"
@@ -213,7 +213,7 @@ func (h *InvoiceHandler) UpdateInvoice(c *gin.Context) {
 // @Failure 404 {object} models.ErrorResponse
 // @Failure 500 {object} models.ErrorResponse
 // @Security BearerAuth
-// @Router /invoices/{id} [delete]
+// @Router /client-invoices/{id} [delete]
 func (h *InvoiceHandler) DeleteInvoice(c *gin.Context) {
 	id, err := strconv.ParseUint(c.Param("id"), 10, 32)
 	if err != nil {
@@ -244,14 +244,14 @@ func (h *InvoiceHandler) DeleteInvoice(c *gin.Context) {
 // GetClientsWithUnbilledSessions handles retrieving clients with unbilled sessions
 // @Summary Get clients with unbilled sessions
 // @Description Retrieve all clients that have sessions not yet associated with any invoice
-// @Tags invoices
+// @Tags client-invoices
 // @ID getClientsWithUnbilledSessions
 // @Produce json
 // @Success 200 {object} entities.ClientSessionsAPIResponse
 // @Failure 401 {object} models.ErrorResponse
 // @Failure 500 {object} models.ErrorResponse
 // @Security BearerAuth
-// @Router /invoices/clientsessions [get]
+// @Router /client-invoices/unbilled-sessions [get]
 func (h *InvoiceHandler) GetClientsWithUnbilledSessions(c *gin.Context) {
 	tenantID, err := baseAPI.GetTenantID(c)
 	if err != nil {

@@ -24,7 +24,7 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/api/v1/auth/change-password": {
+        "/auth/change-password": {
             "post": {
                 "security": [
                     {
@@ -84,7 +84,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/auth/forgot-password": {
+        "/auth/forgot-password": {
             "post": {
                 "description": "Send password reset email to user",
                 "consumes": [
@@ -130,7 +130,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/auth/login": {
+        "/auth/login": {
             "post": {
                 "description": "Authenticate user with username/email and password",
                 "consumes": [
@@ -189,7 +189,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/auth/logout": {
+        "/auth/logout": {
             "post": {
                 "security": [
                     {
@@ -230,7 +230,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/auth/me": {
+        "/auth/me": {
             "get": {
                 "security": [
                     {
@@ -277,7 +277,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/auth/new-password/{token}": {
+        "/auth/new-password/{token}": {
             "post": {
                 "description": "Reset user password with reset token",
                 "consumes": [
@@ -330,7 +330,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/auth/refresh": {
+        "/auth/refresh": {
             "post": {
                 "security": [
                     {
@@ -383,7 +383,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/auth/register": {
+        "/auth/register": {
             "post": {
                 "description": "Register a new user account",
                 "consumes": [
@@ -442,7 +442,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/auth/verify-email/{token}": {
+        "/auth/verify-email/{token}": {
             "get": {
                 "description": "Verify user email address with verification token",
                 "consumes": [
@@ -481,7 +481,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/contacts": {
+        "/contacts": {
             "get": {
                 "security": [
                     {
@@ -618,7 +618,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/contacts/form": {
+        "/contacts/form": {
             "post": {
                 "description": "Public endpoint to submit a contact form (no authentication required)",
                 "consumes": [
@@ -665,7 +665,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/contacts/newsletter": {
+        "/contacts/newsletter": {
             "get": {
                 "security": [
                     {
@@ -703,7 +703,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/contacts/newsletter/{email}": {
+        "/contacts/newsletter/{email}": {
             "delete": {
                 "security": [
                     {
@@ -759,7 +759,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/contacts/{id}": {
+        "/contacts/{id}": {
             "get": {
                 "security": [
                     {
@@ -956,7 +956,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/customers": {
+        "/customers": {
             "get": {
                 "security": [
                     {
@@ -1072,7 +1072,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/customers/{id}": {
+        "/customers/{id}": {
             "get": {
                 "security": [
                     {
@@ -1245,7 +1245,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/emails": {
+        "/emails": {
             "get": {
                 "security": [
                     {
@@ -1311,7 +1311,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/emails/send": {
+        "/emails/send": {
             "post": {
                 "security": [
                     {
@@ -1369,7 +1369,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/emails/stats": {
+        "/emails/stats": {
             "get": {
                 "security": [
                     {
@@ -1413,7 +1413,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/emails/{id}": {
+        "/emails/{id}": {
             "get": {
                 "security": [
                     {
@@ -1472,7 +1472,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/health": {
+        "/health": {
             "get": {
                 "description": "Check the health status of the API and database",
                 "produces": [
@@ -1499,7 +1499,602 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/pdf/create": {
+        "/invoice-numbers/current": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Get the current invoice number sequence for an organization",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Invoice Numbers"
+                ],
+                "summary": "Get current sequence",
+                "operationId": "getCurrentInvoiceSequence",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Organization ID",
+                        "name": "organization_id",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Year (defaults to current year)",
+                        "name": "year",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Month (defaults to current month)",
+                        "name": "month",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/invoice-numbers/generate": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Generate the next sequential invoice number for an organization",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Invoice Numbers"
+                ],
+                "summary": "Generate next invoice number",
+                "operationId": "generateInvoiceNumber",
+                "parameters": [
+                    {
+                        "description": "Invoice number configuration",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/handlers.GenerateInvoiceNumberRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.InvoiceNumberResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/invoice-numbers/history": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Retrieve the history of generated invoice numbers",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Invoice Numbers"
+                ],
+                "summary": "Get invoice number history",
+                "operationId": "getInvoiceNumberHistory",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Organization ID",
+                        "name": "organization_id",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Filter by year",
+                        "name": "year",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Filter by month",
+                        "name": "month",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Page number (default 1)",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Page size (default 20)",
+                        "name": "page_size",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/invoice-numbers/void": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Mark an invoice number as voided in the audit log",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Invoice Numbers"
+                ],
+                "summary": "Void invoice number",
+                "operationId": "voidInvoiceNumber",
+                "parameters": [
+                    {
+                        "description": "Invoice number to void",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/organizations": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Retrieve all organizations for the authenticated user with pagination",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "organizations"
+                ],
+                "summary": "Get all organizations",
+                "operationId": "getOrganizations",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "default": 1,
+                        "description": "Page number",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 10,
+                        "description": "Number of items per page",
+                        "name": "limit",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.OrganizationListAPIResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Create a new organization with the provided information",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "organizations"
+                ],
+                "summary": "Create a new organization",
+                "operationId": "createOrganization",
+                "parameters": [
+                    {
+                        "description": "Organization information",
+                        "name": "organization",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.CreateOrganizationRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/models.OrganizationAPIResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/organizations/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Retrieve a specific organization by ID",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "organizations"
+                ],
+                "summary": "Get an organization by ID",
+                "operationId": "getOrganizationById",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Organization ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.OrganizationAPIResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Update an organization's information",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "organizations"
+                ],
+                "summary": "Update an organization",
+                "operationId": "updateOrganization",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Organization ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Updated organization information",
+                        "name": "organization",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.UpdateOrganizationRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.OrganizationAPIResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Delete an organization by ID",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "organizations"
+                ],
+                "summary": "Delete an organization",
+                "operationId": "deleteOrganization",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Organization ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.OrganizationDeleteResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/pdf/create": {
             "post": {
                 "security": [
                     {
@@ -1551,7 +2146,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/ping": {
+        "/ping": {
             "get": {
                 "description": "Simple ping endpoint",
                 "produces": [
@@ -1572,7 +2167,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/plans": {
+        "/plans": {
             "get": {
                 "description": "Get a list of all available subscription plans",
                 "produces": [
@@ -1658,7 +2253,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/plans/{id}": {
+        "/plans/{id}": {
             "get": {
                 "description": "Get a specific subscription plan by its ID",
                 "produces": [
@@ -1826,7 +2421,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/static": {
+        "/static": {
             "get": {
                 "security": [
                     {
@@ -1866,7 +2461,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/static/{filename}": {
+        "/static/{filename}": {
             "get": {
                 "security": [
                     {
@@ -1934,7 +2529,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/user-settings": {
+        "/user-settings": {
             "get": {
                 "security": [
                     {
@@ -2055,7 +2650,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/user-settings/reset": {
+        "/user-settings/reset": {
             "post": {
                 "security": [
                     {
@@ -2450,6 +3045,9 @@ const docTemplate = `{
                 "created_at": {
                     "type": "string"
                 },
+                "customer_id": {
+                    "type": "integer"
+                },
                 "id": {
                     "type": "integer"
                 },
@@ -2529,6 +3127,9 @@ const docTemplate = `{
                 },
                 "last_name": {
                     "type": "string"
+                },
+                "organization_id": {
+                    "type": "integer"
                 },
                 "role": {
                     "type": "string"
@@ -2635,6 +3236,80 @@ const docTemplate = `{
                 "valid": {
                     "description": "Valid is true if Time is not NULL",
                     "type": "boolean"
+                }
+            }
+        },
+        "handlers.GenerateInvoiceNumberRequest": {
+            "type": "object",
+            "required": [
+                "organization_id"
+            ],
+            "properties": {
+                "month": {
+                    "type": "integer",
+                    "example": 12
+                },
+                "month_format": {
+                    "description": "\"MM\", \"M\", or \"\"",
+                    "type": "string",
+                    "example": "MM"
+                },
+                "organization_id": {
+                    "type": "integer",
+                    "example": 10
+                },
+                "padding": {
+                    "description": "e.g., 4 for \"0001\"",
+                    "type": "integer",
+                    "example": 4
+                },
+                "prefix": {
+                    "type": "string",
+                    "example": "INV"
+                },
+                "reset_monthly": {
+                    "description": "pointer to distinguish false from not set",
+                    "type": "boolean",
+                    "example": false
+                },
+                "separator": {
+                    "description": "e.g., \"-\"",
+                    "type": "string",
+                    "example": "-"
+                },
+                "year": {
+                    "type": "integer",
+                    "example": 2025
+                },
+                "year_format": {
+                    "description": "\"YYYY\" or \"YY\"",
+                    "type": "string",
+                    "example": "YYYY"
+                }
+            }
+        },
+        "handlers.InvoiceNumberResponse": {
+            "type": "object",
+            "properties": {
+                "invoice_number": {
+                    "type": "string",
+                    "example": "INV-2025-0001"
+                },
+                "month": {
+                    "type": "integer",
+                    "example": 12
+                },
+                "sequence": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "success": {
+                    "type": "boolean",
+                    "example": true
+                },
+                "year": {
+                    "type": "integer",
+                    "example": 2025
                 }
             }
         },
@@ -2825,6 +3500,84 @@ const docTemplate = `{
                 }
             }
         },
+        "models.CreateOrganizationRequest": {
+            "type": "object",
+            "required": [
+                "name"
+            ],
+            "properties": {
+                "additional_payment_methods": {
+                    "type": "object"
+                },
+                "bankaccount_bank": {
+                    "type": "string",
+                    "example": "Deutsche Bank"
+                },
+                "bankaccount_bic": {
+                    "type": "string",
+                    "example": "DEUTDEFF"
+                },
+                "bankaccount_iban": {
+                    "type": "string",
+                    "example": "DE89370400440532013000"
+                },
+                "bankaccount_owner": {
+                    "type": "string",
+                    "example": "Acme Corporation"
+                },
+                "city": {
+                    "type": "string",
+                    "example": "New York"
+                },
+                "email": {
+                    "type": "string",
+                    "example": "info@acme.com"
+                },
+                "invoice_content": {
+                    "type": "object"
+                },
+                "name": {
+                    "type": "string",
+                    "example": "Acme Corporation"
+                },
+                "owner_name": {
+                    "type": "string",
+                    "example": "John Doe"
+                },
+                "owner_title": {
+                    "type": "string",
+                    "example": "CEO"
+                },
+                "phone": {
+                    "type": "string",
+                    "example": "+1-555-0123"
+                },
+                "street_address": {
+                    "type": "string",
+                    "example": "123 Business St"
+                },
+                "tax_id": {
+                    "type": "string",
+                    "example": "TAX123456"
+                },
+                "tax_rate": {
+                    "type": "number",
+                    "example": 19
+                },
+                "tax_ustid": {
+                    "type": "string",
+                    "example": "DE123456789"
+                },
+                "unit_price": {
+                    "type": "number",
+                    "example": 150
+                },
+                "zip": {
+                    "type": "string",
+                    "example": "12345"
+                }
+            }
+        },
         "models.CustomerRequest": {
             "type": "object",
             "required": [
@@ -2847,6 +3600,143 @@ const docTemplate = `{
                 "phone": {
                     "type": "string",
                     "example": "+1-555-123-4567"
+                }
+            }
+        },
+        "models.OrganizationAPIResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/models.OrganizationResponse"
+                },
+                "message": {
+                    "type": "string",
+                    "example": "Organization retrieved successfully"
+                },
+                "success": {
+                    "type": "boolean",
+                    "example": true
+                }
+            }
+        },
+        "models.OrganizationDeleteResponse": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string",
+                    "example": "Organization deleted successfully"
+                },
+                "success": {
+                    "type": "boolean",
+                    "example": true
+                }
+            }
+        },
+        "models.OrganizationListAPIResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.OrganizationResponse"
+                    }
+                },
+                "limit": {
+                    "type": "integer",
+                    "example": 10
+                },
+                "message": {
+                    "type": "string",
+                    "example": "Organizations retrieved successfully"
+                },
+                "page": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "success": {
+                    "type": "boolean",
+                    "example": true
+                },
+                "total": {
+                    "type": "integer",
+                    "example": 100
+                }
+            }
+        },
+        "models.OrganizationResponse": {
+            "type": "object",
+            "properties": {
+                "additional_payment_methods": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "bankaccount_bank": {
+                    "type": "string"
+                },
+                "bankaccount_bic": {
+                    "type": "string"
+                },
+                "bankaccount_iban": {
+                    "type": "string"
+                },
+                "bankaccount_owner": {
+                    "type": "string"
+                },
+                "city": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "invoice_content": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "name": {
+                    "type": "string"
+                },
+                "owner_name": {
+                    "type": "string"
+                },
+                "owner_title": {
+                    "type": "string"
+                },
+                "phone": {
+                    "type": "string"
+                },
+                "street_address": {
+                    "type": "string"
+                },
+                "tax_id": {
+                    "type": "string"
+                },
+                "tax_rate": {
+                    "type": "number"
+                },
+                "tax_ustid": {
+                    "type": "string"
+                },
+                "tenant_id": {
+                    "type": "integer"
+                },
+                "unit_price": {
+                    "type": "number"
+                },
+                "updated_at": {
+                    "type": "string"
+                },
+                "zip": {
+                    "type": "string"
                 }
             }
         },
@@ -2914,6 +3804,81 @@ const docTemplate = `{
                 },
                 "slug": {
                     "type": "string"
+                }
+            }
+        },
+        "models.UpdateOrganizationRequest": {
+            "type": "object",
+            "properties": {
+                "additional_payment_methods": {
+                    "type": "object"
+                },
+                "bankaccount_bank": {
+                    "type": "string",
+                    "example": "Deutsche Bank"
+                },
+                "bankaccount_bic": {
+                    "type": "string",
+                    "example": "DEUTDEFF"
+                },
+                "bankaccount_iban": {
+                    "type": "string",
+                    "example": "DE89370400440532013000"
+                },
+                "bankaccount_owner": {
+                    "type": "string",
+                    "example": "Acme Corporation"
+                },
+                "city": {
+                    "type": "string",
+                    "example": "New York"
+                },
+                "email": {
+                    "type": "string",
+                    "example": "info@acme.com"
+                },
+                "invoice_content": {
+                    "type": "object"
+                },
+                "name": {
+                    "type": "string",
+                    "example": "Acme Corporation"
+                },
+                "owner_name": {
+                    "type": "string",
+                    "example": "John Doe"
+                },
+                "owner_title": {
+                    "type": "string",
+                    "example": "CEO"
+                },
+                "phone": {
+                    "type": "string",
+                    "example": "+1-555-0123"
+                },
+                "street_address": {
+                    "type": "string",
+                    "example": "123 Business St"
+                },
+                "tax_id": {
+                    "type": "string",
+                    "example": "TAX123456"
+                },
+                "tax_rate": {
+                    "type": "number",
+                    "example": 19
+                },
+                "tax_ustid": {
+                    "type": "string",
+                    "example": "DE123456789"
+                },
+                "unit_price": {
+                    "type": "number",
+                    "example": 150
+                },
+                "zip": {
+                    "type": "string",
+                    "example": "12345"
                 }
             }
         },

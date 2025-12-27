@@ -1,9 +1,10 @@
-go 1.24.0
+go 1.24.5
 
 use (
 	./base-server
 	./minimal-server
 	./modules/calendar
 	./modules/documents
+	./modules/invoice
 	./unburdy_server
 )

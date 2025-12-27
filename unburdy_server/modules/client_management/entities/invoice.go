@@ -3,7 +3,7 @@ package entities
 import (
 	"time"
 
-	organizationEntities "github.com/unburdy/organization-module/entities"
+	baseAPI "github.com/ae-base-server/api"
 	"gorm.io/gorm"
 )
 
@@ -20,29 +20,29 @@ const (
 
 // Invoice represents an invoice entity
 type Invoice struct {
-	ID             uint                               `gorm:"primarykey" json:"id"`
-	TenantID       uint                               `gorm:"not null;index:idx_invoice_tenant" json:"tenant_id"`
-	UserID         uint                               `gorm:"not null;index:idx_invoice_user" json:"user_id"`
-	ClientID       uint                               `gorm:"not null;index:idx_invoice_client" json:"client_id"`
-	Client         *Client                            `gorm:"foreignKey:ClientID" json:"client,omitempty"`
-	CostProviderID uint                               `gorm:"not null;index:idx_invoice_cost_provider" json:"cost_provider_id"`
-	CostProvider   *CostProvider                      `gorm:"foreignKey:CostProviderID" json:"cost_provider,omitempty"`
-	OrganizationID uint                               `gorm:"not null;index:idx_invoice_organization" json:"organization_id"`
-	Organization   *organizationEntities.Organization `gorm:"foreignKey:OrganizationID" json:"organization,omitempty"`
-	InvoiceDate    time.Time                          `gorm:"not null" json:"invoice_date"`
-	InvoiceNumber  string                             `gorm:"size:100;not null;uniqueIndex:idx_invoice_number_tenant" json:"invoice_number"`
-	NumberUnits    int                                `gorm:"not null;default:0" json:"number_units"`
-	SumAmount      float64                            `gorm:"type:decimal(10,2);not null;default:0" json:"sum_amount"`
-	TaxAmount      float64                            `gorm:"type:decimal(10,2);not null;default:0" json:"tax_amount"`
-	TotalAmount    float64                            `gorm:"type:decimal(10,2);not null;default:0" json:"total_amount"`
-	PayedDate      *time.Time                         `json:"payed_date,omitempty"`
-	Status         InvoiceStatus                      `gorm:"size:20;not null;default:'draft'" json:"status"`
-	NumReminders   int                                `gorm:"not null;default:0" json:"num_reminders"`
-	LatestReminder *time.Time                         `json:"latest_reminder,omitempty"`
-	InvoiceItems   []InvoiceItem                      `gorm:"foreignKey:InvoiceID;constraint:OnDelete:CASCADE" json:"invoice_items,omitempty"`
-	CreatedAt      time.Time                          `json:"created_at"`
-	UpdatedAt      time.Time                          `json:"updated_at"`
-	DeletedAt      gorm.DeletedAt                     `gorm:"index" json:"-"`
+	ID             uint                  `gorm:"primarykey" json:"id"`
+	TenantID       uint                  `gorm:"not null;index:idx_invoice_tenant" json:"tenant_id"`
+	UserID         uint                  `gorm:"not null;index:idx_invoice_user" json:"user_id"`
+	ClientID       uint                  `gorm:"not null;index:idx_invoice_client" json:"client_id"`
+	Client         *Client               `gorm:"foreignKey:ClientID" json:"client,omitempty"`
+	CostProviderID uint                  `gorm:"not null;index:idx_invoice_cost_provider" json:"cost_provider_id"`
+	CostProvider   *CostProvider         `gorm:"foreignKey:CostProviderID" json:"cost_provider,omitempty"`
+	OrganizationID uint                  `gorm:"not null;index:idx_invoice_organization" json:"organization_id"`
+	Organization   *baseAPI.Organization `gorm:"foreignKey:OrganizationID" json:"organization,omitempty"`
+	InvoiceDate    time.Time             `gorm:"not null" json:"invoice_date"`
+	InvoiceNumber  string                `gorm:"size:100;not null;uniqueIndex:idx_invoice_number_tenant" json:"invoice_number"`
+	NumberUnits    int                   `gorm:"not null;default:0" json:"number_units"`
+	SumAmount      float64               `gorm:"type:decimal(10,2);not null;default:0" json:"sum_amount"`
+	TaxAmount      float64               `gorm:"type:decimal(10,2);not null;default:0" json:"tax_amount"`
+	TotalAmount    float64               `gorm:"type:decimal(10,2);not null;default:0" json:"total_amount"`
+	PayedDate      *time.Time            `json:"payed_date,omitempty"`
+	Status         InvoiceStatus         `gorm:"size:20;not null;default:'draft'" json:"status"`
+	NumReminders   int                   `gorm:"not null;default:0" json:"num_reminders"`
+	LatestReminder *time.Time            `json:"latest_reminder,omitempty"`
+	InvoiceItems   []InvoiceItem         `gorm:"foreignKey:InvoiceID;constraint:OnDelete:CASCADE" json:"invoice_items,omitempty"`
+	CreatedAt      time.Time             `json:"created_at"`
+	UpdatedAt      time.Time             `json:"updated_at"`
+	DeletedAt      gorm.DeletedAt        `gorm:"index" json:"-"`
 }
 
 // TableName specifies the table name for the Invoice model
@@ -80,28 +80,28 @@ type UpdateInvoiceRequest struct {
 
 // InvoiceResponse represents the response format for invoice data
 type InvoiceResponse struct {
-	ID             uint                                       `json:"id"`
-	TenantID       uint                                       `json:"tenant_id"`
-	UserID         uint                                       `json:"user_id"`
-	ClientID       uint                                       `json:"client_id"`
-	Client         *ClientResponse                            `json:"client,omitempty"`
-	CostProviderID uint                                       `json:"cost_provider_id"`
-	CostProvider   *CostProviderResponse                      `json:"cost_provider,omitempty"`
-	OrganizationID uint                                       `json:"organization_id"`
-	Organization   *organizationEntities.OrganizationResponse `json:"organization,omitempty"`
-	InvoiceDate    time.Time                                  `json:"invoice_date"`
-	InvoiceNumber  string                                     `json:"invoice_number"`
-	NumberUnits    int                                        `json:"number_units"`
-	SumAmount      float64                                    `json:"sum_amount"`
-	TaxAmount      float64                                    `json:"tax_amount"`
-	TotalAmount    float64                                    `json:"total_amount"`
-	PayedDate      *time.Time                                 `json:"payed_date,omitempty"`
-	Status         InvoiceStatus                              `json:"status"`
-	NumReminders   int                                        `json:"num_reminders"`
-	LatestReminder *time.Time                                 `json:"latest_reminder,omitempty"`
-	InvoiceItems   []InvoiceItemResponse                      `json:"invoice_items,omitempty"`
-	CreatedAt      time.Time                                  `json:"created_at"`
-	UpdatedAt      time.Time                                  `json:"updated_at"`
+	ID             uint                          `json:"id"`
+	TenantID       uint                          `json:"tenant_id"`
+	UserID         uint                          `json:"user_id"`
+	ClientID       uint                          `json:"client_id"`
+	Client         *ClientResponse               `json:"client,omitempty"`
+	CostProviderID uint                          `json:"cost_provider_id"`
+	CostProvider   *CostProviderResponse         `json:"cost_provider,omitempty"`
+	OrganizationID uint                          `json:"organization_id"`
+	Organization   *baseAPI.OrganizationResponse `json:"organization,omitempty"`
+	InvoiceDate    time.Time                     `json:"invoice_date"`
+	InvoiceNumber  string                        `json:"invoice_number"`
+	NumberUnits    int                           `json:"number_units"`
+	SumAmount      float64                       `json:"sum_amount"`
+	TaxAmount      float64                       `json:"tax_amount"`
+	TotalAmount    float64                       `json:"total_amount"`
+	PayedDate      *time.Time                    `json:"payed_date,omitempty"`
+	Status         InvoiceStatus                 `json:"status"`
+	NumReminders   int                           `json:"num_reminders"`
+	LatestReminder *time.Time                    `json:"latest_reminder,omitempty"`
+	InvoiceItems   []InvoiceItemResponse         `json:"invoice_items,omitempty"`
+	CreatedAt      time.Time                     `json:"created_at"`
+	UpdatedAt      time.Time                     `json:"updated_at"`
 }
 
 // InvoiceItemResponse represents the response format for invoice item data

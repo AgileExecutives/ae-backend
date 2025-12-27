@@ -7,6 +7,7 @@ import (
 )
 
 // User represents a user in the system with multi-tenant support
+// A user belongs to a tenant and an organization within that tenant
 type User struct {
 	ID              uint           `gorm:"primarykey" json:"id"`
 	CreatedAt       time.Time      `json:"created_at"`
@@ -20,7 +21,8 @@ type User struct {
 	FirstName       string         `json:"first_name" binding:"required"`
 	LastName        string         `json:"last_name" binding:"required"`
 	Role            string         `gorm:"not null;default:'user'" json:"role"`
-	TenantID        uint           `gorm:"not null" json:"tenant_id"`
+	TenantID        uint           `gorm:"not null;index:idx_user_tenant" json:"tenant_id"`
+	OrganizationID  uint           `gorm:"not null;index:idx_user_organization" json:"organization_id"`
 	// Tenant       Tenant         `gorm:"foreignKey:TenantID" json:"tenant,omitempty"` // Disabled for migration
 	Active bool `gorm:"default:true" json:"active"`
 }
@@ -41,6 +43,7 @@ type UserResponse struct {
 	LastName        string         `json:"last_name"`
 	Role            string         `json:"role"`
 	TenantID        uint           `json:"tenant_id"`
+	OrganizationID  uint           `json:"organization_id"`
 	Tenant          TenantResponse `json:"tenant,omitempty"`
 	Active          bool           `json:"active"`
 	CreatedAt       time.Time      `json:"created_at"`
@@ -58,6 +61,7 @@ func (u *User) ToResponse() UserResponse {
 		LastName:        u.LastName,
 		Role:            u.Role,
 		TenantID:        u.TenantID,
+		OrganizationID:  u.OrganizationID,
 		Active:          u.Active,
 		CreatedAt:       u.CreatedAt,
 	}

@@ -1,6 +1,6 @@
 # Development Environment
 
-Docker Compose setup for local development with PostgreSQL, MinIO (S3-compatible storage), and Redis.
+Docker Compose setup for local development with PostgreSQL and MinIO (S3-compatible storage).
 
 ## Services
 
@@ -52,35 +52,6 @@ secretAccessKey := "minioadmin123"
 useSSL := false
 ```
 
-### Redis
-In-memory cache for template caching and invoice sequence counters.
-
-- **Container Name**: `ae-redis`
-- **Port**: `6379`
-- **Password**: `redis123`
-- **Persistence**: AOF (Append-Only File) enabled
-
-**Connect with redis-cli:**
-```bash
-redis-cli -a redis123
-```
-
-**Connection String:**
-```
-redis://:redis123@localhost:6379/0
-```
-
-**Go Configuration:**
-```go
-import "github.com/redis/go-redis/v9"
-
-client := redis.NewClient(&redis.Options{
-    Addr:     "localhost:6379",
-    Password: "redis123",
-    DB:       0,
-})
-```
-
 ## Usage
 
 ### Start Services
@@ -102,7 +73,6 @@ docker-compose logs -f
 # Specific service
 docker-compose logs -f postgres
 docker-compose logs -f minio
-docker-compose logs -f redis
 ```
 
 ### Stop Services
@@ -127,14 +97,13 @@ docker-compose restart redis
 All services have health checks configured:
 
 - **PostgreSQL**: `pg_isready` every 10s
-- **MinIO**: HTTP health endpoint every 30s
-- **Redis**: Ping command every 10s
-
+- **MinIO**: HTTP health endpoint every 3
 Check health status:
 ```bash
 docker inspect ae-base-server-postgres | grep -A 5 Health
 docker inspect ae-minio | grep -A 5 Health
 docker inspect ae-redis | grep -A 5 Health
+```
 ```
 
 ## Data Persistence
@@ -142,10 +111,7 @@ docker inspect ae-redis | grep -A 5 Health
 Data is persisted in Docker volumes:
 
 - `postgres_data` - PostgreSQL database files
-- `minio_data` - MinIO object storage
-- `redis_data` - Redis AOF persistence
-
-**View volumes:**
+- `minio_data` - MinIO object storag
 ```bash
 docker volume ls | grep ae
 ```
@@ -167,12 +133,8 @@ docker cp ae-redis:/data/dump.rdb ./backup/
 
 All services are connected via the `ae-network` bridge network, allowing inter-service communication using container names:
 
-- From app: `postgres:5432`, `minio:9000`, `redis:6379`
-- From host: `localhost:5432`, `localhost:9000`, `localhost:6379`
-
-## Environment Variables for Application
-
-Add these to your application's `.env` file:
+- From app: `postgres:5432`, `minio:9000`
+- From host: `localhost:5432`, `localhost:9000
 
 ```env
 # PostgreSQL
@@ -197,17 +159,12 @@ REDIS_DB=0
 ```
 
 ## Troubleshooting
+```
+
+## Troubleshooting
 
 ### Port Already in Use
-If ports 5432, 6379, 9000, or 9001 are in use:
-
-```bash
-# Find process using port
-lsof -i :5432
-lsof -i :6379
-lsof -i :9000
-
-# Kill process or stop conflicting service
+If ports 5432top conflicting service
 brew services stop postgresql
 brew services stop redis
 ```
@@ -215,12 +172,10 @@ brew services stop redis
 ### MinIO Console Not Accessible
 Check if container is running and ports are mapped:
 ```bash
-docker ps | grep minio
-curl http://localhost:9001
-```
+docker ps9000
 
-### Redis Authentication Error
-Ensure you're using the password `redis123`:
+# Kill process or stop conflicting service
+brew services stop postgresqlpassword `redis123`:
 ```bash
 redis-cli -a redis123 ping
 # Should return: PONG
@@ -232,14 +187,7 @@ Wait for health check to pass:
 docker-compose logs postgres
 # Look for: "database system is ready to accept connections"
 ```
-
-## Initial Setup
-
-After starting services for the first time:
-
-1. **Create MinIO Buckets:**
-```bash
-# Install MinIO client (if not installed)
+stall MinIO client (if not installed)
 brew install minio/stable/mc
 
 # Configure alias
@@ -278,12 +226,6 @@ This dev environment differs from production:
 - **Security**: Use secrets management, network policies
 
 ## Clean Slate
-
-To completely reset the development environment:
-
-```bash
-# Stop and remove everything
-docker-compose down -v
 
 # Remove images (optional)
 docker rmi postgres:15-alpine minio/minio:latest redis:7-alpine

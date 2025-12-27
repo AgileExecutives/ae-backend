@@ -4,9 +4,9 @@ import (
 	"testing"
 	"time"
 
+	baseAPI "github.com/ae-base-server/api"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	organizationEntities "github.com/unburdy/organization-module/entities"
 	"github.com/unburdy/unburdy-server-api/modules/client_management/entities"
 	"github.com/unburdy/unburdy-server-api/modules/client_management/services"
 	"gorm.io/driver/sqlite"
@@ -23,7 +23,7 @@ func setupInvoiceTestDB(t *testing.T) *gorm.DB {
 		&entities.Session{},
 		&entities.Invoice{},
 		&entities.InvoiceItem{},
-		&organizationEntities.Organization{},
+		&baseAPI.Organization{},
 	)
 	require.NoError(t, err)
 
@@ -31,9 +31,8 @@ func setupInvoiceTestDB(t *testing.T) *gorm.DB {
 }
 
 func createTestData(t *testing.T, db *gorm.DB, tenantID, userID uint) (uint, uint, []uint) {
-	org := &organizationEntities.Organization{
+	org := &baseAPI.Organization{
 		TenantID: tenantID,
-		UserID:   userID,
 		Name:     "Test Organization",
 	}
 	require.NoError(t, db.Create(org).Error)

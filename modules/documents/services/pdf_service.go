@@ -9,45 +9,47 @@ import (
 	"github.com/chromedp/chromedp"
 	"github.com/unburdy/documents-module/entities"
 	"github.com/unburdy/documents-module/services/storage"
+	templateServices "github.com/unburdy/templates-module/services"
 	"gorm.io/gorm"
 )
 
 // PDFService handles PDF generation from HTML content
 type PDFService struct {
-	db             *gorm.DB
-	storage        storage.DocumentStorage
-	templateService *TemplateService
+	db              *gorm.DB
+	storage         storage.DocumentStorage
+	templateService *templateServices.TemplateService
 }
 
 // NewPDFService creates a new PDF service instance
-func NewPDFService(db *gorm.DB, storage storage.DocumentStorage, templateService *TemplateService) *PDFService {
+func NewPDFService(db *gorm.DB, storage storage.DocumentStorage, templateService *templateServices.TemplateService) *PDFService {
 	return &PDFService{
-		db:             db,
-		storage:        storage,
+		db:              db,
+		storage:         storage,
 		templateService: templateService,
 	}
 }
 
 // GeneratePDFFromHTMLRequest represents a request to generate PDF from HTML
 type GeneratePDFFromHTMLRequest struct {
-	HTML        string                 `json:"html" binding:"required"`
-	TenantID    uint                   `json:"-"`
-	Filename    string                 `json:"filename"`
+	HTML         string                 `json:"html" binding:"required"`
+	TenantID     uint                   `json:"-"`
+	Filename     string                 `json:"filename"`
 	DocumentType string                 `json:"document_type"`
-	Metadata    map[string]interface{} `json:"metadata"`
+	Metadata     map[string]interface{} `json:"metadata"`
 	SaveDocument bool                   `json:"save_document"` // If true, save to documents table
 }
 
 // GeneratePDFFromTemplateRequest represents a request to generate PDF from template
 type GeneratePDFFromTemplateRequest struct {
-	TemplateID   uint                   `json:"template_id" binding:"required"`
-	TenantID     uint                   `json:"-"`
-	OrganizationID *uint                `json:"organization_id"`
-	Data         map[string]interface{} `json:"data"`
-	Filename     string                 `json:"filename"`
-	DocumentType string                 `json:"document_type"`
-	Metadata     map[string]interface{} `json:"metadata"`
-	SaveDocument bool                   `json:"save_document"` // If true, save to documents table
+	TemplateID     uint                   `json:"template_id" binding:"required"`
+	TenantID       uint                   `json:"-"`
+	UserID         uint                   `json:"-"` // Required for document ownership
+	OrganizationID *uint                  `json:"organization_id"`
+	Data           map[string]interface{} `json:"data"`
+	Filename       string                 `json:"filename"`
+	DocumentType   string                 `json:"document_type"`
+	Metadata       map[string]interface{} `json:"metadata"`
+	SaveDocument   bool                   `json:"save_document"` // If true, save to documents table
 }
 
 // PDFGenerationResult contains the result of PDF generation
@@ -80,7 +82,7 @@ func (s *PDFService) GeneratePDFFromHTML(ctx context.Context, req *GeneratePDFFr
 
 	// Save document if requested
 	if req.SaveDocument {
-		doc, err := s.saveDocument(ctx, req.TenantID, filename, req.DocumentType, pdfData, req.Metadata)
+		doc, err := s.saveDocument(ctx, req.TenantID, 1, filename, req.DocumentType, pdfData, req.Metadata) // UserID hardcoded to 1 for HTML generation
 		if err != nil {
 			return nil, fmt.Errorf("failed to save document: %w", err)
 		}
@@ -124,7 +126,7 @@ func (s *PDFService) GeneratePDFFromTemplate(ctx context.Context, req *GenerateP
 
 	// Save document if requested
 	if req.SaveDocument {
-		doc, err := s.saveDocument(ctx, req.TenantID, filename, req.DocumentType, pdfData, req.Metadata)
+		doc, err := s.saveDocument(ctx, req.TenantID, req.UserID, filename, req.DocumentType, pdfData, req.Metadata)
 		if err != nil {
 			return nil, fmt.Errorf("failed to save document: %w", err)
 		}
@@ -192,6 +194,7 @@ func (s *PDFService) convertHTMLToPDF(ctx context.Context, html string) ([]byte,
 func (s *PDFService) saveDocument(
 	ctx context.Context,
 	tenantID uint,
+	userID uint,
 	filename string,
 	documentType string,
 	pdfData []byte,
@@ -230,10 +233,11 @@ func (s *PDFService) saveDocument(
 	// Create database record
 	doc := &entities.Document{
 		TenantID:      tenantID,
+		UserID:        userID,
 		FileName:      filename,
 		DocumentType:  documentType,
 		ContentType:   "application/pdf",
-		FileSizeBytes:     int64(len(pdfData)),
+		FileSizeBytes: int64(len(pdfData)),
 		StorageBucket: "documents",
 		StorageKey:    storageKey,
 		Metadata:      metadataJSON,
@@ -246,33 +250,4 @@ func (s *PDFService) saveDocument(
 	}
 
 	return doc, nil
-}
-
-// GenerateInvoicePDF generates a PDF for an invoice
-func (s *PDFService) GenerateInvoicePDF(
-	ctx context.Context,
-	tenantID uint,
-	organizationID *uint,
-	invoiceData map[string]interface{},
-) (*PDFGenerationResult, error) {
-	// Get the default invoice template
-	tmpl, err := s.templateService.GetDefaultTemplate(ctx, tenantID, organizationID, "invoice")
-	if err != nil {
-		return nil, fmt.Errorf("no invoice template found: %w", err)
-	}
-
-	// Generate PDF from template
-	return s.GeneratePDFFromTemplate(ctx, &GeneratePDFFromTemplateRequest{
-		TemplateID:     tmpl.ID,
-		TenantID:       tenantID,
-		OrganizationID: organizationID,
-		Data:           invoiceData,
-		DocumentType:   "invoice",
-		SaveDocument:   true,
-		Metadata: map[string]interface{}{
-			"template_id":   tmpl.ID,
-			"template_name": tmpl.Name,
-			"generated_at":  time.Now().Format(time.RFC3339),
-		},
-	})
 }

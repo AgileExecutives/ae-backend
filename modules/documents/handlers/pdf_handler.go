@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"fmt"
 	"net/http"
 
 	baseAPI "github.com/ae-base-server/api"
@@ -103,63 +102,6 @@ func (h *PDFHandler) GeneratePDFFromTemplate(c *gin.Context) {
 	// Return PDF as downloadable file
 	c.Header("Content-Type", "application/pdf")
 	c.Header("Content-Disposition", "attachment; filename=\""+result.Filename+"\"")
-	c.Header("Content-Length", string(rune(result.SizeBytes)))
-	c.Data(http.StatusOK, "application/pdf", result.PDFData)
-}
-
-// GenerateInvoicePDF godoc
-// @Summary Generate invoice PDF
-// @Description Generate a PDF invoice using the default invoice template
-// @Tags PDFs
-// @Accept json
-// @Produce application/pdf
-// @Param organization_id query int false "Organization ID (for template selection)"
-// @Param request body map[string]interface{} true "Invoice data"
-// @Success 200 {file} binary "PDF file"
-// @Failure 400 {object} map[string]interface{}
-// @Failure 401 {object} map[string]interface{}
-// @Failure 404 {object} map[string]interface{}
-// @Failure 500 {object} map[string]interface{}
-// @Router /pdfs/invoice [post]
-// @ID generateInvoicePDF
-func (h *PDFHandler) GenerateInvoicePDF(c *gin.Context) {
-	tenantID, err := baseAPI.GetTenantID(c)
-	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "tenant_id required"})
-		return
-	}
-
-	// Get organization ID from query params
-	var organizationID *uint
-	if orgIDStr := c.Query("organization_id"); orgIDStr != "" {
-		var orgID uint
-		if _, err := fmt.Sscanf(orgIDStr, "%d", &orgID); err == nil {
-			organizationID = &orgID
-		}
-	}
-
-	// Parse invoice data from request body
-	var invoiceData map[string]interface{}
-	if err := c.ShouldBindJSON(&invoiceData); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-
-	result, err := h.pdfService.GenerateInvoicePDF(c.Request.Context(), uint(tenantID), organizationID, invoiceData)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-
-	// Get invoice number for filename if available
-	filename := "invoice.pdf"
-	if invoiceNum, ok := invoiceData["invoice_number"].(string); ok {
-		filename = fmt.Sprintf("invoice_%s.pdf", invoiceNum)
-	}
-
-	// Return PDF as downloadable file
-	c.Header("Content-Type", "application/pdf")
-	c.Header("Content-Disposition", "attachment; filename=\""+filename+"\"")
 	c.Header("Content-Length", string(rune(result.SizeBytes)))
 	c.Data(http.StatusOK, "application/pdf", result.PDFData)
 }

@@ -39,22 +39,6 @@ services:
       timeout: 20s
       retries: 3
 
-  redis:
-    image: redis:7-alpine
-    container_name: ae-redis
-    ports:
-      - "6379:6379"
-    volumes:
-      - redis_data:/data
-    command: redis-server --appendonly yes --requirepass redis123
-    networks:
-      - ae-network
-    healthcheck:
-      test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
-      interval: 10s
-      timeout: 3s
-      retries: 5
-
 networks:
   ae-network:
     driver: bridge
@@ -62,4 +46,3 @@ networks:
 volumes:
   postgres_data:
   minio_data:
-  redis_data:

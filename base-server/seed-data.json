@@ -1,12 +1,30 @@
 {
+  "customers": [
+    {
+      "name": "Unburdy GmbH",
+      "email": "info@unburdy.de"
+    }
+  ],
   "tenants": [
     {
+      "customer_id": 1,
       "name": "Admin Tenant",
       "slug": "admin"
     },
     {
+      "customer_id": 1,
       "name": "Default Tenant",
       "slug": "default-tenant"
+    }
+  ],
+  "organizations": [
+    {
+      "tenant_id": 1,
+      "name": "Unburdy Verwaltung"
+    },
+    {
+      "tenant_id": 2,
+      "name": "Standard Organisation"
     }
   ],
   "plans": [
@@ -39,6 +57,7 @@
       "role": "super-admin",
       "active": true,
       "tenant_slug": "admin",
+      "organization_id": 1,
       "email_verified": true
     },
     {
@@ -50,6 +69,7 @@
       "role": "admin",
       "active": true,
       "tenant_slug": "default-tenant",
+      "organization_id": 2,
       "email_verified": true
     }
   ]

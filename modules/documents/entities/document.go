@@ -10,10 +10,10 @@ import (
 
 // Document represents a stored document with metadata
 type Document struct {
-	ID             uint  `gorm:"primaryKey" json:"id"`
-	TenantID       uint  `gorm:"not null;index:idx_tenant_doc" json:"tenant_id"`
-	OrganizationID *uint `gorm:"index:idx_org_doc" json:"organization_id,omitempty"`
-	UserID         uint  `gorm:"not null;index:idx_user_doc" json:"user_id"`
+	ID             uint           `gorm:"primaryKey" json:"id"`
+	TenantID       uint           `gorm:"not null;index:idx_tenant_doc" json:"tenant_id"`
+	OrganizationID *uint          `gorm:"index:idx_org_doc" json:"organization_id,omitempty"`
+	UserID         uint           `gorm:"not null;index:idx_user_doc" json:"user_id"`
 
 	// Document classification
 	DocumentType  string `gorm:"size:50;not null;index" json:"document_type"` // "invoice", "contract", "report"
