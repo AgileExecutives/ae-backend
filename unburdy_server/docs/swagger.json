@@ -4125,6 +4125,281 @@
                 }
             }
         },
+        "/documents": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Upload a document file with metadata to MinIO storage",
+                "consumes": [
+                    "multipart/form-data"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Documents"
+                ],
+                "summary": "Upload a document",
+                "operationId": "uploadDocument",
+                "parameters": [
+                    {
+                        "type": "file",
+                        "description": "Document file to upload",
+                        "name": "file",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Document type (invoice, contract, report, etc.)",
+                        "name": "document_type",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Storage bucket (default: documents)",
+                        "name": "bucket",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Storage path (default: filename)",
+                        "name": "path",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Reference type (invoice, client, session)",
+                        "name": "reference_type",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Reference ID",
+                        "name": "reference_id",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Organization ID",
+                        "name": "organization_id",
+                        "in": "formData"
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/entities.DocumentResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/documents/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Retrieve metadata for a specific document by ID",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Documents"
+                ],
+                "summary": "Get document metadata",
+                "operationId": "getDocument",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Document ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/entities.DocumentResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Soft delete a document (marks as deleted, does not remove from storage)",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Documents"
+                ],
+                "summary": "Delete document",
+                "operationId": "deleteDocument",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Document ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.SuccessResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_modules_documents_handlers.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_modules_documents_handlers.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_modules_documents_handlers.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_modules_documents_handlers.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/documents/{id}/download": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Get a pre-signed URL for downloading a document (valid for 1 hour)",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Documents"
+                ],
+                "summary": "Download document",
+                "operationId": "downloadDocument",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Document ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.DownloadURLResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_modules_documents_handlers.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_modules_documents_handlers.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_modules_documents_handlers.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_modules_documents_handlers.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/emails": {
             "get": {
                 "security": [
@@ -4717,6 +4992,267 @@
                         "description": "Service Unavailable",
                         "schema": {
                             "$ref": "#/definitions/github_com_ae-base-server_modules_base_models.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/invoice-numbers/current": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Get the current invoice number sequence for an organization",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Invoice Numbers"
+                ],
+                "summary": "Get current sequence",
+                "operationId": "getCurrentInvoiceSequence",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Organization ID",
+                        "name": "organization_id",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Year (defaults to current year)",
+                        "name": "year",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Month (defaults to current month)",
+                        "name": "month",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.SuccessResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_modules_documents_handlers.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_modules_documents_handlers.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_modules_documents_handlers.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/invoice-numbers/generate": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Generate the next sequential invoice number for an organization",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Invoice Numbers"
+                ],
+                "summary": "Generate next invoice number",
+                "operationId": "generateInvoiceNumber",
+                "parameters": [
+                    {
+                        "description": "Invoice number configuration",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/handlers.GenerateInvoiceNumberRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.InvoiceNumberResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_modules_documents_handlers.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_modules_documents_handlers.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_modules_documents_handlers.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/invoice-numbers/history": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Retrieve the history of generated invoice numbers",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Invoice Numbers"
+                ],
+                "summary": "Get invoice number history",
+                "operationId": "getInvoiceNumberHistory",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Organization ID",
+                        "name": "organization_id",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Filter by year",
+                        "name": "year",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Filter by month",
+                        "name": "month",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Page number (default 1)",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Page size (default 20)",
+                        "name": "page_size",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.SuccessResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_modules_documents_handlers.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_modules_documents_handlers.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_modules_documents_handlers.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/invoice-numbers/void": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Mark an invoice number as voided in the audit log",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Invoice Numbers"
+                ],
+                "summary": "Void invoice number",
+                "operationId": "voidInvoiceNumber",
+                "parameters": [
+                    {
+                        "description": "Invoice number to void",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.SuccessResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_modules_documents_handlers.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_modules_documents_handlers.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_modules_documents_handlers.ErrorResponse"
                         }
                     }
                 }
@@ -5397,6 +5933,195 @@
                         "description": "Failed to generate PDF",
                         "schema": {
                             "$ref": "#/definitions/github_com_ae-base-server_modules_pdf_handlers.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/pdfs/from-template": {
+            "post": {
+                "description": "Generate a PDF document from a template with data",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/pdf"
+                ],
+                "tags": [
+                    "PDFs"
+                ],
+                "summary": "Generate PDF from template",
+                "operationId": "generatePDFFromTemplate",
+                "parameters": [
+                    {
+                        "description": "Template ID and data",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/services.GeneratePDFFromTemplateRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "PDF file",
+                        "schema": {
+                            "type": "file"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/pdfs/generate": {
+            "post": {
+                "description": "Generate a PDF document from HTML content using Chromedp",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/pdf"
+                ],
+                "tags": [
+                    "PDFs"
+                ],
+                "summary": "Generate PDF from HTML",
+                "operationId": "generatePDFFromHTML",
+                "parameters": [
+                    {
+                        "description": "HTML and metadata",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/services.GeneratePDFFromHTMLRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "PDF file",
+                        "schema": {
+                            "type": "file"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/pdfs/invoice": {
+            "post": {
+                "description": "Generate a PDF invoice using the default invoice template",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/pdf"
+                ],
+                "tags": [
+                    "PDFs"
+                ],
+                "summary": "Generate invoice PDF",
+                "operationId": "generateInvoicePDF",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Organization ID (for template selection)",
+                        "name": "organization_id",
+                        "in": "query"
+                    },
+                    {
+                        "description": "Invoice data",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "PDF file",
+                        "schema": {
+                            "type": "file"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
                         }
                     }
                 }
@@ -6406,6 +7131,589 @@
                             "additionalProperties": {
                                 "type": "string"
                             }
+                        }
+                    }
+                }
+            }
+        },
+        "/templates": {
+            "get": {
+                "description": "List templates with optional filters and pagination",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Templates"
+                ],
+                "summary": "List templates",
+                "operationId": "listTemplates",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Organization ID filter",
+                        "name": "organization_id",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Template type (email, pdf, invoice, document)",
+                        "name": "template_type",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "Active status filter",
+                        "name": "is_active",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Page number (default 1)",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Page size (default 20)",
+                        "name": "page_size",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.SuccessResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_modules_documents_handlers.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_modules_documents_handlers.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Create a new email/PDF template with content stored in MinIO",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Templates"
+                ],
+                "summary": "Create template",
+                "operationId": "createTemplate",
+                "parameters": [
+                    {
+                        "description": "Template data",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/handlers.CreateTemplateRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.TemplateResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_modules_documents_handlers.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_modules_documents_handlers.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_modules_documents_handlers.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/templates/default": {
+            "get": {
+                "description": "Get the default template for a specific type and organization",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Templates"
+                ],
+                "summary": "Get default template",
+                "operationId": "getDefaultTemplate",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Template type (email, pdf, invoice, document)",
+                        "name": "template_type",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Organization ID (falls back to system default if not found)",
+                        "name": "organization_id",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/entities.TemplateResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/templates/{id}": {
+            "get": {
+                "description": "Get template metadata by ID",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Templates"
+                ],
+                "summary": "Get template",
+                "operationId": "getTemplate",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Template ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/entities.TemplateResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            },
+            "put": {
+                "description": "Update template metadata or content (creates new version)",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Templates"
+                ],
+                "summary": "Update template",
+                "operationId": "updateTemplate",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Template ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Update data",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/services.UpdateTemplateRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/entities.TemplateResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "Soft delete a template",
+                "tags": [
+                    "Templates"
+                ],
+                "summary": "Delete template",
+                "operationId": "deleteTemplate",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Template ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/templates/{id}/content": {
+            "get": {
+                "description": "Get template metadata and HTML content",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Templates"
+                ],
+                "summary": "Get template content",
+                "operationId": "getTemplateContent",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Template ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.SuccessResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_modules_documents_handlers.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_modules_documents_handlers.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_modules_documents_handlers.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/templates/{id}/duplicate": {
+            "post": {
+                "description": "Create a copy of an existing template",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Templates"
+                ],
+                "summary": "Duplicate template",
+                "operationId": "duplicateTemplate",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Template ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "New template name",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/entities.TemplateResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/templates/{id}/preview": {
+            "get": {
+                "description": "Render template with sample data for preview",
+                "produces": [
+                    "text/html"
+                ],
+                "tags": [
+                    "Templates"
+                ],
+                "summary": "Preview template",
+                "operationId": "previewTemplate",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Template ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "HTML content",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/templates/{id}/render": {
+            "post": {
+                "description": "Render template with provided data",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "text/html"
+                ],
+                "tags": [
+                    "Templates"
+                ],
+                "summary": "Render template",
+                "operationId": "renderTemplate",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Template ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Template data",
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "HTML content",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
                         }
                     }
                 }
@@ -7866,6 +9174,57 @@
                 }
             }
         },
+        "entities.DocumentResponse": {
+            "type": "object",
+            "properties": {
+                "content_type": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "document_type": {
+                    "type": "string"
+                },
+                "file_name": {
+                    "type": "string"
+                },
+                "file_size_bytes": {
+                    "type": "integer"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "metadata": {
+                    "type": "object",
+                    "additionalProperties": true
+                },
+                "organization_id": {
+                    "type": "integer"
+                },
+                "reference_id": {
+                    "type": "integer"
+                },
+                "reference_type": {
+                    "type": "string"
+                },
+                "storage_bucket": {
+                    "type": "string"
+                },
+                "tags": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "tenant_id": {
+                    "type": "integer"
+                },
+                "updated_at": {
+                    "type": "string"
+                }
+            }
+        },
         "entities.ErrorResponse": {
             "type": "object",
             "properties": {
@@ -8491,6 +9850,57 @@
                             "$ref": "#/definitions/entities.WeeklyAvailability"
                         }
                     ]
+                }
+            }
+        },
+        "entities.TemplateResponse": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "is_active": {
+                    "type": "boolean"
+                },
+                "is_default": {
+                    "type": "boolean"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "organization_id": {
+                    "type": "integer"
+                },
+                "preview_url": {
+                    "type": "string"
+                },
+                "sample_data": {
+                    "type": "object",
+                    "additionalProperties": true
+                },
+                "template_type": {
+                    "type": "string"
+                },
+                "tenant_id": {
+                    "type": "integer"
+                },
+                "updated_at": {
+                    "type": "string"
+                },
+                "variables": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "version": {
+                    "type": "integer"
                 }
             }
         },
@@ -9525,6 +10935,19 @@
                 }
             }
         },
+        "github_com_unburdy_unburdy-server-api_modules_documents_handlers.ErrorResponse": {
+            "type": "object",
+            "properties": {
+                "error": {
+                    "type": "string",
+                    "example": "Error message"
+                },
+                "success": {
+                    "type": "boolean",
+                    "example": false
+                }
+            }
+        },
         "gorm.DeletedAt": {
             "type": "object",
             "properties": {
@@ -9534,6 +10957,237 @@
                 "valid": {
                     "description": "Valid is true if Time is not NULL",
                     "type": "boolean"
+                }
+            }
+        },
+        "handlers.CreateTemplateRequest": {
+            "type": "object",
+            "required": [
+                "content",
+                "name",
+                "template_type"
+            ],
+            "properties": {
+                "content": {
+                    "type": "string",
+                    "example": "\u003c!DOCTYPE html\u003e..."
+                },
+                "description": {
+                    "type": "string",
+                    "example": "Default invoice template"
+                },
+                "is_active": {
+                    "type": "boolean",
+                    "example": true
+                },
+                "is_default": {
+                    "type": "boolean",
+                    "example": false
+                },
+                "name": {
+                    "type": "string",
+                    "example": "Standard Invoice"
+                },
+                "organization_id": {
+                    "type": "integer",
+                    "example": 10
+                },
+                "sample_data": {
+                    "type": "object",
+                    "additionalProperties": true
+                },
+                "template_type": {
+                    "type": "string",
+                    "example": "invoice"
+                },
+                "variables": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "example": [
+                        "invoice_number",
+                        "customer_name"
+                    ]
+                }
+            }
+        },
+        "handlers.DownloadURLResponse": {
+            "type": "object",
+            "properties": {
+                "document_id": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "download_url": {
+                    "type": "string",
+                    "example": "https://minio.example.com/..."
+                },
+                "expires_at": {
+                    "type": "string",
+                    "example": "2025-12-26T11:00:00Z"
+                },
+                "file_name": {
+                    "type": "string",
+                    "example": "invoice-001.pdf"
+                },
+                "message": {
+                    "type": "string",
+                    "example": "Download URL generated successfully"
+                },
+                "success": {
+                    "type": "boolean",
+                    "example": true
+                }
+            }
+        },
+        "handlers.GenerateInvoiceNumberRequest": {
+            "type": "object",
+            "required": [
+                "organization_id"
+            ],
+            "properties": {
+                "month": {
+                    "type": "integer",
+                    "example": 12
+                },
+                "month_format": {
+                    "description": "\"MM\", \"M\", or \"\"",
+                    "type": "string",
+                    "example": "MM"
+                },
+                "organization_id": {
+                    "type": "integer",
+                    "example": 10
+                },
+                "padding": {
+                    "description": "e.g., 4 for \"0001\"",
+                    "type": "integer",
+                    "example": 4
+                },
+                "prefix": {
+                    "type": "string",
+                    "example": "INV"
+                },
+                "reset_monthly": {
+                    "description": "pointer to distinguish false from not set",
+                    "type": "boolean",
+                    "example": false
+                },
+                "separator": {
+                    "description": "e.g., \"-\"",
+                    "type": "string",
+                    "example": "-"
+                },
+                "year": {
+                    "type": "integer",
+                    "example": 2025
+                },
+                "year_format": {
+                    "description": "\"YYYY\" or \"YY\"",
+                    "type": "string",
+                    "example": "YYYY"
+                }
+            }
+        },
+        "handlers.InvoiceNumberResponse": {
+            "type": "object",
+            "properties": {
+                "invoice_number": {
+                    "type": "string",
+                    "example": "INV-2025-0001"
+                },
+                "month": {
+                    "type": "integer",
+                    "example": 12
+                },
+                "sequence": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "success": {
+                    "type": "boolean",
+                    "example": true
+                },
+                "year": {
+                    "type": "integer",
+                    "example": 2025
+                }
+            }
+        },
+        "handlers.SuccessResponse": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string",
+                    "example": "Operation successful"
+                },
+                "success": {
+                    "type": "boolean",
+                    "example": true
+                }
+            }
+        },
+        "handlers.TemplateResponse": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string",
+                    "example": "2025-12-26T10:00:00Z"
+                },
+                "description": {
+                    "type": "string",
+                    "example": "Default invoice template"
+                },
+                "id": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "is_active": {
+                    "type": "boolean",
+                    "example": true
+                },
+                "is_default": {
+                    "type": "boolean",
+                    "example": false
+                },
+                "name": {
+                    "type": "string",
+                    "example": "Standard Invoice"
+                },
+                "organization_id": {
+                    "type": "integer",
+                    "example": 10
+                },
+                "sample_data": {
+                    "type": "object",
+                    "additionalProperties": true
+                },
+                "storage_key": {
+                    "type": "string",
+                    "example": "tenants/1/templates/invoice/..."
+                },
+                "template_type": {
+                    "type": "string",
+                    "example": "invoice"
+                },
+                "tenant_id": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "updated_at": {
+                    "type": "string",
+                    "example": "2025-12-26T10:00:00Z"
+                },
+                "variables": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "version": {
+                    "type": "integer",
+                    "example": 1
                 }
             }
         },
@@ -10306,6 +11960,93 @@
                     "type": "string"
                 }
             }
+        },
+        "services.GeneratePDFFromHTMLRequest": {
+            "type": "object",
+            "required": [
+                "html"
+            ],
+            "properties": {
+                "document_type": {
+                    "type": "string"
+                },
+                "filename": {
+                    "type": "string"
+                },
+                "html": {
+                    "type": "string"
+                },
+                "metadata": {
+                    "type": "object",
+                    "additionalProperties": true
+                },
+                "save_document": {
+                    "description": "If true, save to documents table",
+                    "type": "boolean"
+                }
+            }
+        },
+        "services.GeneratePDFFromTemplateRequest": {
+            "type": "object",
+            "required": [
+                "template_id"
+            ],
+            "properties": {
+                "data": {
+                    "type": "object",
+                    "additionalProperties": true
+                },
+                "document_type": {
+                    "type": "string"
+                },
+                "filename": {
+                    "type": "string"
+                },
+                "metadata": {
+                    "type": "object",
+                    "additionalProperties": true
+                },
+                "organization_id": {
+                    "type": "integer"
+                },
+                "save_document": {
+                    "description": "If true, save to documents table",
+                    "type": "boolean"
+                },
+                "template_id": {
+                    "type": "integer"
+                }
+            }
+        },
+        "services.UpdateTemplateRequest": {
+            "type": "object",
+            "properties": {
+                "content": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "is_active": {
+                    "type": "boolean"
+                },
+                "is_default": {
+                    "type": "boolean"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "sample_data": {
+                    "type": "object",
+                    "additionalProperties": true
+                },
+                "variables": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
         }
     },
     "securityDefinitions": {
@@ -10364,6 +12105,22 @@
         {
             "description": "[Organization Module] Organization management including billing, tax, and bank account information",
             "name": "organizations"
+        },
+        {
+            "description": "[Documents Module] Document storage and management with MinIO integration",
+            "name": "Documents"
+        },
+        {
+            "description": "[Documents Module] Sequential invoice number generation with Redis caching",
+            "name": "Invoice Numbers"
+        },
+        {
+            "description": "[Documents Module] Template management for emails and PDFs with versioning",
+            "name": "Templates"
+        },
+        {
+            "description": "[Documents Module] PDF generation from HTML and templates using Chromedp",
+            "name": "PDFs"
         }
     ]
 }

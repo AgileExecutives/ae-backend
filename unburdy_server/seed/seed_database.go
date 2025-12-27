@@ -7,6 +7,7 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -24,6 +25,12 @@ import (
 	// Calendar seeding
 	calendarSeeding "github.com/unburdy/calendar-module/seeding"
 
+	// Documents module
+	documentEntities "github.com/unburdy/unburdy-server-api/modules/documents/entities"
+	"github.com/unburdy/unburdy-server-api/modules/documents/services"
+	"github.com/unburdy/unburdy-server-api/modules/documents/services/storage"
+
+	"github.com/redis/go-redis/v9"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
@@ -118,17 +125,37 @@ func main() {
 		if err := seedAppData(db); err != nil {
 			log.Fatal("Failed to seed application data:", err)
 		}
+
+		// Step 4: Seed documents module data (templates, invoice numbers, sample documents)
+		if err := seedDocumentsData(db); err != nil {
+			log.Printf("⚠️  Warning: Documents data seeding failed: %v", err)
+		}
 	} else {
 		log.Println("⏭️  Skipping base data and application data seeding (calendar-only mode)")
 	}
 
-	// Step 4: Seed calendar data for users
+	// Step 5: Seed calendar data for users
 	if err := seedCalendarData(db); err != nil {
 		if calendarOnly {
 			log.Fatal("Failed to seed calendar data:", err)
 		} else {
 			log.Printf("⚠️  Warning: Calendar seeding failed (may be optional): %v", err)
 		}
+	}
+
+	// Step 6: Seed sessions linked to calendar entries (only in full seeding mode)
+	if !calendarOnly {
+		if err := seedSessions(db); err != nil {
+			log.Printf("⚠️  Warning: Session seeding failed: %v", err)
+		}
+
+		// Step 7: Seed invoices with invoice items (only in full seeding mode)
+		if err := seedInvoices(db); err != nil {
+			log.Printf("⚠️  Warning: Invoice seeding failed: %v", err)
+		}
+
+		// Show final statistics including sessions and invoices
+		showSessionAndInvoiceStatistics(db)
 	}
 
 	if calendarOnly {
@@ -466,6 +493,997 @@ func loadJugendaemterData() ([]JugendamtSeedData, error) {
 	}
 
 	return jugendaemter, nil
+}
+
+// seedDocumentsData seeds documents module data (templates, invoice numbers, sample documents)
+func seedDocumentsData(db *gorm.DB) error {
+	log.Println("📄 Seeding documents module data (templates, invoice numbers, documents)...")
+
+	// Get tenant for entity relationships
+	var tenant baseAPI.Tenant
+	if err := db.First(&tenant).Error; err != nil {
+		return fmt.Errorf("no tenant found: %w", err)
+	}
+
+	// Get first user for document ownership
+	var user baseAPI.User
+	if err := db.First(&user).Error; err != nil {
+		return fmt.Errorf("no user found: %w", err)
+	}
+
+	// Initialize MinIO storage
+	minioConfig := storage.MinIOConfig{
+		Endpoint:        getEnv("MINIO_ENDPOINT", "localhost:9000"),
+		AccessKeyID:     getEnv("MINIO_ACCESS_KEY", "minioadmin"),
+		SecretAccessKey: getEnv("MINIO_SECRET_KEY", "minioadmin123"),
+		UseSSL:          getEnv("MINIO_USE_SSL", "false") == "true",
+		Region:          getEnv("MINIO_REGION", "us-east-1"),
+	}
+
+	minioStorage, err := storage.NewMinIOStorage(minioConfig)
+	if err != nil {
+		return fmt.Errorf("failed to initialize MinIO storage: %w", err)
+	}
+
+	// Initialize Redis client for invoice numbers
+	redisClient := redis.NewClient(&redis.Options{
+		Addr:     getEnv("REDIS_ADDR", "localhost:6379"),
+		Password: getEnv("REDIS_PASSWORD", "redis123"),
+		DB:       0,
+	})
+	defer redisClient.Close()
+
+	// Test Redis connection
+	ctx := context.Background()
+	if err := redisClient.Ping(ctx).Err(); err != nil {
+		log.Printf("⚠️  Warning: Redis connection failed: %v", err)
+	}
+
+	// Initialize services
+	templateService := services.NewTemplateService(db, minioStorage)
+	invoiceNumberService := services.NewInvoiceNumberService(db, redisClient)
+	pdfService := services.NewPDFService(db, minioStorage, templateService)
+
+	// Step 1: Seed invoice template
+	log.Println("📝 Creating invoice template...")
+	template, err := seedInvoiceTemplate(ctx, templateService, tenant.ID)
+	if err != nil {
+		log.Printf("⚠️  Warning: Failed to create invoice template: %v", err)
+	} else {
+		log.Printf("✅ Created invoice template (ID: %d)", template.ID)
+	}
+
+	// Step 2: Seed email template
+	log.Println("📧 Creating email template...")
+	emailTemplate, err := seedEmailTemplate(ctx, templateService, tenant.ID)
+	if err != nil {
+		log.Printf("⚠️  Warning: Failed to create email template: %v", err)
+	} else {
+		log.Printf("✅ Created email template (ID: %d)", emailTemplate.ID)
+	}
+
+	// Step 3: Generate some invoice numbers
+	log.Println("🔢 Generating sample invoice numbers...")
+	invoiceNumbers, err := seedInvoiceNumbers(ctx, invoiceNumberService, tenant.ID)
+	if err != nil {
+		log.Printf("⚠️  Warning: Failed to generate invoice numbers: %v", err)
+	} else {
+		log.Printf("✅ Generated %d invoice numbers", len(invoiceNumbers))
+	}
+
+	// Step 4: Generate sample invoice PDFs
+	if template != nil && len(invoiceNumbers) > 0 {
+		log.Println("📄 Generating sample invoice PDFs...")
+		err := seedSampleInvoices(ctx, db, pdfService, template.ID, invoiceNumbers, tenant.ID, user.ID)
+		if err != nil {
+			log.Printf("⚠️  Warning: Failed to generate sample invoices: %v", err)
+		} else {
+			log.Printf("✅ Generated sample invoice PDFs")
+		}
+	}
+
+	// Show documents statistics
+	showDocumentsStatistics(db)
+
+	log.Println("✅ Documents module seeding completed")
+	return nil
+}
+
+// seedInvoiceTemplate creates a sample invoice template
+func seedInvoiceTemplate(ctx context.Context, service *services.TemplateService, tenantID uint) (*documentEntities.Template, error) {
+	// Check if template already exists
+	templates, count, err := service.ListTemplates(ctx, tenantID, nil, "invoice", nil, 1, 1)
+	if err == nil && count > 0 {
+		log.Println("📋 Invoice template already exists, skipping...")
+		return &templates[0], nil
+	}
+
+	htmlContent := `<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rechnung {{.invoice_number}}</title>
+    <style>
+        @page {
+            margin: 2cm;
+        }
+        body {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            color: #333;
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 40px;
+            border-bottom: 2px solid #2c3e50;
+            padding-bottom: 20px;
+        }
+        .company-info {
+            flex: 1;
+        }
+        .company-name {
+            font-size: 24px;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 5px;
+        }
+        .company-details {
+            font-size: 12px;
+            color: #7f8c8d;
+        }
+        .invoice-info {
+            text-align: right;
+        }
+        .invoice-title {
+            font-size: 28px;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+        .invoice-number {
+            font-size: 14px;
+            color: #7f8c8d;
+        }
+        .client-info {
+            margin: 30px 0;
+            padding: 20px;
+            background-color: #f8f9fa;
+            border-left: 4px solid #3498db;
+        }
+        .client-label {
+            font-size: 12px;
+            color: #7f8c8d;
+            text-transform: uppercase;
+            margin-bottom: 5px;
+        }
+        .client-name {
+            font-size: 16px;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        .dates {
+            display: flex;
+            justify-content: space-between;
+            margin: 20px 0;
+            font-size: 14px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 30px 0;
+        }
+        thead {
+            background-color: #2c3e50;
+            color: white;
+        }
+        th {
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 14px;
+        }
+        td {
+            padding: 12px;
+            border-bottom: 1px solid #ecf0f1;
+        }
+        tbody tr:hover {
+            background-color: #f8f9fa;
+        }
+        .text-right {
+            text-align: right;
+        }
+        .totals {
+            margin-top: 30px;
+            text-align: right;
+        }
+        .totals table {
+            margin-left: auto;
+            width: 300px;
+        }
+        .totals td {
+            padding: 8px;
+            border-bottom: none;
+        }
+        .total-row {
+            font-size: 18px;
+            font-weight: bold;
+            border-top: 2px solid #2c3e50;
+        }
+        .footer {
+            margin-top: 60px;
+            padding-top: 20px;
+            border-top: 1px solid #ecf0f1;
+            font-size: 11px;
+            color: #7f8c8d;
+            text-align: center;
+        }
+        .payment-info {
+            margin: 30px 0;
+            padding: 15px;
+            background-color: #e8f5e9;
+            border-left: 4px solid #4caf50;
+        }
+        .payment-label {
+            font-weight: bold;
+            color: #2e7d32;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="company-info">
+            <div class="company-name">{{.company_name}}</div>
+            <div class="company-details">
+                {{.company_address}}<br>
+                {{.company_city}}, {{.company_zip}}<br>
+                Tel: {{.company_phone}} | Email: {{.company_email}}
+            </div>
+        </div>
+        <div class="invoice-info">
+            <div class="invoice-title">RECHNUNG</div>
+            <div class="invoice-number">Nr. {{.invoice_number}}</div>
+        </div>
+    </div>
+
+    <div class="client-info">
+        <div class="client-label">Rechnungsempfänger</div>
+        <div class="client-name">{{.client_name}}</div>
+        <div>{{.client_address}}</div>
+        <div>{{.client_zip}} {{.client_city}}</div>
+    </div>
+
+    <div class="dates">
+        <div><strong>Rechnungsdatum:</strong> {{.invoice_date}}</div>
+        <div><strong>Fälligkeitsdatum:</strong> {{.due_date}}</div>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Beschreibung</th>
+                <th class="text-right">Menge</th>
+                <th class="text-right">Einzelpreis</th>
+                <th class="text-right">Gesamt</th>
+            </tr>
+        </thead>
+        <tbody>
+            {{range .items}}
+            <tr>
+                <td>{{.description}}</td>
+                <td class="text-right">{{.quantity}}</td>
+                <td class="text-right">€ {{.unit_price}}</td>
+                <td class="text-right">€ {{.total}}</td>
+            </tr>
+            {{end}}
+        </tbody>
+    </table>
+
+    <div class="totals">
+        <table>
+            <tr>
+                <td>Zwischensumme:</td>
+                <td class="text-right">€ {{.subtotal}}</td>
+            </tr>
+            <tr>
+                <td>MwSt. ({{.tax_rate}}%):</td>
+                <td class="text-right">€ {{.tax_amount}}</td>
+            </tr>
+            <tr class="total-row">
+                <td>Gesamtbetrag:</td>
+                <td class="text-right">€ {{.total_amount}}</td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="payment-info">
+        <div class="payment-label">Zahlungsinformationen</div>
+        <div>Bankverbindung: IBAN {{.bank_iban}}</div>
+        <div>Verwendungszweck: {{.invoice_number}}</div>
+    </div>
+
+    <div class="footer">
+        <p>{{.company_name}} | {{.company_address}} | {{.company_city}} {{.company_zip}}</p>
+        <p>Steuernummer: {{.tax_number}} | Geschäftsführer: {{.ceo_name}}</p>
+        <p>Vielen Dank für Ihr Vertrauen!</p>
+    </div>
+</body>
+</html>`
+
+	req := &services.CreateTemplateRequest{
+		TenantID:     tenantID,
+		TemplateType: "invoice",
+		Name:         "Standard Therapy Invoice",
+		Description:  "Standard invoice template for therapy sessions",
+		Content:      htmlContent,
+		Variables: []string{
+			"invoice_number", "company_name", "company_address", "company_city",
+			"company_zip", "company_phone", "company_email", "client_name",
+			"client_address", "client_city", "client_zip", "invoice_date",
+			"due_date", "items", "subtotal", "tax_rate", "tax_amount",
+			"total_amount", "bank_iban", "tax_number", "ceo_name",
+		},
+		SampleData: map[string]interface{}{
+			"invoice_number":  "INV-2025-001",
+			"company_name":    "Therapiepraxis Mustermann",
+			"company_address": "Musterstraße 123",
+			"company_city":    "Heidelberg",
+			"company_zip":     "69115",
+			"company_phone":   "+49 6221 123456",
+			"company_email":   "info@therapie-mustermann.de",
+			"client_name":     "Max Musterklient",
+			"client_address":  "Beispielweg 45",
+			"client_city":     "Mannheim",
+			"client_zip":      "68159",
+			"invoice_date":    "26.12.2025",
+			"due_date":        "26.01.2026",
+			"subtotal":        "600.00",
+			"tax_rate":        "19",
+			"tax_amount":      "114.00",
+			"total_amount":    "714.00",
+			"bank_iban":       "DE89 3704 0044 0532 0130 00",
+			"tax_number":      "12345/67890",
+			"ceo_name":        "Dr. Maria Mustermann",
+		},
+		IsActive:  true,
+		IsDefault: true,
+	}
+
+	return service.CreateTemplate(ctx, req)
+}
+
+// seedEmailTemplate creates a sample email template
+func seedEmailTemplate(ctx context.Context, service *services.TemplateService, tenantID uint) (*documentEntities.Template, error) {
+	htmlContent := `<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { background-color: #2c3e50; color: white; padding: 20px; text-align: center; }
+        .content { padding: 20px; background-color: #f9f9f9; }
+        .footer { padding: 10px; text-align: center; font-size: 12px; color: #777; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>{{subject}}</h1>
+        </div>
+        <div class="content">
+            <p>Sehr geehrte/r {{recipient_name}},</p>
+            <p>{{message_body}}</p>
+            <p>Mit freundlichen Grüßen,<br>{{sender_name}}</p>
+        </div>
+        <div class="footer">
+            <p>{{.company_name}} | {{.company_email}}</p>
+        </div>
+    </div>
+</body>
+</html>`
+
+	req := &services.CreateTemplateRequest{
+		TenantID:     tenantID,
+		TemplateType: "email",
+		Name:         "Standard Email Template",
+		Description:  "Standard email template for client communication",
+		Content:      htmlContent,
+		Variables:    []string{"subject", "recipient_name", "message_body", "sender_name", "company_name", "company_email"},
+		SampleData: map[string]interface{}{
+			"subject":        "Terminbestätigung",
+			"recipient_name": "Max Mustermann",
+			"message_body":   "Hiermit bestätigen wir Ihren Termin am 15.01.2026 um 14:00 Uhr.",
+			"sender_name":    "Dr. Maria Mustermann",
+			"company_name":   "Therapiepraxis Mustermann",
+			"company_email":  "info@therapie-mustermann.de",
+		},
+		IsActive:  true,
+		IsDefault: false,
+	}
+
+	return service.CreateTemplate(ctx, req)
+}
+
+// seedInvoiceNumbers generates sample invoice numbers
+func seedInvoiceNumbers(ctx context.Context, service *services.InvoiceNumberService, tenantID uint) ([]string, error) {
+	var invoiceNumbers []string
+
+	// Use default invoice config
+	config := services.DefaultInvoiceConfig()
+
+	// Generate 5 invoice numbers for current month
+	for i := 0; i < 5; i++ {
+		result, err := service.GenerateInvoiceNumber(ctx, tenantID, 1, config) // Assuming first organization
+		if err != nil {
+			return invoiceNumbers, fmt.Errorf("failed to generate invoice number: %w", err)
+		}
+
+		invoiceNumbers = append(invoiceNumbers, result.InvoiceNumber)
+		log.Printf("  ✓ Generated: %s", result.InvoiceNumber)
+	}
+
+	return invoiceNumbers, nil
+}
+
+// seedSampleInvoices generates sample invoice PDFs
+func seedSampleInvoices(ctx context.Context, db *gorm.DB, pdfService *services.PDFService, templateID uint, invoiceNumbers []string, tenantID, userID uint) error {
+	// Get some clients for realistic invoice data
+	var clients []entities.Client
+	db.Limit(3).Find(&clients)
+
+	if len(clients) == 0 {
+		log.Println("⚠️  No clients found, skipping sample invoice generation")
+		return nil
+	}
+
+	successCount := 0
+	for i, invoiceNum := range invoiceNumbers {
+		if i >= len(clients) {
+			break // Only generate as many invoices as we have clients
+		}
+
+		client := clients[i]
+
+		// Create invoice data
+		invoiceData := map[string]interface{}{
+			"invoice_number":  invoiceNum,
+			"company_name":    "Therapiepraxis Mustermann",
+			"company_address": "Musterstraße 123",
+			"company_city":    "Heidelberg",
+			"company_zip":     "69115",
+			"company_phone":   "+49 6221 123456",
+			"company_email":   "info@therapie-mustermann.de",
+			"client_name":     fmt.Sprintf("%s %s", client.FirstName, client.LastName),
+			"client_address":  client.StreetAddress,
+			"client_city":     client.City,
+			"client_zip":      client.Zip,
+			"invoice_date":    time.Now().Format("02.01.2006"),
+			"due_date":        time.Now().AddDate(0, 1, 0).Format("02.01.2006"),
+			"items": []map[string]interface{}{
+				{
+					"description": "Therapiesitzung - " + client.TherapyTitle,
+					"quantity":    "4",
+					"unit_price":  "150.00",
+					"total":       "600.00",
+				},
+			},
+			"subtotal":     "600.00",
+			"tax_rate":     "19",
+			"tax_amount":   "114.00",
+			"total_amount": "714.00",
+			"bank_iban":    "DE89 3704 0044 0532 0130 00",
+			"tax_number":   "12345/67890",
+			"ceo_name":     "Dr. Maria Mustermann",
+		}
+
+		// Generate PDF using the template
+		req := &services.GeneratePDFFromTemplateRequest{
+			TenantID:     tenantID,
+			UserID:       userID,
+			TemplateID:   templateID,
+			Data:         invoiceData,
+			Filename:     fmt.Sprintf("invoice-%s.pdf", invoiceNum),
+			DocumentType: "invoice",
+			Metadata: map[string]interface{}{
+				"client_id":      client.ID,
+				"invoice_number": invoiceNum,
+				"reference_type": "client",
+			},
+			SaveDocument: true,
+		}
+
+		result, err := pdfService.GeneratePDFFromTemplate(ctx, req)
+		if err != nil {
+			log.Printf("  ❌ Failed to generate invoice %s: %v", invoiceNum, err)
+			continue
+		}
+
+		successCount++
+		var documentID uint
+		if result.Document != nil {
+			documentID = result.Document.ID
+		}
+		log.Printf("  ✓ Generated invoice PDF: %s (Document ID: %d, Size: %d bytes)",
+			invoiceNum, documentID, result.SizeBytes)
+	}
+
+	log.Printf("📊 Successfully generated %d out of %d invoice PDFs", successCount, len(invoiceNumbers))
+	return nil
+}
+
+// showDocumentsStatistics displays documents seeding statistics
+func showDocumentsStatistics(db *gorm.DB) {
+	log.Println("\n📊 Documents Module Statistics")
+	log.Println("==============================")
+
+	var totalTemplates, totalDocuments, totalInvoiceNumbers int64
+	db.Model(&documentEntities.Template{}).Count(&totalTemplates)
+	db.Model(&documentEntities.Document{}).Count(&totalDocuments)
+	db.Model(&documentEntities.InvoiceNumberLog{}).Count(&totalInvoiceNumbers)
+
+	log.Printf("📝 Total templates: %d", totalTemplates)
+	log.Printf("📄 Total documents: %d", totalDocuments)
+	log.Printf("🔢 Total invoice numbers: %d", totalInvoiceNumbers)
+
+	// Template breakdown
+	if totalTemplates > 0 {
+		log.Println("\n📋 Template Breakdown:")
+		var templateTypes []struct {
+			TemplateType string
+			Count        int64
+		}
+		db.Model(&documentEntities.Template{}).
+			Select("template_type, COUNT(*) as count").
+			Group("template_type").
+			Find(&templateTypes)
+
+		for _, tt := range templateTypes {
+			log.Printf("   %s: %d templates", tt.TemplateType, tt.Count)
+		}
+	}
+
+	// Document breakdown
+	if totalDocuments > 0 {
+		log.Println("\n📁 Document Breakdown:")
+		var documentTypes []struct {
+			DocumentType string
+			Count        int64
+		}
+		db.Model(&documentEntities.Document{}).
+			Select("document_type, COUNT(*) as count").
+			Group("document_type").
+			Find(&documentTypes)
+
+		for _, dt := range documentTypes {
+			log.Printf("   %s: %d documents", dt.DocumentType, dt.Count)
+		}
+	}
+}
+
+// seedSessions creates sessions linked to calendar entries with various statuses
+// Creates sessions from 5 weeks ago to 10 weeks ahead
+func seedSessions(db *gorm.DB) error {
+	log.Println("📅 Seeding client sessions...")
+
+	// Calculate date range: 5 weeks back to 10 weeks ahead (use UTC)
+	now := time.Now().UTC()
+	startDate := now.AddDate(0, 0, -35) // 5 weeks ago
+	endDate := now.AddDate(0, 0, 70)    // 10 weeks ahead
+
+	log.Printf("  📆 Creating sessions from %s to %s (current time: %s UTC)",
+		startDate.Format("2006-01-02"), endDate.Format("2006-01-02"), now.Format("2006-01-02 15:04"))
+
+	// Get calendar entries that could be therapy sessions in the date range
+	type CalendarEntry struct {
+		ID         uint `gorm:"primarykey"`
+		TenantID   uint
+		UserID     uint
+		CalendarID uint
+		Title      string
+		Type       string
+		StartTime  *time.Time
+		EndTime    *time.Time
+	}
+
+	var calendarEntries []CalendarEntry
+	// Get therapy-type calendar entries within date range
+	// Order randomly to get a good mix of past and future
+	if err := db.Table("calendar_entries").
+		Where("type = ? AND start_time IS NOT NULL AND start_time >= ? AND start_time <= ?",
+					"therapy", startDate, endDate).
+		Order("RANDOM()"). // Random order to get mix of dates
+		Limit(150).        // Increased limit to cover more sessions
+		Find(&calendarEntries).Error; err != nil {
+		return fmt.Errorf("failed to fetch calendar entries: %w", err)
+	}
+
+	if len(calendarEntries) == 0 {
+		log.Println("⚠️  No calendar entries found for session creation in date range")
+		return nil
+	}
+
+	log.Printf("  📋 Found %d calendar entries in date range", len(calendarEntries))
+
+	// Get active clients for session creation
+	var clients []entities.Client
+	if err := db.Where("status = ?", "active").Limit(10).Find(&clients).Error; err != nil {
+		return fmt.Errorf("failed to fetch clients: %w", err)
+	}
+
+	if len(clients) == 0 {
+		log.Println("⚠️  No active clients found for session creation")
+		return nil
+	}
+
+	createdSessions := 0
+	conductedCount := 0
+	scheduledCount := 0
+	canceledCount := 0
+
+	// Create sessions for entries, determining status based on date
+	for i, entry := range calendarEntries {
+		// Assign clients round-robin
+		client := clients[i%len(clients)]
+
+		// Determine status based on date
+		var status string
+		isPast := entry.StartTime.Before(now)
+
+		if isPast {
+			// Past sessions are mostly conducted, with some canceled
+			if i%8 == 0 { // Every 8th session is canceled
+				status = "canceled"
+				canceledCount++
+			} else {
+				status = "conducted"
+				conductedCount++
+			}
+		} else {
+			// Future sessions are scheduled
+			status = "scheduled"
+			scheduledCount++
+		}
+
+		// Calculate duration
+		durationMin := 60
+		if entry.StartTime != nil && entry.EndTime != nil {
+			durationMin = int(entry.EndTime.Sub(*entry.StartTime).Minutes())
+		}
+
+		// Create session
+		session := entities.Session{
+			TenantID:          entry.TenantID,
+			ClientID:          client.ID,
+			CalendarEntryID:   &entry.ID,
+			OriginalDate:      *entry.StartTime,
+			OriginalStartTime: *entry.StartTime,
+			DurationMin:       durationMin,
+			Type:              "therapy",
+			NumberUnits:       1,
+			Status:            status,
+			Documentation:     generateSessionDocumentation(status, client.TherapyTitle),
+		}
+
+		if err := db.Create(&session).Error; err != nil {
+			log.Printf("  ❌ Failed to create session for entry %d: %v", entry.ID, err)
+			continue
+		}
+
+		createdSessions++
+
+		// Log progress every 10 sessions
+		if createdSessions%10 == 0 {
+			log.Printf("  📊 Progress: %d sessions created...", createdSessions)
+		}
+	}
+
+	log.Printf("✅ Created %d sessions (%d conducted, %d scheduled, %d canceled)",
+		createdSessions,
+		conductedCount,
+		scheduledCount,
+		canceledCount)
+
+	return nil
+}
+
+// seedInvoices creates sample invoices with different payment statuses
+func seedInvoices(db *gorm.DB) error {
+	log.Println("💰 Seeding invoices...")
+
+	// Get conducted sessions that aren't already invoiced
+	var conductedSessions []entities.Session
+	if err := db.Where("status = ?", "conducted").
+		Limit(12). // Get enough for 3 invoices with ~4 sessions each
+		Find(&conductedSessions).Error; err != nil {
+		return fmt.Errorf("failed to fetch conducted sessions: %w", err)
+	}
+
+	if len(conductedSessions) < 3 {
+		log.Println("⚠️  Not enough conducted sessions for invoice creation")
+		return nil
+	}
+
+	// Check if sessions are already invoiced
+	var alreadyInvoiced []uint
+	db.Model(&entities.InvoiceItem{}).
+		Distinct("session_id").
+		Pluck("session_id", &alreadyInvoiced)
+
+	// Filter out already invoiced sessions
+	var availableSessions []entities.Session
+	for _, session := range conductedSessions {
+		isInvoiced := false
+		for _, invoicedID := range alreadyInvoiced {
+			if session.ID == invoicedID {
+				isInvoiced = true
+				break
+			}
+		}
+		if !isInvoiced {
+			availableSessions = append(availableSessions, session)
+		}
+	}
+
+	if len(availableSessions) < 3 {
+		log.Println("⚠️  Not enough uninvoiced sessions for invoice creation")
+		return nil
+	}
+
+	// Get tenant and user
+	var tenant baseAPI.Tenant
+	if err := db.First(&tenant).Error; err != nil {
+		return fmt.Errorf("no tenant found: %w", err)
+	}
+
+	var user baseAPI.User
+	if err := db.First(&user).Error; err != nil {
+		return fmt.Errorf("no user found: %w", err)
+	}
+
+	// Get the first organization or create one if it doesn't exist
+	var organization struct {
+		ID uint
+	}
+	err := db.Table("organizations").Select("id").Where("tenant_id = ?", tenant.ID).First(&organization).Error
+	if err != nil {
+		if err == gorm.ErrRecordNotFound {
+			// Create a default organization
+			log.Println("  📋 Creating default organization...")
+			type Organization struct {
+				ID        uint `gorm:"primaryKey"`
+				TenantID  uint
+				UserID    uint
+				Name      string
+				CreatedAt time.Time
+				UpdatedAt time.Time
+			}
+			defaultOrg := Organization{
+				TenantID: tenant.ID,
+				UserID:   user.ID,
+				Name:     "Therapiepraxis Mustermann",
+			}
+			if err := db.Table("organizations").Create(&defaultOrg).Error; err != nil {
+				return fmt.Errorf("failed to create default organization: %w", err)
+			}
+			organization.ID = defaultOrg.ID
+			log.Printf("  ✅ Created default organization (ID: %d)", organization.ID)
+		} else {
+			return fmt.Errorf("failed to query organizations: %w", err)
+		}
+	}
+
+	// Create 3 invoices with different statuses
+	invoiceConfigs := []struct {
+		status         entities.InvoiceStatus
+		numReminders   int
+		payedDate      *time.Time
+		latestReminder *time.Time
+	}{
+		{
+			status:       entities.InvoiceStatusPayed,
+			numReminders: 0,
+			payedDate:    timePtr(time.Now().AddDate(0, 0, -5)),
+		},
+		{
+			status:       entities.InvoiceStatusSent,
+			numReminders: 0,
+			payedDate:    nil,
+		},
+		{
+			status:         entities.InvoiceStatusReminder,
+			numReminders:   1,
+			payedDate:      nil,
+			latestReminder: timePtr(time.Now().AddDate(0, 0, -3)),
+		},
+	}
+
+	createdInvoices := 0
+	sessionsPerInvoice := len(availableSessions) / len(invoiceConfigs)
+
+	for i, config := range invoiceConfigs {
+		// Get sessions for this invoice
+		startIdx := i * sessionsPerInvoice
+		endIdx := startIdx + sessionsPerInvoice
+		if i == len(invoiceConfigs)-1 {
+			endIdx = len(availableSessions) // Last invoice gets remaining sessions
+		}
+
+		if startIdx >= len(availableSessions) {
+			break
+		}
+
+		invoiceSessions := availableSessions[startIdx:endIdx]
+		if len(invoiceSessions) == 0 {
+			continue
+		}
+
+		// Get the client for the first session
+		firstSession := invoiceSessions[0]
+		var client entities.Client
+		if err := db.First(&client, firstSession.ClientID).Error; err != nil {
+			log.Printf("  ❌ Failed to fetch client %d: %v", firstSession.ClientID, err)
+			continue
+		}
+
+		if client.CostProviderID == nil {
+			log.Printf("  ❌ Client %d has no cost provider", client.ID)
+			continue
+		}
+
+		// Calculate totals
+		unitPrice := 150.0
+		if client.UnitPrice != nil {
+			unitPrice = *client.UnitPrice
+		}
+
+		numberUnits := len(invoiceSessions)
+		sumAmount := float64(numberUnits) * unitPrice
+		taxRate := 0.19
+		taxAmount := sumAmount * taxRate
+		totalAmount := sumAmount + taxAmount
+
+		// Generate invoice number
+		invoiceNumber := fmt.Sprintf("INV-%d-%d-%d", tenant.ID, time.Now().Year(), 1000+createdInvoices)
+
+		// Create invoice
+		invoice := entities.Invoice{
+			TenantID:       tenant.ID,
+			UserID:         user.ID,
+			ClientID:       client.ID,
+			CostProviderID: *client.CostProviderID,
+			OrganizationID: organization.ID,
+			InvoiceDate:    time.Now().AddDate(0, 0, -30+i*10), // Stagger dates
+			InvoiceNumber:  invoiceNumber,
+			NumberUnits:    numberUnits,
+			SumAmount:      sumAmount,
+			TaxAmount:      taxAmount,
+			TotalAmount:    totalAmount,
+			Status:         config.status,
+			NumReminders:   config.numReminders,
+			PayedDate:      config.payedDate,
+			LatestReminder: config.latestReminder,
+		}
+
+		if err := db.Create(&invoice).Error; err != nil {
+			log.Printf("  ❌ Failed to create invoice: %v", err)
+			continue
+		}
+
+		// Create invoice items
+		for _, session := range invoiceSessions {
+			invoiceItem := entities.InvoiceItem{
+				InvoiceID: invoice.ID,
+				SessionID: session.ID,
+			}
+			if err := db.Create(&invoiceItem).Error; err != nil {
+				log.Printf("  ❌ Failed to create invoice item for session %d: %v", session.ID, err)
+			}
+		}
+
+		statusLabel := string(config.status)
+		if config.payedDate != nil {
+			statusLabel = fmt.Sprintf("%s (paid %s)", statusLabel, config.payedDate.Format("2006-01-02"))
+		}
+
+		log.Printf("  ✓ Created invoice %s - %s - %d sessions - €%.2f",
+			invoiceNumber, statusLabel, numberUnits, totalAmount)
+		createdInvoices++
+	}
+
+	log.Printf("✅ Created %d invoices", createdInvoices)
+	return nil
+}
+
+// Helper functions
+func generateSessionDocumentation(status, therapyTitle string) string {
+	switch status {
+	case "conducted":
+		docs := []string{
+			fmt.Sprintf("Therapiesitzung durchgeführt: %s. Gute Fortschritte.", therapyTitle),
+			fmt.Sprintf("Reguläre Sitzung %s. Ziele erreicht.", therapyTitle),
+			fmt.Sprintf("Behandlung %s erfolgreich durchgeführt.", therapyTitle),
+		}
+		return docs[rand.Intn(len(docs))]
+	case "canceled":
+		return "Termin vom Klienten abgesagt"
+	case "scheduled":
+		return ""
+	default:
+		return ""
+	}
+}
+
+func countSessionsByStatus(statuses []string, status string) int {
+	count := 0
+	for _, s := range statuses {
+		if s == status {
+			count++
+		}
+	}
+	return count
+}
+
+func timePtr(t time.Time) *time.Time {
+	return &t
+}
+
+// showSessionAndInvoiceStatistics displays session and invoice seeding statistics
+func showSessionAndInvoiceStatistics(db *gorm.DB) {
+	log.Println("\n📊 Session & Invoice Statistics")
+	log.Println("================================")
+
+	// Session statistics
+	var totalSessions int64
+	db.Model(&entities.Session{}).Count(&totalSessions)
+	log.Printf("📅 Total sessions: %d", totalSessions)
+
+	if totalSessions > 0 {
+		var sessionStatuses []struct {
+			Status string
+			Count  int64
+		}
+		db.Model(&entities.Session{}).
+			Select("status, COUNT(*) as count").
+			Group("status").
+			Order("count DESC").
+			Find(&sessionStatuses)
+
+		log.Println("\n🎯 Session Status Breakdown:")
+		for _, ss := range sessionStatuses {
+			log.Printf("   %s: %d sessions", ss.Status, ss.Count)
+		}
+	}
+
+	// Invoice statistics
+	var totalInvoices int64
+	db.Model(&entities.Invoice{}).Count(&totalInvoices)
+	log.Printf("\n💰 Total invoices: %d", totalInvoices)
+
+	if totalInvoices > 0 {
+		var invoiceStatuses []struct {
+			Status string
+			Count  int64
+		}
+		db.Model(&entities.Invoice{}).
+			Select("status, COUNT(*) as count").
+			Group("status").
+			Order("count DESC").
+			Find(&invoiceStatuses)
+
+		log.Println("\n💳 Invoice Status Breakdown:")
+		for _, is := range invoiceStatuses {
+			log.Printf("   %s: %d invoices", is.Status, is.Count)
+		}
+
+		// Invoice items
+		var totalInvoiceItems int64
+		db.Model(&entities.InvoiceItem{}).Count(&totalInvoiceItems)
+		log.Printf("\n📋 Total invoice items: %d", totalInvoiceItems)
+	}
 }
 
 // seedCalendarData seeds calendar data for all users

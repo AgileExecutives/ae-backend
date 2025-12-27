@@ -1,0 +1,18 @@
+// ListDocuments godoc
+// @Summary List documents
+// @Description Retrieve a paginated list of documents with optional filters
+// @Tags Documents
+// @ID listDocuments
+// @Produce json
+// @Param document_type query string false "Filter by document type"
+// @Param reference_type query string false "Filter by reference type"
+// @Param reference_id query int false "Filter by reference ID"
+// @Param organization_id query int false "Filter by organization ID"
+// @Param page query int false "Page number (default: 1)"
+// @Param page_size query int false "Page size (default: 20, max: 100)"
+// @Success 200 {object} map[string]interface{}{success=bool,data=[]entities.DocumentResponse,total=int,page=int,page_size=int,total_pages=int}
+// @Failure 400 {object} map[string]interface{}
+// @Failure 401 {object} map[string]interface{}
+// @Failure 500 {object} map[string]interface{}
+// @Router /documents [get]
+// @Security BearerAuth

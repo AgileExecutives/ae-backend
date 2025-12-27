@@ -904,6 +904,40 @@ definitions:
     required:
     - delete_mode
     type: object
+  entities.DocumentResponse:
+    properties:
+      content_type:
+        type: string
+      created_at:
+        type: string
+      document_type:
+        type: string
+      file_name:
+        type: string
+      file_size_bytes:
+        type: integer
+      id:
+        type: integer
+      metadata:
+        additionalProperties: true
+        type: object
+      organization_id:
+        type: integer
+      reference_id:
+        type: integer
+      reference_type:
+        type: string
+      storage_bucket:
+        type: string
+      tags:
+        items:
+          type: string
+        type: array
+      tenant_id:
+        type: integer
+      updated_at:
+        type: string
+    type: object
   entities.ErrorResponse:
     properties:
       error:
@@ -1334,6 +1368,40 @@ definitions:
         allOf:
         - $ref: '#/definitions/entities.WeeklyAvailability'
         description: Weekly availability config
+    type: object
+  entities.TemplateResponse:
+    properties:
+      created_at:
+        type: string
+      description:
+        type: string
+      id:
+        type: integer
+      is_active:
+        type: boolean
+      is_default:
+        type: boolean
+      name:
+        type: string
+      organization_id:
+        type: integer
+      preview_url:
+        type: string
+      sample_data:
+        additionalProperties: true
+        type: object
+      template_type:
+        type: string
+      tenant_id:
+        type: integer
+      updated_at:
+        type: string
+      variables:
+        items:
+          type: string
+        type: array
+      version:
+        type: integer
     type: object
   entities.TimeRange:
     properties:
@@ -2052,6 +2120,15 @@ definitions:
       total_pages:
         type: integer
     type: object
+  github_com_unburdy_unburdy-server-api_modules_documents_handlers.ErrorResponse:
+    properties:
+      error:
+        example: Error message
+        type: string
+      success:
+        example: false
+        type: boolean
+    type: object
   gorm.DeletedAt:
     properties:
       time:
@@ -2059,6 +2136,175 @@ definitions:
       valid:
         description: Valid is true if Time is not NULL
         type: boolean
+    type: object
+  handlers.CreateTemplateRequest:
+    properties:
+      content:
+        example: <!DOCTYPE html>...
+        type: string
+      description:
+        example: Default invoice template
+        type: string
+      is_active:
+        example: true
+        type: boolean
+      is_default:
+        example: false
+        type: boolean
+      name:
+        example: Standard Invoice
+        type: string
+      organization_id:
+        example: 10
+        type: integer
+      sample_data:
+        additionalProperties: true
+        type: object
+      template_type:
+        example: invoice
+        type: string
+      variables:
+        example:
+        - invoice_number
+        - customer_name
+        items:
+          type: string
+        type: array
+    required:
+    - content
+    - name
+    - template_type
+    type: object
+  handlers.DownloadURLResponse:
+    properties:
+      document_id:
+        example: 1
+        type: integer
+      download_url:
+        example: https://minio.example.com/...
+        type: string
+      expires_at:
+        example: "2025-12-26T11:00:00Z"
+        type: string
+      file_name:
+        example: invoice-001.pdf
+        type: string
+      message:
+        example: Download URL generated successfully
+        type: string
+      success:
+        example: true
+        type: boolean
+    type: object
+  handlers.GenerateInvoiceNumberRequest:
+    properties:
+      month:
+        example: 12
+        type: integer
+      month_format:
+        description: '"MM", "M", or ""'
+        example: MM
+        type: string
+      organization_id:
+        example: 10
+        type: integer
+      padding:
+        description: e.g., 4 for "0001"
+        example: 4
+        type: integer
+      prefix:
+        example: INV
+        type: string
+      reset_monthly:
+        description: pointer to distinguish false from not set
+        example: false
+        type: boolean
+      separator:
+        description: e.g., "-"
+        example: '-'
+        type: string
+      year:
+        example: 2025
+        type: integer
+      year_format:
+        description: '"YYYY" or "YY"'
+        example: YYYY
+        type: string
+    required:
+    - organization_id
+    type: object
+  handlers.InvoiceNumberResponse:
+    properties:
+      invoice_number:
+        example: INV-2025-0001
+        type: string
+      month:
+        example: 12
+        type: integer
+      sequence:
+        example: 1
+        type: integer
+      success:
+        example: true
+        type: boolean
+      year:
+        example: 2025
+        type: integer
+    type: object
+  handlers.SuccessResponse:
+    properties:
+      message:
+        example: Operation successful
+        type: string
+      success:
+        example: true
+        type: boolean
+    type: object
+  handlers.TemplateResponse:
+    properties:
+      created_at:
+        example: "2025-12-26T10:00:00Z"
+        type: string
+      description:
+        example: Default invoice template
+        type: string
+      id:
+        example: 1
+        type: integer
+      is_active:
+        example: true
+        type: boolean
+      is_default:
+        example: false
+        type: boolean
+      name:
+        example: Standard Invoice
+        type: string
+      organization_id:
+        example: 10
+        type: integer
+      sample_data:
+        additionalProperties: true
+        type: object
+      storage_key:
+        example: tenants/1/templates/invoice/...
+        type: string
+      template_type:
+        example: invoice
+        type: string
+      tenant_id:
+        example: 1
+        type: integer
+      updated_at:
+        example: "2025-12-26T10:00:00Z"
+        type: string
+      variables:
+        items:
+          type: string
+        type: array
+      version:
+        example: 1
+        type: integer
     type: object
   models.ClientResponse:
     properties:
@@ -2596,6 +2842,65 @@ definitions:
         type: string
       timezone:
         type: string
+    type: object
+  services.GeneratePDFFromHTMLRequest:
+    properties:
+      document_type:
+        type: string
+      filename:
+        type: string
+      html:
+        type: string
+      metadata:
+        additionalProperties: true
+        type: object
+      save_document:
+        description: If true, save to documents table
+        type: boolean
+    required:
+    - html
+    type: object
+  services.GeneratePDFFromTemplateRequest:
+    properties:
+      data:
+        additionalProperties: true
+        type: object
+      document_type:
+        type: string
+      filename:
+        type: string
+      metadata:
+        additionalProperties: true
+        type: object
+      organization_id:
+        type: integer
+      save_document:
+        description: If true, save to documents table
+        type: boolean
+      template_id:
+        type: integer
+    required:
+    - template_id
+    type: object
+  services.UpdateTemplateRequest:
+    properties:
+      content:
+        type: string
+      description:
+        type: string
+      is_active:
+        type: boolean
+      is_default:
+        type: boolean
+      name:
+        type: string
+      sample_data:
+        additionalProperties: true
+        type: object
+      variables:
+        items:
+          type: string
+        type: array
     type: object
 host: localhost:8080
 info:
@@ -5205,6 +5510,188 @@ paths:
       summary: Update a customer
       tags:
       - customers
+  /documents:
+    post:
+      consumes:
+      - multipart/form-data
+      description: Upload a document file with metadata to MinIO storage
+      operationId: uploadDocument
+      parameters:
+      - description: Document file to upload
+        in: formData
+        name: file
+        required: true
+        type: file
+      - description: Document type (invoice, contract, report, etc.)
+        in: formData
+        name: document_type
+        required: true
+        type: string
+      - description: 'Storage bucket (default: documents)'
+        in: formData
+        name: bucket
+        type: string
+      - description: 'Storage path (default: filename)'
+        in: formData
+        name: path
+        type: string
+      - description: Reference type (invoice, client, session)
+        in: formData
+        name: reference_type
+        type: string
+      - description: Reference ID
+        in: formData
+        name: reference_id
+        type: integer
+      - description: Organization ID
+        in: formData
+        name: organization_id
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/entities.DocumentResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Upload a document
+      tags:
+      - Documents
+  /documents/{id}:
+    delete:
+      description: Soft delete a document (marks as deleted, does not remove from
+        storage)
+      operationId: deleteDocument
+      parameters:
+      - description: Document ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.SuccessResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_modules_documents_handlers.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_modules_documents_handlers.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_modules_documents_handlers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_modules_documents_handlers.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Delete document
+      tags:
+      - Documents
+    get:
+      description: Retrieve metadata for a specific document by ID
+      operationId: getDocument
+      parameters:
+      - description: Document ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/entities.DocumentResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get document metadata
+      tags:
+      - Documents
+  /documents/{id}/download:
+    get:
+      description: Get a pre-signed URL for downloading a document (valid for 1 hour)
+      operationId: downloadDocument
+      parameters:
+      - description: Document ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.DownloadURLResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_modules_documents_handlers.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_modules_documents_handlers.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_modules_documents_handlers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_modules_documents_handlers.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Download document
+      tags:
+      - Documents
   /emails:
     get:
       description: Get a paginated list of all emails
@@ -5568,6 +6055,174 @@ paths:
       summary: Health check
       tags:
       - health
+  /invoice-numbers/current:
+    get:
+      description: Get the current invoice number sequence for an organization
+      operationId: getCurrentInvoiceSequence
+      parameters:
+      - description: Organization ID
+        in: query
+        name: organization_id
+        required: true
+        type: integer
+      - description: Year (defaults to current year)
+        in: query
+        name: year
+        type: integer
+      - description: Month (defaults to current month)
+        in: query
+        name: month
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.SuccessResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_modules_documents_handlers.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_modules_documents_handlers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_modules_documents_handlers.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get current sequence
+      tags:
+      - Invoice Numbers
+  /invoice-numbers/generate:
+    post:
+      consumes:
+      - application/json
+      description: Generate the next sequential invoice number for an organization
+      operationId: generateInvoiceNumber
+      parameters:
+      - description: Invoice number configuration
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.GenerateInvoiceNumberRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.InvoiceNumberResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_modules_documents_handlers.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_modules_documents_handlers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_modules_documents_handlers.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Generate next invoice number
+      tags:
+      - Invoice Numbers
+  /invoice-numbers/history:
+    get:
+      description: Retrieve the history of generated invoice numbers
+      operationId: getInvoiceNumberHistory
+      parameters:
+      - description: Organization ID
+        in: query
+        name: organization_id
+        required: true
+        type: integer
+      - description: Filter by year
+        in: query
+        name: year
+        type: integer
+      - description: Filter by month
+        in: query
+        name: month
+        type: integer
+      - description: Page number (default 1)
+        in: query
+        name: page
+        type: integer
+      - description: Page size (default 20)
+        in: query
+        name: page_size
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.SuccessResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_modules_documents_handlers.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_modules_documents_handlers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_modules_documents_handlers.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get invoice number history
+      tags:
+      - Invoice Numbers
+  /invoice-numbers/void:
+    post:
+      consumes:
+      - application/json
+      description: Mark an invoice number as voided in the audit log
+      operationId: voidInvoiceNumber
+      parameters:
+      - description: Invoice number to void
+        in: body
+        name: request
+        required: true
+        schema:
+          additionalProperties:
+            type: string
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.SuccessResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_modules_documents_handlers.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_modules_documents_handlers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_modules_documents_handlers.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Void invoice number
+      tags:
+      - Invoice Numbers
   /invoices:
     get:
       description: Retrieve all invoices for the authenticated user with pagination
@@ -6009,6 +6664,135 @@ paths:
       summary: Generate PDF from template
       tags:
       - pdf
+  /pdfs/from-template:
+    post:
+      consumes:
+      - application/json
+      description: Generate a PDF document from a template with data
+      operationId: generatePDFFromTemplate
+      parameters:
+      - description: Template ID and data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/services.GeneratePDFFromTemplateRequest'
+      produces:
+      - application/pdf
+      responses:
+        "200":
+          description: PDF file
+          schema:
+            type: file
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Generate PDF from template
+      tags:
+      - PDFs
+  /pdfs/generate:
+    post:
+      consumes:
+      - application/json
+      description: Generate a PDF document from HTML content using Chromedp
+      operationId: generatePDFFromHTML
+      parameters:
+      - description: HTML and metadata
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/services.GeneratePDFFromHTMLRequest'
+      produces:
+      - application/pdf
+      responses:
+        "200":
+          description: PDF file
+          schema:
+            type: file
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Generate PDF from HTML
+      tags:
+      - PDFs
+  /pdfs/invoice:
+    post:
+      consumes:
+      - application/json
+      description: Generate a PDF invoice using the default invoice template
+      operationId: generateInvoicePDF
+      parameters:
+      - description: Organization ID (for template selection)
+        in: query
+        name: organization_id
+        type: integer
+      - description: Invoice data
+        in: body
+        name: request
+        required: true
+        schema:
+          additionalProperties: true
+          type: object
+      produces:
+      - application/pdf
+      responses:
+        "200":
+          description: PDF file
+          schema:
+            type: file
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Generate invoice PDF
+      tags:
+      - PDFs
   /ping:
     get:
       description: Simple ping endpoint
@@ -6644,6 +7428,402 @@ paths:
       summary: Serve static JSON files (JSON only, security restricted)
       tags:
       - static
+  /templates:
+    get:
+      description: List templates with optional filters and pagination
+      operationId: listTemplates
+      parameters:
+      - description: Organization ID filter
+        in: query
+        name: organization_id
+        type: integer
+      - description: Template type (email, pdf, invoice, document)
+        in: query
+        name: template_type
+        type: string
+      - description: Active status filter
+        in: query
+        name: is_active
+        type: boolean
+      - description: Page number (default 1)
+        in: query
+        name: page
+        type: integer
+      - description: Page size (default 20)
+        in: query
+        name: page_size
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.SuccessResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_modules_documents_handlers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_modules_documents_handlers.ErrorResponse'
+      summary: List templates
+      tags:
+      - Templates
+    post:
+      consumes:
+      - application/json
+      description: Create a new email/PDF template with content stored in MinIO
+      operationId: createTemplate
+      parameters:
+      - description: Template data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.CreateTemplateRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/handlers.TemplateResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_modules_documents_handlers.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_modules_documents_handlers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_modules_documents_handlers.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Create template
+      tags:
+      - Templates
+  /templates/{id}:
+    delete:
+      description: Soft delete a template
+      operationId: deleteTemplate
+      parameters:
+      - description: Template ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      responses:
+        "204":
+          description: No Content
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Delete template
+      tags:
+      - Templates
+    get:
+      description: Get template metadata by ID
+      operationId: getTemplate
+      parameters:
+      - description: Template ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/entities.TemplateResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Get template
+      tags:
+      - Templates
+    put:
+      consumes:
+      - application/json
+      description: Update template metadata or content (creates new version)
+      operationId: updateTemplate
+      parameters:
+      - description: Template ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Update data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/services.UpdateTemplateRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/entities.TemplateResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Update template
+      tags:
+      - Templates
+  /templates/{id}/content:
+    get:
+      description: Get template metadata and HTML content
+      operationId: getTemplateContent
+      parameters:
+      - description: Template ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.SuccessResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_modules_documents_handlers.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_modules_documents_handlers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_modules_documents_handlers.ErrorResponse'
+      summary: Get template content
+      tags:
+      - Templates
+  /templates/{id}/duplicate:
+    post:
+      consumes:
+      - application/json
+      description: Create a copy of an existing template
+      operationId: duplicateTemplate
+      parameters:
+      - description: Template ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: New template name
+        in: body
+        name: request
+        required: true
+        schema:
+          additionalProperties:
+            type: string
+          type: object
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/entities.TemplateResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Duplicate template
+      tags:
+      - Templates
+  /templates/{id}/preview:
+    get:
+      description: Render template with sample data for preview
+      operationId: previewTemplate
+      parameters:
+      - description: Template ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - text/html
+      responses:
+        "200":
+          description: HTML content
+          schema:
+            type: string
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Preview template
+      tags:
+      - Templates
+  /templates/{id}/render:
+    post:
+      consumes:
+      - application/json
+      description: Render template with provided data
+      operationId: renderTemplate
+      parameters:
+      - description: Template ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Template data
+        in: body
+        name: data
+        required: true
+        schema:
+          additionalProperties: true
+          type: object
+      produces:
+      - text/html
+      responses:
+        "200":
+          description: HTML content
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Render template
+      tags:
+      - Templates
+  /templates/default:
+    get:
+      description: Get the default template for a specific type and organization
+      operationId: getDefaultTemplate
+      parameters:
+      - description: Template type (email, pdf, invoice, document)
+        in: query
+        name: template_type
+        required: true
+        type: string
+      - description: Organization ID (falls back to system default if not found)
+        in: query
+        name: organization_id
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/entities.TemplateResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Get default template
+      tags:
+      - Templates
   /user-settings:
     get:
       consumes:
@@ -6792,3 +7972,12 @@ tags:
 - description: '[Organization Module] Organization management including billing, tax,
     and bank account information'
   name: organizations
+- description: '[Documents Module] Document storage and management with MinIO integration'
+  name: Documents
+- description: '[Documents Module] Sequential invoice number generation with Redis
+    caching'
+  name: Invoice Numbers
+- description: '[Documents Module] Template management for emails and PDFs with versioning'
+  name: Templates
+- description: '[Documents Module] PDF generation from HTML and templates using Chromedp'
+  name: PDFs

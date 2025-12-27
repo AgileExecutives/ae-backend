@@ -18,6 +18,7 @@ import (
 	organization "github.com/unburdy/organization-module"
 	_ "github.com/unburdy/unburdy-server-api/docs" // swagger docs - unburdy-specific
 	"github.com/unburdy/unburdy-server-api/modules/client_management"
+	documents "github.com/unburdy/unburdy-server-api/modules/documents"
 )
 
 // @title Unburdy Server API
@@ -75,6 +76,18 @@ import (
 // @tag.name organizations
 // @tag.description [Organization Module] Organization management including billing, tax, and bank account information
 
+// @tag.name Documents
+// @tag.description [Documents Module] Document storage and management with MinIO integration
+
+// @tag.name Invoice Numbers
+// @tag.description [Documents Module] Sequential invoice number generation with Redis caching
+
+// @tag.name Templates
+// @tag.description [Documents Module] Template management for emails and PDFs with versioning
+
+// @tag.name PDFs
+// @tag.description [Documents Module] PDF generation from HTML and templates using Chromedp
+
 func main() {
 	// Load .env file
 	if err := godotenv.Load(); err != nil {
@@ -107,6 +120,7 @@ func main() {
 		email.NewEmailModule(),            // Email management and notifications
 		pdf.NewPDFModule(),                // PDF generation services
 		static.NewStaticModule(),          // Static JSON file serving
+		documents.NewCoreModule(),         // Documents, templates, invoices, PDF generation
 		calendar.NewCoreModule(),          // Calendar management (unburdy-specific)
 		booking.NewCoreModule(),           // Booking management (unburdy-specific)
 		organization.NewCoreModule(),      // Organization management (unburdy-specific)

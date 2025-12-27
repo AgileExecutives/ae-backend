@@ -4,5 +4,6 @@ use (
 	./base-server
 	./minimal-server
 	./modules/calendar
+	./modules/documents
 	./unburdy_server
 )
