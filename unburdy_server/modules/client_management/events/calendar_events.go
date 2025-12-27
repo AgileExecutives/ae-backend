@@ -59,7 +59,7 @@ func (h *CalendarEntryDeletedHandler) Handle(event interface{}) error {
 		Updates(map[string]interface{}{
 			"status":            "canceled",
 			"calendar_entry_id": nil,
-			"documentation":     gorm.Expr("CASE WHEN documentation = '' OR documentation IS NULL THEN ?::text ELSE CONCAT(documentation, ?::text, ?::text) END", "Calendar entry deleted", "\n", "Calendar entry deleted"),
+			"documentation":     gorm.Expr("CASE WHEN documentation = '' OR documentation IS NULL THEN ? ELSE CONCAT(documentation, ?, ?) END", "Calendar entry deleted", "\n", "Calendar entry deleted"),
 		})
 
 	if result.Error != nil {

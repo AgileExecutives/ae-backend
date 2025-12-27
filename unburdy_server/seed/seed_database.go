@@ -29,9 +29,10 @@ import (
 	invoiceNumberServices "github.com/ae-base-server/modules/invoice_number/services"
 	documentEntities "github.com/unburdy/documents-module/entities"
 	documentServices "github.com/unburdy/documents-module/services"
-	"github.com/unburdy/documents-module/services/storage"
+	documentStorage "github.com/unburdy/documents-module/services/storage"
 	templateEntities "github.com/unburdy/templates-module/entities"
 	templateServices "github.com/unburdy/templates-module/services"
+	templateStorage "github.com/unburdy/templates-module/services/storage"
 
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -573,8 +574,8 @@ func seedDocumentsData(db *gorm.DB) error {
 		return fmt.Errorf("no user found: %w", err)
 	}
 
-	// Initialize MinIO storage
-	minioConfig := storage.MinIOConfig{
+	// Initialize MinIO storage for documents
+	docMinioConfig := documentStorage.MinIOConfig{
 		Endpoint:        getEnv("MINIO_ENDPOINT", "localhost:9000"),
 		AccessKeyID:     getEnv("MINIO_ACCESS_KEY", "minioadmin"),
 		SecretAccessKey: getEnv("MINIO_SECRET_KEY", "minioadmin123"),
@@ -582,15 +583,29 @@ func seedDocumentsData(db *gorm.DB) error {
 		Region:          getEnv("MINIO_REGION", "us-east-1"),
 	}
 
-	minioStorage, err := storage.NewMinIOStorage(minioConfig)
+	docMinioStorage, err := documentStorage.NewMinIOStorage(docMinioConfig)
 	if err != nil {
-		return fmt.Errorf("failed to initialize MinIO storage: %w", err)
+		return fmt.Errorf("failed to initialize document MinIO storage: %w", err)
+	}
+
+	// Initialize MinIO storage for templates
+	templateMinioConfig := templateStorage.MinIOConfig{
+		Endpoint:        getEnv("MINIO_ENDPOINT", "localhost:9000"),
+		AccessKeyID:     getEnv("MINIO_ACCESS_KEY", "minioadmin"),
+		SecretAccessKey: getEnv("MINIO_SECRET_KEY", "minioadmin123"),
+		UseSSL:          getEnv("MINIO_USE_SSL", "false") == "true",
+		Region:          getEnv("MINIO_REGION", "us-east-1"),
+	}
+
+	templateMinioStorage, err := templateStorage.NewMinIOStorage(templateMinioConfig)
+	if err != nil {
+		return fmt.Errorf("failed to initialize template MinIO storage: %w", err)
 	}
 
 	// Initialize services
-	templateService := templateServices.NewTemplateService(db, minioStorage)
+	templateService := templateServices.NewTemplateService(db, templateMinioStorage)
 	invoiceNumberService := baseAPI.NewInvoiceNumberService(db)
-	pdfService := documentServices.NewPDFService(db, minioStorage, templateService)
+	pdfService := documentServices.NewPDFService(db, docMinioStorage, templateService)
 
 	// Create context for operations
 	ctx := context.Background()

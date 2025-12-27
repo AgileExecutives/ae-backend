@@ -1,6 +1,7 @@
 package tests
 
 import (
+	"fmt"
 	"testing"
 	"time"
 
@@ -113,11 +114,12 @@ func TestSessionCancellationOnCalendarEntryDeletion(t *testing.T) {
 		Documentation:     "Initial session notes",
 	}, tenantID)
 	require.NoError(t, err)
-	t.Logf("Created session with ID: %d, CalendarEntryID: %d, Status: %s", session.ID, session.CalendarEntryID, session.Status)
+	require.NotNil(t, session.CalendarEntryID, "Session should have a calendar entry ID")
+	t.Logf("Created session with ID: %d, CalendarEntryID: %d, Status: %s", session.ID, *session.CalendarEntryID, session.Status)
 
 	// Verify session is scheduled with correct calendar entry
 	assert.Equal(t, "scheduled", session.Status)
-	assert.Equal(t, calendarEntry.ID, session.CalendarEntryID)
+	assert.Equal(t, calendarEntry.ID, *session.CalendarEntryID)
 	assert.Equal(t, "Initial session notes", session.Documentation)
 	assert.Equal(t, startTime.Truncate(time.Second), session.OriginalStartTime.Truncate(time.Second))
 
@@ -143,12 +145,16 @@ func TestSessionCancellationOnCalendarEntryDeletion(t *testing.T) {
 	err = db.First(&updatedSession, session.ID).Error
 	require.NoError(t, err)
 
-	t.Logf("Updated session - ID: %d, CalendarEntryID: %d, Status: %s, Documentation: %s",
-		updatedSession.ID, updatedSession.CalendarEntryID, updatedSession.Status, updatedSession.Documentation)
+	calEntryIDStr := "nil"
+	if updatedSession.CalendarEntryID != nil {
+		calEntryIDStr = fmt.Sprintf("%d", *updatedSession.CalendarEntryID)
+	}
+	t.Logf("Updated session - ID: %d, CalendarEntryID: %s, Status: %s, Documentation: %s",
+		updatedSession.ID, calEntryIDStr, updatedSession.Status, updatedSession.Documentation)
 
 	// Assertions
 	assert.Equal(t, "canceled", updatedSession.Status, "Session status should be 'canceled'")
-	assert.Equal(t, uint(0), updatedSession.CalendarEntryID, "Session calendar_entry_id should be 0")
+	assert.Nil(t, updatedSession.CalendarEntryID, "Session calendar_entry_id should be nil")
 	assert.Contains(t, updatedSession.Documentation, "Calendar entry deleted", "Documentation should contain cancellation note")
 	assert.Contains(t, updatedSession.Documentation, "Initial session notes", "Documentation should preserve original notes")
 }
@@ -230,7 +236,7 @@ func TestSessionSeriesCancellationOnCalendarEntryDeletion(t *testing.T) {
 	// Verify all sessions are scheduled
 	for _, session := range createdSessions {
 		assert.Equal(t, "scheduled", session.Status)
-		assert.NotEqual(t, uint(0), session.CalendarEntryID)
+		assert.NotNil(t, session.CalendarEntryID, "Session should have a calendar entry ID")
 	}
 
 	// Step 5: Delete one calendar entry from the middle of the series (simulated)
@@ -257,16 +263,20 @@ func TestSessionSeriesCancellationOnCalendarEntryDeletion(t *testing.T) {
 	scheduledCount := 0
 
 	for _, session := range allSessions {
-		t.Logf("Session ID: %d, CalendarEntryID: %d, Status: %s",
-			session.ID, session.CalendarEntryID, session.Status)
+		calEntryIDStr := "nil"
+		if session.CalendarEntryID != nil {
+			calEntryIDStr = fmt.Sprintf("%d", *session.CalendarEntryID)
+		}
+		t.Logf("Session ID: %d, CalendarEntryID: %s, Status: %s",
+			session.ID, calEntryIDStr, session.Status)
 
 		if session.Status == "canceled" {
 			canceledCount++
-			assert.Equal(t, uint(0), session.CalendarEntryID, "Canceled session should have calendar_entry_id = 0")
+			assert.Nil(t, session.CalendarEntryID, "Canceled session should have calendar_entry_id = nil")
 			assert.Contains(t, session.Documentation, "Calendar entry deleted")
 		} else if session.Status == "scheduled" {
 			scheduledCount++
-			assert.NotEqual(t, uint(0), session.CalendarEntryID, "Scheduled session should still have calendar_entry_id")
+			assert.NotNil(t, session.CalendarEntryID, "Scheduled session should have calendar_entry_id")
 		}
 	}
 
@@ -352,7 +362,8 @@ func TestSessionNotCanceledIfAlreadyConducted(t *testing.T) {
 	require.NoError(t, err)
 
 	assert.Equal(t, "conducted", updatedSession.Status, "Conducted session should not be changed to canceled")
-	assert.Equal(t, calendarEntry.ID, updatedSession.CalendarEntryID, "Conducted session should keep its calendar_entry_id")
+	require.NotNil(t, updatedSession.CalendarEntryID, "Conducted session should keep its calendar_entry_id")
+	assert.Equal(t, calendarEntry.ID, *updatedSession.CalendarEntryID, "Conducted session should keep its calendar_entry_id")
 	assert.Equal(t, "Session completed successfully", updatedSession.Documentation, "Documentation should not be modified")
 	assert.NotContains(t, updatedSession.Documentation, "Calendar entry deleted", "Should not add deletion note to conducted session")
 }
