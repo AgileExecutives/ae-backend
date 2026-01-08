@@ -36,11 +36,22 @@ type Invoice struct {
 	NumReminders   int                   `gorm:"column:num_reminders;not null;default:0" json:"num_reminders"`
 	LatestReminder *time.Time            `gorm:"column:latest_reminder" json:"latest_reminder,omitempty"`
 	DocumentID     *uint                 `gorm:"index:idx_invoice_document" json:"document_id,omitempty"`
-	InvoiceItems   []InvoiceItem         `gorm:"foreignKey:InvoiceID;constraint:OnDelete:CASCADE" json:"invoice_items,omitempty"`
-	ClientInvoices []ClientInvoice       `gorm:"foreignKey:InvoiceID;constraint:OnDelete:CASCADE" json:"client_invoices,omitempty"`
-	CreatedAt      time.Time             `json:"created_at"`
-	UpdatedAt      time.Time             `json:"updated_at"`
-	DeletedAt      gorm.DeletedAt        `gorm:"index" json:"-"`
+
+	// Workflow timestamps
+	EmailSentAt    *time.Time `json:"email_sent_at,omitempty"`
+	ReminderSentAt *time.Time `json:"reminder_sent_at,omitempty"`
+	FinalizedAt    *time.Time `json:"finalized_at,omitempty"`
+	CancelledAt    *time.Time `json:"cancelled_at,omitempty"`
+
+	// Credit note support
+	IsCreditNote          bool  `gorm:"not null;default:false" json:"is_credit_note"`
+	CreditNoteReferenceID *uint `gorm:"index" json:"credit_note_reference_id,omitempty"`
+
+	InvoiceItems   []InvoiceItem   `gorm:"foreignKey:InvoiceID;constraint:OnDelete:CASCADE" json:"invoice_items,omitempty"`
+	ClientInvoices []ClientInvoice `gorm:"foreignKey:InvoiceID;constraint:OnDelete:CASCADE" json:"client_invoices,omitempty"`
+	CreatedAt      time.Time       `json:"created_at"`
+	UpdatedAt      time.Time       `json:"updated_at"`
+	DeletedAt      gorm.DeletedAt  `gorm:"index" json:"-"`
 }
 
 // TableName specifies the table name for the Invoice model
@@ -50,19 +61,26 @@ func (Invoice) TableName() string {
 
 // InvoiceItem represents an invoice item linked to a session or extra effort
 type InvoiceItem struct {
-	ID              uint           `gorm:"primarykey" json:"id"`
-	InvoiceID       uint           `gorm:"not null;index:idx_invoice_item_invoice" json:"invoice_id"`
-	ItemType        string         `gorm:"size:50;default:'session'" json:"item_type"` // session, extra_effort, preparation, adjustment
-	SourceEffortID  *uint          `gorm:"index:idx_invoice_item_effort" json:"source_effort_id,omitempty"`
-	Description     string         `gorm:"type:text" json:"description"`
-	NumberUnits     float64        `gorm:"type:decimal(10,2);not null;default:0" json:"number_units"`
-	UnitPrice       float64        `gorm:"type:decimal(10,2);not null;default:0" json:"unit_price"`
-	TotalAmount     float64        `gorm:"type:decimal(10,2);not null;default:0" json:"total_amount"`
-	UnitDurationMin *int           `json:"unit_duration_min,omitempty"` // Duration for extra efforts
-	IsEditable      bool           `gorm:"default:true" json:"is_editable"`
-	CreatedAt       time.Time      `json:"created_at"`
-	UpdatedAt       time.Time      `json:"updated_at"`
-	DeletedAt       gorm.DeletedAt `gorm:"index" json:"-"`
+	ID              uint    `gorm:"primarykey" json:"id"`
+	InvoiceID       uint    `gorm:"not null;index:idx_invoice_item_invoice" json:"invoice_id"`
+	ItemType        string  `gorm:"size:50;default:'session'" json:"item_type"` // session, extra_effort, custom
+	SourceEffortID  *uint   `gorm:"index:idx_invoice_item_effort" json:"source_effort_id,omitempty"`
+	SessionID       *uint   `gorm:"index:idx_invoice_item_session" json:"session_id,omitempty"`
+	Description     string  `gorm:"type:text" json:"description"`
+	NumberUnits     float64 `gorm:"type:decimal(10,2);not null;default:0" json:"number_units"`
+	UnitPrice       float64 `gorm:"type:decimal(10,2);not null;default:0" json:"unit_price"`
+	TotalAmount     float64 `gorm:"type:decimal(10,2);not null;default:0" json:"total_amount"`
+	UnitDurationMin *int    `json:"unit_duration_min,omitempty"` // Duration for extra efforts
+	IsEditable      bool    `gorm:"default:true" json:"is_editable"`
+
+	// VAT handling
+	VATRate          float64 `gorm:"type:decimal(5,2);not null;default:0" json:"vat_rate"`
+	VATExempt        bool    `gorm:"not null;default:false" json:"vat_exempt"`
+	VATExemptionText string  `gorm:"size:500" json:"vat_exemption_text,omitempty"`
+
+	CreatedAt time.Time      `json:"created_at"`
+	UpdatedAt time.Time      `json:"updated_at"`
+	DeletedAt gorm.DeletedAt `gorm:"index" json:"-"`
 }
 
 // TableName specifies the table name for the InvoiceItem model
@@ -127,6 +145,47 @@ type UpdateInvoiceRequest struct {
 	SessionIDs []uint         `json:"session_ids,omitempty" example:"1,2,3"`
 }
 
+// CreateDraftInvoiceRequest represents the request for creating a draft invoice
+type CreateDraftInvoiceRequest struct {
+	ClientID        uint                    `json:"client_id" binding:"required" example:"1"`
+	SessionIDs      []uint                  `json:"session_ids,omitempty" example:"1,2,3"`
+	ExtraEffortIDs  []uint                  `json:"extra_effort_ids,omitempty" example:"5,6"`
+	CustomLineItems []CustomLineItemRequest `json:"custom_line_items,omitempty"`
+}
+
+// CustomLineItemRequest represents a custom line item for an invoice
+type CustomLineItemRequest struct {
+	Description      string  `json:"description" binding:"required" example:"Additional consultation"`
+	NumberUnits      float64 `json:"number_units" example:"1"`
+	UnitPrice        float64 `json:"unit_price" example:"150.00"`
+	VATCategory      string  `json:"vat_category,omitempty" example:"exempt_heilberuf"` // exempt_heilberuf, taxable_standard, taxable_reduced
+	VATRate          float64 `json:"vat_rate,omitempty" example:"19.00"`
+	VATExempt        bool    `json:"vat_exempt,omitempty" example:"false"`
+	VATExemptionText string  `json:"vat_exemption_text,omitempty"`
+}
+
+// UpdateDraftInvoiceRequest represents the request for updating a draft invoice
+type UpdateDraftInvoiceRequest struct {
+	AddSessionIDs        []uint                  `json:"add_session_ids,omitempty" example:"7,8"`
+	RemoveSessionIDs     []uint                  `json:"remove_session_ids,omitempty" example:"1"`
+	AddExtraEffortIDs    []uint                  `json:"add_extra_effort_ids,omitempty" example:"9"`
+	RemoveExtraEffortIDs []uint                  `json:"remove_extra_effort_ids,omitempty" example:"5"`
+	CustomLineItems      []CustomLineItemRequest `json:"custom_line_items,omitempty"`
+}
+
+// MarkInvoiceAsPaidRequest represents the request for marking an invoice as paid
+type MarkInvoiceAsPaidRequest struct {
+	PaymentDate      *time.Time `json:"payment_date,omitempty" example:"2026-01-08T00:00:00Z"`
+	PaymentReference string     `json:"payment_reference,omitempty" example:"TRANSFER-123456"`
+}
+
+// CreateCreditNoteRequest represents the request for creating a credit note
+type CreateCreditNoteRequest struct {
+	LineItemIDs []uint     `json:"line_item_ids" binding:"required" example:"1,2,3"`
+	Reason      string     `json:"reason" binding:"required" example:"Customer dissatisfaction - partial refund"`
+	CreditDate  *time.Time `json:"credit_date,omitempty" example:"2026-01-08T00:00:00Z"`
+}
+
 // InvoiceResponse represents the response format for invoice data
 type InvoiceResponse struct {
 	ID             uint                          `json:"id"`
@@ -148,8 +207,26 @@ type InvoiceResponse struct {
 	DocumentURL    string                        `json:"document_url,omitempty"`
 	InvoiceItems   []InvoiceItemResponse         `json:"invoice_items,omitempty"`
 	Clients        []ClientInvoiceResponse       `json:"clients,omitempty"`
+	VATBreakdown   *VATBreakdownResponse         `json:"vat_breakdown,omitempty"`
 	CreatedAt      time.Time                     `json:"created_at"`
 	UpdatedAt      time.Time                     `json:"updated_at"`
+}
+
+// VATBreakdownResponse represents the VAT breakdown for an invoice
+type VATBreakdownResponse struct {
+	Subtotal   float64                    `json:"subtotal"`
+	TotalTax   float64                    `json:"total_tax"`
+	GrandTotal float64                    `json:"grand_total"`
+	Items      []VATBreakdownItemResponse `json:"items"`
+}
+
+// VATBreakdownItemResponse represents a single VAT rate breakdown
+type VATBreakdownItemResponse struct {
+	VATRate       float64 `json:"vat_rate"`
+	NetAmount     float64 `json:"net_amount"`
+	TaxAmount     float64 `json:"tax_amount"`
+	GrossAmount   float64 `json:"gross_amount"`
+	ExemptionText string  `json:"exemption_text,omitempty"`
 }
 
 // ClientInvoiceResponse represents a client and their sessions within an invoice
@@ -290,6 +367,13 @@ func (i *Invoice) ToResponse() InvoiceResponse {
 		}
 	}
 
+	return response
+}
+
+// ToResponseWithVATBreakdown converts an Invoice to InvoiceResponse with VAT breakdown
+func (i *Invoice) ToResponseWithVATBreakdown(vatBreakdown *VATBreakdownResponse) InvoiceResponse {
+	response := i.ToResponse()
+	response.VATBreakdown = vatBreakdown
 	return response
 }
 

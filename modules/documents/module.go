@@ -144,6 +144,7 @@ func (m *CoreModule) Services() []core.ServiceProvider {
 	return []core.ServiceProvider{
 		&documentServiceProvider{module: m},
 		&pdfServiceProvider{module: m},
+		&documentStorageProvider{module: m},
 	}
 }
 
@@ -223,6 +224,40 @@ func (p *pdfServiceProvider) Factory(ctx core.ModuleContext) (interface{}, error
 	}
 
 	return p.module.pdfService, nil
+}
+
+// documentStorageProvider exposes the MinIO storage via the service registry
+type documentStorageProvider struct {
+	module *CoreModule
+}
+
+func (p *documentStorageProvider) ServiceName() string {
+	return "document-storage"
+}
+
+func (p *documentStorageProvider) ServiceInterface() interface{} {
+	return (*storage.DocumentStorage)(nil)
+}
+
+func (p *documentStorageProvider) Factory(ctx core.ModuleContext) (interface{}, error) {
+	// Ensure storage is ready
+	if p.module.minioStorage == nil {
+		minioConfig := storage.MinIOConfig{
+			Endpoint:        "localhost:9000",
+			AccessKeyID:     "minioadmin",
+			SecretAccessKey: "minioadmin123",
+			UseSSL:          false,
+			Region:          "us-east-1",
+		}
+
+		minioStorage, err := storage.NewMinIOStorage(minioConfig)
+		if err != nil {
+			return nil, err
+		}
+		p.module.minioStorage = minioStorage
+	}
+
+	return p.module.minioStorage, nil
 }
 
 // SwaggerPaths returns Swagger documentation paths

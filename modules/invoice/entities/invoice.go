@@ -39,6 +39,16 @@ type Invoice struct {
 	// Document references
 	DocumentID *uint `gorm:"index" json:"document_id,omitempty"` // Link to generated PDF document
 
+	// Workflow timestamps
+	EmailSentAt    *time.Time `json:"email_sent_at,omitempty"`
+	ReminderSentAt *time.Time `json:"reminder_sent_at,omitempty"`
+	FinalizedAt    *time.Time `json:"finalized_at,omitempty"`
+	CancelledAt    *time.Time `json:"cancelled_at,omitempty"`
+
+	// Credit note support
+	IsCreditNote          bool  `gorm:"not null;default:false" json:"is_credit_note"`
+	CreditNoteReferenceID *uint `gorm:"index" json:"credit_note_reference_id,omitempty"` // References original invoice if this is a credit note
+
 	// Additional data
 	Notes        string         `gorm:"type:text" json:"notes,omitempty"`
 	InternalNote string         `gorm:"type:text" json:"internal_note,omitempty"`
@@ -66,6 +76,14 @@ type InvoiceItem struct {
 	UnitPrice   float64 `gorm:"type:decimal(10,2);not null;default:0" json:"unit_price"`
 	TaxRate     float64 `gorm:"type:decimal(5,2);not null;default:0" json:"tax_rate"`
 	Amount      float64 `gorm:"type:decimal(10,2);not null;default:0" json:"amount"`
+
+	// VAT handling
+	VATRate          float64 `gorm:"type:decimal(5,2);not null;default:0" json:"vat_rate"`
+	VATExempt        bool    `gorm:"not null;default:false" json:"vat_exempt"`
+	VATExemptionText string  `gorm:"size:500" json:"vat_exemption_text,omitempty"`
+
+	// Source references
+	SessionID *uint `gorm:"index" json:"session_id,omitempty"` // Link to session if applicable
 
 	CreatedAt time.Time      `json:"created_at"`
 	UpdatedAt time.Time      `json:"updated_at"`

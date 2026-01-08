@@ -8,17 +8,24 @@ import (
 
 // CostProvider represents a cost provider entity for clients
 type CostProvider struct {
-	ID            uint           `gorm:"primarykey" json:"id"`
-	TenantID      uint           `gorm:"not null;index" json:"tenant_id"`
-	Organization  string         `gorm:"size:255;not null" json:"organization" binding:"required" example:"Health Insurance Corp"`
-	Department    string         `gorm:"size:255" json:"department,omitempty" example:"Mental Health Division"`
-	ContactName   string         `gorm:"size:255" json:"contact_name,omitempty" example:"Jane Smith"`
-	StreetAddress string         `gorm:"size:500" json:"street_address,omitempty" example:"456 Insurance Blvd"`
-	Zip           string         `gorm:"size:20" json:"zip,omitempty" example:"12345"`
-	City          string         `gorm:"size:100" json:"city,omitempty" example:"New York"`
-	CreatedAt     time.Time      `json:"created_at"`
-	UpdatedAt     time.Time      `json:"updated_at"`
-	DeletedAt     gorm.DeletedAt `gorm:"index" json:"-"`
+	ID            uint   `gorm:"primarykey" json:"id"`
+	TenantID      uint   `gorm:"not null;index" json:"tenant_id"`
+	Organization  string `gorm:"size:255;not null" json:"organization" binding:"required" example:"Health Insurance Corp"`
+	Department    string `gorm:"size:255" json:"department,omitempty" example:"Mental Health Division"`
+	ContactName   string `gorm:"size:255" json:"contact_name,omitempty" example:"Jane Smith"`
+	StreetAddress string `gorm:"size:500" json:"street_address,omitempty" example:"456 Insurance Blvd"`
+	Zip           string `gorm:"size:20" json:"zip,omitempty" example:"12345"`
+	City          string `gorm:"size:100" json:"city,omitempty" example:"New York"`
+
+	// Government customer fields for XRechnung/E-Rechnung
+	IsGovernmentCustomer bool   `gorm:"not null;default:false" json:"is_government_customer"`
+	LeitwegID            string `gorm:"size:100" json:"leitweg_id,omitempty"` // German government routing ID
+	AuthorityName        string `gorm:"size:255" json:"authority_name,omitempty"`
+	ReferenceNumber      string `gorm:"size:100" json:"reference_number,omitempty"` // e.g., cost center
+
+	CreatedAt time.Time      `json:"created_at"`
+	UpdatedAt time.Time      `json:"updated_at"`
+	DeletedAt gorm.DeletedAt `gorm:"index" json:"-"`
 }
 
 // CreateCostProviderRequest represents the request payload for creating a cost provider

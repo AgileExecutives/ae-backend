@@ -11,13 +11,14 @@ import (
 	"gorm.io/gorm"
 
 	bookingServices "github.com/unburdy/booking-module/services"
-	documentServices "github.com/unburdy/documents-module/services"
+	documentServices "github.com/unburdy/documents-module/services/storage"
 	templateServices "github.com/unburdy/templates-module/services"
+	"github.com/unburdy/unburdy-server-api/internal/services"
 	"github.com/unburdy/unburdy-server-api/modules/client_management/entities"
 	"github.com/unburdy/unburdy-server-api/modules/client_management/events"
 	"github.com/unburdy/unburdy-server-api/modules/client_management/handlers"
 	"github.com/unburdy/unburdy-server-api/modules/client_management/routes"
-	"github.com/unburdy/unburdy-server-api/modules/client_management/services"
+	clientServices "github.com/unburdy/unburdy-server-api/modules/client_management/services"
 )
 
 // Module implements the baseAPI.ModuleRouteProvider interface
@@ -28,18 +29,19 @@ type Module struct {
 // NewModule creates a new client management module
 func NewModule(db *gorm.DB) baseAPI.ModuleRouteProvider {
 	// Initialize modular services
-	clientService := services.NewClientService(db)
-	costProviderService := services.NewCostProviderService(db)
+	clientService := clientServices.NewClientService(db)
+	costProviderService := clientServices.NewCostProviderService(db)
 	// Pass nil for email service in legacy module (email won't work but won't crash)
-	sessionService := services.NewSessionService(db, nil)
-	invoiceService := services.NewInvoiceService(db)
-	extraEffortService := services.NewExtraEffortService(db)
+	sessionService := clientServices.NewSessionService(db, nil)
+	invoiceService := clientServices.NewInvoiceService(db)
+	extraEffortService := clientServices.NewExtraEffortService(db)
+	xrechnungService := services.NewXRechnungService()
 
 	// Initialize handlers
 	clientHandler := handlers.NewClientHandler(clientService)
 	costProviderHandler := handlers.NewCostProviderHandler(costProviderService)
 	sessionHandler := handlers.NewSessionHandler(sessionService)
-	invoiceHandler := handlers.NewInvoiceHandler(invoiceService, nil, nil, nil)
+	invoiceHandler := handlers.NewInvoiceHandler(invoiceService, xrechnungService, nil) // nil audit service for legacy module
 	invoiceAdapterHandler := handlers.NewInvoiceAdapterHandler(db, "")
 	extraEffortHandler := handlers.NewExtraEffortHandler(extraEffortService)
 
@@ -102,7 +104,7 @@ func (m *CoreModule) Version() string {
 }
 
 func (m *CoreModule) Dependencies() []string {
-	return []string{"base", "email", "booking"} // Depends on base module for users/tenants, email for confirmations, and booking for token validation
+	return []string{"base", "email", "booking", "audit"} // Depends on base module for users/tenants, email for confirmations, booking for token validation, and audit for logging
 }
 
 func (m *CoreModule) Initialize(ctx core.ModuleContext) error {
@@ -112,8 +114,8 @@ func (m *CoreModule) Initialize(ctx core.ModuleContext) error {
 	m.logger = ctx.Logger
 
 	// Initialize modular services
-	clientService := services.NewClientService(ctx.DB)
-	costProviderService := services.NewCostProviderService(ctx.DB)
+	clientService := clientServices.NewClientService(ctx.DB)
+	costProviderService := clientServices.NewCostProviderService(ctx.DB)
 
 	// Get email service from registry
 	var emailService *emailServices.EmailService
@@ -138,7 +140,7 @@ func (m *CoreModule) Initialize(ctx core.ModuleContext) error {
 	}
 
 	fmt.Printf("🔧 About to create SessionService with emailService ptr=%p\n", emailService)
-	sessionService := services.NewSessionService(ctx.DB, emailService)
+	sessionService := clientServices.NewSessionService(ctx.DB, emailService)
 	fmt.Printf("🔧 SessionService created successfully\n")
 
 	// Try to get booking link service from service registry (if available)
@@ -157,16 +159,30 @@ func (m *CoreModule) Initialize(ctx core.ModuleContext) error {
 	}
 
 	// Initialize invoice service
-	invoiceService := services.NewInvoiceService(ctx.DB)
+	invoiceService := clientServices.NewInvoiceService(ctx.DB)
 
 	// Initialize extra effort service
-	extraEffortService := services.NewExtraEffortService(ctx.DB)
+	extraEffortService := clientServices.NewExtraEffortService(ctx.DB)
+
+	// Get document storage from registry (for invoice PDF storage)
+	if docStorageRaw, ok := ctx.Services.Get("document-storage"); ok {
+		if docStorage, ok := docStorageRaw.(documentServices.DocumentStorage); ok {
+			ctx.Logger.Info("✅ Client Management: Document storage successfully retrieved from registry")
+			// Initialize PDF service and inject into invoice service
+			invoiceService.SetDocumentStorage(docStorage)
+			ctx.Logger.Info("✅ Client Management: PDF service initialized with document storage")
+		} else {
+			ctx.Logger.Warn("⚠️ Client Management: Document storage type assertion failed")
+		}
+	} else {
+		ctx.Logger.Warn("⚠️ Client Management: Document storage not found in registry - invoice PDFs will not be stored in MinIO")
+	}
 
 	// Get template service from registry (for PDF generation)
-	var templateService *templateServices.TemplateService
+	// var templateService *templateServices.TemplateService
 	if templateSvcRaw, ok := ctx.Services.Get("template_service"); ok {
-		if templateSvc, ok := templateSvcRaw.(*templateServices.TemplateService); ok {
-			templateService = templateSvc
+		if _, ok := templateSvcRaw.(*templateServices.TemplateService); ok {
+			// templateService = templateSvc
 			ctx.Logger.Info("✅ Client Management: Template service successfully retrieved from registry")
 		} else {
 			ctx.Logger.Warn("⚠️ Client Management: Template service type assertion failed")
@@ -175,37 +191,21 @@ func (m *CoreModule) Initialize(ctx core.ModuleContext) error {
 		ctx.Logger.Warn("⚠️ Client Management: Template service not found in registry - invoice PDF generation will not work")
 	}
 
-	// Get PDF service from registry (for PDF generation)
-	var pdfService *documentServices.PDFService
-	if pdfSvcRaw, ok := ctx.Services.Get("pdf_service"); ok {
-		if pdfSvc, ok := pdfSvcRaw.(*documentServices.PDFService); ok {
-			pdfService = pdfSvc
-			ctx.Logger.Info("✅ Client Management: PDF service successfully retrieved from registry")
-		} else {
-			ctx.Logger.Warn("⚠️ Client Management: PDF service type assertion failed")
-		}
+	// Get audit service from registry (for audit logging)
+	var auditService interface{}
+	if auditSvcRaw, ok := ctx.Services.Get("audit-service"); ok {
+		auditService = auditSvcRaw
+		ctx.Logger.Info("✅ Client Management: Audit service successfully retrieved from registry")
 	} else {
-		ctx.Logger.Warn("⚠️ Client Management: PDF service not found in registry - invoice PDF generation will not work")
-	}
-
-	// Get Document service from registry (for download URLs)
-	var documentService *documentServices.DocumentService
-	if docSvcRaw, ok := ctx.Services.Get("document_service"); ok {
-		if docSvc, ok := docSvcRaw.(*documentServices.DocumentService); ok {
-			documentService = docSvc
-			ctx.Logger.Info("✅ Client Management: Document service successfully retrieved from registry")
-		} else {
-			ctx.Logger.Warn("⚠️ Client Management: Document service type assertion failed")
-		}
-	} else {
-		ctx.Logger.Warn("⚠️ Client Management: Document service not found in registry - download URLs will not be generated")
+		ctx.Logger.Warn("⚠️ Client Management: Audit service not found in registry - audit logging will not work")
 	}
 
 	// Initialize handlers
 	m.clientHandlers = handlers.NewClientHandler(clientService)
 	m.costProviderHandler = handlers.NewCostProviderHandler(costProviderService)
 	m.sessionHandler = handlers.NewSessionHandler(sessionService)
-	m.invoiceHandler = handlers.NewInvoiceHandler(invoiceService, templateService, pdfService, documentService)
+	xrechnungService := services.NewXRechnungService()
+	m.invoiceHandler = handlers.NewInvoiceHandler(invoiceService, xrechnungService, auditService)
 	extraEffortHandler := handlers.NewExtraEffortHandler(extraEffortService)
 
 	// Initialize invoice adapter handler (for invoice module integration)

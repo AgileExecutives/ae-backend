@@ -19,8 +19,8 @@ type ExtraEffort struct {
 	DurationMin   int            `gorm:"not null" json:"duration_min"`
 	Description   string         `gorm:"type:text" json:"description"`
 	Billable      bool           `gorm:"default:true" json:"billable"`
-	BillingStatus string         `gorm:"size:20;default:'unbilled';index:idx_extra_efforts_billing_status" json:"billing_status"` // unbilled, billed, excluded
-	InvoiceItemID *uint          `json:"invoice_item_id,omitempty"`                                                               // Link when billed
+	BillingStatus string         `gorm:"size:20;default:'delivered';index:idx_extra_efforts_billing_status" json:"billing_status"` // delivered, invoice-draft, billed, excluded
+	InvoiceItemID *uint          `json:"invoice_item_id,omitempty"`                                                                // Link when billed
 	InvoiceItem   *InvoiceItem   `gorm:"foreignKey:InvoiceItemID" json:"invoice_item,omitempty"`
 	CreatedBy     uint           `json:"created_by"`
 	CreatedAt     time.Time      `json:"created_at"`

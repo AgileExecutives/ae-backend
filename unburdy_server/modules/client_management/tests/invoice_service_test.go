@@ -263,13 +263,13 @@ func TestUpdateInvoiceStatus_Reminder(t *testing.T) {
 	created, err := service.CreateInvoice(req, tenantID, userID)
 	require.NoError(t, err)
 
-	newStatus := entities.InvoiceStatusReminder
+	newStatus := entities.InvoiceStatusOverdue
 	updateReq := entities.UpdateInvoiceRequest{
 		Status: &newStatus,
 	}
 	updated, err := service.UpdateInvoice(created.ID, tenantID, userID, updateReq)
 	assert.NoError(t, err)
-	assert.Equal(t, entities.InvoiceStatusReminder, updated.Status)
+	assert.Equal(t, entities.InvoiceStatusOverdue, updated.Status)
 	assert.Equal(t, 1, updated.NumReminders)
 	assert.NotNil(t, updated.LatestReminder)
 }
@@ -337,31 +337,49 @@ func TestGetClientsWithUnbilledSessions(t *testing.T) {
 
 	clientID, _, sessionIDs := createTestData(t, db, tenantID, userID)
 
+	// Should have 3 unbilled sessions initially
 	clients, err := service.GetClientsWithUnbilledSessions(tenantID, userID)
 	assert.NoError(t, err)
 	assert.Len(t, clients, 1)
 	assert.Equal(t, clientID, clients[0].ID)
 	assert.Len(t, clients[0].Sessions, 3)
 
-	req := entities.CreateInvoiceRequest{
+	// Create draft invoice with 2 sessions (using new workflow)
+	draftReq := entities.CreateDraftInvoiceRequest{
 		ClientID:   clientID,
 		SessionIDs: sessionIDs[:2],
 	}
-	_, err = service.CreateInvoice(req, tenantID, userID)
+	invoice1, err := service.CreateDraftInvoice(draftReq, tenantID, userID)
 	require.NoError(t, err)
 
+	// Sessions are now in 'invoice-draft' status, should still show as unbilled until finalized
+	clients, err = service.GetClientsWithUnbilledSessions(tenantID, userID)
+	assert.NoError(t, err)
+	assert.Len(t, clients, 1)
+	assert.Len(t, clients[0].Sessions, 1) // Only 1 conducted session remains
+
+	// Finalize the invoice - marks sessions as 'invoiced'
+	_, err = service.FinalizeInvoice(invoice1.ID, tenantID, userID)
+	require.NoError(t, err)
+
+	// Should still have 1 unbilled session
 	clients, err = service.GetClientsWithUnbilledSessions(tenantID, userID)
 	assert.NoError(t, err)
 	assert.Len(t, clients, 1)
 	assert.Len(t, clients[0].Sessions, 1)
 
-	req2 := entities.CreateInvoiceRequest{
+	// Create and finalize invoice for last session
+	draftReq2 := entities.CreateDraftInvoiceRequest{
 		ClientID:   clientID,
 		SessionIDs: []uint{sessionIDs[2]},
 	}
-	_, err = service.CreateInvoice(req2, tenantID, userID)
+	invoice2, err := service.CreateDraftInvoice(draftReq2, tenantID, userID)
 	require.NoError(t, err)
 
+	_, err = service.FinalizeInvoice(invoice2.ID, tenantID, userID)
+	require.NoError(t, err)
+
+	// All sessions are now invoiced, should return no clients
 	clients, err = service.GetClientsWithUnbilledSessions(tenantID, userID)
 	assert.NoError(t, err)
 	assert.Len(t, clients, 0)

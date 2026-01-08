@@ -234,18 +234,17 @@ second_reminder_days
 
 ---
 
-## 7. Open Design Decisions
+## 7. Design Decisions
 
 * Manual overdue marking
 * Partial payments out of scope
-* Draft-only invoice cancellations
 * Corrections after finalization via credit notes only
 
 ---
 
 ## 8. Invoice Numbering Rules (EU/Germany)
 
-* Unique sequential number per org per year
+* Unique sequential number per org per year (allow config in organization settings, default is just a continually increasing number per org, but it can be configured to contain a prefix and year and month)
 * Only assigned on finalization
 * Credit notes share sequence but reference original invoice
 
@@ -279,6 +278,7 @@ second_reminder_days
 
 ## 11. GoBD Audit & Export Requirements
 
+* Audit functionality is part of the new module /modules/audit
 * Complete, immutable, traceable, machine-readable
 * Audit logs: creation, edits, finalization, sending, payment, reminders, credit notes
 * Logs include timestamp, user, action, entity
@@ -298,3 +298,62 @@ second_reminder_days
   * Invoice number not assigned
   * Customer fields complete
 * Finalization blocked if validation fails
+
+## 13. E-Rechnung / XRechnung Export (Leitweg-ID)
+
+### 13.1 Scope
+
+* Applicable for invoices sent to **German government agencies**
+* Supports **XRechnung format** (XML standard for electronic invoices in Germany)
+* Must include **Leitweg-ID** for routing to the correct department
+* Works alongside existing PDF and HTML invoice outputs
+
+---
+
+### 13.2 Required Fields for XRechnung
+
+* Invoice number
+* Invoice date
+* Supplier information (organization, address, tax ID)
+* Customer information (authority name, address, VAT ID if applicable)
+* Leitweg-ID (mandatory for routing within government agencies)
+* Line items with description, quantity, unit price, net/gross amounts
+* VAT rate and amounts or exemption notice (e.g., §4 Nr.14 UStG)
+* Total amount
+* Payment terms
+
+---
+
+### 13.3 Backend Requirements
+
+* Store **Leitweg-ID** per government customer = cost_provider
+* Generate **XRechnung XML** upon invoice finalization
+* Map invoice line items, totals, and VAT into XML fields
+* Ensure **unique invoice numbers** are used
+* Maintain PDF/HTML version alongside XML
+* Mark invoice as sent in the system once XRechnung is exported or transmitted
+
+---
+
+### 13.4 Frontend Requirements
+
+* Add a field in customer profile to store **Leitweg-ID**
+* Invoice preview must show that Leitweg-ID is included
+* Optional: allow download of **XRechnung XML** for sending
+* Indicate in invoice history whether XRechnung has been sent
+
+---
+
+### 13.5 Validation Rules
+
+* Ensure Leitweg-ID is not empty for government customers
+* Validate XML against XRechnung schema
+* Reject finalization if required fields are missing or XML generation fails
+
+---
+
+### 13.6 Future Integration Notes
+
+* Integration with government portals for automatic transmission
+* Support for additional e-invoice standards if needed
+* Maintain audit trail of exported XRechnungen for GoBD compliance

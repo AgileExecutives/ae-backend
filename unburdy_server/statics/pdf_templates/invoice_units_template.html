@@ -32,6 +32,20 @@
             overflow: hidden;
         }
 
+        /* Draft watermark */
+        .draft-watermark {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotate(-45deg);
+            font-size: 120pt;
+            font-weight: bold;
+            color: rgba(200, 200, 200, 0.3);
+            z-index: 1000;
+            pointer-events: none;
+            user-select: none;
+        }
+
         .header {
             display: flex;
             width: 100%;
@@ -156,6 +170,41 @@
             font-size: 12pt;
         }
 
+        .vat-exemption-notice {
+            margin-top: 0.5cm;
+            padding: 8pt;
+            background-color: #f8f9fa;
+            border-left: 3pt solid #28a745;
+            font-size: 9pt;
+            color: #666;
+        }
+
+        .payment-info {
+            margin-top: 1cm;
+            padding: 10pt;
+            background-color: #f8f9fa;
+            border: 1px solid #ddd;
+        }
+
+        .payment-info h4 {
+            margin: 0 0 8pt 0;
+            font-size: 10pt;
+            font-weight: bold;
+        }
+
+        .payment-info p {
+            margin: 4pt 0;
+            font-size: 9pt;
+        }
+
+        .credit-note-header {
+            background-color: #fff3cd;
+            border: 2px solid #ffc107;
+            padding: 10pt;
+            margin-bottom: 1cm;
+            font-size: 10pt;
+        }
+
         .footer {
             position: fixed;
             bottom: 1cm;
@@ -212,6 +261,10 @@
 </head>
 
 <body>
+    {{if .IsDraft}}
+    <div class="draft-watermark">ENTWURF</div>
+    {{end}}
+    
     <div class="page-margin-area">
         <div class="header">
             <div class="logo-area">
@@ -260,6 +313,13 @@
         </div>
 
         <div class="main-content">
+            {{if .IsCreditNote}}
+            <div class="credit-note-header">
+                <strong>GUTSCHRIFT</strong> zur Originalrechnung Nr. {{.OriginalInvoiceNumber}}<br>
+                {{if .CreditNoteReason}}Grund: {{.CreditNoteReason}}{{end}}
+            </div>
+            {{end}}
+            
             <h2>Rechnung {{.Client.TherapyTitle}} - {{.Client.FirstName}} {{.Client.LastName}} geb. am {{.Client.DateOfBirth}}</h2>
             <h3>Sehr geehrte Damen und Herren,</h3>
             <p>hiermit stelle ich folgende Leistungen ensprechend der Bewilligung {{.Client.ProviderApprovalCode}} in Rechnung:</p>
@@ -282,6 +342,17 @@
                     {{end}}
                 </tbody>
             </table>
+
+            {{if .VATExempt}}
+            <div class="vat-exemption-notice">
+                {{if .VATExemptionText}}
+                ℹ️ {{.VATExemptionText}}
+                {{else}}
+                ℹ️ Umsatzsteuerfrei gemäß §4 Nr. 14 UStG
+                {{end}}
+            </div>
+            {{end}}
+
             <div class="total-section">
                 <table class="total-table">
                     {{if .Invoice.NetTotal}}
@@ -302,6 +373,26 @@
                     </tr>
                 </table>
             </div>
+
+            {{if not .IsDraft}}
+            <div class="payment-info">
+                <h4>Zahlungsinformationen</h4>
+                <p><strong>Fällig bis:</strong> {{.PaymentDueDate}}</p>
+                <p>Bitte überweisen Sie den Betrag auf das unten angegebene Konto.</p>
+                {{if .Organization.BankAccountIBAN}}
+                <p><strong>IBAN:</strong> {{.Organization.BankAccountIBAN}}</p>
+                {{end}}
+                {{if .Organization.BankAccountBIC}}
+                <p><strong>BIC:</strong> {{.Organization.BankAccountBIC}}</p>
+                {{end}}
+                {{if .Organization.BankAccountBank}}
+                <p><strong>Bank:</strong> {{.Organization.BankAccountBank}}</p>
+                {{end}}
+            </div>
+            {{else}}
+            <p style="margin-top: 1cm; color: #999; font-style: italic;">Dies ist ein Rechnungsentwurf. Die endgültige Rechnung wird nach Finalisierung erstellt.</p>
+            {{end}}
+
             <p>Es gilt die gesetzl. Umsatzsteuerbefreiung (Leistungen in der Kinder- und Jugendhilfe UstG§4 Nr.25, SGB VIII)
             Bitte prüfen Sie die Rechnung und überweisen Sie den Gesamtbetrag innerhalb von 30 Tagen auf das unten 
             angegebene Konto.</p>

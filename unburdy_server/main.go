@@ -18,9 +18,11 @@ import (
 	booking "github.com/unburdy/booking-module"
 	calendar "github.com/unburdy/calendar-module"
 	documents "github.com/unburdy/documents-module"
-	invoice "github.com/unburdy/invoice-module"
+
+	// invoice "github.com/unburdy/invoice-module" // DEPRECATED: Replaced by client_management module
 	templates "github.com/unburdy/templates-module"
 	_ "github.com/unburdy/unburdy-server-api/docs" // swagger docs - unburdy-specific
+	"github.com/unburdy/unburdy-server-api/modules/audit"
 	"github.com/unburdy/unburdy-server-api/modules/client_management"
 )
 
@@ -91,6 +93,9 @@ import (
 // @tag.name PDFs
 // @tag.description [Documents Module] PDF generation from HTML and templates using Chromedp
 
+// @tag.name audit
+// @tag.description [Audit Module] Audit logging, compliance tracking, and GoBD-compliant export
+
 func main() {
 	// Load .env file
 	if err := godotenv.Load(); err != nil {
@@ -126,10 +131,11 @@ func main() {
 		static.NewStaticModule(),               // Static JSON file serving
 		templates.NewCoreModule(),              // Template management for emails and PDFs
 		documents.NewCoreModule(),              // Document storage and PDF generation (depends on templates)
-		invoice.NewCoreModule(),                // Invoice PDF generation (depends on templates and documents)
-		calendar.NewCoreModule(),               // Calendar management (unburdy-specific)
-		booking.NewCoreModule(),                // Booking management (unburdy-specific)
-		client_management.NewCoreModule(),      // Client management (unburdy-specific) - depends on booking
+		// invoice.NewCoreModule(),                // DEPRECATED: Invoice PDF generation (replaced by client_management module)
+		audit.NewCoreModule(),             // Audit logging and compliance (unburdy-specific)
+		calendar.NewCoreModule(),          // Calendar management (unburdy-specific)
+		booking.NewCoreModule(),           // Booking management (unburdy-specific)
+		client_management.NewCoreModule(), // Client management (unburdy-specific) - includes full invoice workflow
 	}
 
 	for _, module := range modules {

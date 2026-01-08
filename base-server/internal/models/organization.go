@@ -38,9 +38,19 @@ type Organization struct {
 	ExtraEffortsConfig       datatypes.JSON `gorm:"type:jsonb;default:'{}'" json:"extra_efforts_config" swaggertype:"object"`
 	LineItemSingleUnitText   string         `gorm:"size:100;default:'Einzelstunde'" json:"line_item_single_unit_text"`
 	LineItemDoubleUnitText   string         `gorm:"size:100;default:'Doppelstunde'" json:"line_item_double_unit_text"`
-	CreatedAt                time.Time      `json:"created_at"`
-	UpdatedAt                time.Time      `json:"updated_at"`
-	DeletedAt                gorm.DeletedAt `gorm:"index" json:"-"`
+
+	// Invoice settings
+	InvoiceNumberFormat string   `gorm:"size:50;default:'sequential'" json:"invoice_number_format"` // sequential, year_prefix, year_month_prefix
+	InvoiceNumberPrefix string   `gorm:"size:20" json:"invoice_number_prefix"`
+	PaymentDueDays      int      `gorm:"not null;default:14" json:"payment_due_days"`
+	FirstReminderDays   int      `gorm:"not null;default:7" json:"first_reminder_days"`
+	SecondReminderDays  int      `gorm:"not null;default:14" json:"second_reminder_days"`
+	DefaultVATRate      *float64 `gorm:"type:decimal(5,2);default:19.00" json:"default_vat_rate"`
+	DefaultVATExempt    bool     `gorm:"not null;default:false" json:"default_vat_exempt"`
+
+	CreatedAt time.Time      `json:"created_at"`
+	UpdatedAt time.Time      `json:"updated_at"`
+	DeletedAt gorm.DeletedAt `gorm:"index" json:"-"`
 }
 
 // TableName specifies the table name for the Organization model
@@ -76,6 +86,13 @@ type CreateOrganizationRequest struct {
 	ExtraEffortsConfig       datatypes.JSON `json:"extra_efforts_config,omitempty" swaggertype:"object"`
 	LineItemSingleUnitText   string         `json:"line_item_single_unit_text,omitempty" example:"Einzelstunde"`
 	LineItemDoubleUnitText   string         `json:"line_item_double_unit_text,omitempty" example:"Doppelstunde"`
+	InvoiceNumberFormat      string         `json:"invoice_number_format,omitempty" example:"sequential"`
+	InvoiceNumberPrefix      string         `json:"invoice_number_prefix,omitempty" example:"INV-"`
+	PaymentDueDays           int            `json:"payment_due_days,omitempty" example:"14"`
+	FirstReminderDays        int            `json:"first_reminder_days,omitempty" example:"7"`
+	SecondReminderDays       int            `json:"second_reminder_days,omitempty" example:"14"`
+	DefaultVATRate           *float64       `json:"default_vat_rate,omitempty" example:"19.00"`
+	DefaultVATExempt         bool           `json:"default_vat_exempt,omitempty" example:"false"`
 }
 
 // UpdateOrganizationRequest represents the request payload for updating an organization
@@ -106,6 +123,13 @@ type UpdateOrganizationRequest struct {
 	ExtraEffortsConfig       datatypes.JSON `json:"extra_efforts_config,omitempty" swaggertype:"object"`
 	LineItemSingleUnitText   *string        `json:"line_item_single_unit_text,omitempty" example:"Therapiestunde"`
 	LineItemDoubleUnitText   *string        `json:"line_item_double_unit_text,omitempty" example:"Therapie Doppelstunde"`
+	InvoiceNumberFormat      *string        `json:"invoice_number_format,omitempty" example:"sequential"`
+	InvoiceNumberPrefix      *string        `json:"invoice_number_prefix,omitempty" example:"INV-"`
+	PaymentDueDays           *int           `json:"payment_due_days,omitempty" example:"14"`
+	FirstReminderDays        *int           `json:"first_reminder_days,omitempty" example:"7"`
+	SecondReminderDays       *int           `json:"second_reminder_days,omitempty" example:"14"`
+	DefaultVATRate           *float64       `json:"default_vat_rate,omitempty" example:"19.00"`
+	DefaultVATExempt         *bool          `json:"default_vat_exempt,omitempty" example:"false"`
 }
 
 // UpdateBillingConfigRequest represents the request payload for updating billing configuration

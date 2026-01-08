@@ -1375,9 +1375,9 @@ func seedExtraEfforts(db *gorm.DB) error {
 				sessionID = &randomSession.ID
 			}
 
-			// Most are billable and unbilled (90%)
+			// Most are billable and delivered (90%)
 			billable := rand.Float32() < 0.9
-			billingStatus := "unbilled"
+			billingStatus := "delivered"
 			if billable {
 				unbilledCount++
 			} else {
@@ -1406,53 +1406,27 @@ func seedExtraEfforts(db *gorm.DB) error {
 		}
 	}
 
-	log.Printf("✅ Created %d extra efforts (%d unbilled and billable)",
+	log.Printf("✅ Created %d extra efforts (%d delivered and billable)",
 		createdCount,
 		unbilledCount)
 
 	return nil
 }
 
-// seedInvoices creates sample invoices with different payment statuses
+// seedInvoices creates sample invoices with different payment statuses using the new invoice system
 func seedInvoices(db *gorm.DB) error {
 	log.Println("💰 Seeding invoices...")
 
 	// Get conducted sessions that aren't already invoiced
 	var conductedSessions []entities.Session
 	if err := db.Where("status = ?", "conducted").
-		Limit(12). // Get enough for 3 invoices with ~4 sessions each
+		Limit(15). // Get enough for 3 invoices with ~5 sessions each
 		Find(&conductedSessions).Error; err != nil {
 		return fmt.Errorf("failed to fetch conducted sessions: %w", err)
 	}
 
 	if len(conductedSessions) < 3 {
 		log.Println("⚠️  Not enough conducted sessions for invoice creation")
-		return nil
-	}
-
-	// Check if sessions are already invoiced
-	var alreadyInvoiced []uint
-	db.Model(&entities.InvoiceItem{}).
-		Distinct("session_id").
-		Pluck("session_id", &alreadyInvoiced)
-
-	// Filter out already invoiced sessions
-	var availableSessions []entities.Session
-	for _, session := range conductedSessions {
-		isInvoiced := false
-		for _, invoicedID := range alreadyInvoiced {
-			if session.ID == invoicedID {
-				isInvoiced = true
-				break
-			}
-		}
-		if !isInvoiced {
-			availableSessions = append(availableSessions, session)
-		}
-	}
-
-	if len(availableSessions) < 3 {
-		log.Println("⚠️  Not enough uninvoiced sessions for invoice creation")
 		return nil
 	}
 
@@ -1467,77 +1441,67 @@ func seedInvoices(db *gorm.DB) error {
 		return fmt.Errorf("no user found: %w", err)
 	}
 
-	// Get the first organization or create one if it doesn't exist
-	var organization struct {
-		ID uint
-	}
-	err := db.Table("organizations").Select("id").Where("tenant_id = ?", tenant.ID).First(&organization).Error
-	if err != nil {
-		if err == gorm.ErrRecordNotFound {
-			// Create a default organization
-			log.Println("  📋 Creating default organization...")
-			type Organization struct {
-				ID        uint `gorm:"primaryKey"`
-				TenantID  uint
-				Name      string
-				CreatedAt time.Time
-				UpdatedAt time.Time
-			}
-			defaultOrg := Organization{
-				TenantID: tenant.ID,
-				Name:     "Therapiepraxis Mustermann",
-			}
-			if err := db.Table("organizations").Create(&defaultOrg).Error; err != nil {
-				return fmt.Errorf("failed to create default organization: %w", err)
-			}
-			organization.ID = defaultOrg.ID
-			log.Printf("  ✅ Created default organization (ID: %d)", organization.ID)
-		} else {
-			return fmt.Errorf("failed to query organizations: %w", err)
-		}
+	// Get the first organization
+	var organization baseAPI.Organization
+	if err := db.Where("tenant_id = ?", tenant.ID).First(&organization).Error; err != nil {
+		return fmt.Errorf("no organization found: %w", err)
 	}
 
 	// Create 3 invoices with different statuses
 	invoiceConfigs := []struct {
 		status         entities.InvoiceStatus
 		numReminders   int
-		payedDate      *time.Time
+		paymentDate    *time.Time
+		paymentRef     *string
 		latestReminder *time.Time
+		sentAt         *time.Time
+		finalizedAt    *time.Time
+		daysAgo        int
 	}{
 		{
-			status:       "paid", // InvoiceStatusPaid
+			status:       entities.InvoiceStatusPaid,
 			numReminders: 0,
-			payedDate:    timePtr(time.Now().AddDate(0, 0, -5)),
+			paymentDate:  timePtr(time.Now().AddDate(0, 0, -5)),
+			paymentRef:   strPtr("SEPA-2026-001"),
+			sentAt:       timePtr(time.Now().AddDate(0, 0, -30)),
+			finalizedAt:  timePtr(time.Now().AddDate(0, 0, -30)),
+			daysAgo:      30,
 		},
 		{
-			status:       "sent", // InvoiceStatusSent
+			status:       entities.InvoiceStatusSent,
 			numReminders: 0,
-			payedDate:    nil,
+			paymentDate:  nil,
+			sentAt:       timePtr(time.Now().AddDate(0, 0, -10)),
+			finalizedAt:  timePtr(time.Now().AddDate(0, 0, -10)),
+			daysAgo:      10,
 		},
 		{
-			status:         "overdue", // InvoiceStatusOverdue (changed from reminder)
+			status:         entities.InvoiceStatusOverdue,
 			numReminders:   1,
-			payedDate:      nil,
+			paymentDate:    nil,
 			latestReminder: timePtr(time.Now().AddDate(0, 0, -3)),
+			sentAt:         timePtr(time.Now().AddDate(0, 0, -25)),
+			finalizedAt:    timePtr(time.Now().AddDate(0, 0, -25)),
+			daysAgo:        25,
 		},
 	}
 
 	createdInvoices := 0
-	sessionsPerInvoice := len(availableSessions) / len(invoiceConfigs)
+	sessionsPerInvoice := len(conductedSessions) / len(invoiceConfigs)
 
 	for i, config := range invoiceConfigs {
 		// Get sessions for this invoice
 		startIdx := i * sessionsPerInvoice
 		endIdx := startIdx + sessionsPerInvoice
 		if i == len(invoiceConfigs)-1 {
-			endIdx = len(availableSessions) // Last invoice gets remaining sessions
+			endIdx = len(conductedSessions) // Last invoice gets remaining sessions
 		}
 
-		if startIdx >= len(availableSessions) {
+		if startIdx >= len(conductedSessions) {
 			break
 		}
 
-		invoiceSessions := availableSessions[startIdx:endIdx]
+		invoiceSessions := conductedSessions[startIdx:endIdx]
 		if len(invoiceSessions) == 0 {
 			continue
 		}
@@ -1545,46 +1509,73 @@ func seedInvoices(db *gorm.DB) error {
 		// Get the client for the first session
 		firstSession := invoiceSessions[0]
 		var client entities.Client
-		if err := db.First(&client, firstSession.ClientID).Error; err != nil {
+		if err := db.Preload("CostProvider").First(&client, firstSession.ClientID).Error; err != nil {
 			log.Printf("  ❌ Failed to fetch client %d: %v", firstSession.ClientID, err)
 			continue
 		}
 
-		if client.CostProviderID == nil {
-			log.Printf("  ❌ Client %d has no cost provider", client.ID)
-			continue
-		}
-
 		// Calculate totals
-		unitPrice := 150.0
+		unitPrice := 120.0
 		if client.UnitPrice != nil {
 			unitPrice = *client.UnitPrice
 		}
 
-		numberUnits := len(invoiceSessions)
-		sumAmount := float64(numberUnits) * unitPrice
-		taxRate := 0.19
-		taxAmount := sumAmount * taxRate
-		totalAmount := sumAmount + taxAmount
+		var subtotal float64
+		var invoiceItems []entities.InvoiceItem
 
-		// Generate invoice number
-		invoiceNumber := fmt.Sprintf("INV-%d-%d-%d", tenant.ID, time.Now().Year(), 1000+createdInvoices)
+		// Create invoice items for each session
+		for _, session := range invoiceSessions {
+			sessionTotal := float64(session.NumberUnits) * unitPrice
+			subtotal += sessionTotal
+
+			invoiceItems = append(invoiceItems, entities.InvoiceItem{
+				ItemType:         "session",
+				SessionID:        &session.ID,
+				Description:      fmt.Sprintf("Therapiesitzung - %s", session.OriginalDate.Format("02.01.2006")),
+				NumberUnits:      float64(session.NumberUnits),
+				UnitPrice:        unitPrice,
+				TotalAmount:      sessionTotal,
+				VATRate:          0.00,
+				VATExempt:        true,
+				VATExemptionText: "Umsatzsteuerfrei gemäß §4 Nr. 14 UStG",
+				UnitDurationMin:  &session.DurationMin,
+				IsEditable:       false,
+			})
+		}
+
+		// VAT exempt for healthcare services
+		taxAmount := 0.0
+		totalAmount := subtotal
+
+		// Generate invoice number based on status
+		var invoiceNumber string
+		if config.status == entities.InvoiceStatusDraft {
+			invoiceNumber = "DRAFT"
+		} else {
+			invoiceNumber = fmt.Sprintf("2026-%04d", 1+createdInvoices)
+		}
+
+		// Calculate due date (14 days after invoice date)
+		invoiceDate := time.Now().AddDate(0, 0, -config.daysAgo)
+		// Note: Due date functionality needs to be added to Invoice entity in future
 
 		// Create invoice
 		invoice := entities.Invoice{
 			TenantID:       tenant.ID,
 			UserID:         user.ID,
 			OrganizationID: organization.ID,
-			InvoiceDate:    time.Now().AddDate(0, 0, -30+i*10), // Stagger dates
+			InvoiceDate:    invoiceDate,
 			InvoiceNumber:  invoiceNumber,
-			NumberUnits:    numberUnits,
-			SumAmount:      sumAmount,
+			SumAmount:      subtotal,
 			TaxAmount:      taxAmount,
 			TotalAmount:    totalAmount,
 			Status:         config.status,
 			NumReminders:   config.numReminders,
-			PayedDate:      config.payedDate,
+			PayedDate:      config.paymentDate,
 			LatestReminder: config.latestReminder,
+			EmailSentAt:    config.sentAt,
+			FinalizedAt:    config.finalizedAt,
+			IsCreditNote:   false,
 		}
 
 		if err := db.Create(&invoice).Error; err != nil {
@@ -1592,47 +1583,171 @@ func seedInvoices(db *gorm.DB) error {
 			continue
 		}
 
-		// Create invoice items and client invoices
-		for _, session := range invoiceSessions {
-			// Create invoice item
-			invoiceItem := entities.InvoiceItem{
-				InvoiceID:   invoice.ID,
-				ItemType:    "session",
-				Description: "Therapy Session",
-				NumberUnits: float64(session.NumberUnits),
-				UnitPrice:   100.0,
-				TotalAmount: 100.0 * float64(session.NumberUnits),
-			}
-			if err := db.Create(&invoiceItem).Error; err != nil {
-				log.Printf("  ❌ Failed to create invoice item for session %d: %v", session.ID, err)
+		// Create invoice items and link sessions
+		for idx, item := range invoiceItems {
+			item.InvoiceID = invoice.ID
+			if err := db.Create(&item).Error; err != nil {
+				log.Printf("  ❌ Failed to create invoice item: %v", err)
 				continue
+			}
+
+			// Update session billing status
+			session := invoiceSessions[idx]
+			session.Status = "billed"
+			if err := db.Save(&session).Error; err != nil {
+				log.Printf("  ❌ Failed to update session status: %v", err)
 			}
 
 			// Create client invoice linking
 			clientInvoice := entities.ClientInvoice{
 				InvoiceID:      invoice.ID,
 				ClientID:       client.ID,
-				CostProviderID: *client.CostProviderID,
-				SessionID:      session.ID,
-				InvoiceItemID:  invoiceItem.ID,
+				CostProviderID: ptrUint(client.CostProviderID),
+				SessionID:      ptrUint(&session.ID),
+				InvoiceItemID:  ptrUint(&item.ID),
 			}
 			if err := db.Create(&clientInvoice).Error; err != nil {
-				log.Printf("  ❌ Failed to create client invoice for session %d: %v", session.ID, err)
+				log.Printf("  ❌ Failed to create client invoice link: %v", err)
 			}
 		}
 
 		statusLabel := string(config.status)
-		if config.payedDate != nil {
-			statusLabel = fmt.Sprintf("%s (paid %s)", statusLabel, config.payedDate.Format("2006-01-02"))
+		if config.paymentDate != nil {
+			statusLabel = fmt.Sprintf("%s (paid %s)", statusLabel, config.paymentDate.Format("2006-01-02"))
+		} else if config.status == entities.InvoiceStatusOverdue {
+			statusLabel = fmt.Sprintf("%s (%d reminders)", statusLabel, config.numReminders)
 		}
 
 		log.Printf("  ✓ Created invoice %s - %s - %d sessions - €%.2f",
-			invoiceNumber, statusLabel, numberUnits, totalAmount)
+			invoiceNumber, statusLabel, len(invoiceSessions), totalAmount)
 		createdInvoices++
 	}
 
+	// Create a draft invoice with some extra efforts
+	if len(conductedSessions) > sessionsPerInvoice*3 {
+		log.Println("  📝 Creating draft invoice with unbilled items...")
+
+		var unbilledSessions []entities.Session
+		if err := db.Where("status = ?", "conducted").
+			Limit(3).
+			Find(&unbilledSessions).Error; err == nil && len(unbilledSessions) > 0 {
+
+			firstSession := unbilledSessions[0]
+			var client entities.Client
+			if err := db.First(&client, firstSession.ClientID).Error; err == nil {
+				unitPrice := 120.0
+				if client.UnitPrice != nil {
+					unitPrice = *client.UnitPrice
+				}
+
+				var subtotal float64
+				var invoiceItems []entities.InvoiceItem
+
+				for _, session := range unbilledSessions {
+					sessionTotal := float64(session.NumberUnits) * unitPrice
+					subtotal += sessionTotal
+
+					invoiceItems = append(invoiceItems, entities.InvoiceItem{
+						ItemType:         "session",
+						SessionID:        &session.ID,
+						Description:      fmt.Sprintf("Therapiesitzung - %s", session.OriginalDate.Format("02.01.2006")),
+						NumberUnits:      float64(session.NumberUnits),
+						UnitPrice:        unitPrice,
+						TotalAmount:      sessionTotal,
+						VATRate:          0.00,
+						VATExempt:        true,
+						VATExemptionText: "Umsatzsteuerfrei gemäß §4 Nr. 14 UStG",
+						IsEditable:       false,
+					})
+				}
+
+				draftInvoice := entities.Invoice{
+					TenantID:       tenant.ID,
+					UserID:         user.ID,
+					OrganizationID: organization.ID,
+					InvoiceDate:    time.Now(),
+					InvoiceNumber:  "DRAFT",
+					SumAmount:      subtotal,
+					TaxAmount:      0.0,
+					TotalAmount:    subtotal,
+					Status:         entities.InvoiceStatusDraft,
+					IsCreditNote:   false,
+				}
+
+				if err := db.Create(&draftInvoice).Error; err == nil {
+					for _, item := range invoiceItems {
+						item.InvoiceID = draftInvoice.ID
+						db.Create(&item)
+					}
+					log.Printf("  ✓ Created draft invoice - %d sessions - €%.2f", len(unbilledSessions), subtotal)
+					createdInvoices++
+				}
+			}
+		}
+	}
+
 	log.Printf("✅ Created %d invoices", createdInvoices)
+
+	// Create additional conducted sessions that remain unbilled for testing unbilled sessions endpoint
+	log.Println("  📝 Creating additional unbilled conducted sessions...")
+
+	var availableClients []entities.Client
+	if err := db.Where("tenant_id = ? AND status = ?", tenant.ID, "active").
+		Limit(5).
+		Find(&availableClients).Error; err == nil && len(availableClients) > 0 {
+
+		conductedCount := 0
+		for _, client := range availableClients {
+			if conductedCount >= 8 { // Create 8 additional conducted sessions
+				break
+			}
+
+			// Create 1-2 conducted sessions per client
+			for j := 0; j < 2 && conductedCount < 8; j++ {
+				conductedDate := time.Now().AddDate(0, 0, -(conductedCount+1)*2) // Spread over past days
+
+				conductedSession := entities.Session{
+					TenantID:          tenant.ID,
+					ClientID:          client.ID,
+					CalendarEntryID:   nil, // No calendar entry needed for this test data
+					OriginalDate:      conductedDate,
+					OriginalStartTime: conductedDate,
+					DurationMin:       45,
+					Type:              "therapy",
+					NumberUnits:       1,
+					Status:            "conducted", // Keep as conducted, not billed
+					Documentation:     fmt.Sprintf("Unbilled therapy session for %s %s - %s", client.FirstName, client.LastName, conductedDate.Format("02.01.2006")),
+				}
+
+				if err := db.Create(&conductedSession).Error; err != nil {
+					log.Printf("  ❌ Failed to create unbilled session: %v", err)
+					continue
+				}
+				conductedCount++
+			}
+		}
+
+		if conductedCount > 0 {
+			log.Printf("  ✓ Created %d additional conducted sessions (unbilled)", conductedCount)
+		}
+	}
+
 	return nil
+}
+
+func strPtr(s string) *string {
+	return &s
+}
+
+func ptrUint(p *uint) uint {
+	if p != nil {
+		return *p
+	}
+	return 0
+}
+
+func intPtr(i int) *int {
+	return &i
 }
 
 // Helper functions

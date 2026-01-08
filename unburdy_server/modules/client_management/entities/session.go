@@ -18,7 +18,7 @@ type Session struct {
 	DurationMin       int            `gorm:"not null" json:"duration_min"`
 	Type              string         `gorm:"type:varchar(50);not null" json:"type"`
 	NumberUnits       int            `gorm:"not null;default:1" json:"number_units"`
-	Status            string         `gorm:"type:varchar(20);not null;default:'scheduled'" json:"status"` // scheduled, canceled, conducted
+	Status            string         `gorm:"type:varchar(20);not null;default:'scheduled'" json:"status"` // scheduled, canceled, re-scheduled, conducted, invoice-draft, billed
 	Documentation     string         `gorm:"type:text" json:"documentation"`
 	InternalNote      string         `gorm:"type:text" json:"internal_note"` // For therapist reference, not shown on invoices
 	CreatedAt         time.Time      `json:"created_at"`                     // Always UTC
@@ -40,7 +40,7 @@ type CreateSessionRequest struct {
 	DurationMin       int    `json:"duration_min" binding:"required,min=1" example:"60"`
 	Type              string `json:"type" binding:"required" example:"therapy"`
 	NumberUnits       int    `json:"number_units" binding:"required,min=1" example:"1"`
-	Status            string `json:"status" binding:"omitempty,oneof=scheduled canceled conducted" example:"scheduled"`
+	Status            string `json:"status" binding:"omitempty,oneof=scheduled canceled re-scheduled conducted invoice-draft billed" example:"scheduled"`
 	Documentation     string `json:"documentation,omitempty" example:"Initial session notes"`
 }
 
