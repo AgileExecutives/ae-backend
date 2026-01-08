@@ -1,22 +1,26 @@
 package routes
 
 import (
+	baseAPI "github.com/ae-base-server/api"
 	"github.com/ae-base-server/pkg/core"
 	"github.com/gin-gonic/gin"
 	"github.com/unburdy/documents-module/handlers"
 	"github.com/unburdy/documents-module/middleware"
 	"github.com/unburdy/documents-module/services"
+	"gorm.io/gorm"
 )
 
 // DocumentRoutes implements RouteProvider for document management endpoints
 type DocumentRoutes struct {
 	documentService *services.DocumentService
+	db              *gorm.DB
 }
 
 // NewDocumentRoutes creates a new DocumentRoutes instance
-func NewDocumentRoutes(documentService *services.DocumentService) *DocumentRoutes {
+func NewDocumentRoutes(documentService *services.DocumentService, db *gorm.DB) *DocumentRoutes {
 	return &DocumentRoutes{
 		documentService: documentService,
+		db:              db,
 	}
 }
 
@@ -61,8 +65,7 @@ func (r *DocumentRoutes) GetPrefix() string {
 // GetMiddleware returns middleware to apply to all document routes
 func (r *DocumentRoutes) GetMiddleware() []gin.HandlerFunc {
 	return []gin.HandlerFunc{
-		// Auth middleware is typically applied globally or at router level
-		// Add any document-specific middleware here
+		baseAPI.AuthMiddleware(r.db), // Require authentication for tenant ID extraction
 	}
 }
 

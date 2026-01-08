@@ -1,25 +1,30 @@
 package handlers
 
 import (
+	"fmt"
 	"net/http"
+	"time"
 
 	baseAPI "github.com/ae-base-server/api"
 	"github.com/gin-gonic/gin"
 	"github.com/unburdy/documents-module/services"
+	templateServices "github.com/unburdy/templates-module/services"
 	"gorm.io/gorm"
 )
 
 // PDFHandler handles PDF generation requests
 type PDFHandler struct {
-	pdfService *services.PDFService
-	db         *gorm.DB
+	pdfService      *services.PDFService
+	templateService *templateServices.TemplateService
+	db              *gorm.DB
 }
 
 // NewPDFHandler creates a new PDF handler
-func NewPDFHandler(pdfService *services.PDFService, db *gorm.DB) *PDFHandler {
+func NewPDFHandler(pdfService *services.PDFService, templateService *templateServices.TemplateService, db *gorm.DB) *PDFHandler {
 	return &PDFHandler{
-		pdfService: pdfService,
-		db:         db,
+		pdfService:      pdfService,
+		templateService: templateService,
+		db:              db,
 	}
 }
 
@@ -85,6 +90,12 @@ func (h *PDFHandler) GeneratePDFFromTemplate(c *gin.Context) {
 		return
 	}
 
+	user, err := baseAPI.GetUser(c)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "user required"})
+		return
+	}
+
 	var req services.GeneratePDFFromTemplateRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -92,8 +103,41 @@ func (h *PDFHandler) GeneratePDFFromTemplate(c *gin.Context) {
 	}
 
 	req.TenantID = uint(tenantID)
+	if req.UserID == 0 {
+		req.UserID = user.ID
+	}
 
-	result, err := h.pdfService.GeneratePDFFromTemplate(c.Request.Context(), &req)
+	// Step 1: Get template and render HTML
+	html, err := h.templateService.RenderTemplate(c.Request.Context(), req.TenantID, req.TemplateID, req.Data)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("failed to render template: %v", err)})
+		return
+	}
+
+	// Get template for filename
+	tmpl, err := h.templateService.GetTemplate(c.Request.Context(), req.TenantID, req.TemplateID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("failed to get template: %v", err)})
+		return
+	}
+
+	filename := req.Filename
+	if filename == "" {
+		filename = fmt.Sprintf("%s_%d.pdf", tmpl.Name, time.Now().Unix())
+	}
+
+	// Step 2: Generate PDF from HTML
+	htmlReq := services.GeneratePDFFromHTMLRequest{
+		TenantID:     req.TenantID,
+		UserID:       req.UserID,
+		HTML:         html,
+		Filename:     filename,
+		DocumentType: req.DocumentType,
+		SaveDocument: req.SaveDocument,
+		Metadata:     req.Metadata,
+	}
+
+	result, err := h.pdfService.GeneratePDFFromHTML(c.Request.Context(), &htmlReq)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return

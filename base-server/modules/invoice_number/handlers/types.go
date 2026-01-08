@@ -2,7 +2,7 @@ package handlers
 
 // GenerateInvoiceNumberRequest represents invoice number generation request
 type GenerateInvoiceNumberRequest struct {
-	OrganizationID uint   `json:"organization_id" binding:"required" example:"10"`
+	OrganizationID uint   `json:"organization_id,omitempty" example:"10"` // Optional - will use authenticated user's organization if not provided
 	Prefix         string `json:"prefix" example:"INV"`
 	YearFormat     string `json:"year_format" example:"YYYY"`              // "YYYY" or "YY"
 	MonthFormat    string `json:"month_format" example:"MM"`               // "MM", "M", or ""

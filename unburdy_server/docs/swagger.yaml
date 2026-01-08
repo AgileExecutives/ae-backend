@@ -19,9 +19,9 @@ definitions:
   api.OrganizationResponse:
     properties:
       additional_payment_methods:
-        items:
-          type: integer
-        type: array
+        type: object
+      amount_format:
+        type: string
       bankaccount_bank:
         type: string
       bankaccount_bic:
@@ -34,14 +34,24 @@ definitions:
         type: string
       created_at:
         type: string
+      date_format:
+        type: string
       email:
         type: string
+      extra_efforts_billing_mode:
+        type: string
+      extra_efforts_config:
+        type: object
       id:
         type: integer
       invoice_content:
-        items:
-          type: integer
-        type: array
+        type: object
+      line_item_double_unit_text:
+        type: string
+      line_item_single_unit_text:
+        type: string
+      locale:
+        type: string
       name:
         type: string
       owner_name:
@@ -60,6 +70,8 @@ definitions:
         type: string
       tenant_id:
         type: integer
+      time_format:
+        type: string
       unit_price:
         type: number
       updated_at:
@@ -403,6 +415,21 @@ definitions:
       series:
         $ref: '#/definitions/entities.CalendarSeriesResponse'
     type: object
+  entities.ClientInvoiceResponse:
+    properties:
+      client:
+        $ref: '#/definitions/entities.ClientResponse'
+      client_id:
+        type: integer
+      cost_provider:
+        $ref: '#/definitions/entities.CostProviderResponse'
+      cost_provider_id:
+        type: integer
+      sessions:
+        items:
+          $ref: '#/definitions/entities.SessionResponse'
+        type: array
+    type: object
   entities.ClientResponse:
     properties:
       admission_date:
@@ -519,6 +546,10 @@ definitions:
         type: string
       email:
         type: string
+      extra_efforts:
+        items:
+          $ref: '#/definitions/entities.ExtraEffortResponse'
+        type: array
       first_name:
         type: string
       gender:
@@ -797,6 +828,56 @@ definitions:
     type: object
   entities.CreateExternalCalendarRequest:
     type: object
+  entities.CreateExtraEffortRequest:
+    properties:
+      billable:
+        example: true
+        type: boolean
+      client_id:
+        example: 1
+        type: integer
+      description:
+        example: Copied therapy materials
+        type: string
+      duration_min:
+        example: 20
+        maximum: 480
+        minimum: 1
+        type: integer
+      effort_date:
+        example: "2025-12-30"
+        type: string
+      effort_type:
+        enum:
+        - preparation
+        - consultation
+        - parent_meeting
+        - documentation
+        - other
+        example: preparation
+        type: string
+      session_id:
+        example: 5
+        type: integer
+    required:
+    - client_id
+    - duration_min
+    - effort_date
+    - effort_type
+    type: object
+  entities.CreateInvoiceDirectRequest:
+    properties:
+      parameters:
+        allOf:
+        - $ref: '#/definitions/entities.InvoiceGenerationParameters'
+        description: Invoice generation parameters
+      unbilledClient:
+        allOf:
+        - $ref: '#/definitions/entities.ClientWithUnbilledSessionsResponse'
+        description: Unbilled client data (matching ClientWithUnbilledSessionsResponse)
+    required:
+    - unbilledClient
+    type: object
   entities.CreateSessionRequest:
     properties:
       calendar_entry_id:
@@ -944,6 +1025,65 @@ definitions:
       user_id:
         type: integer
     type: object
+  entities.ExtraEffortAPIResponse:
+    properties:
+      data:
+        $ref: '#/definitions/entities.ExtraEffortResponse'
+      message:
+        example: Extra effort retrieved successfully
+        type: string
+      success:
+        example: true
+        type: boolean
+    type: object
+  entities.ExtraEffortDeleteResponse:
+    properties:
+      message:
+        example: Extra effort deleted successfully
+        type: string
+      success:
+        example: true
+        type: boolean
+    type: object
+  entities.ExtraEffortListAPIResponse:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/entities.ExtraEffortResponse'
+        type: array
+      message:
+        example: Extra efforts retrieved successfully
+        type: string
+      success:
+        example: true
+        type: boolean
+      total:
+        example: 10
+        type: integer
+    type: object
+  entities.ExtraEffortResponse:
+    properties:
+      billable:
+        type: boolean
+      billing_status:
+        type: string
+      client_id:
+        type: integer
+      created_at:
+        type: string
+      description:
+        type: string
+      duration_min:
+        type: integer
+      effort_date:
+        type: string
+      effort_type:
+        type: string
+      id:
+        type: integer
+      session_id:
+        type: integer
+    type: object
   entities.FreeSlotsResponse:
     properties:
       config:
@@ -1030,6 +1170,26 @@ definitions:
       success:
         example: true
         type: boolean
+    type: object
+  entities.InvoiceGenerationParameters:
+    properties:
+      generate_pdf:
+        description: Default true in handler
+        type: boolean
+      invoice_date:
+        type: string
+      invoice_number:
+        type: string
+      session_from_date:
+        description: Filter sessions by start date (YYYY-MM-DD)
+        type: string
+      session_to_date:
+        description: Filter sessions by end date (YYYY-MM-DD)
+        type: string
+      tax_rate:
+        type: number
+      template_id:
+        type: integer
     type: object
   entities.InvoiceItemData:
     properties:
@@ -1424,6 +1584,32 @@ definitions:
     type: object
   entities.UpdateExternalCalendarRequest:
     type: object
+  entities.UpdateExtraEffortRequest:
+    properties:
+      billable:
+        example: false
+        type: boolean
+      description:
+        example: Updated description
+        type: string
+      duration_min:
+        example: 30
+        maximum: 480
+        minimum: 1
+        type: integer
+      effort_date:
+        example: "2025-12-30"
+        type: string
+      effort_type:
+        enum:
+        - preparation
+        - consultation
+        - parent_meeting
+        - documentation
+        - other
+        example: consultation
+        type: string
+    type: object
   entities.UpdateSessionRequest:
     properties:
       documentation:
@@ -1432,6 +1618,9 @@ definitions:
       duration_min:
         example: 60
         type: integer
+      internal_note:
+        example: Client was engaged
+        type: string
       number_units:
         example: 1
         type: integer
@@ -1670,8 +1859,6 @@ definitions:
         type: string
       currency:
         type: string
-      deleted_at:
-        $ref: '#/definitions/gorm.DeletedAt'
       description:
         type: string
       features:
@@ -2028,58 +2215,22 @@ definitions:
       total_pages:
         type: integer
     type: object
-  github_com_unburdy_unburdy-server-api_modules_client_management_entities.CreateInvoiceRequest:
-    properties:
-      client_id:
-        example: 1
-        type: integer
-      session_ids:
-        example:
-        - 1
-        - 2
-        - 3
-        items:
-          type: integer
-        type: array
-    required:
-    - client_id
-    - session_ids
-    type: object
-  github_com_unburdy_unburdy-server-api_modules_client_management_entities.InvoiceItemResponse:
-    properties:
-      created_at:
-        type: string
-      id:
-        type: integer
-      invoice_id:
-        type: integer
-      session:
-        $ref: '#/definitions/entities.SessionResponse'
-      session_id:
-        type: integer
-      updated_at:
-        type: string
-    type: object
   github_com_unburdy_unburdy-server-api_modules_client_management_entities.InvoiceResponse:
     properties:
-      client:
-        $ref: '#/definitions/entities.ClientResponse'
-      client_id:
-        type: integer
-      cost_provider:
-        $ref: '#/definitions/entities.CostProviderResponse'
-      cost_provider_id:
-        type: integer
+      clients:
+        items:
+          $ref: '#/definitions/entities.ClientInvoiceResponse'
+        type: array
       created_at:
+        type: string
+      document_id:
+        type: integer
+      document_url:
         type: string
       id:
         type: integer
       invoice_date:
         type: string
-      invoice_items:
-        items:
-          $ref: '#/definitions/github_com_unburdy_unburdy-server-api_modules_client_management_entities.InvoiceItemResponse'
-        type: array
       invoice_number:
         type: string
       latest_reminder:
@@ -2137,14 +2288,6 @@ definitions:
         allOf:
         - $ref: '#/definitions/github_com_unburdy_unburdy-server-api_modules_client_management_entities.InvoiceStatus'
         example: sent
-    type: object
-  gorm.DeletedAt:
-    properties:
-      time:
-        type: string
-      valid:
-        description: Valid is true if Time is not NULL
-        type: boolean
     type: object
   handlers.CreateInvoiceFromSessionsRequest:
     properties:
@@ -2237,6 +2380,8 @@ definitions:
         example: MM
         type: string
       organization_id:
+        description: Optional - will use authenticated user's organization if not
+          provided
         example: 10
         type: integer
       padding:
@@ -2261,8 +2406,6 @@ definitions:
         description: '"YYYY" or "YY"'
         example: YYYY
         type: string
-    required:
-    - organization_id
     type: object
   handlers.InvoiceNumberResponse:
     properties:
@@ -2416,8 +2559,6 @@ definitions:
         type: string
       created_at:
         type: string
-      deleted_at:
-        $ref: '#/definitions/gorm.DeletedAt'
       email:
         type: string
       first_name:
@@ -2670,6 +2811,9 @@ definitions:
     properties:
       additional_payment_methods:
         type: object
+      amount_format:
+        example: de
+        type: string
       bankaccount_bank:
         example: Deutsche Bank
         type: string
@@ -2685,11 +2829,28 @@ definitions:
       city:
         example: New York
         type: string
+      date_format:
+        example: 02.01.2006
+        type: string
       email:
         example: info@acme.com
         type: string
+      extra_efforts_billing_mode:
+        example: ignore
+        type: string
+      extra_efforts_config:
+        type: object
       invoice_content:
         type: object
+      line_item_double_unit_text:
+        example: Doppelstunde
+        type: string
+      line_item_single_unit_text:
+        example: Einzelstunde
+        type: string
+      locale:
+        example: de-DE
+        type: string
       name:
         example: Acme Corporation
         type: string
@@ -2713,6 +2874,9 @@ definitions:
         type: number
       tax_ustid:
         example: DE123456789
+        type: string
+      time_format:
+        example: "15:04"
         type: string
       unit_price:
         example: 150
@@ -2786,9 +2950,9 @@ definitions:
   models.OrganizationResponse:
     properties:
       additional_payment_methods:
-        items:
-          type: integer
-        type: array
+        type: object
+      amount_format:
+        type: string
       bankaccount_bank:
         type: string
       bankaccount_bic:
@@ -2801,14 +2965,24 @@ definitions:
         type: string
       created_at:
         type: string
+      date_format:
+        type: string
       email:
         type: string
+      extra_efforts_billing_mode:
+        type: string
+      extra_efforts_config:
+        type: object
       id:
         type: integer
       invoice_content:
-        items:
-          type: integer
-        type: array
+        type: object
+      line_item_double_unit_text:
+        type: string
+      line_item_single_unit_text:
+        type: string
+      locale:
+        type: string
       name:
         type: string
       owner_name:
@@ -2827,6 +3001,8 @@ definitions:
         type: string
       tenant_id:
         type: integer
+      time_format:
+        type: string
       unit_price:
         type: number
       updated_at:
@@ -2878,6 +3054,20 @@ definitions:
       price:
         type: number
       slug:
+        type: string
+    type: object
+  models.UpdateBillingConfigRequest:
+    properties:
+      extra_efforts_billing_mode:
+        example: bundle_double_units
+        type: string
+      extra_efforts_config:
+        type: object
+      line_item_double_unit_text:
+        example: Therapie Doppelstunde
+        type: string
+      line_item_single_unit_text:
+        example: Therapiestunde
         type: string
     type: object
   models.UpdateClientRequest:
@@ -2992,6 +3182,9 @@ definitions:
     properties:
       additional_payment_methods:
         type: object
+      amount_format:
+        example: de
+        type: string
       bankaccount_bank:
         example: Deutsche Bank
         type: string
@@ -3007,11 +3200,28 @@ definitions:
       city:
         example: New York
         type: string
+      date_format:
+        example: 02.01.2006
+        type: string
       email:
         example: info@acme.com
         type: string
+      extra_efforts_billing_mode:
+        example: bundle_double_units
+        type: string
+      extra_efforts_config:
+        type: object
       invoice_content:
         type: object
+      line_item_double_unit_text:
+        example: Therapie Doppelstunde
+        type: string
+      line_item_single_unit_text:
+        example: Therapiestunde
+        type: string
+      locale:
+        example: de-DE
+        type: string
       name:
         example: Acme Corporation
         type: string
@@ -3036,6 +3246,9 @@ definitions:
       tax_ustid:
         example: DE123456789
         type: string
+      time_format:
+        example: "15:04"
+        type: string
       unit_price:
         example: 150
         type: number
@@ -3047,8 +3260,6 @@ definitions:
     properties:
       created_at:
         type: string
-      deleted_at:
-        $ref: '#/definitions/gorm.DeletedAt'
       id:
         type: integer
       language:
@@ -3130,6 +3341,9 @@ definitions:
         type: boolean
       name:
         type: string
+      organization_id:
+        description: Set from middleware, not from client
+        type: integer
       sample_data:
         additionalProperties: true
         type: object
@@ -4673,12 +4887,12 @@ paths:
       description: Create a new invoice with invoice items for specified sessions
       operationId: createInvoice
       parameters:
-      - description: Invoice information with client ID and session IDs
+      - description: Complete invoice information with line items
         in: body
         name: invoice
         required: true
         schema:
-          $ref: '#/definitions/github_com_unburdy_unburdy-server-api_modules_client_management_entities.CreateInvoiceRequest'
+          $ref: '#/definitions/entities.CreateInvoiceDirectRequest'
       produces:
       - application/json
       responses:
@@ -4823,6 +5037,45 @@ paths:
       summary: Update an invoice
       tags:
       - client-invoices
+  /client-invoices/{id}/cancel:
+    post:
+      description: Cancel a draft invoice and revert all associated sessions to conducted
+        status and extra efforts to unbilled status
+      operationId: cancelInvoice
+      parameters:
+      - description: Invoice ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.APIResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Cancel a draft invoice
+      tags:
+      - client-invoices
   /client-invoices/from-sessions:
     post:
       consumes:
@@ -4862,6 +5115,55 @@ paths:
               type: string
             type: object
       summary: Create invoice from sessions
+      tags:
+      - client-invoices
+  /client-invoices/generate:
+    post:
+      consumes:
+      - application/json
+      description: 'Create invoice record from unbilled-sessions data with generation
+        parameters. Request body has two parts: ''unbilledClient'' (complete client
+        object from GET /client-invoices/unbilled-sessions) and ''parameters'' (invoice
+        generation settings like invoice_number, invoice_date, tax_rate, generate_pdf,
+        session date filters, and template_id). Defaults to generating PDF unless
+        generate_pdf is explicitly set to false.'
+      operationId: generateInvoiceWithPDF
+      parameters:
+      - description: Request with unbilledClient (from unbilled-sessions) and parameters
+          (invoice generation settings)
+        in: body
+        name: invoice
+        required: true
+        schema:
+          $ref: '#/definitions/entities.CreateInvoiceDirectRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Returns invoice data, and if generate_pdf is true, also includes
+            document details and pdf_url
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Invalid request or no sessions in date range
+          schema:
+            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse'
+        "500":
+          description: Failed to create invoice, render template, or generate PDF
+          schema:
+            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse'
+        "503":
+          description: PDF generation service not configured
+          schema:
+            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Generate invoice with PDF from unbilled sessions
       tags:
       - client-invoices
   /client-invoices/unbilled-sessions:
@@ -6531,6 +6833,208 @@ paths:
       summary: Update external calendar
       tags:
       - external-calendars
+  /extra-efforts:
+    get:
+      description: Retrieve extra efforts with optional filters
+      operationId: listExtraEfforts
+      parameters:
+      - description: Filter by client ID
+        in: query
+        name: client_id
+        type: integer
+      - description: Filter by session ID
+        in: query
+        name: session_id
+        type: integer
+      - description: Filter by billing status (unbilled, billed, excluded)
+        in: query
+        name: billing_status
+        type: string
+      - description: Filter by effort type
+        in: query
+        name: effort_type
+        type: string
+      - description: Filter from date (YYYY-MM-DD)
+        in: query
+        name: from_date
+        type: string
+      - description: Filter to date (YYYY-MM-DD)
+        in: query
+        name: to_date
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/entities.ExtraEffortListAPIResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: List extra efforts
+      tags:
+      - extra-efforts
+    post:
+      consumes:
+      - application/json
+      description: Record extra therapeutic work (preparation, consultation, meeting,
+        etc.)
+      operationId: createExtraEffort
+      parameters:
+      - description: Extra effort information
+        in: body
+        name: effort
+        required: true
+        schema:
+          $ref: '#/definitions/entities.CreateExtraEffortRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/entities.ExtraEffortAPIResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Create extra effort
+      tags:
+      - extra-efforts
+  /extra-efforts/{id}:
+    delete:
+      description: Delete an extra effort (only if unbilled)
+      operationId: deleteExtraEffort
+      parameters:
+      - description: Extra effort ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/entities.ExtraEffortDeleteResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Delete extra effort
+      tags:
+      - extra-efforts
+    get:
+      description: Retrieve an extra effort by its ID
+      operationId: getExtraEffort
+      parameters:
+      - description: Extra effort ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/entities.ExtraEffortAPIResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get extra effort by ID
+      tags:
+      - extra-efforts
+    put:
+      consumes:
+      - application/json
+      description: Update an existing extra effort (only if unbilled)
+      operationId: updateExtraEffort
+      parameters:
+      - description: Extra effort ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Updated extra effort information
+        in: body
+        name: effort
+        required: true
+        schema:
+          $ref: '#/definitions/entities.UpdateExtraEffortRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/entities.ExtraEffortAPIResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Update extra effort
+      tags:
+      - extra-efforts
   /health:
     get:
       description: Check the health status of the API and database
@@ -7207,6 +7711,67 @@ paths:
       security:
       - BearerAuth: []
       summary: Update an organization
+      tags:
+      - organizations
+  /organizations/{id}/billing-config:
+    put:
+      consumes:
+      - application/json
+      description: Update billing mode and configuration for extra efforts tracking
+      operationId: updateOrganizationBillingConfig
+      parameters:
+      - description: Organization ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Billing configuration
+        in: body
+        name: config
+        required: true
+        schema:
+          $ref: '#/definitions/models.UpdateBillingConfigRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.OrganizationAPIResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_ae-base-server_internal_models.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_ae-base-server_internal_models.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_ae-base-server_internal_models.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_ae-base-server_internal_models.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Update organization billing configuration
+      tags:
+      - organizations
+  /organizations/supported-formats:
+    get:
+      description: Get all supported date, time, and amount formats with examples
+      operationId: getSupportedFormats
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Supported formats with examples
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Get supported formats
       tags:
       - organizations
   /pdf/create:
@@ -7960,13 +8525,10 @@ paths:
       - static
   /templates:
     get:
-      description: List templates with optional filters and pagination
+      description: List templates with optional filters and pagination (organization_id
+        from auth middleware)
       operationId: listTemplates
       parameters:
-      - description: Organization ID filter
-        in: query
-        name: organization_id
-        type: integer
       - description: Template type (email, pdf, invoice, document)
         in: query
         name: template_type
@@ -8159,129 +8721,6 @@ paths:
       summary: Update template
       tags:
       - Templates
-  /templates/{id}/content:
-    get:
-      description: Get template metadata and HTML content
-      operationId: getTemplateContent
-      parameters:
-      - description: Template ID
-        in: path
-        name: id
-        required: true
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/handlers.SuccessResponse'
-        "401":
-          description: Unauthorized
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-        "404":
-          description: Not Found
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-        "500":
-          description: Internal Server Error
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-      summary: Get template content
-      tags:
-      - Templates
-  /templates/{id}/duplicate:
-    post:
-      consumes:
-      - application/json
-      description: Create a copy of an existing template
-      operationId: duplicateTemplate
-      parameters:
-      - description: Template ID
-        in: path
-        name: id
-        required: true
-        type: integer
-      - description: New template name
-        in: body
-        name: request
-        required: true
-        schema:
-          additionalProperties:
-            type: string
-          type: object
-      produces:
-      - application/json
-      responses:
-        "201":
-          description: Created
-          schema:
-            $ref: '#/definitions/entities.TemplateResponse'
-        "400":
-          description: Bad Request
-          schema:
-            additionalProperties: true
-            type: object
-        "401":
-          description: Unauthorized
-          schema:
-            additionalProperties: true
-            type: object
-        "404":
-          description: Not Found
-          schema:
-            additionalProperties: true
-            type: object
-        "500":
-          description: Internal Server Error
-          schema:
-            additionalProperties: true
-            type: object
-      summary: Duplicate template
-      tags:
-      - Templates
-  /templates/{id}/preview:
-    get:
-      description: Render template with sample data for preview
-      operationId: previewTemplate
-      parameters:
-      - description: Template ID
-        in: path
-        name: id
-        required: true
-        type: integer
-      produces:
-      - text/html
-      responses:
-        "200":
-          description: HTML content
-          schema:
-            type: string
-        "401":
-          description: Unauthorized
-          schema:
-            additionalProperties: true
-            type: object
-        "404":
-          description: Not Found
-          schema:
-            additionalProperties: true
-            type: object
-        "500":
-          description: Internal Server Error
-          schema:
-            additionalProperties: true
-            type: object
-      summary: Preview template
-      tags:
-      - Templates
   /templates/{id}/render:
     post:
       consumes:
@@ -8333,7 +8772,8 @@ paths:
       - Templates
   /templates/default:
     get:
-      description: Get the default template for a specific type and organization
+      description: Get the default template for a specific type (organization from
+        auth middleware)
       operationId: getDefaultTemplate
       parameters:
       - description: Template type (email, pdf, invoice, document)
@@ -8341,10 +8781,6 @@ paths:
         name: template_type
         required: true
         type: string
-      - description: Organization ID (falls back to system default if not found)
-        in: query
-        name: organization_id
-        type: integer
       produces:
       - application/json
       responses:

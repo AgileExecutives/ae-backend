@@ -52,6 +52,17 @@ func (h *InvoiceNumberHandler) GenerateInvoiceNumber(c *gin.Context) {
 		return
 	}
 
+	// Get organization ID from authenticated user if not provided in request
+	organizationID := req.OrganizationID
+	if organizationID == 0 {
+		user, err := baseAPI.GetUser(c)
+		if err != nil {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "user not authenticated"})
+			return
+		}
+		organizationID = user.OrganizationID
+	}
+
 	// Build configuration from request or use defaults
 	config := services.DefaultInvoiceConfig()
 
@@ -78,7 +89,7 @@ func (h *InvoiceNumberHandler) GenerateInvoiceNumber(c *gin.Context) {
 	result, err := h.service.GenerateInvoiceNumber(
 		c.Request.Context(),
 		uint(tenantID),
-		req.OrganizationID,
+		organizationID,
 		config,
 	)
 	if err != nil {

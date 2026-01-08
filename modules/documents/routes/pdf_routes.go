@@ -1,27 +1,34 @@
 package routes
 
 import (
+	baseAPI "github.com/ae-base-server/api"
 	"github.com/ae-base-server/pkg/core"
 	"github.com/gin-gonic/gin"
 	"github.com/unburdy/documents-module/handlers"
 	"github.com/unburdy/documents-module/services"
+	templateServices "github.com/unburdy/templates-module/services"
+	"gorm.io/gorm"
 )
 
 // PDFRoutes implements RouteProvider for PDF generation endpoints
 type PDFRoutes struct {
-	pdfService *services.PDFService
+	pdfService      *services.PDFService
+	templateService *templateServices.TemplateService
+	db              *gorm.DB
 }
 
 // NewPDFRoutes creates a new PDFRoutes instance
-func NewPDFRoutes(pdfService *services.PDFService) *PDFRoutes {
+func NewPDFRoutes(pdfService *services.PDFService, templateService *templateServices.TemplateService, db *gorm.DB) *PDFRoutes {
 	return &PDFRoutes{
-		pdfService: pdfService,
+		pdfService:      pdfService,
+		templateService: templateService,
+		db:              db,
 	}
 }
 
 // RegisterRoutes registers all PDF generation routes
 func (r *PDFRoutes) RegisterRoutes(router *gin.RouterGroup, ctx core.ModuleContext) {
-	handler := handlers.NewPDFHandler(r.pdfService, ctx.DB)
+	handler := handlers.NewPDFHandler(r.pdfService, r.templateService, ctx.DB)
 
 	// PDF routes
 	pdfs := router.Group("/pdfs")
@@ -42,8 +49,9 @@ func (r *PDFRoutes) GetPrefix() string {
 
 // GetMiddleware returns middleware to apply to all PDF routes
 func (r *PDFRoutes) GetMiddleware() []gin.HandlerFunc {
-	// Auth middleware is typically applied globally
-	return []gin.HandlerFunc{}
+	return []gin.HandlerFunc{
+		baseAPI.AuthMiddleware(r.db), // Require authentication for tenant ID extraction
+	}
 }
 
 // GetSwaggerTags returns Swagger tags for documentation

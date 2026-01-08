@@ -19,7 +19,7 @@ type Invoice struct {
 	Status         InvoiceStatus `gorm:"size:20;not null;default:'draft'" json:"status"`
 
 	// Customer information
-	CustomerName    string `gorm:"size:255;not null" json:"customer_name"`
+	CustomerName    string `gorm:"size:255;not null;default:''" json:"customer_name"`
 	CustomerAddress string `gorm:"size:500" json:"customer_address,omitempty"`
 	CustomerEmail   string `gorm:"size:255" json:"customer_email,omitempty"`
 	CustomerTaxID   string `gorm:"size:100" json:"customer_tax_id,omitempty"`
@@ -60,12 +60,12 @@ func (Invoice) TableName() string {
 type InvoiceItem struct {
 	ID          uint    `gorm:"primaryKey" json:"id"`
 	InvoiceID   uint    `gorm:"not null;index:idx_invoice_item_invoice" json:"invoice_id"`
-	Position    int     `gorm:"not null" json:"position"`
-	Description string  `gorm:"size:500;not null" json:"description"`
+	Position    int     `gorm:"not null;default:0" json:"position"`
+	Description string  `gorm:"size:500;not null;default:''" json:"description"`
 	Quantity    float64 `gorm:"type:decimal(10,3);not null;default:1" json:"quantity"`
-	UnitPrice   float64 `gorm:"type:decimal(10,2);not null" json:"unit_price"`
+	UnitPrice   float64 `gorm:"type:decimal(10,2);not null;default:0" json:"unit_price"`
 	TaxRate     float64 `gorm:"type:decimal(5,2);not null;default:0" json:"tax_rate"`
-	Amount      float64 `gorm:"type:decimal(10,2);not null" json:"amount"`
+	Amount      float64 `gorm:"type:decimal(10,2);not null;default:0" json:"amount"`
 
 	CreatedAt time.Time      `json:"created_at"`
 	UpdatedAt time.Time      `json:"updated_at"`

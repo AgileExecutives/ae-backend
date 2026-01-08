@@ -16,17 +16,19 @@ type RouteProvider struct {
 	sessionHandler        *handlers.SessionHandler
 	invoiceHandler        *handlers.InvoiceHandler
 	invoiceAdapterHandler *handlers.InvoiceAdapterHandler
+	extraEffortHandler    *handlers.ExtraEffortHandler
 	db                    *gorm.DB
 }
 
 // NewRouteProvider creates a new route provider
-func NewRouteProvider(clientHandler *handlers.ClientHandler, costProviderHandler *handlers.CostProviderHandler, sessionHandler *handlers.SessionHandler, invoiceHandler *handlers.InvoiceHandler, invoiceAdapterHandler *handlers.InvoiceAdapterHandler, db *gorm.DB) *RouteProvider {
+func NewRouteProvider(clientHandler *handlers.ClientHandler, costProviderHandler *handlers.CostProviderHandler, sessionHandler *handlers.SessionHandler, invoiceHandler *handlers.InvoiceHandler, invoiceAdapterHandler *handlers.InvoiceAdapterHandler, extraEffortHandler *handlers.ExtraEffortHandler, db *gorm.DB) *RouteProvider {
 	return &RouteProvider{
 		clientHandler:         clientHandler,
 		costProviderHandler:   costProviderHandler,
 		sessionHandler:        sessionHandler,
 		invoiceHandler:        invoiceHandler,
 		invoiceAdapterHandler: invoiceAdapterHandler,
+		extraEffortHandler:    extraEffortHandler,
 		db:                    db,
 	}
 }
@@ -82,10 +84,23 @@ func (rp *RouteProvider) RegisterRoutes(router *gin.RouterGroup, ctx *core.Modul
 	{
 		clientInvoices.GET("/unbilled-sessions", rp.invoiceHandler.GetClientsWithUnbilledSessions)
 		clientInvoices.POST("/from-sessions", rp.invoiceAdapterHandler.CreateInvoiceFromSessions)
+		clientInvoices.POST("/generate", rp.invoiceHandler.GenerateInvoiceWithPDF)
+		clientInvoices.POST("", rp.invoiceHandler.CreateInvoice)
 		clientInvoices.GET("", rp.invoiceHandler.GetAllInvoices)
 		clientInvoices.GET("/:id", rp.invoiceHandler.GetInvoice)
 		clientInvoices.PUT("/:id", rp.invoiceHandler.UpdateInvoice)
+		clientInvoices.POST("/:id/cancel", rp.invoiceHandler.CancelInvoice)
 		clientInvoices.DELETE("/:id", rp.invoiceHandler.DeleteInvoice)
+	}
+
+	// Extra efforts management endpoints (authenticated)
+	extraEfforts := router.Group("/extra-efforts")
+	{
+		extraEfforts.POST("", rp.extraEffortHandler.CreateExtraEffort)
+		extraEfforts.GET("", rp.extraEffortHandler.ListExtraEfforts)
+		extraEfforts.GET("/:id", rp.extraEffortHandler.GetExtraEffort)
+		extraEfforts.PUT("/:id", rp.extraEffortHandler.UpdateExtraEffort)
+		extraEfforts.DELETE("/:id", rp.extraEffortHandler.DeleteExtraEffort)
 	}
 }
 

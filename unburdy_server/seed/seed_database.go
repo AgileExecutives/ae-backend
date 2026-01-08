@@ -157,6 +157,11 @@ func main() {
 			log.Printf("⚠️  Warning: Session seeding failed: %v", err)
 		}
 
+		// Step 6.5: Seed extra efforts (unbilled work outside sessions)
+		if err := seedExtraEfforts(db); err != nil {
+			log.Printf("⚠️  Warning: Extra efforts seeding failed: %v", err)
+		}
+
 		// Step 7: Seed invoices with invoice items (only in full seeding mode)
 		if err := seedInvoices(db); err != nil {
 			log.Printf("⚠️  Warning: Invoice seeding failed: %v", err)
@@ -199,7 +204,7 @@ func autoMigrateEntities(db *gorm.DB) error {
 	}
 
 	// Migrate application entities
-	if err := db.AutoMigrate(&entities.Client{}, &entities.CostProvider{}); err != nil {
+	if err := db.AutoMigrate(&entities.Client{}, &entities.CostProvider{}, &entities.ExtraEffort{}); err != nil {
 		return fmt.Errorf("failed to migrate app entities: %w", err)
 	}
 
@@ -605,7 +610,7 @@ func seedDocumentsData(db *gorm.DB) error {
 	// Initialize services
 	templateService := templateServices.NewTemplateService(db, templateMinioStorage)
 	invoiceNumberService := baseAPI.NewInvoiceNumberService(db)
-	pdfService := documentServices.NewPDFService(db, docMinioStorage, templateService)
+	pdfService := documentServices.NewPDFService(db, docMinioStorage)
 
 	// Create context for operations
 	ctx := context.Background()
@@ -1270,6 +1275,144 @@ func seedSessions(db *gorm.DB) error {
 	return nil
 }
 
+// seedExtraEfforts creates sample extra efforts (unbilled work outside sessions)
+func seedExtraEfforts(db *gorm.DB) error {
+	log.Println("📝 Seeding extra efforts...")
+
+	// Get active clients with conducted sessions
+	var clients []entities.Client
+	if err := db.Where("status = ?", "active").Limit(8).Find(&clients).Error; err != nil {
+		return fmt.Errorf("failed to fetch clients: %w", err)
+	}
+
+	if len(clients) == 0 {
+		log.Println("⚠️  No active clients found for extra effort creation")
+		return nil
+	}
+
+	// Get some conducted sessions to link extra efforts to
+	var sessions []entities.Session
+	db.Where("status = ?", "conducted").Limit(20).Find(&sessions)
+
+	// Extra effort types and sample descriptions
+	effortTypes := []struct {
+		Type        string
+		Description []string
+	}{
+		{
+			Type: "preparation",
+			Description: []string{
+				"Copied therapy materials and worksheets",
+				"Prepared visual aids for next session",
+				"Set up sensory integration equipment",
+				"Organized therapy room for specialized activity",
+			},
+		},
+		{
+			Type: "consultation",
+			Description: []string{
+				"Phone consultation with school teacher",
+				"Team meeting with other therapists",
+				"Consultation with pediatrician regarding treatment plan",
+				"Case discussion with supervisor",
+			},
+		},
+		{
+			Type: "parent_meeting",
+			Description: []string{
+				"Parent guidance session",
+				"Progress report meeting with parents",
+				"Home exercise instruction for parents",
+				"Parent consultation about behavioral strategies",
+			},
+		},
+		{
+			Type: "documentation",
+			Description: []string{
+				"Updated progress notes and treatment plan",
+				"Wrote detailed session report for cost provider",
+				"Completed assessment documentation",
+				"Prepared quarterly progress report",
+			},
+		},
+		{
+			Type: "other",
+			Description: []string{
+				"Attended training workshop on new therapy technique",
+				"Administrative work for client file",
+				"Coordinated with other service providers",
+				"Research for specialized intervention",
+			},
+		},
+	}
+
+	now := time.Now().UTC()
+	createdCount := 0
+	unbilledCount := 0
+	rand.Seed(now.UnixNano())
+
+	// Create 2-5 extra efforts per client
+	for _, client := range clients {
+		effortsForClient := 2 + rand.Intn(4) // 2-5 efforts
+
+		for i := 0; i < effortsForClient; i++ {
+			// Random effort type
+			effortTypeData := effortTypes[rand.Intn(len(effortTypes))]
+			description := effortTypeData.Description[rand.Intn(len(effortTypeData.Description))]
+
+			// Random date in the past 4 weeks
+			daysAgo := rand.Intn(28)
+			effortDate := now.AddDate(0, 0, -daysAgo)
+
+			// Random duration: 15-60 minutes, favoring common durations
+			durations := []int{15, 20, 30, 45, 60}
+			durationMin := durations[rand.Intn(len(durations))]
+
+			// Occasionally link to a session (30% chance)
+			var sessionID *uint
+			if len(sessions) > 0 && rand.Float32() < 0.3 {
+				randomSession := sessions[rand.Intn(len(sessions))]
+				sessionID = &randomSession.ID
+			}
+
+			// Most are billable and unbilled (90%)
+			billable := rand.Float32() < 0.9
+			billingStatus := "unbilled"
+			if billable {
+				unbilledCount++
+			} else {
+				billingStatus = "excluded"
+			}
+
+			extraEffort := entities.ExtraEffort{
+				TenantID:      client.TenantID,
+				ClientID:      client.ID,
+				SessionID:     sessionID,
+				EffortType:    effortTypeData.Type,
+				EffortDate:    effortDate,
+				DurationMin:   durationMin,
+				Description:   description,
+				Billable:      billable,
+				BillingStatus: billingStatus,
+				CreatedBy:     1, // Admin user
+			}
+
+			if err := db.Create(&extraEffort).Error; err != nil {
+				log.Printf("  ❌ Failed to create extra effort for client %d: %v", client.ID, err)
+				continue
+			}
+
+			createdCount++
+		}
+	}
+
+	log.Printf("✅ Created %d extra efforts (%d unbilled and billable)",
+		createdCount,
+		unbilledCount)
+
+	return nil
+}
+
 // seedInvoices creates sample invoices with different payment statuses
 func seedInvoices(db *gorm.DB) error {
 	log.Println("💰 Seeding invoices...")
@@ -1362,17 +1505,17 @@ func seedInvoices(db *gorm.DB) error {
 		latestReminder *time.Time
 	}{
 		{
-			status:       entities.InvoiceStatusPayed,
+			status:       "paid", // InvoiceStatusPaid
 			numReminders: 0,
 			payedDate:    timePtr(time.Now().AddDate(0, 0, -5)),
 		},
 		{
-			status:       entities.InvoiceStatusSent,
+			status:       "sent", // InvoiceStatusSent
 			numReminders: 0,
 			payedDate:    nil,
 		},
 		{
-			status:         entities.InvoiceStatusReminder,
+			status:         "overdue", // InvoiceStatusOverdue (changed from reminder)
 			numReminders:   1,
 			payedDate:      nil,
 			latestReminder: timePtr(time.Now().AddDate(0, 0, -3)),
@@ -1431,8 +1574,6 @@ func seedInvoices(db *gorm.DB) error {
 		invoice := entities.Invoice{
 			TenantID:       tenant.ID,
 			UserID:         user.ID,
-			ClientID:       client.ID,
-			CostProviderID: *client.CostProviderID,
 			OrganizationID: organization.ID,
 			InvoiceDate:    time.Now().AddDate(0, 0, -30+i*10), // Stagger dates
 			InvoiceNumber:  invoiceNumber,
@@ -1451,14 +1592,32 @@ func seedInvoices(db *gorm.DB) error {
 			continue
 		}
 
-		// Create invoice items
+		// Create invoice items and client invoices
 		for _, session := range invoiceSessions {
+			// Create invoice item
 			invoiceItem := entities.InvoiceItem{
-				InvoiceID: invoice.ID,
-				SessionID: session.ID,
+				InvoiceID:   invoice.ID,
+				ItemType:    "session",
+				Description: "Therapy Session",
+				NumberUnits: float64(session.NumberUnits),
+				UnitPrice:   100.0,
+				TotalAmount: 100.0 * float64(session.NumberUnits),
 			}
 			if err := db.Create(&invoiceItem).Error; err != nil {
 				log.Printf("  ❌ Failed to create invoice item for session %d: %v", session.ID, err)
+				continue
+			}
+
+			// Create client invoice linking
+			clientInvoice := entities.ClientInvoice{
+				InvoiceID:      invoice.ID,
+				ClientID:       client.ID,
+				CostProviderID: *client.CostProviderID,
+				SessionID:      session.ID,
+				InvoiceItemID:  invoiceItem.ID,
+			}
+			if err := db.Create(&clientInvoice).Error; err != nil {
+				log.Printf("  ❌ Failed to create client invoice for session %d: %v", session.ID, err)
 			}
 		}
 
@@ -1511,8 +1670,8 @@ func timePtr(t time.Time) *time.Time {
 
 // showSessionAndInvoiceStatistics displays session and invoice seeding statistics
 func showSessionAndInvoiceStatistics(db *gorm.DB) {
-	log.Println("\n📊 Session & Invoice Statistics")
-	log.Println("================================")
+	log.Println("\n📊 Session, Extra Effort & Invoice Statistics")
+	log.Println("==============================================")
 
 	// Session statistics
 	var totalSessions int64
@@ -1533,6 +1692,43 @@ func showSessionAndInvoiceStatistics(db *gorm.DB) {
 		log.Println("\n🎯 Session Status Breakdown:")
 		for _, ss := range sessionStatuses {
 			log.Printf("   %s: %d sessions", ss.Status, ss.Count)
+		}
+	}
+
+	// Extra effort statistics
+	var totalExtraEfforts int64
+	db.Model(&entities.ExtraEffort{}).Count(&totalExtraEfforts)
+	log.Printf("\n📝 Total extra efforts: %d", totalExtraEfforts)
+
+	if totalExtraEfforts > 0 {
+		var effortTypes []struct {
+			EffortType string
+			Count      int64
+		}
+		db.Model(&entities.ExtraEffort{}).
+			Select("effort_type, COUNT(*) as count").
+			Group("effort_type").
+			Order("count DESC").
+			Find(&effortTypes)
+
+		log.Println("\n📋 Extra Effort Type Breakdown:")
+		for _, et := range effortTypes {
+			log.Printf("   %s: %d efforts", et.EffortType, et.Count)
+		}
+
+		var billingStatuses []struct {
+			BillingStatus string
+			Count         int64
+		}
+		db.Model(&entities.ExtraEffort{}).
+			Select("billing_status, COUNT(*) as count").
+			Group("billing_status").
+			Order("count DESC").
+			Find(&billingStatuses)
+
+		log.Println("\n💵 Extra Effort Billing Status:")
+		for _, bs := range billingStatuses {
+			log.Printf("   %s: %d efforts", bs.BillingStatus, bs.Count)
 		}
 	}
 

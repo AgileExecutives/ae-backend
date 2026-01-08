@@ -1,21 +1,25 @@
 package routes
 
 import (
+	baseAPI "github.com/ae-base-server/api"
 	"github.com/ae-base-server/pkg/core"
 	"github.com/gin-gonic/gin"
 	"github.com/unburdy/templates-module/handlers"
 	"github.com/unburdy/templates-module/services"
+	"gorm.io/gorm"
 )
 
 // TemplateRoutes implements RouteProvider for template management endpoints
 type TemplateRoutes struct {
 	templateService *services.TemplateService
+	db              *gorm.DB
 }
 
 // NewTemplateRoutes creates a new TemplateRoutes instance
-func NewTemplateRoutes(templateService *services.TemplateService) *TemplateRoutes {
+func NewTemplateRoutes(templateService *services.TemplateService, db *gorm.DB) *TemplateRoutes {
 	return &TemplateRoutes{
 		templateService: templateService,
+		db:              db,
 	}
 }
 
@@ -37,10 +41,7 @@ func (r *TemplateRoutes) RegisterRoutes(router *gin.RouterGroup, ctx core.Module
 		templates.DELETE("/:id", handler.DeleteTemplate)
 
 		// Template operations
-		templates.GET("/:id/content", handler.GetTemplateContent)
-		templates.GET("/:id/preview", handler.PreviewTemplate)
 		templates.POST("/:id/render", handler.RenderTemplate)
-		templates.POST("/:id/duplicate", handler.DuplicateTemplate)
 	}
 }
 
@@ -51,8 +52,9 @@ func (r *TemplateRoutes) GetPrefix() string {
 
 // GetMiddleware returns middleware to apply to all template routes
 func (r *TemplateRoutes) GetMiddleware() []gin.HandlerFunc {
-	// Auth middleware is typically applied globally
-	return []gin.HandlerFunc{}
+	return []gin.HandlerFunc{
+		baseAPI.AuthMiddleware(r.db), // Require authentication for tenant ID extraction
+	}
 }
 
 // GetSwaggerTags returns Swagger tags for documentation

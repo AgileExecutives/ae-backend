@@ -7,6 +7,8 @@ import (
 	"github.com/ae-base-server/modules/base"
 	"github.com/ae-base-server/modules/customer"
 	"github.com/ae-base-server/modules/email"
+	invoicenumber "github.com/ae-base-server/modules/invoice_number"
+	"github.com/ae-base-server/modules/organization"
 	"github.com/ae-base-server/modules/pdf"
 	"github.com/ae-base-server/modules/static"
 	"github.com/ae-base-server/pkg/bootstrap"
@@ -110,23 +112,24 @@ func main() {
 	}
 
 	log.Println("✅ Configuration validated successfully")
-
 	// Create application
 	app := bootstrap.NewApplication(cfg)
 
 	// Register modules in dependency order
 	modules := []core.Module{
-		base.NewBaseModule(),              // Base authentication and user management
-		customer.NewCustomerModule(),      // Customer and plan management
-		email.NewEmailModule(),            // Email management and notifications
-		pdf.NewPDFModule(),                // PDF generation services
-		static.NewStaticModule(),          // Static JSON file serving
-		templates.NewCoreModule(),         // Template management for emails and PDFs
-		documents.NewCoreModule(),         // Document storage and PDF generation (depends on templates)
-		invoice.NewCoreModule(),           // Invoice PDF generation (depends on templates and documents)
-		calendar.NewCoreModule(),          // Calendar management (unburdy-specific)
-		booking.NewCoreModule(),           // Booking management (unburdy-specific)
-		client_management.NewCoreModule(), // Client management (unburdy-specific) - depends on booking
+		base.NewBaseModule(),                   // Base authentication and user management
+		customer.NewCustomerModule(),           // Customer and plan management
+		organization.NewOrganizationModule(),   // Organization management within tenants
+		invoicenumber.NewInvoiceNumberModule(), // Invoice number generation
+		email.NewEmailModule(),                 // Email management and notifications
+		pdf.NewPDFModule(),                     // PDF generation services
+		static.NewStaticModule(),               // Static JSON file serving
+		templates.NewCoreModule(),              // Template management for emails and PDFs
+		documents.NewCoreModule(),              // Document storage and PDF generation (depends on templates)
+		invoice.NewCoreModule(),                // Invoice PDF generation (depends on templates and documents)
+		calendar.NewCoreModule(),               // Calendar management (unburdy-specific)
+		booking.NewCoreModule(),                // Booking management (unburdy-specific)
+		client_management.NewCoreModule(),      // Client management (unburdy-specific) - depends on booking
 	}
 
 	for _, module := range modules {

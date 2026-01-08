@@ -98,3 +98,41 @@ func (e *InvoiceItemEntity) GetModel() interface{} {
 func (e *InvoiceItemEntity) GetMigrations() []baseCore.Migration {
 	return []baseCore.Migration{}
 }
+
+// ClientInvoiceEntity implements baseCore.Entity for ClientInvoice model
+type ClientInvoiceEntity struct{}
+
+func NewClientInvoiceEntity() baseCore.Entity {
+	return &ClientInvoiceEntity{}
+}
+
+func (e *ClientInvoiceEntity) TableName() string {
+	return "client_invoices"
+}
+
+func (e *ClientInvoiceEntity) GetModel() interface{} {
+	return &ClientInvoice{}
+}
+
+func (e *ClientInvoiceEntity) GetMigrations() []baseCore.Migration {
+	return []baseCore.Migration{}
+}
+
+// ExtraEffortEntity implements baseCore.Entity for ExtraEffort model
+type ExtraEffortEntity struct{}
+
+func NewExtraEffortEntity() baseCore.Entity {
+	return &ExtraEffortEntity{}
+}
+
+func (e *ExtraEffortEntity) TableName() string {
+	return "extra_efforts"
+}
+
+func (e *ExtraEffortEntity) GetModel() interface{} {
+	return &ExtraEffort{}
+}
+
+func (e *ExtraEffortEntity) GetMigrations() []baseCore.Migration {
+	return []baseCore.Migration{}
+}

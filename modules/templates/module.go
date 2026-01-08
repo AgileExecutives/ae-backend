@@ -41,18 +41,22 @@ func (m *CoreModule) Dependencies() []string {
 
 // Initialize sets up the module with dependencies
 func (m *CoreModule) Initialize(ctx core.ModuleContext) error {
-	// Initialize MinIO storage
-	minioConfig := storage.MinIOConfig{
-		Endpoint:        "localhost:9000",
-		AccessKeyID:     "minioadmin",
-		SecretAccessKey: "minioadmin123",
-		UseSSL:          false,
-		Region:          "us-east-1",
-	}
+	// MinIO storage and template service may already be created by service provider
+	if m.minioStorage == nil {
+		// Initialize MinIO storage
+		minioConfig := storage.MinIOConfig{
+			Endpoint:        "localhost:9000",
+			AccessKeyID:     "minioadmin",
+			SecretAccessKey: "minioadmin123",
+			UseSSL:          false,
+			Region:          "us-east-1",
+		}
 
-	minioStorage, err := storage.NewMinIOStorage(minioConfig)
-	if err != nil {
-		return err
+		minioStorage, err := storage.NewMinIOStorage(minioConfig)
+		if err != nil {
+			return err
+		}
+		m.minioStorage = minioStorage
 	}
 
 	// Initialize Redis client
@@ -67,14 +71,13 @@ func (m *CoreModule) Initialize(ctx core.ModuleContext) error {
 		ctx.Logger.Warn("Redis connection failed:", err)
 	}
 
-	// Store storage for later use
-	m.minioStorage = minioStorage
-
-	// Initialize services
-	m.templateService = services.NewTemplateService(ctx.DB, minioStorage)
+	// Initialize services if not already created
+	if m.templateService == nil {
+		m.templateService = services.NewTemplateService(ctx.DB, m.minioStorage)
+	}
 
 	// Initialize routes
-	m.templateRoutes = routes.NewTemplateRoutes(m.templateService)
+	m.templateRoutes = routes.NewTemplateRoutes(m.templateService, ctx.DB)
 
 	return nil
 }
@@ -120,7 +123,45 @@ func (m *CoreModule) Middleware() []core.MiddlewareProvider {
 
 // Services returns service providers
 func (m *CoreModule) Services() []core.ServiceProvider {
-	return []core.ServiceProvider{}
+	return []core.ServiceProvider{
+		&templateServiceProvider{module: m},
+	}
+}
+
+// templateServiceProvider implements core.ServiceProvider
+type templateServiceProvider struct {
+	module *CoreModule
+}
+
+func (p *templateServiceProvider) ServiceName() string {
+	return "template_service"
+}
+
+func (p *templateServiceProvider) ServiceInterface() interface{} {
+	return (*services.TemplateService)(nil)
+}
+
+func (p *templateServiceProvider) Factory(ctx core.ModuleContext) (interface{}, error) {
+	// Create the service here since Factory is called before Initialize
+	// This means we need to set up storage here too
+	minioConfig := storage.MinIOConfig{
+		Endpoint:        "localhost:9000",
+		AccessKeyID:     "minioadmin",
+		SecretAccessKey: "minioadmin123",
+		UseSSL:          false,
+		Region:          "us-east-1",
+	}
+
+	minioStorage, err := storage.NewMinIOStorage(minioConfig)
+	if err != nil {
+		return nil, err
+	}
+
+	// Create and store the service in the module
+	p.module.templateService = services.NewTemplateService(ctx.DB, minioStorage)
+	p.module.minioStorage = minioStorage
+
+	return p.module.templateService, nil
 }
 
 // SwaggerPaths returns Swagger documentation paths

@@ -46,6 +46,13 @@ func (h *TemplateHandler) CreateTemplate(c *gin.Context) {
 		return
 	}
 
+	// Get organization ID from auth middleware
+	var organizationID *uint
+	if user, err := baseAPI.GetUser(c); err == nil && user.OrganizationID > 0 {
+		orgIDVal := user.OrganizationID
+		organizationID = &orgIDVal
+	}
+
 	var req services.CreateTemplateRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -53,6 +60,7 @@ func (h *TemplateHandler) CreateTemplate(c *gin.Context) {
 	}
 
 	req.TenantID = uint(tenantID)
+	req.OrganizationID = organizationID
 
 	tmpl, err := h.service.CreateTemplate(c.Request.Context(), &req)
 	if err != nil {
@@ -97,50 +105,11 @@ func (h *TemplateHandler) GetTemplate(c *gin.Context) {
 	c.JSON(http.StatusOK, tmpl.ToResponse())
 }
 
-// GetTemplateContent retrieves template with full HTML content
-// @Summary Get template content
-// @Description Get template metadata and HTML content
-// @Tags Templates
-// @Produce json
-// @Param id path int true "Template ID"
-// @Success 200 {object} handlers.SuccessResponse
-// @Failure 401 {object} map[string]string
-// @Failure 404 {object} map[string]string
-// @Failure 500 {object} map[string]string
-// @Router /templates/{id}/content [get]
-// @ID getTemplateContent
-func (h *TemplateHandler) GetTemplateContent(c *gin.Context) {
-	tenantID, err := baseAPI.GetTenantID(c)
-	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "tenant_id required"})
-		return
-	}
-
-	templateID, err := strconv.ParseUint(c.Param("id"), 10, 32)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid template_id"})
-		return
-	}
-
-	tmpl, content, err := h.service.GetTemplateWithContent(c.Request.Context(), uint(tenantID), uint(templateID))
-	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "template not found"})
-		return
-	}
-
-	response := tmpl.ToResponse()
-	c.JSON(http.StatusOK, gin.H{
-		"template": response,
-		"content":  content,
-	})
-}
-
 // ListTemplates lists templates with filters
 // @Summary List templates
-// @Description List templates with optional filters and pagination
+// @Description List templates with optional filters and pagination (organization_id from auth middleware)
 // @Tags Templates
 // @Produce json
-// @Param organization_id query int false "Organization ID filter"
 // @Param template_type query string false "Template type (email, pdf, invoice, document)"
 // @Param is_active query bool false "Active status filter"
 // @Param page query int false "Page number (default 1)"
@@ -157,13 +126,11 @@ func (h *TemplateHandler) ListTemplates(c *gin.Context) {
 		return
 	}
 
-	// Parse filters
+	// Get organization ID from auth middleware
 	var organizationID *uint
-	if orgIDStr := c.Query("organization_id"); orgIDStr != "" {
-		if orgID, err := strconv.ParseUint(orgIDStr, 10, 32); err == nil {
-			orgIDVal := uint(orgID)
-			organizationID = &orgIDVal
-		}
+	if user, err := baseAPI.GetUser(c); err == nil && user.OrganizationID > 0 {
+		orgIDVal := user.OrganizationID
+		organizationID = &orgIDVal
 	}
 
 	templateType := c.Query("template_type")
@@ -236,6 +203,13 @@ func (h *TemplateHandler) UpdateTemplate(c *gin.Context) {
 		return
 	}
 
+	// Get organization ID from auth middleware
+	var organizationID *uint
+	if user, err := baseAPI.GetUser(c); err == nil && user.OrganizationID > 0 {
+		orgIDVal := user.OrganizationID
+		organizationID = &orgIDVal
+	}
+
 	templateID, err := strconv.ParseUint(c.Param("id"), 10, 32)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid template_id"})
@@ -247,6 +221,8 @@ func (h *TemplateHandler) UpdateTemplate(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
+
+	req.OrganizationID = organizationID
 
 	tmpl, err := h.service.UpdateTemplate(c.Request.Context(), uint(tenantID), uint(templateID), &req)
 	if err != nil {
@@ -287,40 +263,6 @@ func (h *TemplateHandler) DeleteTemplate(c *gin.Context) {
 	}
 
 	c.Status(http.StatusNoContent)
-}
-
-// PreviewTemplate renders template with sample data
-// @Summary Preview template
-// @Description Render template with sample data for preview
-// @Tags Templates
-// @Produce html
-// @Param id path int true "Template ID"
-// @Success 200 {string} string "HTML content"
-// @Failure 401 {object} map[string]interface{}
-// @Failure 404 {object} map[string]interface{}
-// @Failure 500 {object} map[string]interface{}
-// @Router /templates/{id}/preview [get]
-// @ID previewTemplate
-func (h *TemplateHandler) PreviewTemplate(c *gin.Context) {
-	tenantID, err := baseAPI.GetTenantID(c)
-	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "tenant_id required"})
-		return
-	}
-
-	templateID, err := strconv.ParseUint(c.Param("id"), 10, 32)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid template_id"})
-		return
-	}
-
-	html, err := h.service.PreviewTemplate(c.Request.Context(), uint(tenantID), uint(templateID))
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-
-	c.Data(http.StatusOK, "text/html; charset=utf-8", []byte(html))
 }
 
 // RenderTemplate renders template with custom data
@@ -366,58 +308,12 @@ func (h *TemplateHandler) RenderTemplate(c *gin.Context) {
 	c.Data(http.StatusOK, "text/html; charset=utf-8", []byte(html))
 }
 
-// DuplicateTemplate creates a copy of a template
-// @Summary Duplicate template
-// @Description Create a copy of an existing template
-// @Tags Templates
-// @Accept json
-// @Produce json
-// @Param id path int true "Template ID"
-// @Param request body map[string]string true "New template name"
-// @Success 201 {object} entities.TemplateResponse
-// @Failure 400 {object} map[string]interface{}
-// @Failure 401 {object} map[string]interface{}
-// @Failure 404 {object} map[string]interface{}
-// @Failure 500 {object} map[string]interface{}
-// @Router /templates/{id}/duplicate [post]
-// @ID duplicateTemplate
-func (h *TemplateHandler) DuplicateTemplate(c *gin.Context) {
-	tenantID, err := baseAPI.GetTenantID(c)
-	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "tenant_id required"})
-		return
-	}
-
-	templateID, err := strconv.ParseUint(c.Param("id"), 10, 32)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid template_id"})
-		return
-	}
-
-	var req struct {
-		Name string `json:"name" binding:"required"`
-	}
-	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-
-	tmpl, err := h.service.DuplicateTemplate(c.Request.Context(), uint(tenantID), uint(templateID), req.Name)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-
-	c.JSON(http.StatusCreated, tmpl.ToResponse())
-}
-
 // GetDefaultTemplate gets the default template for a type
 // @Summary Get default template
-// @Description Get the default template for a specific type and organization
+// @Description Get the default template for a specific type (organization from auth middleware)
 // @Tags Templates
 // @Produce json
 // @Param template_type query string true "Template type (email, pdf, invoice, document)"
-// @Param organization_id query int false "Organization ID (falls back to system default if not found)"
 // @Success 200 {object} entities.TemplateResponse
 // @Failure 401 {object} map[string]interface{}
 // @Failure 404 {object} map[string]interface{}
@@ -437,12 +333,11 @@ func (h *TemplateHandler) GetDefaultTemplate(c *gin.Context) {
 		return
 	}
 
+	// Get organization ID from auth middleware
 	var organizationID *uint
-	if orgIDStr := c.Query("organization_id"); orgIDStr != "" {
-		if orgID, err := strconv.ParseUint(orgIDStr, 10, 32); err == nil {
-			orgIDVal := uint(orgID)
-			organizationID = &orgIDVal
-		}
+	if user, err := baseAPI.GetUser(c); err == nil && user.OrganizationID > 0 {
+		orgIDVal := user.OrganizationID
+		organizationID = &orgIDVal
 	}
 
 	tmpl, err := h.service.GetDefaultTemplate(c.Request.Context(), uint(tenantID), organizationID, templateType)

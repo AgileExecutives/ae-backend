@@ -7,7 +7,6 @@ require (
 	github.com/gin-gonic/gin v1.10.1
 	github.com/golang-jwt/jwt/v5 v5.3.0
 	github.com/joho/godotenv v1.5.1
-	github.com/redis/go-redis/v9 v9.7.0
 	github.com/stretchr/testify v1.11.1
 	github.com/unburdy/booking-module v0.0.0
 	github.com/unburdy/calendar-module v0.0.0
@@ -45,6 +44,7 @@ require (
 	github.com/philhofer/fwd v1.2.0 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
+	github.com/redis/go-redis/v9 v9.7.0 // indirect
 	github.com/rs/xid v1.6.0 // indirect
 	github.com/swaggo/files v1.0.1 // indirect
 	github.com/swaggo/gin-swagger v1.6.1 // indirect
@@ -109,7 +109,7 @@ replace github.com/unburdy/booking-module => ../modules/booking
 replace github.com/unburdy/calendar-module => ../modules/calendar
 
 replace github.com/unburdy/documents-module => ../modules/documents
-replace github.com/unburdy/invoice-module => ../modules/invoice
+
 replace github.com/unburdy/invoice-module => ../modules/invoice
 
 replace github.com/unburdy/templates-module => ../modules/templates

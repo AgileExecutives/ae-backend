@@ -23,6 +23,8 @@ func setupInvoiceTestDB(t *testing.T) *gorm.DB {
 		&entities.Session{},
 		&entities.Invoice{},
 		&entities.InvoiceItem{},
+		&entities.ClientInvoice{},
+		&entities.ExtraEffort{},
 		&baseAPI.Organization{},
 	)
 	require.NoError(t, err)
@@ -88,7 +90,8 @@ func TestCreateInvoice(t *testing.T) {
 	invoice, err := service.CreateInvoice(req, tenantID, userID)
 	assert.NoError(t, err)
 	assert.NotNil(t, invoice)
-	assert.Equal(t, clientID, invoice.ClientID)
+	assert.Len(t, invoice.ClientInvoices, 3)
+	assert.Equal(t, clientID, invoice.ClientInvoices[0].ClientID)
 	assert.Equal(t, 3, invoice.NumberUnits)
 	assert.Equal(t, entities.InvoiceStatusDraft, invoice.Status)
 	assert.Len(t, invoice.InvoiceItems, 3)
@@ -153,9 +156,8 @@ func TestGetInvoiceByID(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, invoice)
 	assert.Equal(t, created.ID, invoice.ID)
-	assert.NotNil(t, invoice.Client)
-	assert.NotNil(t, invoice.CostProvider)
 	assert.NotNil(t, invoice.Organization)
+	assert.NotEmpty(t, invoice.ClientInvoices)
 	assert.Len(t, invoice.InvoiceItems, 3)
 }
 
@@ -235,13 +237,13 @@ func TestUpdateInvoiceStatus_Payed(t *testing.T) {
 	created, err := service.CreateInvoice(req, tenantID, userID)
 	require.NoError(t, err)
 
-	newStatus := entities.InvoiceStatusPayed
+	newStatus := entities.InvoiceStatusPaid
 	updateReq := entities.UpdateInvoiceRequest{
 		Status: &newStatus,
 	}
 	updated, err := service.UpdateInvoice(created.ID, tenantID, userID, updateReq)
 	assert.NoError(t, err)
-	assert.Equal(t, entities.InvoiceStatusPayed, updated.Status)
+	assert.Equal(t, entities.InvoiceStatusPaid, updated.Status)
 	assert.NotNil(t, updated.PayedDate)
 }
 

@@ -7,6 +7,7 @@ import (
 	baseAPI "github.com/ae-base-server/api"
 	"github.com/ae-base-server/internal/models"
 	"github.com/ae-base-server/internal/organizations/services"
+	"github.com/ae-base-server/pkg/formatting"
 	"github.com/ae-base-server/pkg/utils"
 	"github.com/gin-gonic/gin"
 )
@@ -175,6 +176,50 @@ func (h *OrganizationHandler) UpdateOrganization(c *gin.Context) {
 	c.JSON(http.StatusOK, baseAPI.SuccessResponse("Organization updated successfully", organization.ToResponse()))
 }
 
+// UpdateBillingConfig handles updating an organization's billing configuration for extra efforts
+// @Summary Update organization billing configuration
+// @Description Update billing mode and configuration for extra efforts tracking
+// @Tags organizations
+// @ID updateOrganizationBillingConfig
+// @Accept json
+// @Produce json
+// @Param id path int true "Organization ID"
+// @Param config body models.UpdateBillingConfigRequest true "Billing configuration"
+// @Success 200 {object} models.OrganizationAPIResponse
+// @Failure 400 {object} models.ErrorResponse
+// @Failure 401 {object} models.ErrorResponse
+// @Failure 404 {object} models.ErrorResponse
+// @Failure 500 {object} models.ErrorResponse
+// @Security BearerAuth
+// @Router /organizations/{id}/billing-config [put]
+func (h *OrganizationHandler) UpdateBillingConfig(c *gin.Context) {
+	id, err := strconv.ParseUint(c.Param("id"), 10, 32)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, baseAPI.ErrorResponseFunc("Invalid request", "Invalid organization ID"))
+		return
+	}
+
+	var req models.UpdateBillingConfigRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, baseAPI.ErrorResponseFunc("Invalid request", err.Error()))
+		return
+	}
+
+	tenantID, err := baseAPI.GetTenantID(c)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, baseAPI.ErrorResponseFunc("Unauthorized", "Unable to get tenant ID: "+err.Error()))
+		return
+	}
+
+	organization, err := h.service.UpdateBillingConfig(uint(id), tenantID, req)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, baseAPI.ErrorResponseFunc("Failed to update billing config", err.Error()))
+		return
+	}
+
+	c.JSON(http.StatusOK, baseAPI.SuccessResponse("Billing configuration updated successfully", organization.ToResponse()))
+}
+
 // DeleteOrganization handles deleting an organization
 // @Summary Delete an organization
 // @Description Delete an organization by ID
@@ -208,4 +253,22 @@ func (h *OrganizationHandler) DeleteOrganization(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, baseAPI.SuccessMessageResponse("Organization deleted successfully"))
+}
+
+// GetSupportedFormats returns the supported date, time, and amount formats
+// @Summary Get supported formats
+// @Description Get all supported date, time, and amount formats with examples
+// @Tags organizations
+// @ID getSupportedFormats
+// @Produce json
+// @Success 200 {object} map[string]interface{} "Supported formats with examples"
+// @Router /organizations/supported-formats [get]
+func (h *OrganizationHandler) GetSupportedFormats(c *gin.Context) {
+	response := map[string]interface{}{
+		"date_formats":   formatting.GetSupportedDateFormats(),
+		"time_formats":   formatting.GetSupportedTimeFormats(),
+		"amount_formats": formatting.GetSupportedAmountFormats(),
+		"locales":        formatting.GetSupportedLocales(),
+	}
+	c.JSON(http.StatusOK, baseAPI.SuccessResponse("Supported formats retrieved successfully", response))
 }

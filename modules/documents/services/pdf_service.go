@@ -9,23 +9,20 @@ import (
 	"github.com/chromedp/chromedp"
 	"github.com/unburdy/documents-module/entities"
 	"github.com/unburdy/documents-module/services/storage"
-	templateServices "github.com/unburdy/templates-module/services"
 	"gorm.io/gorm"
 )
 
 // PDFService handles PDF generation from HTML content
 type PDFService struct {
-	db              *gorm.DB
-	storage         storage.DocumentStorage
-	templateService *templateServices.TemplateService
+	db      *gorm.DB
+	storage storage.DocumentStorage
 }
 
 // NewPDFService creates a new PDF service instance
-func NewPDFService(db *gorm.DB, storage storage.DocumentStorage, templateService *templateServices.TemplateService) *PDFService {
+func NewPDFService(db *gorm.DB, storage storage.DocumentStorage) *PDFService {
 	return &PDFService{
-		db:              db,
-		storage:         storage,
-		templateService: templateService,
+		db:      db,
+		storage: storage,
 	}
 }
 
@@ -33,6 +30,7 @@ func NewPDFService(db *gorm.DB, storage storage.DocumentStorage, templateService
 type GeneratePDFFromHTMLRequest struct {
 	HTML         string                 `json:"html" binding:"required"`
 	TenantID     uint                   `json:"-"`
+	UserID       uint                   `json:"-"` // Required for document ownership
 	Filename     string                 `json:"filename"`
 	DocumentType string                 `json:"document_type"`
 	Metadata     map[string]interface{} `json:"metadata"`
@@ -82,7 +80,7 @@ func (s *PDFService) GeneratePDFFromHTML(ctx context.Context, req *GeneratePDFFr
 
 	// Save document if requested
 	if req.SaveDocument {
-		doc, err := s.saveDocument(ctx, req.TenantID, 1, filename, req.DocumentType, pdfData, req.Metadata) // UserID hardcoded to 1 for HTML generation
+		doc, err := s.saveDocument(ctx, req.TenantID, req.UserID, filename, req.DocumentType, pdfData, req.Metadata)
 		if err != nil {
 			return nil, fmt.Errorf("failed to save document: %w", err)
 		}
@@ -93,48 +91,10 @@ func (s *PDFService) GeneratePDFFromHTML(ctx context.Context, req *GeneratePDFFr
 	return result, nil
 }
 
-// GeneratePDFFromTemplate generates a PDF from a template
+// GeneratePDFFromTemplate is deprecated - use handler orchestration instead
+// This method is kept for backwards compatibility but should not be used
 func (s *PDFService) GeneratePDFFromTemplate(ctx context.Context, req *GeneratePDFFromTemplateRequest) (*PDFGenerationResult, error) {
-	// Render template with data
-	html, err := s.templateService.RenderTemplate(ctx, req.TenantID, req.TemplateID, req.Data)
-	if err != nil {
-		return nil, fmt.Errorf("failed to render template: %w", err)
-	}
-
-	// Generate PDF from rendered HTML
-	pdfData, err := s.convertHTMLToPDF(ctx, html)
-	if err != nil {
-		return nil, fmt.Errorf("failed to convert HTML to PDF: %w", err)
-	}
-
-	// Get template for filename
-	tmpl, err := s.templateService.GetTemplate(ctx, req.TenantID, req.TemplateID)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get template: %w", err)
-	}
-
-	filename := req.Filename
-	if filename == "" {
-		filename = fmt.Sprintf("%s_%d.pdf", tmpl.Name, time.Now().Unix())
-	}
-
-	result := &PDFGenerationResult{
-		PDFData:   pdfData,
-		Filename:  filename,
-		SizeBytes: int64(len(pdfData)),
-	}
-
-	// Save document if requested
-	if req.SaveDocument {
-		doc, err := s.saveDocument(ctx, req.TenantID, req.UserID, filename, req.DocumentType, pdfData, req.Metadata)
-		if err != nil {
-			return nil, fmt.Errorf("failed to save document: %w", err)
-		}
-		result.Document = doc
-		result.StorageKey = doc.StorageKey
-	}
-
-	return result, nil
+	return nil, fmt.Errorf("GeneratePDFFromTemplate is deprecated - use GeneratePDFFromHTML with pre-rendered template HTML")
 }
 
 // convertHTMLToPDF converts HTML content to PDF using chromedp
@@ -200,11 +160,17 @@ func (s *PDFService) saveDocument(
 	pdfData []byte,
 	metadata map[string]interface{},
 ) (*entities.Document, error) {
+	// Remove .pdf extension from filename if present to avoid double extension
+	baseFilename := filename
+	if len(filename) > 4 && filename[len(filename)-4:] == ".pdf" {
+		baseFilename = filename[:len(filename)-4]
+	}
+
 	// Generate storage key
 	storageKey := fmt.Sprintf("tenants/%d/documents/%s/%s_%d.pdf",
 		tenantID,
 		documentType,
-		filename,
+		baseFilename,
 		time.Now().Unix(),
 	)
 

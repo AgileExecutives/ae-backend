@@ -2406,12 +2406,12 @@ const docTemplate = `{
                 "operationId": "createInvoice",
                 "parameters": [
                     {
-                        "description": "Invoice information with client ID and session IDs",
+                        "description": "Complete invoice information with line items",
                         "name": "invoice",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_modules_client_management_entities.CreateInvoiceRequest"
+                            "$ref": "#/definitions/entities.CreateInvoiceDirectRequest"
                         }
                     }
                 ],
@@ -2500,6 +2500,71 @@ const docTemplate = `{
                             "additionalProperties": {
                                 "type": "string"
                             }
+                        }
+                    }
+                }
+            }
+        },
+        "/client-invoices/generate": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Create invoice record from unbilled-sessions data with generation parameters. Request body has two parts: 'unbilledClient' (complete client object from GET /client-invoices/unbilled-sessions) and 'parameters' (invoice generation settings like invoice_number, invoice_date, tax_rate, generate_pdf, session date filters, and template_id). Defaults to generating PDF unless generate_pdf is explicitly set to false.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "client-invoices"
+                ],
+                "summary": "Generate invoice with PDF from unbilled sessions",
+                "operationId": "generateInvoiceWithPDF",
+                "parameters": [
+                    {
+                        "description": "Request with unbilledClient (from unbilled-sessions) and parameters (invoice generation settings)",
+                        "name": "invoice",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/entities.CreateInvoiceDirectRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Returns invoice data, and if generate_pdf is true, also includes document details and pdf_url",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request or no sessions in date range",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to create invoice, render template, or generate PDF",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse"
+                        }
+                    },
+                    "503": {
+                        "description": "PDF generation service not configured",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse"
                         }
                     }
                 }
@@ -2699,6 +2764,65 @@ const docTemplate = `{
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/entities.InvoiceDeleteResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/client-invoices/{id}/cancel": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Cancel a draft invoice and revert all associated sessions to conducted status and extra efforts to unbilled status",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "client-invoices"
+                ],
+                "summary": "Cancel a draft invoice",
+                "operationId": "cancelInvoice",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Invoice ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.APIResponse"
                         }
                     },
                     "400": {
@@ -5371,6 +5495,317 @@ const docTemplate = `{
                 }
             }
         },
+        "/extra-efforts": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Retrieve extra efforts with optional filters",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "extra-efforts"
+                ],
+                "summary": "List extra efforts",
+                "operationId": "listExtraEfforts",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Filter by client ID",
+                        "name": "client_id",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Filter by session ID",
+                        "name": "session_id",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by billing status (unbilled, billed, excluded)",
+                        "name": "billing_status",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by effort type",
+                        "name": "effort_type",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter from date (YYYY-MM-DD)",
+                        "name": "from_date",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter to date (YYYY-MM-DD)",
+                        "name": "to_date",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/entities.ExtraEffortListAPIResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Record extra therapeutic work (preparation, consultation, meeting, etc.)",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "extra-efforts"
+                ],
+                "summary": "Create extra effort",
+                "operationId": "createExtraEffort",
+                "parameters": [
+                    {
+                        "description": "Extra effort information",
+                        "name": "effort",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/entities.CreateExtraEffortRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/entities.ExtraEffortAPIResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/extra-efforts/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Retrieve an extra effort by its ID",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "extra-efforts"
+                ],
+                "summary": "Get extra effort by ID",
+                "operationId": "getExtraEffort",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Extra effort ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/entities.ExtraEffortAPIResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Update an existing extra effort (only if unbilled)",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "extra-efforts"
+                ],
+                "summary": "Update extra effort",
+                "operationId": "updateExtraEffort",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Extra effort ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Updated extra effort information",
+                        "name": "effort",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/entities.UpdateExtraEffortRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/entities.ExtraEffortAPIResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Delete an extra effort (only if unbilled)",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "extra-efforts"
+                ],
+                "summary": "Delete extra effort",
+                "operationId": "deleteExtraEffort",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Extra effort ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/entities.ExtraEffortDeleteResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/health": {
             "get": {
                 "description": "Check the health status of the API and database",
@@ -6229,6 +6664,28 @@ const docTemplate = `{
                 }
             }
         },
+        "/organizations/supported-formats": {
+            "get": {
+                "description": "Get all supported date, time, and amount formats with examples",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "organizations"
+                ],
+                "summary": "Get supported formats",
+                "operationId": "getSupportedFormats",
+                "responses": {
+                    "200": {
+                        "description": "Supported formats with examples",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
         "/organizations/{id}": {
             "get": {
                 "security": [
@@ -6385,6 +6842,77 @@ const docTemplate = `{
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/models.OrganizationDeleteResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/organizations/{id}/billing-config": {
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Update billing mode and configuration for extra efforts tracking",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "organizations"
+                ],
+                "summary": "Update organization billing configuration",
+                "operationId": "updateOrganizationBillingConfig",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Organization ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Billing configuration",
+                        "name": "config",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.UpdateBillingConfigRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.OrganizationAPIResponse"
                         }
                     },
                     "400": {
@@ -7596,7 +8124,7 @@ const docTemplate = `{
         },
         "/templates": {
             "get": {
-                "description": "List templates with optional filters and pagination",
+                "description": "List templates with optional filters and pagination (organization_id from auth middleware)",
                 "produces": [
                     "application/json"
                 ],
@@ -7606,12 +8134,6 @@ const docTemplate = `{
                 "summary": "List templates",
                 "operationId": "listTemplates",
                 "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "Organization ID filter",
-                        "name": "organization_id",
-                        "in": "query"
-                    },
                     {
                         "type": "string",
                         "description": "Template type (email, pdf, invoice, document)",
@@ -7732,7 +8254,7 @@ const docTemplate = `{
         },
         "/templates/default": {
             "get": {
-                "description": "Get the default template for a specific type and organization",
+                "description": "Get the default template for a specific type (organization from auth middleware)",
                 "produces": [
                     "application/json"
                 ],
@@ -7748,12 +8270,6 @@ const docTemplate = `{
                         "name": "template_type",
                         "in": "query",
                         "required": true
-                    },
-                    {
-                        "type": "integer",
-                        "description": "Organization ID (falls back to system default if not found)",
-                        "name": "organization_id",
-                        "in": "query"
                     }
                 ],
                 "responses": {
@@ -7924,187 +8440,6 @@ const docTemplate = `{
                 "responses": {
                     "204": {
                         "description": "No Content"
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": true
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": true
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": true
-                        }
-                    }
-                }
-            }
-        },
-        "/templates/{id}/content": {
-            "get": {
-                "description": "Get template metadata and HTML content",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Templates"
-                ],
-                "summary": "Get template content",
-                "operationId": "getTemplateContent",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "Template ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/handlers.SuccessResponse"
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/templates/{id}/duplicate": {
-            "post": {
-                "description": "Create a copy of an existing template",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Templates"
-                ],
-                "summary": "Duplicate template",
-                "operationId": "duplicateTemplate",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "Template ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "New template name",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    }
-                ],
-                "responses": {
-                    "201": {
-                        "description": "Created",
-                        "schema": {
-                            "$ref": "#/definitions/entities.TemplateResponse"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": true
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": true
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": true
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": true
-                        }
-                    }
-                }
-            }
-        },
-        "/templates/{id}/preview": {
-            "get": {
-                "description": "Render template with sample data for preview",
-                "produces": [
-                    "text/html"
-                ],
-                "tags": [
-                    "Templates"
-                ],
-                "summary": "Preview template",
-                "operationId": "previewTemplate",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "Template ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "HTML content",
-                        "schema": {
-                            "type": "string"
-                        }
                     },
                     "401": {
                         "description": "Unauthorized",
@@ -8411,10 +8746,10 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "additional_payment_methods": {
-                    "type": "array",
-                    "items": {
-                        "type": "integer"
-                    }
+                    "type": "object"
+                },
+                "amount_format": {
+                    "type": "string"
                 },
                 "bankaccount_bank": {
                     "type": "string"
@@ -8434,17 +8769,32 @@ const docTemplate = `{
                 "created_at": {
                     "type": "string"
                 },
+                "date_format": {
+                    "type": "string"
+                },
                 "email": {
                     "type": "string"
+                },
+                "extra_efforts_billing_mode": {
+                    "type": "string"
+                },
+                "extra_efforts_config": {
+                    "type": "object"
                 },
                 "id": {
                     "type": "integer"
                 },
                 "invoice_content": {
-                    "type": "array",
-                    "items": {
-                        "type": "integer"
-                    }
+                    "type": "object"
+                },
+                "line_item_double_unit_text": {
+                    "type": "string"
+                },
+                "line_item_single_unit_text": {
+                    "type": "string"
+                },
+                "locale": {
+                    "type": "string"
                 },
                 "name": {
                     "type": "string"
@@ -8472,6 +8822,9 @@ const docTemplate = `{
                 },
                 "tenant_id": {
                     "type": "integer"
+                },
+                "time_format": {
+                    "type": "string"
                 },
                 "unit_price": {
                     "type": "number"
@@ -8959,6 +9312,29 @@ const docTemplate = `{
                 }
             }
         },
+        "entities.ClientInvoiceResponse": {
+            "type": "object",
+            "properties": {
+                "client": {
+                    "$ref": "#/definitions/entities.ClientResponse"
+                },
+                "client_id": {
+                    "type": "integer"
+                },
+                "cost_provider": {
+                    "$ref": "#/definitions/entities.CostProviderResponse"
+                },
+                "cost_provider_id": {
+                    "type": "integer"
+                },
+                "sessions": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/entities.SessionResponse"
+                    }
+                }
+            }
+        },
         "entities.ClientResponse": {
             "type": "object",
             "properties": {
@@ -9132,6 +9508,12 @@ const docTemplate = `{
                 },
                 "email": {
                     "type": "string"
+                },
+                "extra_efforts": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/entities.ExtraEffortResponse"
+                    }
                 },
                 "first_name": {
                     "type": "string"
@@ -9520,6 +9902,78 @@ const docTemplate = `{
         "entities.CreateExternalCalendarRequest": {
             "type": "object"
         },
+        "entities.CreateExtraEffortRequest": {
+            "type": "object",
+            "required": [
+                "client_id",
+                "duration_min",
+                "effort_date",
+                "effort_type"
+            ],
+            "properties": {
+                "billable": {
+                    "type": "boolean",
+                    "example": true
+                },
+                "client_id": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "description": {
+                    "type": "string",
+                    "example": "Copied therapy materials"
+                },
+                "duration_min": {
+                    "type": "integer",
+                    "maximum": 480,
+                    "minimum": 1,
+                    "example": 20
+                },
+                "effort_date": {
+                    "type": "string",
+                    "example": "2025-12-30"
+                },
+                "effort_type": {
+                    "type": "string",
+                    "enum": [
+                        "preparation",
+                        "consultation",
+                        "parent_meeting",
+                        "documentation",
+                        "other"
+                    ],
+                    "example": "preparation"
+                },
+                "session_id": {
+                    "type": "integer",
+                    "example": 5
+                }
+            }
+        },
+        "entities.CreateInvoiceDirectRequest": {
+            "type": "object",
+            "required": [
+                "unbilledClient"
+            ],
+            "properties": {
+                "parameters": {
+                    "description": "Invoice generation parameters",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/entities.InvoiceGenerationParameters"
+                        }
+                    ]
+                },
+                "unbilledClient": {
+                    "description": "Unbilled client data (matching ClientWithUnbilledSessionsResponse)",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/entities.ClientWithUnbilledSessionsResponse"
+                        }
+                    ]
+                }
+            }
+        },
         "entities.CreateSessionRequest": {
             "type": "object",
             "required": [
@@ -9726,6 +10180,93 @@ const docTemplate = `{
                 }
             }
         },
+        "entities.ExtraEffortAPIResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/entities.ExtraEffortResponse"
+                },
+                "message": {
+                    "type": "string",
+                    "example": "Extra effort retrieved successfully"
+                },
+                "success": {
+                    "type": "boolean",
+                    "example": true
+                }
+            }
+        },
+        "entities.ExtraEffortDeleteResponse": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string",
+                    "example": "Extra effort deleted successfully"
+                },
+                "success": {
+                    "type": "boolean",
+                    "example": true
+                }
+            }
+        },
+        "entities.ExtraEffortListAPIResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/entities.ExtraEffortResponse"
+                    }
+                },
+                "message": {
+                    "type": "string",
+                    "example": "Extra efforts retrieved successfully"
+                },
+                "success": {
+                    "type": "boolean",
+                    "example": true
+                },
+                "total": {
+                    "type": "integer",
+                    "example": 10
+                }
+            }
+        },
+        "entities.ExtraEffortResponse": {
+            "type": "object",
+            "properties": {
+                "billable": {
+                    "type": "boolean"
+                },
+                "billing_status": {
+                    "type": "string"
+                },
+                "client_id": {
+                    "type": "integer"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "duration_min": {
+                    "type": "integer"
+                },
+                "effort_date": {
+                    "type": "string"
+                },
+                "effort_type": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "session_id": {
+                    "type": "integer"
+                }
+            }
+        },
         "entities.FreeSlotsResponse": {
             "type": "object",
             "properties": {
@@ -9845,6 +10386,35 @@ const docTemplate = `{
                 "success": {
                     "type": "boolean",
                     "example": true
+                }
+            }
+        },
+        "entities.InvoiceGenerationParameters": {
+            "type": "object",
+            "properties": {
+                "generate_pdf": {
+                    "description": "Default true in handler",
+                    "type": "boolean"
+                },
+                "invoice_date": {
+                    "type": "string"
+                },
+                "invoice_number": {
+                    "type": "string"
+                },
+                "session_from_date": {
+                    "description": "Filter sessions by start date (YYYY-MM-DD)",
+                    "type": "string"
+                },
+                "session_to_date": {
+                    "description": "Filter sessions by end date (YYYY-MM-DD)",
+                    "type": "string"
+                },
+                "tax_rate": {
+                    "type": "number"
+                },
+                "template_id": {
+                    "type": "integer"
                 }
             }
         },
@@ -10407,6 +10977,40 @@ const docTemplate = `{
         "entities.UpdateExternalCalendarRequest": {
             "type": "object"
         },
+        "entities.UpdateExtraEffortRequest": {
+            "type": "object",
+            "properties": {
+                "billable": {
+                    "type": "boolean",
+                    "example": false
+                },
+                "description": {
+                    "type": "string",
+                    "example": "Updated description"
+                },
+                "duration_min": {
+                    "type": "integer",
+                    "maximum": 480,
+                    "minimum": 1,
+                    "example": 30
+                },
+                "effort_date": {
+                    "type": "string",
+                    "example": "2025-12-30"
+                },
+                "effort_type": {
+                    "type": "string",
+                    "enum": [
+                        "preparation",
+                        "consultation",
+                        "parent_meeting",
+                        "documentation",
+                        "other"
+                    ],
+                    "example": "consultation"
+                }
+            }
+        },
         "entities.UpdateSessionRequest": {
             "type": "object",
             "properties": {
@@ -10417,6 +11021,10 @@ const docTemplate = `{
                 "duration_min": {
                     "type": "integer",
                     "example": 60
+                },
+                "internal_note": {
+                    "type": "string",
+                    "example": "Client was engaged"
                 },
                 "number_units": {
                     "type": "integer",
@@ -10771,9 +11379,6 @@ const docTemplate = `{
                 },
                 "currency": {
                     "type": "string"
-                },
-                "deleted_at": {
-                    "$ref": "#/definitions/gorm.DeletedAt"
                 },
                 "description": {
                     "type": "string"
@@ -11295,69 +11900,22 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_unburdy_unburdy-server-api_modules_client_management_entities.CreateInvoiceRequest": {
-            "type": "object",
-            "required": [
-                "client_id",
-                "session_ids"
-            ],
-            "properties": {
-                "client_id": {
-                    "type": "integer",
-                    "example": 1
-                },
-                "session_ids": {
-                    "type": "array",
-                    "items": {
-                        "type": "integer"
-                    },
-                    "example": [
-                        1,
-                        2,
-                        3
-                    ]
-                }
-            }
-        },
-        "github_com_unburdy_unburdy-server-api_modules_client_management_entities.InvoiceItemResponse": {
-            "type": "object",
-            "properties": {
-                "created_at": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "integer"
-                },
-                "invoice_id": {
-                    "type": "integer"
-                },
-                "session": {
-                    "$ref": "#/definitions/entities.SessionResponse"
-                },
-                "session_id": {
-                    "type": "integer"
-                },
-                "updated_at": {
-                    "type": "string"
-                }
-            }
-        },
         "github_com_unburdy_unburdy-server-api_modules_client_management_entities.InvoiceResponse": {
             "type": "object",
             "properties": {
-                "client": {
-                    "$ref": "#/definitions/entities.ClientResponse"
-                },
-                "client_id": {
-                    "type": "integer"
-                },
-                "cost_provider": {
-                    "$ref": "#/definitions/entities.CostProviderResponse"
-                },
-                "cost_provider_id": {
-                    "type": "integer"
+                "clients": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/entities.ClientInvoiceResponse"
+                    }
                 },
                 "created_at": {
+                    "type": "string"
+                },
+                "document_id": {
+                    "type": "integer"
+                },
+                "document_url": {
                     "type": "string"
                 },
                 "id": {
@@ -11365,12 +11923,6 @@ const docTemplate = `{
                 },
                 "invoice_date": {
                     "type": "string"
-                },
-                "invoice_items": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_modules_client_management_entities.InvoiceItemResponse"
-                    }
                 },
                 "invoice_number": {
                     "type": "string"
@@ -11454,18 +12006,6 @@ const docTemplate = `{
                         }
                     ],
                     "example": "sent"
-                }
-            }
-        },
-        "gorm.DeletedAt": {
-            "type": "object",
-            "properties": {
-                "time": {
-                    "type": "string"
-                },
-                "valid": {
-                    "description": "Valid is true if Time is not NULL",
-                    "type": "boolean"
                 }
             }
         },
@@ -11583,9 +12123,6 @@ const docTemplate = `{
         },
         "handlers.GenerateInvoiceNumberRequest": {
             "type": "object",
-            "required": [
-                "organization_id"
-            ],
             "properties": {
                 "month": {
                     "type": "integer",
@@ -11597,6 +12134,7 @@ const docTemplate = `{
                     "example": "MM"
                 },
                 "organization_id": {
+                    "description": "Optional - will use authenticated user's organization if not provided",
                     "type": "integer",
                     "example": 10
                 },
@@ -11853,9 +12391,6 @@ const docTemplate = `{
                 },
                 "created_at": {
                     "type": "string"
-                },
-                "deleted_at": {
-                    "$ref": "#/definitions/gorm.DeletedAt"
                 },
                 "email": {
                     "type": "string"
@@ -12219,6 +12754,10 @@ const docTemplate = `{
                 "additional_payment_methods": {
                     "type": "object"
                 },
+                "amount_format": {
+                    "type": "string",
+                    "example": "de"
+                },
                 "bankaccount_bank": {
                     "type": "string",
                     "example": "Deutsche Bank"
@@ -12239,12 +12778,35 @@ const docTemplate = `{
                     "type": "string",
                     "example": "New York"
                 },
+                "date_format": {
+                    "type": "string",
+                    "example": "02.01.2006"
+                },
                 "email": {
                     "type": "string",
                     "example": "info@acme.com"
                 },
+                "extra_efforts_billing_mode": {
+                    "type": "string",
+                    "example": "ignore"
+                },
+                "extra_efforts_config": {
+                    "type": "object"
+                },
                 "invoice_content": {
                     "type": "object"
+                },
+                "line_item_double_unit_text": {
+                    "type": "string",
+                    "example": "Doppelstunde"
+                },
+                "line_item_single_unit_text": {
+                    "type": "string",
+                    "example": "Einzelstunde"
+                },
+                "locale": {
+                    "type": "string",
+                    "example": "de-DE"
                 },
                 "name": {
                     "type": "string",
@@ -12277,6 +12839,10 @@ const docTemplate = `{
                 "tax_ustid": {
                     "type": "string",
                     "example": "DE123456789"
+                },
+                "time_format": {
+                    "type": "string",
+                    "example": "15:04"
                 },
                 "unit_price": {
                     "type": "number",
@@ -12377,10 +12943,10 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "additional_payment_methods": {
-                    "type": "array",
-                    "items": {
-                        "type": "integer"
-                    }
+                    "type": "object"
+                },
+                "amount_format": {
+                    "type": "string"
                 },
                 "bankaccount_bank": {
                     "type": "string"
@@ -12400,17 +12966,32 @@ const docTemplate = `{
                 "created_at": {
                     "type": "string"
                 },
+                "date_format": {
+                    "type": "string"
+                },
                 "email": {
                     "type": "string"
+                },
+                "extra_efforts_billing_mode": {
+                    "type": "string"
+                },
+                "extra_efforts_config": {
+                    "type": "object"
                 },
                 "id": {
                     "type": "integer"
                 },
                 "invoice_content": {
-                    "type": "array",
-                    "items": {
-                        "type": "integer"
-                    }
+                    "type": "object"
+                },
+                "line_item_double_unit_text": {
+                    "type": "string"
+                },
+                "line_item_single_unit_text": {
+                    "type": "string"
+                },
+                "locale": {
+                    "type": "string"
                 },
                 "name": {
                     "type": "string"
@@ -12438,6 +13019,9 @@ const docTemplate = `{
                 },
                 "tenant_id": {
                     "type": "integer"
+                },
+                "time_format": {
+                    "type": "string"
                 },
                 "unit_price": {
                     "type": "number"
@@ -12514,6 +13098,26 @@ const docTemplate = `{
                 },
                 "slug": {
                     "type": "string"
+                }
+            }
+        },
+        "models.UpdateBillingConfigRequest": {
+            "type": "object",
+            "properties": {
+                "extra_efforts_billing_mode": {
+                    "type": "string",
+                    "example": "bundle_double_units"
+                },
+                "extra_efforts_config": {
+                    "type": "object"
+                },
+                "line_item_double_unit_text": {
+                    "type": "string",
+                    "example": "Therapie Doppelstunde"
+                },
+                "line_item_single_unit_text": {
+                    "type": "string",
+                    "example": "Therapiestunde"
                 }
             }
         },
@@ -12669,6 +13273,10 @@ const docTemplate = `{
                 "additional_payment_methods": {
                     "type": "object"
                 },
+                "amount_format": {
+                    "type": "string",
+                    "example": "de"
+                },
                 "bankaccount_bank": {
                     "type": "string",
                     "example": "Deutsche Bank"
@@ -12689,12 +13297,35 @@ const docTemplate = `{
                     "type": "string",
                     "example": "New York"
                 },
+                "date_format": {
+                    "type": "string",
+                    "example": "02.01.2006"
+                },
                 "email": {
                     "type": "string",
                     "example": "info@acme.com"
                 },
+                "extra_efforts_billing_mode": {
+                    "type": "string",
+                    "example": "bundle_double_units"
+                },
+                "extra_efforts_config": {
+                    "type": "object"
+                },
                 "invoice_content": {
                     "type": "object"
+                },
+                "line_item_double_unit_text": {
+                    "type": "string",
+                    "example": "Therapie Doppelstunde"
+                },
+                "line_item_single_unit_text": {
+                    "type": "string",
+                    "example": "Therapiestunde"
+                },
+                "locale": {
+                    "type": "string",
+                    "example": "de-DE"
                 },
                 "name": {
                     "type": "string",
@@ -12728,6 +13359,10 @@ const docTemplate = `{
                     "type": "string",
                     "example": "DE123456789"
                 },
+                "time_format": {
+                    "type": "string",
+                    "example": "15:04"
+                },
                 "unit_price": {
                     "type": "number",
                     "example": 150
@@ -12746,9 +13381,6 @@ const docTemplate = `{
             "properties": {
                 "created_at": {
                     "type": "string"
-                },
-                "deleted_at": {
-                    "$ref": "#/definitions/gorm.DeletedAt"
                 },
                 "id": {
                     "type": "integer"
@@ -12865,6 +13497,10 @@ const docTemplate = `{
                 },
                 "name": {
                     "type": "string"
+                },
+                "organization_id": {
+                    "description": "Set from middleware, not from client",
+                    "type": "integer"
                 },
                 "sample_data": {
                     "type": "object",

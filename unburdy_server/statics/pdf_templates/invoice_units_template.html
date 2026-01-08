@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Rechnung {{.Invoice.ID}}</title>
+    <title>Rechnung {{.Invoice.InvoiceNumber}}</title>
     <style>
         @page {
             size: A4;
@@ -219,7 +219,7 @@
             </div>
             <div class="company-info">
                 <strong>{{.Organization.Name}}</strong><br>
-                {{.Organization.Street}}<br>
+                {{.Organization.StreetAddress}}<br>
                 {{.Organization.Zip}} {{.Organization.City}}<br>
                 <br>
                 Telefon: {{.Organization.Phone}}<br>
@@ -228,31 +228,31 @@
         </div>
 
         <div class="sender-line">
-            {{.Organization.Name}} · {{.Organization.Street}} · {{.Organization.Zip}} {{.Organization.City}}
+            {{.Organization.Name}} · {{.Organization.StreetAddress}} · {{.Organization.Zip}} {{.Organization.City}}
         </div>
 
         <div class="address-section">
             <div class="address-invoice-flex">
                 <div class="address-block">
-                    {{.Provider.ProviderName}}<br>
-                    {{.Provider.ContactPerson}}<br>
-                    {{.Provider.Street}}<br>
-                    {{.Provider.Zip}} {{.Provider.City}}
+                    {{.CostProvider.Organization}}<br>
+                    {{if .CostProvider.Department}}{{.CostProvider.Department}}<br>{{end}}
+                    {{.CostProvider.StreetAddress}}<br>
+                    {{.CostProvider.Zip}} {{.CostProvider.City}}
                 </div>
                 <div class="invoice-details.flex-row">
                     <h1 style="text-align: right; font-size: 12pt; margin-top: 1cm;">RECHNUNG</h1>
                     <table class="invoice-details-table">
                         <tr>
                             <td class="label">Rechnungsnr.:</td>
-                            <td class="info">{{.Invoice.ID}}</td>
+                            <td class="info">{{.Invoice.InvoiceNumber}}</td>
                         </tr>
                         <tr>
                             <td class="label">Rechnungsdatum:</td>
-                            <td class="info">{{.Invoice.Date}}</td>
+                            <td class="info">{{.Invoice.InvoiceDate}}</td>
                         </tr>
                         <tr>
                             <td class="label">Bewilligung:</td>
-                            <td class="info">{{.Therapy.ApprovalNumber}}</td>
+                            <td class="info">{{.Client.ProviderApprovalCode}}</td>
                         </tr>
                     </table>
                 </div>
@@ -260,9 +260,9 @@
         </div>
 
         <div class="main-content">
-            <h2>Rechnung {{.Therapy.Description}} - {{.Client.FirstName}} {{.Client.LastName}} geb. am {{.Client.DateOfBirth}}</h2>
+            <h2>Rechnung {{.Client.TherapyTitle}} - {{.Client.FirstName}} {{.Client.LastName}} geb. am {{.Client.DateOfBirth}}</h2>
             <h3>Sehr geehrte Damen und Herren,</h3>
-            <p>hiermit stelle ich folgende Leistungen ensprechend der Bewilligung {{.Therapy.ApprovalNumber}} in Rechnung:</p>
+            <p>hiermit stelle ich folgende Leistungen ensprechend der Bewilligung {{.Client.ProviderApprovalCode}} in Rechnung:</p>
             <table class="sessions-table">
                 <thead>
                     <tr>
@@ -275,34 +275,46 @@
                 <tbody>
                     {{range .Sessions}}
                     <tr>
-                        <td class="date-col">{{.Date}}</td>
-                        <td>{{if .Notes}} - {{.Notes}}{{end}}</td>
-                        <!--td class="number-col">{{.Duration}}</td-->
+                        <td class="date-col">{{index . "OriginalDate"}}</td>
+                        <td>{{if index . "Documentation"}}{{index . "Documentation"}}{{end}}</td>
+                        <!--td class="number-col">{{index . "DurationMin"}}</td-->
                     </tr>
                     {{end}}
                 </tbody>
             </table>
-            <h2>
-              {{if .Invoice.NumberStdUnits}}   
-                        {{.Invoice.NumberStdUnits}} Standardeinheiten a {{.Invoice.UnitRate}} €
-               ergben den 
-                    {{end}}               
-                Gesamtbetrag:{{.Invoice.Total}} €
-               </h2>
+            <div class="total-section">
+                <table class="total-table">
+                    {{if .Invoice.NetTotal}}
+                    <tr>
+                        <td class="label">Summe:</td>
+                        <td class="number-col">{{.Invoice.NetTotal}} €</td>
+                    </tr>
+                    {{end}}
+                    {{if .Invoice.TaxAmount}}
+                    <tr>
+                        <td class="label">{{.Invoice.TaxRate}}% MwSt.:</td>
+                        <td class="number-col">{{.Invoice.TaxAmount}} €</td>
+                    </tr>
+                    {{end}}
+                    <tr class="final-total">
+                        <td class="label">Gesamtbetrag:</td>
+                        <td class="number-col">{{.Invoice.GrossTotal}} €</td>
+                    </tr>
+                </table>
+            </div>
             <p>Es gilt die gesetzl. Umsatzsteuerbefreiung (Leistungen in der Kinder- und Jugendhilfe UstG§4 Nr.25, SGB VIII)
             Bitte prüfen Sie die Rechnung und überweisen Sie den Gesamtbetrag innerhalb von 30 Tagen auf das unten 
             angegebene Konto.</p>
             <p>Mit freundlichen Grüßen</p>
-            <p>{{.Organization.ContactPerson}}</p>
+            <p>{{.Organization.OwnerName}}</p>
         </div>
-            </div>
 
         <div class="footer">
             <div class="footer-content">
                 <div class="footer-section">
-                    {{if .Organization.BankName}}<p>{{.Organization.BankName}}</p>{{end}}
-                    {{if .Organization.IBAN}}<p>IBAN: {{.Organization.IBAN}}</p>{{end}}
-                    {{if .Organization.BIC}}<p>BIC: {{.Organization.BIC}}</p>{{end}}
+                    {{if .Organization.BankAccountBank}}<p>{{.Organization.BankAccountBank}}</p>{{end}}
+                    {{if .Organization.BankAccountIBAN}}<p>IBAN: {{.Organization.BankAccountIBAN}}</p>{{end}}
+                    {{if .Organization.BankAccountBIC}}<p>BIC: {{.Organization.BankAccountBIC}}</p>{{end}}
                 </div>
                 <div class="footer-section">
                     {{if .Organization.TaxID}}<p>Steuernummer: {{.Organization.TaxID}}</p>{{end}}

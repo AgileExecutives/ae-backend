@@ -11,6 +11,8 @@ import (
 	"gorm.io/gorm"
 
 	bookingServices "github.com/unburdy/booking-module/services"
+	documentServices "github.com/unburdy/documents-module/services"
+	templateServices "github.com/unburdy/templates-module/services"
 	"github.com/unburdy/unburdy-server-api/modules/client_management/entities"
 	"github.com/unburdy/unburdy-server-api/modules/client_management/events"
 	"github.com/unburdy/unburdy-server-api/modules/client_management/handlers"
@@ -31,16 +33,18 @@ func NewModule(db *gorm.DB) baseAPI.ModuleRouteProvider {
 	// Pass nil for email service in legacy module (email won't work but won't crash)
 	sessionService := services.NewSessionService(db, nil)
 	invoiceService := services.NewInvoiceService(db)
+	extraEffortService := services.NewExtraEffortService(db)
 
 	// Initialize handlers
 	clientHandler := handlers.NewClientHandler(clientService)
 	costProviderHandler := handlers.NewCostProviderHandler(costProviderService)
 	sessionHandler := handlers.NewSessionHandler(sessionService)
-	invoiceHandler := handlers.NewInvoiceHandler(invoiceService)
+	invoiceHandler := handlers.NewInvoiceHandler(invoiceService, nil, nil, nil)
 	invoiceAdapterHandler := handlers.NewInvoiceAdapterHandler(db, "")
+	extraEffortHandler := handlers.NewExtraEffortHandler(extraEffortService)
 
 	// Initialize route provider with database for auth middleware
-	routeProvider := routes.NewRouteProvider(clientHandler, costProviderHandler, sessionHandler, invoiceHandler, invoiceAdapterHandler, db)
+	routeProvider := routes.NewRouteProvider(clientHandler, costProviderHandler, sessionHandler, invoiceHandler, invoiceAdapterHandler, extraEffortHandler, db)
 
 	return &Module{
 		routeProvider: routeProvider,
@@ -67,6 +71,8 @@ func (m *Module) GetEntitiesForMigration() []interface{} {
 		&entities.Session{},
 		&entities.Invoice{},
 		&entities.InvoiceItem{},
+		&entities.ClientInvoice{},
+		&entities.ExtraEffort{},
 	}
 }
 
@@ -153,18 +159,61 @@ func (m *CoreModule) Initialize(ctx core.ModuleContext) error {
 	// Initialize invoice service
 	invoiceService := services.NewInvoiceService(ctx.DB)
 
+	// Initialize extra effort service
+	extraEffortService := services.NewExtraEffortService(ctx.DB)
+
+	// Get template service from registry (for PDF generation)
+	var templateService *templateServices.TemplateService
+	if templateSvcRaw, ok := ctx.Services.Get("template_service"); ok {
+		if templateSvc, ok := templateSvcRaw.(*templateServices.TemplateService); ok {
+			templateService = templateSvc
+			ctx.Logger.Info("✅ Client Management: Template service successfully retrieved from registry")
+		} else {
+			ctx.Logger.Warn("⚠️ Client Management: Template service type assertion failed")
+		}
+	} else {
+		ctx.Logger.Warn("⚠️ Client Management: Template service not found in registry - invoice PDF generation will not work")
+	}
+
+	// Get PDF service from registry (for PDF generation)
+	var pdfService *documentServices.PDFService
+	if pdfSvcRaw, ok := ctx.Services.Get("pdf_service"); ok {
+		if pdfSvc, ok := pdfSvcRaw.(*documentServices.PDFService); ok {
+			pdfService = pdfSvc
+			ctx.Logger.Info("✅ Client Management: PDF service successfully retrieved from registry")
+		} else {
+			ctx.Logger.Warn("⚠️ Client Management: PDF service type assertion failed")
+		}
+	} else {
+		ctx.Logger.Warn("⚠️ Client Management: PDF service not found in registry - invoice PDF generation will not work")
+	}
+
+	// Get Document service from registry (for download URLs)
+	var documentService *documentServices.DocumentService
+	if docSvcRaw, ok := ctx.Services.Get("document_service"); ok {
+		if docSvc, ok := docSvcRaw.(*documentServices.DocumentService); ok {
+			documentService = docSvc
+			ctx.Logger.Info("✅ Client Management: Document service successfully retrieved from registry")
+		} else {
+			ctx.Logger.Warn("⚠️ Client Management: Document service type assertion failed")
+		}
+	} else {
+		ctx.Logger.Warn("⚠️ Client Management: Document service not found in registry - download URLs will not be generated")
+	}
+
 	// Initialize handlers
 	m.clientHandlers = handlers.NewClientHandler(clientService)
 	m.costProviderHandler = handlers.NewCostProviderHandler(costProviderService)
 	m.sessionHandler = handlers.NewSessionHandler(sessionService)
-	m.invoiceHandler = handlers.NewInvoiceHandler(invoiceService)
+	m.invoiceHandler = handlers.NewInvoiceHandler(invoiceService, templateService, pdfService, documentService)
+	extraEffortHandler := handlers.NewExtraEffortHandler(extraEffortService)
 
 	// Initialize invoice adapter handler (for invoice module integration)
 	// TODO: Get invoice module URL from config
 	m.invoiceAdapterHandler = handlers.NewInvoiceAdapterHandler(ctx.DB, "")
 
 	// Initialize route provider with database for auth middleware
-	m.routeProvider = routes.NewRouteProvider(m.clientHandlers, m.costProviderHandler, m.sessionHandler, m.invoiceHandler, m.invoiceAdapterHandler, ctx.DB)
+	m.routeProvider = routes.NewRouteProvider(m.clientHandlers, m.costProviderHandler, m.sessionHandler, m.invoiceHandler, m.invoiceAdapterHandler, extraEffortHandler, ctx.DB)
 
 	ctx.Logger.Info("Client management module initialized successfully")
 	return nil
@@ -187,6 +236,8 @@ func (m *CoreModule) Entities() []core.Entity {
 		entities.NewSessionEntity(),
 		entities.NewInvoiceEntity(),
 		entities.NewInvoiceItemEntity(),
+		entities.NewClientInvoiceEntity(),
+		entities.NewExtraEffortEntity(),
 	}
 }
 
@@ -222,6 +273,7 @@ func (m *CoreModule) SwaggerPaths() []string {
 		"/cost-providers",
 		"/sessions",
 		"/client-invoices",
+		"/extra-efforts",
 	}
 }
 

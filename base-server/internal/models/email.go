@@ -11,7 +11,7 @@ type Email struct {
 	ID           uint           `gorm:"primarykey" json:"id"`
 	CreatedAt    time.Time      `json:"created_at"`
 	UpdatedAt    time.Time      `json:"updated_at"`
-	DeletedAt    gorm.DeletedAt `gorm:"index" json:"deleted_at,omitempty"`
+	DeletedAt    gorm.DeletedAt `gorm:"index" json:"deleted_at,omitempty" swaggerignore:"true"`
 	To           string         `gorm:"column:to;not null" json:"to" binding:"required,email"`
 	From         string         `gorm:"column:from;not null" json:"from" binding:"required,email"`
 	Subject      string         `gorm:"not null" json:"subject" binding:"required"`

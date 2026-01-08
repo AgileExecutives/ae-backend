@@ -20,8 +20,9 @@ type Session struct {
 	NumberUnits       int            `gorm:"not null;default:1" json:"number_units"`
 	Status            string         `gorm:"type:varchar(20);not null;default:'scheduled'" json:"status"` // scheduled, canceled, conducted
 	Documentation     string         `gorm:"type:text" json:"documentation"`
-	CreatedAt         time.Time      `json:"created_at"` // Always UTC
-	UpdatedAt         time.Time      `json:"updated_at"` // Always UTC
+	InternalNote      string         `gorm:"type:text" json:"internal_note"` // For therapist reference, not shown on invoices
+	CreatedAt         time.Time      `json:"created_at"`                     // Always UTC
+	UpdatedAt         time.Time      `json:"updated_at"`                     // Always UTC
 	DeletedAt         gorm.DeletedAt `gorm:"index" json:"-"`
 }
 
@@ -50,6 +51,7 @@ type UpdateSessionRequest struct {
 	NumberUnits   *int    `json:"number_units,omitempty" example:"1"`
 	Status        *string `json:"status,omitempty" example:"conducted"`
 	Documentation *string `json:"documentation,omitempty" example:"Updated session notes"`
+	InternalNote  *string `json:"internal_note,omitempty" example:"Client was engaged"`
 }
 
 // BookSessionsRequest represents the request to create series of sessions from calendar series

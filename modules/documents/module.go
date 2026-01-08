@@ -46,17 +46,21 @@ func (m *CoreModule) Dependencies() []string {
 // Initialize sets up the module with dependencies
 func (m *CoreModule) Initialize(ctx core.ModuleContext) error {
 	// Initialize MinIO storage
-	minioConfig := storage.MinIOConfig{
-		Endpoint:        "localhost:9000",
-		AccessKeyID:     "minioadmin",
-		SecretAccessKey: "minioadmin123",
-		UseSSL:          false,
-		Region:          "us-east-1",
-	}
+	if m.minioStorage == nil {
+		minioConfig := storage.MinIOConfig{
+			Endpoint:        "localhost:9000",
+			AccessKeyID:     "minioadmin",
+			SecretAccessKey: "minioadmin123",
+			UseSSL:          false,
+			Region:          "us-east-1",
+		}
 
-	minioStorage, err := storage.NewMinIOStorage(minioConfig)
-	if err != nil {
-		return err
+		minioStorage, err := storage.NewMinIOStorage(minioConfig)
+		if err != nil {
+			return err
+		}
+
+		m.minioStorage = minioStorage
 	}
 
 	// Initialize Redis client
@@ -71,19 +75,24 @@ func (m *CoreModule) Initialize(ctx core.ModuleContext) error {
 		ctx.Logger.Warn("Redis connection failed:", err)
 	}
 
-	// Store storage for later use
-	m.minioStorage = minioStorage
+	// Get template service from registry (injected by templates module)
+	if service, ok := ctx.Services.Get("template_service"); ok {
+		if templateSvc, ok := service.(*templateServices.TemplateService); ok {
+			m.templateService = templateSvc
+		}
+	}
 
 	// Initialize services
-	m.documentService = services.NewDocumentService(ctx.DB, minioStorage)
+	m.documentService = services.NewDocumentService(ctx.DB, m.minioStorage)
 
-	// Note: Template service should be injected from templates module
-	// PDF service will work with nil template service for HTML-only generation
-	m.pdfService = services.NewPDFService(ctx.DB, minioStorage, nil)
+	// PDF service no longer needs template service - orchestration happens in handler
+	if m.pdfService == nil {
+		m.pdfService = services.NewPDFService(ctx.DB, m.minioStorage)
+	}
 
 	// Initialize routes
-	m.documentRoutes = routes.NewDocumentRoutes(m.documentService)
-	m.pdfRoutes = routes.NewPDFRoutes(m.pdfService)
+	m.documentRoutes = routes.NewDocumentRoutes(m.documentService, ctx.DB)
+	m.pdfRoutes = routes.NewPDFRoutes(m.pdfService, m.templateService, ctx.DB)
 
 	return nil
 }
@@ -132,7 +141,88 @@ func (m *CoreModule) Middleware() []core.MiddlewareProvider {
 
 // Services returns service providers
 func (m *CoreModule) Services() []core.ServiceProvider {
-	return []core.ServiceProvider{}
+	return []core.ServiceProvider{
+		&documentServiceProvider{module: m},
+		&pdfServiceProvider{module: m},
+	}
+}
+
+// documentServiceProvider exposes the Document service via the service registry
+type documentServiceProvider struct {
+	module *CoreModule
+}
+
+func (p *documentServiceProvider) ServiceName() string {
+	return "document_service"
+}
+
+func (p *documentServiceProvider) ServiceInterface() interface{} {
+	return (*services.DocumentService)(nil)
+}
+
+func (p *documentServiceProvider) Factory(ctx core.ModuleContext) (interface{}, error) {
+	// Ensure storage is ready
+	if p.module.minioStorage == nil {
+		minioConfig := storage.MinIOConfig{
+			Endpoint:        "localhost:9000",
+			AccessKeyID:     "minioadmin",
+			SecretAccessKey: "minioadmin123",
+			UseSSL:          false,
+			Region:          "us-east-1",
+		}
+
+		minioStorage, err := storage.NewMinIOStorage(minioConfig)
+		if err != nil {
+			return nil, err
+		}
+		p.module.minioStorage = minioStorage
+	}
+
+	// Create Document service if not already present
+	if p.module.documentService == nil {
+		p.module.documentService = services.NewDocumentService(ctx.DB, p.module.minioStorage)
+	}
+
+	return p.module.documentService, nil
+}
+
+// pdfServiceProvider exposes the PDF service via the service registry
+type pdfServiceProvider struct {
+	module *CoreModule
+}
+
+func (p *pdfServiceProvider) ServiceName() string {
+	return "pdf_service"
+}
+
+func (p *pdfServiceProvider) ServiceInterface() interface{} {
+	return (*services.PDFService)(nil)
+}
+
+func (p *pdfServiceProvider) Factory(ctx core.ModuleContext) (interface{}, error) {
+	// Ensure storage is ready
+	if p.module.minioStorage == nil {
+		minioConfig := storage.MinIOConfig{
+			Endpoint:        "localhost:9000",
+			AccessKeyID:     "minioadmin",
+			SecretAccessKey: "minioadmin123",
+			UseSSL:          false,
+			Region:          "us-east-1",
+		}
+
+		minioStorage, err := storage.NewMinIOStorage(minioConfig)
+		if err != nil {
+			return nil, err
+		}
+		p.module.minioStorage = minioStorage
+	}
+
+	// Create PDF service if not already present
+	if p.module.pdfService == nil {
+		p.module.pdfService = services.NewPDFService(ctx.DB, p.module.minioStorage)
+	}
+
+	return p.module.pdfService, nil
 }
 
 // SwaggerPaths returns Swagger documentation paths

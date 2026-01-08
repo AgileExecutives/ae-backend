@@ -160,6 +160,37 @@ func (s *OrganizationService) UpdateOrganization(id, tenantID uint, req models.U
 	return &organization, nil
 }
 
+// UpdateBillingConfig updates an organization's billing configuration for extra efforts
+func (s *OrganizationService) UpdateBillingConfig(id, tenantID uint, req models.UpdateBillingConfigRequest) (*models.Organization, error) {
+	var organization models.Organization
+	if err := s.db.Where("id = ? AND tenant_id = ?", id, tenantID).First(&organization).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, fmt.Errorf("organization with ID %d not found", id)
+		}
+		return nil, fmt.Errorf("failed to fetch organization: %w", err)
+	}
+
+	// Update billing configuration fields
+	if req.ExtraEffortsBillingMode != nil {
+		organization.ExtraEffortsBillingMode = *req.ExtraEffortsBillingMode
+	}
+	if req.ExtraEffortsConfig != nil {
+		organization.ExtraEffortsConfig = req.ExtraEffortsConfig
+	}
+	if req.LineItemSingleUnitText != nil {
+		organization.LineItemSingleUnitText = *req.LineItemSingleUnitText
+	}
+	if req.LineItemDoubleUnitText != nil {
+		organization.LineItemDoubleUnitText = *req.LineItemDoubleUnitText
+	}
+
+	if err := s.db.Save(&organization).Error; err != nil {
+		return nil, fmt.Errorf("failed to update billing configuration: %w", err)
+	}
+
+	return &organization, nil
+}
+
 // DeleteOrganization deletes an organization (soft delete)
 func (s *OrganizationService) DeleteOrganization(id, tenantID uint) error {
 	result := s.db.Where("id = ? AND tenant_id = ?", id, tenantID).Delete(&models.Organization{})

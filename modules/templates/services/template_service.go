@@ -52,13 +52,14 @@ type CreateTemplateRequest struct {
 
 // UpdateTemplateRequest represents template update request
 type UpdateTemplateRequest struct {
-	Name        *string                 `json:"name,omitempty"`
-	Description *string                 `json:"description,omitempty"`
-	Content     *string                 `json:"content,omitempty"`
-	Variables   *[]string               `json:"variables,omitempty"`
-	SampleData  *map[string]interface{} `json:"sample_data,omitempty"`
-	IsActive    *bool                   `json:"is_active,omitempty"`
-	IsDefault   *bool                   `json:"is_default,omitempty"`
+	OrganizationID *uint                   `json:"organization_id,omitempty"` // Set from middleware, not from client
+	Name           *string                 `json:"name,omitempty"`
+	Description    *string                 `json:"description,omitempty"`
+	Content        *string                 `json:"content,omitempty"`
+	Variables      *[]string               `json:"variables,omitempty"`
+	SampleData     *map[string]interface{} `json:"sample_data,omitempty"`
+	IsActive       *bool                   `json:"is_active,omitempty"`
+	IsDefault      *bool                   `json:"is_default,omitempty"`
 }
 
 // CreateTemplate creates a new template

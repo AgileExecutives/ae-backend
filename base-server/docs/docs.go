@@ -1909,6 +1909,28 @@ const docTemplate = `{
                 }
             }
         },
+        "/organizations/supported-formats": {
+            "get": {
+                "description": "Get all supported date, time, and amount formats with examples",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "organizations"
+                ],
+                "summary": "Get supported formats",
+                "operationId": "getSupportedFormats",
+                "responses": {
+                    "200": {
+                        "description": "Supported formats with examples",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
         "/organizations/{id}": {
             "get": {
                 "security": [
@@ -2065,6 +2087,77 @@ const docTemplate = `{
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/models.OrganizationDeleteResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/organizations/{id}/billing-config": {
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Update billing mode and configuration for extra efforts tracking",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "organizations"
+                ],
+                "summary": "Update organization billing configuration",
+                "operationId": "updateOrganizationBillingConfig",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Organization ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Billing configuration",
+                        "name": "config",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.UpdateBillingConfigRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.OrganizationAPIResponse"
                         }
                     },
                     "400": {
@@ -3004,9 +3097,6 @@ const docTemplate = `{
                 "currency": {
                     "type": "string"
                 },
-                "deleted_at": {
-                    "$ref": "#/definitions/gorm.DeletedAt"
-                },
                 "description": {
                     "type": "string"
                 },
@@ -3227,23 +3317,8 @@ const docTemplate = `{
                 }
             }
         },
-        "gorm.DeletedAt": {
-            "type": "object",
-            "properties": {
-                "time": {
-                    "type": "string"
-                },
-                "valid": {
-                    "description": "Valid is true if Time is not NULL",
-                    "type": "boolean"
-                }
-            }
-        },
         "handlers.GenerateInvoiceNumberRequest": {
             "type": "object",
-            "required": [
-                "organization_id"
-            ],
             "properties": {
                 "month": {
                     "type": "integer",
@@ -3255,6 +3330,7 @@ const docTemplate = `{
                     "example": "MM"
                 },
                 "organization_id": {
+                    "description": "Optional - will use authenticated user's organization if not provided",
                     "type": "integer",
                     "example": 10
                 },
@@ -3331,9 +3407,6 @@ const docTemplate = `{
                 },
                 "created_at": {
                     "type": "string"
-                },
-                "deleted_at": {
-                    "$ref": "#/definitions/gorm.DeletedAt"
                 },
                 "email": {
                     "type": "string"
@@ -3509,6 +3582,10 @@ const docTemplate = `{
                 "additional_payment_methods": {
                     "type": "object"
                 },
+                "amount_format": {
+                    "type": "string",
+                    "example": "de"
+                },
                 "bankaccount_bank": {
                     "type": "string",
                     "example": "Deutsche Bank"
@@ -3529,12 +3606,35 @@ const docTemplate = `{
                     "type": "string",
                     "example": "New York"
                 },
+                "date_format": {
+                    "type": "string",
+                    "example": "02.01.2006"
+                },
                 "email": {
                     "type": "string",
                     "example": "info@acme.com"
                 },
+                "extra_efforts_billing_mode": {
+                    "type": "string",
+                    "example": "ignore"
+                },
+                "extra_efforts_config": {
+                    "type": "object"
+                },
                 "invoice_content": {
                     "type": "object"
+                },
+                "line_item_double_unit_text": {
+                    "type": "string",
+                    "example": "Doppelstunde"
+                },
+                "line_item_single_unit_text": {
+                    "type": "string",
+                    "example": "Einzelstunde"
+                },
+                "locale": {
+                    "type": "string",
+                    "example": "de-DE"
                 },
                 "name": {
                     "type": "string",
@@ -3567,6 +3667,10 @@ const docTemplate = `{
                 "tax_ustid": {
                     "type": "string",
                     "example": "DE123456789"
+                },
+                "time_format": {
+                    "type": "string",
+                    "example": "15:04"
                 },
                 "unit_price": {
                     "type": "number",
@@ -3667,10 +3771,10 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "additional_payment_methods": {
-                    "type": "array",
-                    "items": {
-                        "type": "integer"
-                    }
+                    "type": "object"
+                },
+                "amount_format": {
+                    "type": "string"
                 },
                 "bankaccount_bank": {
                     "type": "string"
@@ -3690,17 +3794,32 @@ const docTemplate = `{
                 "created_at": {
                     "type": "string"
                 },
+                "date_format": {
+                    "type": "string"
+                },
                 "email": {
                     "type": "string"
+                },
+                "extra_efforts_billing_mode": {
+                    "type": "string"
+                },
+                "extra_efforts_config": {
+                    "type": "object"
                 },
                 "id": {
                     "type": "integer"
                 },
                 "invoice_content": {
-                    "type": "array",
-                    "items": {
-                        "type": "integer"
-                    }
+                    "type": "object"
+                },
+                "line_item_double_unit_text": {
+                    "type": "string"
+                },
+                "line_item_single_unit_text": {
+                    "type": "string"
+                },
+                "locale": {
+                    "type": "string"
                 },
                 "name": {
                     "type": "string"
@@ -3728,6 +3847,9 @@ const docTemplate = `{
                 },
                 "tenant_id": {
                     "type": "integer"
+                },
+                "time_format": {
+                    "type": "string"
                 },
                 "unit_price": {
                     "type": "number"
@@ -3807,11 +3929,35 @@ const docTemplate = `{
                 }
             }
         },
+        "models.UpdateBillingConfigRequest": {
+            "type": "object",
+            "properties": {
+                "extra_efforts_billing_mode": {
+                    "type": "string",
+                    "example": "bundle_double_units"
+                },
+                "extra_efforts_config": {
+                    "type": "object"
+                },
+                "line_item_double_unit_text": {
+                    "type": "string",
+                    "example": "Therapie Doppelstunde"
+                },
+                "line_item_single_unit_text": {
+                    "type": "string",
+                    "example": "Therapiestunde"
+                }
+            }
+        },
         "models.UpdateOrganizationRequest": {
             "type": "object",
             "properties": {
                 "additional_payment_methods": {
                     "type": "object"
+                },
+                "amount_format": {
+                    "type": "string",
+                    "example": "de"
                 },
                 "bankaccount_bank": {
                     "type": "string",
@@ -3833,12 +3979,35 @@ const docTemplate = `{
                     "type": "string",
                     "example": "New York"
                 },
+                "date_format": {
+                    "type": "string",
+                    "example": "02.01.2006"
+                },
                 "email": {
                     "type": "string",
                     "example": "info@acme.com"
                 },
+                "extra_efforts_billing_mode": {
+                    "type": "string",
+                    "example": "bundle_double_units"
+                },
+                "extra_efforts_config": {
+                    "type": "object"
+                },
                 "invoice_content": {
                     "type": "object"
+                },
+                "line_item_double_unit_text": {
+                    "type": "string",
+                    "example": "Therapie Doppelstunde"
+                },
+                "line_item_single_unit_text": {
+                    "type": "string",
+                    "example": "Therapiestunde"
+                },
+                "locale": {
+                    "type": "string",
+                    "example": "de-DE"
                 },
                 "name": {
                     "type": "string",
@@ -3872,6 +4041,10 @@ const docTemplate = `{
                     "type": "string",
                     "example": "DE123456789"
                 },
+                "time_format": {
+                    "type": "string",
+                    "example": "15:04"
+                },
                 "unit_price": {
                     "type": "number",
                     "example": 150
@@ -3890,9 +4063,6 @@ const docTemplate = `{
             "properties": {
                 "created_at": {
                     "type": "string"
-                },
-                "deleted_at": {
-                    "$ref": "#/definitions/gorm.DeletedAt"
                 },
                 "id": {
                     "type": "integer"

@@ -12,7 +12,7 @@ type User struct {
 	ID              uint           `gorm:"primarykey" json:"id"`
 	CreatedAt       time.Time      `json:"created_at"`
 	UpdatedAt       time.Time      `json:"updated_at"`
-	DeletedAt       gorm.DeletedAt `gorm:"index" json:"deleted_at,omitempty"`
+	DeletedAt       gorm.DeletedAt `gorm:"index" json:"deleted_at,omitempty" swaggerignore:"true"`
 	Username        string         `gorm:"uniqueIndex;not null" json:"username" binding:"required"`
 	Email           string         `gorm:"uniqueIndex;not null" json:"email" binding:"required,email"`
 	EmailVerified   bool           `gorm:"default:false" json:"email_verified"`
