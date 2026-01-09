@@ -1089,7 +1089,7 @@ func (h *InvoiceHandler) DownloadInvoicePDF(c *gin.Context) {
 	// Log audit event
 	h.logAudit(c, auditEntities.AuditActionInvoiceSent, uint(invoiceID), &auditEntities.AuditLogMetadata{
 		InvoiceNumber: invoice.InvoiceNumber,
-		Reason:       "Downloaded PDF for invoice " + invoice.InvoiceNumber,
+		Reason:        "Downloaded PDF for invoice " + invoice.InvoiceNumber,
 	})
 }
 
@@ -1145,6 +1145,6 @@ func (h *InvoiceHandler) PreviewInvoicePDF(c *gin.Context) {
 	// Log audit event
 	h.logAudit(c, auditEntities.AuditActionInvoiceSent, uint(invoiceID), &auditEntities.AuditLogMetadata{
 		InvoiceNumber: invoice.InvoiceNumber,
-		Reason:       "Previewed PDF for invoice " + invoice.InvoiceNumber,
+		Reason:        "Previewed PDF for invoice " + invoice.InvoiceNumber,
 	})
 }
