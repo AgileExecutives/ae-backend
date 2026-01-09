@@ -39,6 +39,8 @@ func (r *PDFRoutes) RegisterRoutes(router *gin.RouterGroup, ctx core.ModuleConte
 		// Generate PDF from template
 		pdfs.POST("/from-template", handler.GeneratePDFFromTemplate)
 
+		// Generate invoice PDF
+		pdfs.POST("/invoice/:invoice_id", handler.GenerateInvoicePDF)
 	}
 }
 

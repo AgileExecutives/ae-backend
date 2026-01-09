@@ -21,7 +21,7 @@ import (
 
 	// invoice "github.com/unburdy/invoice-module" // DEPRECATED: Replaced by client_management module
 	templates "github.com/unburdy/templates-module"
-	_ "github.com/unburdy/unburdy-server-api/docs" // swagger docs - unburdy-specific
+	// _ "github.com/unburdy/unburdy-server-api/docs" // swagger docs - unburdy-specific - temporarily disabled
 	"github.com/unburdy/unburdy-server-api/modules/audit"
 	"github.com/unburdy/unburdy-server-api/modules/client_management"
 )

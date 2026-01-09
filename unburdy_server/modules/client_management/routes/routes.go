@@ -108,6 +108,8 @@ func (rp *RouteProvider) RegisterRoutes(router *gin.RouterGroup, ctx *core.Modul
 		invoices.POST("/:id/reminder", rp.invoiceHandler.SendReminder)
 		invoices.POST("/:id/credit-note", rp.invoiceHandler.CreateCreditNote)
 		invoices.GET("/:id/xrechnung", rp.invoiceHandler.ExportXRechnung)
+		invoices.GET("/:id/pdf", rp.invoiceHandler.DownloadInvoicePDF)
+		invoices.GET("/:id/preview-pdf", rp.invoiceHandler.PreviewInvoicePDF)
 	}
 
 	// Extra efforts management endpoints (authenticated)

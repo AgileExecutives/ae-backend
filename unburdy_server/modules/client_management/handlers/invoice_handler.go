@@ -1030,3 +1030,121 @@ func (h *InvoiceHandler) GetVATCategories(c *gin.Context) {
 
 	c.JSON(http.StatusOK, models.SuccessResponse("VAT categories retrieved successfully", categories))
 }
+
+// DownloadInvoicePDF downloads the PDF for a finalized invoice
+// @Summary Download invoice PDF
+// @Description Download the PDF document for a finalized invoice
+// @Tags client-invoices
+// @ID downloadInvoicePDF
+// @Param id path int true "Invoice ID"
+// @Produce application/pdf
+// @Success 200 {file} binary "PDF file"
+// @Failure 400 {object} models.ErrorResponse
+// @Failure 401 {object} models.ErrorResponse
+// @Failure 404 {object} models.ErrorResponse
+// @Failure 422 {object} models.ErrorResponse "Invoice not finalized"
+// @Security BearerAuth
+// @Router /invoices/{id}/pdf [get]
+func (h *InvoiceHandler) DownloadInvoicePDF(c *gin.Context) {
+	invoiceIDStr := c.Param("id")
+	invoiceID, err := strconv.ParseUint(invoiceIDStr, 10, 32)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, models.ErrorResponse{Error: "Invalid invoice ID"})
+		return
+	}
+
+	tenantID, err := baseAPI.GetTenantID(c)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, models.ErrorResponse{Error: "Tenant ID not found"})
+		return
+	}
+
+	// Get invoice to check if it exists and is finalized
+	userID, _ := baseAPI.GetUserID(c)
+	invoice, err := h.service.GetInvoiceByID(uint(invoiceID), tenantID, userID)
+	if err != nil {
+		c.JSON(http.StatusNotFound, models.ErrorResponse{Error: "Invoice not found"})
+		return
+	}
+
+	if invoice.Status == "draft" {
+		c.JSON(http.StatusUnprocessableEntity, models.ErrorResponse{Error: "Cannot download PDF for draft invoice. Please finalize first."})
+		return
+	}
+
+	// Generate and return PDF
+	pdfBytes, err := h.service.GenerateInvoicePDF(uint(invoiceID), tenantID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, models.ErrorResponse{Error: "Failed to generate PDF: " + err.Error()})
+		return
+	}
+
+	// Set headers for PDF download
+	c.Header("Content-Type", "application/pdf")
+	c.Header("Content-Disposition", "attachment; filename=invoice-"+invoice.InvoiceNumber+".pdf")
+	c.Header("Content-Length", strconv.Itoa(len(pdfBytes)))
+
+	c.Data(http.StatusOK, "application/pdf", pdfBytes)
+
+	// Log audit event
+	h.logAudit(c, auditEntities.AuditActionInvoiceSent, uint(invoiceID), &auditEntities.AuditLogMetadata{
+		InvoiceNumber: invoice.InvoiceNumber,
+		Reason:       "Downloaded PDF for invoice " + invoice.InvoiceNumber,
+	})
+}
+
+// PreviewInvoicePDF generates and returns PDF for preview (inline display)
+// @Summary Preview invoice PDF
+// @Description Generate and display PDF for preview without download
+// @Tags client-invoices
+// @ID previewInvoicePDF
+// @Param id path int true "Invoice ID"
+// @Produce application/pdf
+// @Success 200 {file} binary "PDF file for preview"
+// @Failure 400 {object} models.ErrorResponse
+// @Failure 401 {object} models.ErrorResponse
+// @Failure 404 {object} models.ErrorResponse
+// @Security BearerAuth
+// @Router /invoices/{id}/preview-pdf [get]
+func (h *InvoiceHandler) PreviewInvoicePDF(c *gin.Context) {
+	invoiceIDStr := c.Param("id")
+	invoiceID, err := strconv.ParseUint(invoiceIDStr, 10, 32)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, models.ErrorResponse{Error: "Invalid invoice ID"})
+		return
+	}
+
+	tenantID, err := baseAPI.GetTenantID(c)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, models.ErrorResponse{Error: "Tenant ID not found"})
+		return
+	}
+
+	// Get invoice to check if it exists
+	userID, _ := baseAPI.GetUserID(c)
+	invoice, err := h.service.GetInvoiceByID(uint(invoiceID), tenantID, userID)
+	if err != nil {
+		c.JSON(http.StatusNotFound, models.ErrorResponse{Error: "Invoice not found"})
+		return
+	}
+
+	// Generate PDF (works for both draft and finalized invoices)
+	pdfBytes, err := h.service.GenerateInvoicePDF(uint(invoiceID), tenantID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, models.ErrorResponse{Error: "Failed to generate PDF: " + err.Error()})
+		return
+	}
+
+	// Set headers for inline PDF display
+	c.Header("Content-Type", "application/pdf")
+	c.Header("Content-Disposition", "inline; filename=invoice-"+invoice.InvoiceNumber+"-preview.pdf")
+	c.Header("Content-Length", strconv.Itoa(len(pdfBytes)))
+
+	c.Data(http.StatusOK, "application/pdf", pdfBytes)
+
+	// Log audit event
+	h.logAudit(c, auditEntities.AuditActionInvoiceSent, uint(invoiceID), &auditEntities.AuditLogMetadata{
+		InvoiceNumber: invoice.InvoiceNumber,
+		Reason:       "Previewed PDF for invoice " + invoice.InvoiceNumber,
+	})
+}

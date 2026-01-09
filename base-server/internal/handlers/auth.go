@@ -51,7 +51,7 @@ func (h *AuthHandler) Login(c *gin.Context) {
 
 	var user models.User
 	// Find user by username or email
-	if err := h.db.Where("username = ? OR email = ?", req.Username, req.Username).First(&user).Error; err != nil {
+	if err := h.db.Where("username = ? OR email = ?", req.Email, req.Email).First(&user).Error; err != nil {
 		c.JSON(http.StatusUnauthorized, models.ErrorResponseFunc("Invalid credentials", "User not found"))
 		return
 	}

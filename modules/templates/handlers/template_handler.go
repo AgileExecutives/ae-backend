@@ -348,3 +348,48 @@ func (h *TemplateHandler) GetDefaultTemplate(c *gin.Context) {
 
 	c.JSON(http.StatusOK, tmpl.ToResponse())
 }
+
+// DuplicateTemplate creates a copy of an existing template
+// @Summary Duplicate template
+// @Description Create a copy of an existing template
+// @Tags Templates
+// @Accept json
+// @Produce json
+// @Param id path int true "Template ID"
+// @Param request body map[string]interface{} true "Duplicate request with name"
+// @Success 201 {object} entities.TemplateResponse
+// @Failure 400 {object} map[string]interface{}
+// @Failure 401 {object} map[string]interface{}
+// @Failure 404 {object} map[string]interface{}
+// @Failure 500 {object} map[string]interface{}
+// @Router /templates/{id}/duplicate [post]
+// @ID duplicateTemplate
+func (h *TemplateHandler) DuplicateTemplate(c *gin.Context) {
+	tenantID, err := baseAPI.GetTenantID(c)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "tenant_id required"})
+		return
+	}
+
+	templateID, err := strconv.ParseUint(c.Param("id"), 10, 32)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid template_id"})
+		return
+	}
+
+	var req struct {
+		Name string `json:"name" binding:"required"`
+	}
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	tmpl, err := h.service.DuplicateTemplate(c.Request.Context(), uint(tenantID), uint(templateID), req.Name)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusCreated, tmpl.ToResponse())
+}

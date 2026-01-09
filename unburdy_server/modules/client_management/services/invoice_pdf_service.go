@@ -89,6 +89,16 @@ func (s *InvoicePDFService) GenerateCreditNotePDF(ctx context.Context, creditNot
 	return s.generatePDF(ctx, data)
 }
 
+// GenerateInvoicePDF generates PDF for an invoice - delegates to draft or final based on status
+func (s *InvoicePDFService) GenerateInvoicePDF(ctx context.Context, invoice *entities.Invoice) ([]byte, error) {
+	// Check if invoice is draft or final and delegate to appropriate method
+	if invoice.Status == "draft" {
+		return s.GenerateDraftPDF(ctx, invoice)
+	} else {
+		return s.GenerateFinalPDF(ctx, invoice)
+	}
+}
+
 // prepareInvoiceData prepares the template data from invoice entity
 func (s *InvoicePDFService) prepareInvoiceData(invoice *entities.Invoice, isDraft bool) (*InvoicePDFData, error) {
 	// Load all necessary relationships if not already loaded

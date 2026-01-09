@@ -85,13 +85,13 @@ lint:
 	@echo "$(YELLOW)Running linter...$(RESET)"
 	golangci-lint run
 
-## swagger: Generate Swagger documentation (includes base API endpoints)
+## swagger: Generate Swagger documentation (includes all modules)
 .PHONY: swagger
 swagger:
 	@echo "$(YELLOW)Generating Swagger documentation...$(RESET)"
-	@echo "$(CYAN)Scanning unburdy handlers, ae-saas-basic handlers, calendar, and booking modules...$(RESET)"
-	swag init -g $(MAIN_FILE) -o ./docs --parseDependency --parseInternal --parseDependencyLevel 3 --parseGoList --dir .,$(BASE_API_PATH),../modules/calendar,../modules/booking
-	@echo "$(GREEN)✓ Swagger docs generated with base API, calendar, and booking endpoints$(RESET)"
+	@echo "$(CYAN)Scanning all modules: unburdy handlers, base API, documents, invoice, templates, audit, client_management, calendar, and booking...$(RESET)"
+	swag init -g $(MAIN_FILE) -o ./docs --parseDependency --parseInternal --parseDependencyLevel 3 --parseGoList --dir .,$(BASE_API_PATH),../modules/calendar,../modules/booking,../modules/documents,../modules/invoice,../modules/templates,./modules/audit,./modules/client_management
+	@echo "$(GREEN)✓ Swagger docs generated with all module endpoints$(RESET)"
 
 ## docker-build: Build Docker image
 .PHONY: docker-build

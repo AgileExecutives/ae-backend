@@ -58,7 +58,10 @@ func (s *InvoiceNumberService) GenerateInvoiceNumber(organizationID uint, invoic
 	var invoiceNumber string
 	err := s.db.Transaction(func(tx *gorm.DB) error {
 		// For SQLite, ensure we can see committed rows from other transactions
-		tx.Exec("PRAGMA read_uncommitted=1")
+		// Only execute PRAGMA for SQLite databases
+		if tx.Dialector.Name() == "sqlite" {
+			tx.Exec("PRAGMA read_uncommitted=1")
+		}
 
 		var lastNumber string
 		var lastInvoice struct {
@@ -68,8 +71,8 @@ func (s *InvoiceNumberService) GenerateInvoiceNumber(organizationID uint, invoic
 		// Build query based on format
 		query := tx.Table("invoices").
 			Select("invoice_number").
-			Where("organization_id = ? AND status != ? AND invoice_number != ?",
-				organizationID, "draft", "DRAFT")
+			Where("organization_id = ? AND status != ? AND invoice_number NOT LIKE ?",
+				organizationID, "draft", "DRAFT-%")
 
 		// For year-based formats, only consider invoices from the same year
 		if format == InvoiceNumberFormatYearPrefix {

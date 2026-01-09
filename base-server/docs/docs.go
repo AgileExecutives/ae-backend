@@ -3003,14 +3003,14 @@ const docTemplate = `{
         "github_com_ae-base-server_internal_models.LoginRequest": {
             "type": "object",
             "required": [
-                "password",
-                "username"
+                "email",
+                "password"
             ],
             "properties": {
-                "password": {
+                "email": {
                     "type": "string"
                 },
-                "username": {
+                "password": {
                     "type": "string"
                 }
             }
@@ -3610,6 +3610,14 @@ const docTemplate = `{
                     "type": "string",
                     "example": "02.01.2006"
                 },
+                "default_vat_exempt": {
+                    "type": "boolean",
+                    "example": false
+                },
+                "default_vat_rate": {
+                    "type": "number",
+                    "example": 19
+                },
                 "email": {
                     "type": "string",
                     "example": "info@acme.com"
@@ -3621,8 +3629,20 @@ const docTemplate = `{
                 "extra_efforts_config": {
                     "type": "object"
                 },
+                "first_reminder_days": {
+                    "type": "integer",
+                    "example": 7
+                },
                 "invoice_content": {
                     "type": "object"
+                },
+                "invoice_number_format": {
+                    "type": "string",
+                    "example": "sequential"
+                },
+                "invoice_number_prefix": {
+                    "type": "string",
+                    "example": "INV-"
                 },
                 "line_item_double_unit_text": {
                     "type": "string",
@@ -3648,9 +3668,17 @@ const docTemplate = `{
                     "type": "string",
                     "example": "CEO"
                 },
+                "payment_due_days": {
+                    "type": "integer",
+                    "example": 14
+                },
                 "phone": {
                     "type": "string",
                     "example": "+1-555-0123"
+                },
+                "second_reminder_days": {
+                    "type": "integer",
+                    "example": 14
                 },
                 "street_address": {
                     "type": "string",
@@ -3983,6 +4011,14 @@ const docTemplate = `{
                     "type": "string",
                     "example": "02.01.2006"
                 },
+                "default_vat_exempt": {
+                    "type": "boolean",
+                    "example": false
+                },
+                "default_vat_rate": {
+                    "type": "number",
+                    "example": 19
+                },
                 "email": {
                     "type": "string",
                     "example": "info@acme.com"
@@ -3994,8 +4030,20 @@ const docTemplate = `{
                 "extra_efforts_config": {
                     "type": "object"
                 },
+                "first_reminder_days": {
+                    "type": "integer",
+                    "example": 7
+                },
                 "invoice_content": {
                     "type": "object"
+                },
+                "invoice_number_format": {
+                    "type": "string",
+                    "example": "sequential"
+                },
+                "invoice_number_prefix": {
+                    "type": "string",
+                    "example": "INV-"
                 },
                 "line_item_double_unit_text": {
                     "type": "string",
@@ -4021,9 +4069,17 @@ const docTemplate = `{
                     "type": "string",
                     "example": "CEO"
                 },
+                "payment_due_days": {
+                    "type": "integer",
+                    "example": 14
+                },
                 "phone": {
                     "type": "string",
                     "example": "+1-555-0123"
+                },
+                "second_reminder_days": {
+                    "type": "integer",
+                    "example": 14
                 },
                 "street_address": {
                     "type": "string",

@@ -140,3 +140,17 @@ type SessionDetailResponse struct {
 	PreviousSession *SessionResponse `json:"previous_session,omitempty"`
 	NextSession     *SessionResponse `json:"next_session,omitempty"`
 }
+
+// BulkUpdateSessionStatusRequest represents the request payload for updating multiple session statuses
+type BulkUpdateSessionStatusRequest struct {
+	SessionIDs []uint `json:"session_ids" binding:"required,min=1" example:"[1,2,3]"`
+	ClientID   uint   `json:"client_id" binding:"required" example:"1"`
+	Status     string `json:"status" binding:"required,oneof=scheduled canceled re-scheduled conducted invoice-draft billed" example:"conducted"`
+}
+
+// BulkUpdateSessionStatusResponse represents the response for bulk session status update
+type BulkUpdateSessionStatusResponse struct {
+	UpdatedCount int    `json:"updated_count" example:"3"`
+	Status       string `json:"status" example:"conducted"`
+	Message      string `json:"message" example:"3 sessions marked as conducted successfully"`
+}

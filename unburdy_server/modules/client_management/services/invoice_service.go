@@ -38,6 +38,31 @@ func (s *InvoiceService) SetDocumentStorage(storage documentStorage.DocumentStor
 	}
 }
 
+// GenerateInvoicePDF generates PDF bytes for an invoice
+func (s *InvoiceService) GenerateInvoicePDF(invoiceID, tenantID uint) ([]byte, error) {
+	if s.pdfService == nil {
+		return nil, errors.New("PDF service not available")
+	}
+
+	// Get invoice with all related data
+	var invoice entities.Invoice
+	if err := s.db.Preload("Client.CostProvider").
+		Preload("Client.Organization").
+		Preload("InvoiceItems").
+		Where("id = ? AND tenant_id = ?", invoiceID, tenantID).
+		First(&invoice).Error; err != nil {
+		return nil, fmt.Errorf("invoice not found: %w", err)
+	}
+
+	ctx := context.Background()
+	pdfBytes, err := s.pdfService.GenerateInvoicePDF(ctx, &invoice)
+	if err != nil {
+		return nil, fmt.Errorf("failed to generate PDF: %w", err)
+	}
+
+	return pdfBytes, nil
+}
+
 // CreateDraftInvoice creates a new draft invoice with sessions, extra efforts, and custom line items
 func (s *InvoiceService) CreateDraftInvoice(req entities.CreateDraftInvoiceRequest, tenantID, userID uint) (*entities.Invoice, error) {
 	// Verify client exists and get cost provider and organization
@@ -78,7 +103,53 @@ func (s *InvoiceService) CreateDraftInvoice(req entities.CreateDraftInvoiceReque
 		}
 
 		if len(sessions) != len(req.SessionIDs) {
-			return nil, errors.New("some sessions not found, don't belong to this client, or are not in conducted status")
+			// Provide detailed error information for debugging
+			var foundSessionIDs []uint
+			for _, session := range sessions {
+				foundSessionIDs = append(foundSessionIDs, session.ID)
+			}
+
+			// Check which sessions have issues and categorize them
+			var allSessionsDebug []struct {
+				ID       uint   `json:"id"`
+				ClientID uint   `json:"client_id"`
+				TenantID uint   `json:"tenant_id"`
+				Status   string `json:"status"`
+			}
+			s.db.Table("sessions").Select("id, client_id, tenant_id, status").
+				Where("id IN ?", req.SessionIDs).Find(&allSessionsDebug)
+
+			var wrongStatus, wrongClient, notFound []uint
+			foundIDs := make(map[uint]bool)
+			for _, dbSession := range allSessionsDebug {
+				foundIDs[dbSession.ID] = true
+				if dbSession.TenantID != tenantID {
+					wrongClient = append(wrongClient, dbSession.ID)
+				} else if dbSession.ClientID != req.ClientID {
+					wrongClient = append(wrongClient, dbSession.ID)
+				} else if dbSession.Status != "conducted" {
+					wrongStatus = append(wrongStatus, dbSession.ID)
+				}
+			}
+
+			for _, requestedID := range req.SessionIDs {
+				if !foundIDs[requestedID] {
+					notFound = append(notFound, requestedID)
+				}
+			}
+
+			errorMsg := "Cannot create invoice: "
+			if len(notFound) > 0 {
+				errorMsg += fmt.Sprintf("Sessions not found: %v. ", notFound)
+			}
+			if len(wrongClient) > 0 {
+				errorMsg += fmt.Sprintf("Sessions don't belong to this client: %v. ", wrongClient)
+			}
+			if len(wrongStatus) > 0 {
+				errorMsg += fmt.Sprintf("Sessions not in 'conducted' status: %v (they need to be marked as completed first). ", wrongStatus)
+			}
+
+			return nil, fmt.Errorf(errorMsg)
 		}
 	}
 
@@ -210,7 +281,7 @@ func (s *InvoiceService) CreateDraftInvoice(req entities.CreateDraftInvoiceReque
 		UserID:         userID,
 		OrganizationID: organization.ID,
 		InvoiceDate:    time.Now(),
-		InvoiceNumber:  "DRAFT", // Temporary, assigned on finalization
+		InvoiceNumber:  fmt.Sprintf("DRAFT-%d-%d", tenantID, time.Now().UnixNano()), // Unique temporary number
 		NumberUnits:    numberUnits,
 		SumAmount:      subtotal,
 		TaxAmount:      taxAmount,
@@ -529,10 +600,10 @@ func (s *InvoiceService) UpdateDraftInvoice(invoiceID, tenantID, userID uint, re
 
 	// Update invoice totals
 	if err := tx.Model(&invoice).Updates(map[string]interface{}{
-		"number_units": numberUnits,
-		"sum_amount":   subtotal,
-		"tax_amount":   taxAmount,
-		"total_amount": totalAmount,
+		"number_units":    numberUnits,
+		"subtotal_amount": subtotal,
+		"tax_amount":      taxAmount,
+		"total_amount":    totalAmount,
 	}).Error; err != nil {
 		tx.Rollback()
 		return nil, fmt.Errorf("failed to update invoice totals: %w", err)

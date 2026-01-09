@@ -199,6 +199,46 @@ func (s *SessionService) DeleteSession(id, tenantID uint) error {
 	return nil
 }
 
+// BulkUpdateSessionStatus updates the status of multiple sessions
+func (s *SessionService) BulkUpdateSessionStatus(sessionIDs []uint, tenantID uint, clientID uint, newStatus string) error {
+	if len(sessionIDs) == 0 {
+		return fmt.Errorf("no session IDs provided")
+	}
+
+	// Validate status
+	validStatuses := []string{"scheduled", "canceled", "re-scheduled", "conducted", "invoice-draft", "billed"}
+	isValidStatus := false
+	for _, status := range validStatuses {
+		if status == newStatus {
+			isValidStatus = true
+			break
+		}
+	}
+	if !isValidStatus {
+		return fmt.Errorf("invalid status: %s", newStatus)
+	}
+
+	// Update sessions that belong to the tenant and client
+	result := s.db.Model(&entities.Session{}).
+		Where("id IN ? AND tenant_id = ? AND client_id = ?", sessionIDs, tenantID, clientID).
+		Update("status", newStatus)
+
+	if result.Error != nil {
+		return fmt.Errorf("failed to update session statuses: %w", result.Error)
+	}
+
+	if result.RowsAffected != int64(len(sessionIDs)) {
+		return fmt.Errorf("some sessions not found or don't belong to this tenant/client. Expected to update %d sessions, but updated %d", len(sessionIDs), result.RowsAffected)
+	}
+
+	return nil
+}
+
+// MarkSessionsAsConducted marks multiple sessions as conducted (convenience method)
+func (s *SessionService) MarkSessionsAsConducted(sessionIDs []uint, tenantID uint, clientID uint) error {
+	return s.BulkUpdateSessionStatus(sessionIDs, tenantID, clientID, "conducted")
+}
+
 // GetDetailedSessionsUpcoming7Days retrieves all sessions for 7 days starting from the given date with detailed client information
 // including previous and next sessions for each client. If startDate is nil, uses current date.
 func (s *SessionService) GetDetailedSessionsUpcoming7Days(tenantID uint, startDate *time.Time) ([]entities.SessionDetailResponse, error) {

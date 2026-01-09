@@ -42,6 +42,7 @@ func (r *TemplateRoutes) RegisterRoutes(router *gin.RouterGroup, ctx core.Module
 
 		// Template operations
 		templates.POST("/:id/render", handler.RenderTemplate)
+		templates.POST("/:id/duplicate", handler.DuplicateTemplate)
 	}
 }
 

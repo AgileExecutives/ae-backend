@@ -136,13 +136,13 @@ definitions:
     type: object
   github_com_ae-base-server_internal_models.LoginRequest:
     properties:
+      email:
+        type: string
       password:
         type: string
-      username:
-        type: string
     required:
+    - email
     - password
-    - username
     type: object
   github_com_ae-base-server_internal_models.LoginResponse:
     properties:
@@ -552,6 +552,12 @@ definitions:
       date_format:
         example: 02.01.2006
         type: string
+      default_vat_exempt:
+        example: false
+        type: boolean
+      default_vat_rate:
+        example: 19
+        type: number
       email:
         example: info@acme.com
         type: string
@@ -560,8 +566,17 @@ definitions:
         type: string
       extra_efforts_config:
         type: object
+      first_reminder_days:
+        example: 7
+        type: integer
       invoice_content:
         type: object
+      invoice_number_format:
+        example: sequential
+        type: string
+      invoice_number_prefix:
+        example: INV-
+        type: string
       line_item_double_unit_text:
         example: Doppelstunde
         type: string
@@ -580,9 +595,15 @@ definitions:
       owner_title:
         example: CEO
         type: string
+      payment_due_days:
+        example: 14
+        type: integer
       phone:
         example: +1-555-0123
         type: string
+      second_reminder_days:
+        example: 14
+        type: integer
       street_address:
         example: 123 Business St
         type: string
@@ -815,6 +836,12 @@ definitions:
       date_format:
         example: 02.01.2006
         type: string
+      default_vat_exempt:
+        example: false
+        type: boolean
+      default_vat_rate:
+        example: 19
+        type: number
       email:
         example: info@acme.com
         type: string
@@ -823,8 +850,17 @@ definitions:
         type: string
       extra_efforts_config:
         type: object
+      first_reminder_days:
+        example: 7
+        type: integer
       invoice_content:
         type: object
+      invoice_number_format:
+        example: sequential
+        type: string
+      invoice_number_prefix:
+        example: INV-
+        type: string
       line_item_double_unit_text:
         example: Therapie Doppelstunde
         type: string
@@ -843,9 +879,15 @@ definitions:
       owner_title:
         example: CEO
         type: string
+      payment_due_days:
+        example: 14
+        type: integer
       phone:
         example: +1-555-0123
         type: string
+      second_reminder_days:
+        example: 14
+        type: integer
       street_address:
         example: 123 Business St
         type: string
