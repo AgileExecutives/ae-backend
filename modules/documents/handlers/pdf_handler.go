@@ -7,9 +7,9 @@ import (
 	"time"
 
 	baseAPI "github.com/ae-base-server/api"
+	templateServices "github.com/ae-base-server/modules/templates/services"
 	"github.com/gin-gonic/gin"
 	"github.com/unburdy/documents-module/services"
-	templateServices "github.com/unburdy/templates-module/services"
 	"gorm.io/gorm"
 )
 

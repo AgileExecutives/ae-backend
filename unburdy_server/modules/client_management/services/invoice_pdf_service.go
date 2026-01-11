@@ -21,7 +21,7 @@ import (
 type InvoicePDFService struct {
 	db           *gorm.DB
 	storage      documentStorage.DocumentStorage
-	templatePath string
+	templatePath string // Fallback for direct file loading
 }
 
 // NewInvoicePDFService creates a new invoice PDF service
@@ -29,7 +29,7 @@ func NewInvoicePDFService(db *gorm.DB, storage documentStorage.DocumentStorage) 
 	// Get template path from environment or use default
 	templatePath := os.Getenv("INVOICE_TEMPLATE_PATH")
 	if templatePath == "" {
-		templatePath = "statics/pdf_templates/invoice_units_template.html"
+		templatePath = "statics/pdf_templates/invoice.html"
 	}
 
 	return &InvoicePDFService{
@@ -232,7 +232,8 @@ func (s *InvoicePDFService) generatePDF(ctx context.Context, data *InvoicePDFDat
 
 // renderTemplate renders the invoice HTML template
 func (s *InvoicePDFService) renderTemplate(data *InvoicePDFData) (string, error) {
-	// Parse template file
+	// For now, use file-based template
+	// TODO: Integrate with contract-based template system once it's stabilized
 	tmpl, err := template.ParseFiles(s.templatePath)
 	if err != nil {
 		return "", fmt.Errorf("failed to parse template: %w", err)

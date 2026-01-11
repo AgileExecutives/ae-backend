@@ -667,6 +667,31 @@ definitions:
       zip:
         type: string
     type: object
+  entities.ContractResponse:
+    properties:
+      created_at:
+        type: string
+      default_sample_data:
+        additionalProperties: true
+        type: object
+      description:
+        type: string
+      id:
+        type: integer
+      module:
+        type: string
+      supported_channels:
+        items:
+          type: string
+        type: array
+      template_key:
+        type: string
+      updated_at:
+        type: string
+      variable_schema:
+        additionalProperties: true
+        type: object
+    type: object
   entities.CostProviderResponse:
     properties:
       authority_name:
@@ -1566,6 +1591,30 @@ definitions:
       time.Time:
         type: string
     type: object
+  entities.RegisterContractRequest:
+    properties:
+      default_sample_data:
+        additionalProperties: true
+        type: object
+      description:
+        type: string
+      module:
+        type: string
+      supported_channels:
+        items:
+          type: string
+        minItems: 1
+        type: array
+      template_key:
+        type: string
+      variable_schema:
+        additionalProperties: true
+        type: object
+    required:
+    - module
+    - supported_channels
+    - template_key
+    type: object
   entities.SessionDetailResponse:
     properties:
       calendar_entry_id:
@@ -2034,6 +2083,21 @@ definitions:
       zip:
         example: "12345"
         type: string
+    type: object
+  entities.UpdateContractRequest:
+    properties:
+      default_sample_data:
+        additionalProperties: true
+        type: object
+      description:
+        type: string
+      supported_channels:
+        items:
+          type: string
+        type: array
+      variable_schema:
+        additionalProperties: true
+        type: object
     type: object
   entities.UpdateCostProviderRequest:
     properties:
@@ -2944,44 +3008,6 @@ definitions:
     - invoice_number
     - organization_id
     type: object
-  handlers.CreateTemplateRequest:
-    properties:
-      content:
-        example: <!DOCTYPE html>...
-        type: string
-      description:
-        example: Default invoice template
-        type: string
-      is_active:
-        example: true
-        type: boolean
-      is_default:
-        example: false
-        type: boolean
-      name:
-        example: Standard Invoice
-        type: string
-      organization_id:
-        example: 10
-        type: integer
-      sample_data:
-        additionalProperties: true
-        type: object
-      template_type:
-        example: invoice
-        type: string
-      variables:
-        example:
-        - customer_name
-        - date
-        items:
-          type: string
-        type: array
-    required:
-    - content
-    - name
-    - template_type
-    type: object
   handlers.DownloadURLResponse:
     properties:
       document_id:
@@ -3074,52 +3100,6 @@ definitions:
       success:
         example: true
         type: boolean
-    type: object
-  handlers.TemplateResponse:
-    properties:
-      created_at:
-        example: "2025-12-26T10:00:00Z"
-        type: string
-      description:
-        example: Default invoice template
-        type: string
-      id:
-        example: 1
-        type: integer
-      is_active:
-        example: true
-        type: boolean
-      is_default:
-        example: false
-        type: boolean
-      name:
-        example: Standard Invoice
-        type: string
-      organization_id:
-        example: 10
-        type: integer
-      sample_data:
-        additionalProperties: true
-        type: object
-      storage_key:
-        example: tenants/1/templates/invoice/...
-        type: string
-      template_type:
-        example: invoice
-        type: string
-      tenant_id:
-        example: 1
-        type: integer
-      updated_at:
-        example: "2025-12-26T10:00:00Z"
-        type: string
-      variables:
-        items:
-          type: string
-        type: array
-      version:
-        example: 1
-        type: integer
     type: object
   models.ClientResponse:
     properties:
@@ -3972,6 +3952,40 @@ definitions:
         type: string
       timezone:
         type: string
+    type: object
+  services.CreateTemplateRequest:
+    properties:
+      content:
+        description: HTML content
+        type: string
+      description:
+        type: string
+      is_active:
+        type: boolean
+      is_default:
+        type: boolean
+      name:
+        type: string
+      organization_id:
+        description: NULL = system default
+        type: integer
+      sample_data:
+        additionalProperties: true
+        description: Sample data for preview
+        type: object
+      template_type:
+        type: string
+      tenant_id:
+        type: integer
+      variables:
+        description: List of variable names
+        items:
+          type: string
+        type: array
+    required:
+    - content
+    - name
+    - template_type
     type: object
   services.GeneratePDFFromHTMLRequest:
     properties:
@@ -9383,6 +9397,48 @@ paths:
       summary: Update a plan
       tags:
       - plans
+  /public/templates/assets/{tenant}/{template}/{file}:
+    get:
+      description: Retrieve a template asset (image, CSS, etc.) without authentication
+      operationId: getPublicTemplateAsset
+      parameters:
+      - description: Tenant ID
+        in: path
+        name: tenant
+        required: true
+        type: string
+      - description: Template ID
+        in: path
+        name: template
+        required: true
+        type: string
+      - description: Asset filename
+        in: path
+        name: file
+        required: true
+        type: string
+      produces:
+      - application/octet-stream
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: file
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get public template asset
+      tags:
+      - Templates
   /sessions:
     get:
       description: Retrieve all sessions with pagination
@@ -10448,7 +10504,8 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/handlers.SuccessResponse'
+            additionalProperties: true
+            type: object
         "401":
           description: Unauthorized
           schema:
@@ -10461,6 +10518,8 @@ paths:
             additionalProperties:
               type: string
             type: object
+      security:
+      - BearerAuth: []
       summary: List templates
       tags:
       - Templates
@@ -10475,14 +10534,14 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/handlers.CreateTemplateRequest'
+          $ref: '#/definitions/services.CreateTemplateRequest'
       produces:
       - application/json
       responses:
         "201":
           description: Created
           schema:
-            $ref: '#/definitions/handlers.TemplateResponse'
+            $ref: '#/definitions/entities.TemplateResponse'
         "400":
           description: Bad Request
           schema:
@@ -10716,6 +10775,230 @@ paths:
       summary: Render template
       tags:
       - Templates
+  /templates/contracts:
+    get:
+      description: List all contracts or filter by module
+      operationId: listContracts
+      parameters:
+      - description: Filter by module name
+        in: query
+        name: module
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/entities.ContractResponse'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: List template contracts
+      tags:
+      - Template Contracts
+    post:
+      consumes:
+      - application/json
+      description: Register a new template contract or update existing one
+      operationId: registerContract
+      parameters:
+      - description: Contract data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/entities.RegisterContractRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Contract updated
+          schema:
+            $ref: '#/definitions/entities.ContractResponse'
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/entities.ContractResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Register template contract
+      tags:
+      - Template Contracts
+  /templates/contracts/{id}:
+    delete:
+      description: Delete a template contract (only if not in use)
+      operationId: deleteContract
+      parameters:
+      - description: Contract ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      responses:
+        "204":
+          description: Contract deleted
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Delete template contract
+      tags:
+      - Template Contracts
+    get:
+      description: Get contract by ID
+      operationId: getContractByID
+      parameters:
+      - description: Contract ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/entities.ContractResponse'
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get template contract by ID
+      tags:
+      - Template Contracts
+    put:
+      consumes:
+      - application/json
+      description: Update an existing template contract
+      operationId: updateContract
+      parameters:
+      - description: Contract ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Update data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/entities.UpdateContractRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/entities.ContractResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Update template contract
+      tags:
+      - Template Contracts
+  /templates/contracts/by-key/{module}/{template_key}:
+    get:
+      description: Get contract by module and template key
+      operationId: getContractByKey
+      parameters:
+      - description: Module name
+        in: path
+        name: module
+        required: true
+        type: string
+      - description: Template key
+        in: path
+        name: template_key
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/entities.ContractResponse'
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get template contract
+      tags:
+      - Template Contracts
   /templates/default:
     get:
       description: Get the default template for a specific type (organization from

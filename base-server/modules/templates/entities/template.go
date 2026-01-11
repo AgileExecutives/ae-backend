@@ -7,14 +7,33 @@ import (
 	"gorm.io/gorm"
 )
 
+// Channel represents template output channel
+type Channel string
+
+const (
+	ChannelEmail    Channel = "EMAIL"
+	ChannelDocument Channel = "DOCUMENT"
+)
+
 // Template represents a document template (invoice, contract, etc.)
 type Template struct {
-	ID             uint   `gorm:"primaryKey" json:"id"`
-	TenantID       uint   `gorm:"not null;index:idx_tenant_template" json:"tenant_id"`
-	OrganizationID *uint  `gorm:"index:idx_org_template" json:"organization_id,omitempty"` // NULL = system default
-	TemplateType   string `gorm:"size:50;not null;index" json:"template_type"`             // "invoice", "contract", "report"
-	Name           string `gorm:"size:255;not null" json:"name"`
-	Description    string `gorm:"type:text" json:"description,omitempty"`
+	ID             uint  `gorm:"primaryKey" json:"id"`
+	TenantID       uint  `gorm:"not null;index:idx_tenant_template" json:"tenant_id"`
+	OrganizationID *uint `gorm:"index:idx_org_template" json:"organization_id,omitempty"` // NULL = system default
+
+	// Contract binding - links to TemplateContract
+	Module      string  `gorm:"size:100;index:idx_template_contract,priority:1" json:"module,omitempty"`
+	TemplateKey string  `gorm:"size:100;index:idx_template_contract,priority:2" json:"template_key,omitempty"`
+	Channel     Channel `gorm:"size:20;index:idx_template_contract,priority:3" json:"channel,omitempty"`
+
+	// Channel-specific fields
+	Subject *string `gorm:"type:text" json:"subject,omitempty"` // Required for EMAIL, null for DOCUMENT
+
+	// Legacy field (deprecated, keep for backward compatibility)
+	TemplateType string `gorm:"size:50;index" json:"template_type"` // "invoice", "contract", "report"
+
+	Name        string `gorm:"size:255;not null" json:"name"`
+	Description string `gorm:"type:text" json:"description,omitempty"`
 
 	// Version control
 	Version   int  `gorm:"not null;default:1" json:"version"`

@@ -90,7 +90,7 @@ lint:
 swagger:
 	@echo "$(YELLOW)Generating Swagger documentation...$(RESET)"
 	@echo "$(CYAN)Scanning all modules: unburdy handlers, base API, documents, invoice, templates, audit, client_management, calendar, and booking...$(RESET)"
-	swag init -g $(MAIN_FILE) -o ./docs --parseDependency --parseInternal --parseDependencyLevel 3 --parseGoList --dir .,$(BASE_API_PATH),../modules/calendar,../modules/booking,../modules/documents,../modules/invoice,../modules/templates,./modules/audit,./modules/client_management
+	swag init -g $(MAIN_FILE) -o ./docs --parseDependency --parseInternal --parseDependencyLevel 3 --parseGoList --dir .,$(BASE_API_PATH),../modules/calendar,../modules/booking,../modules/documents,../modules/invoice,$(BASE_API_PATH)/modules/templates,./modules/audit,./modules/client_management
 	@echo "$(GREEN)✓ Swagger docs generated with all module endpoints$(RESET)"
 
 ## docker-build: Build Docker image

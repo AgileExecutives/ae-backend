@@ -2,23 +2,28 @@ package routes
 
 import (
 	baseAPI "github.com/ae-base-server/api"
+	"github.com/ae-base-server/modules/templates/handlers"
+	"github.com/ae-base-server/modules/templates/services"
+	"github.com/ae-base-server/modules/templates/services/storage"
 	"github.com/ae-base-server/pkg/core"
 	"github.com/gin-gonic/gin"
-	"github.com/unburdy/templates-module/handlers"
-	"github.com/unburdy/templates-module/services"
 	"gorm.io/gorm"
 )
 
 // TemplateRoutes implements RouteProvider for template management endpoints
 type TemplateRoutes struct {
 	templateService *services.TemplateService
+	contractService *services.ContractService
+	minioStorage    *storage.MinIOStorage
 	db              *gorm.DB
 }
 
 // NewTemplateRoutes creates a new TemplateRoutes instance
-func NewTemplateRoutes(templateService *services.TemplateService, db *gorm.DB) *TemplateRoutes {
+func NewTemplateRoutes(templateService *services.TemplateService, contractService *services.ContractService, minioStorage *storage.MinIOStorage, db *gorm.DB) *TemplateRoutes {
 	return &TemplateRoutes{
 		templateService: templateService,
+		contractService: contractService,
+		minioStorage:    minioStorage,
 		db:              db,
 	}
 }
@@ -26,12 +31,33 @@ func NewTemplateRoutes(templateService *services.TemplateService, db *gorm.DB) *
 // RegisterRoutes registers all template management routes
 func (r *TemplateRoutes) RegisterRoutes(router *gin.RouterGroup, ctx core.ModuleContext) {
 	handler := handlers.NewTemplateHandler(r.templateService, ctx.DB)
+	contractHandler := handlers.NewContractHandler(r.contractService)
+	publicAssetHandler := handlers.NewPublicAssetHandler(r.minioStorage)
+
+	// Public asset routes (no authentication required)
+	public := router.Group("/public/templates")
+	{
+		public.GET("/assets/:tenant/:template/:file", publicAssetHandler.GetAsset)
+	}
+
+	// Contract routes
+	contracts := router.Group("/templates/contracts")
+	{
+		contracts.POST("", contractHandler.RegisterContract)
+		contracts.GET("", contractHandler.ListContracts)
+		contracts.GET("/by-key/:module/:template_key", contractHandler.GetContract)
+		contracts.GET("/:id", contractHandler.GetContractByID)
+		contracts.PUT("/:id", contractHandler.UpdateContract)
+		contracts.DELETE("/:id", contractHandler.DeleteContract)
+	}
 
 	// Template routes
 	templates := router.Group("/templates")
 	{
 		// Get default template (must be before /:id to avoid matching)
 		templates.GET("/default", handler.GetDefaultTemplate)
+
+		// Preview handlers removed - render service not yet implemented
 
 		// CRUD operations
 		templates.POST("", handler.CreateTemplate)

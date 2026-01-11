@@ -27,12 +27,12 @@ import (
 
 	// Documents and Templates modules
 	invoiceNumberServices "github.com/ae-base-server/modules/invoice_number/services"
+	templateEntities "github.com/ae-base-server/modules/templates/entities"
+	templateServices "github.com/ae-base-server/modules/templates/services"
+	templateStorage "github.com/ae-base-server/modules/templates/services/storage"
 	documentEntities "github.com/unburdy/documents-module/entities"
 	documentServices "github.com/unburdy/documents-module/services"
 	documentStorage "github.com/unburdy/documents-module/services/storage"
-	templateEntities "github.com/unburdy/templates-module/entities"
-	templateServices "github.com/unburdy/templates-module/services"
-	templateStorage "github.com/unburdy/templates-module/services/storage"
 
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"

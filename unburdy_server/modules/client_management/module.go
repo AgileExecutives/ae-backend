@@ -10,9 +10,9 @@ import (
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 
+	templateServices "github.com/ae-base-server/modules/templates/services"
 	bookingServices "github.com/unburdy/booking-module/services"
 	documentServices "github.com/unburdy/documents-module/services/storage"
-	templateServices "github.com/unburdy/templates-module/services"
 	"github.com/unburdy/unburdy-server-api/internal/services"
 	"github.com/unburdy/unburdy-server-api/modules/client_management/entities"
 	"github.com/unburdy/unburdy-server-api/modules/client_management/events"
@@ -164,18 +164,17 @@ func (m *CoreModule) Initialize(ctx core.ModuleContext) error {
 	// Initialize extra effort service
 	extraEffortService := clientServices.NewExtraEffortService(ctx.DB)
 
-	// Get document storage from registry (for invoice PDF storage)
+	// Get document storage from registry
 	if docStorageRaw, ok := ctx.Services.Get("document-storage"); ok {
 		if docStorage, ok := docStorageRaw.(documentServices.DocumentStorage); ok {
 			ctx.Logger.Info("✅ Client Management: Document storage successfully retrieved from registry")
-			// Initialize PDF service and inject into invoice service
 			invoiceService.SetDocumentStorage(docStorage)
-			ctx.Logger.Info("✅ Client Management: PDF service initialized with document storage")
+			ctx.Logger.Info("✅ Client Management: Invoice PDF service initialized")
 		} else {
 			ctx.Logger.Warn("⚠️ Client Management: Document storage type assertion failed")
 		}
 	} else {
-		ctx.Logger.Warn("⚠️ Client Management: Document storage not found in registry - invoice PDFs will not be stored in MinIO")
+		ctx.Logger.Warn("⚠️ Client Management: Document storage not found in registry")
 	}
 
 	// Get template service from registry (for PDF generation)

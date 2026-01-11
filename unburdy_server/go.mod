@@ -4,6 +4,8 @@ go 1.24.5
 
 require (
 	github.com/ae-base-server v0.0.0
+	github.com/chromedp/cdproto v0.0.0-20250803210736-d308e07a266d
+	github.com/chromedp/chromedp v0.14.2
 	github.com/gin-gonic/gin v1.10.1
 	github.com/golang-jwt/jwt/v5 v5.3.0
 	github.com/joho/godotenv v1.5.1
@@ -11,8 +13,7 @@ require (
 	github.com/unburdy/booking-module v0.0.0
 	github.com/unburdy/calendar-module v0.0.0
 	github.com/unburdy/documents-module v0.0.0
-	github.com/unburdy/invoice-module v0.0.0
-	github.com/unburdy/templates-module v0.0.0
+	gorm.io/datatypes v1.2.7
 	gorm.io/driver/postgres v1.6.0
 	gorm.io/driver/sqlite v1.6.0
 	gorm.io/gorm v1.30.0
@@ -21,8 +22,6 @@ require (
 require (
 	filippo.io/edwards25519 v1.1.0 // indirect
 	github.com/cespare/xxhash/v2 v2.2.0 // indirect
-	github.com/chromedp/cdproto v0.0.0-20250803210736-d308e07a266d // indirect
-	github.com/chromedp/chromedp v0.14.2 // indirect
 	github.com/chromedp/sysutil v1.1.0 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
@@ -50,7 +49,6 @@ require (
 	github.com/swaggo/gin-swagger v1.6.1 // indirect
 	github.com/tinylib/msgp v1.3.0 // indirect
 	github.com/ulule/limiter/v3 v3.11.2 // indirect
-	gorm.io/datatypes v1.2.7 // indirect
 	gorm.io/driver/mysql v1.5.6 // indirect
 )
 
@@ -111,5 +109,3 @@ replace github.com/unburdy/calendar-module => ../modules/calendar
 replace github.com/unburdy/documents-module => ../modules/documents
 
 replace github.com/unburdy/invoice-module => ../modules/invoice
-
-replace github.com/unburdy/templates-module => ../modules/templates

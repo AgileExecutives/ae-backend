@@ -3,12 +3,12 @@ package templates
 import (
 	"context"
 
+	"github.com/ae-base-server/modules/templates/entities"
+	"github.com/ae-base-server/modules/templates/routes"
+	"github.com/ae-base-server/modules/templates/services"
+	"github.com/ae-base-server/modules/templates/services/storage"
 	"github.com/ae-base-server/pkg/core"
 	"github.com/redis/go-redis/v9"
-	"github.com/unburdy/templates-module/entities"
-	"github.com/unburdy/templates-module/routes"
-	"github.com/unburdy/templates-module/services"
-	"github.com/unburdy/templates-module/services/storage"
 )
 
 // CoreModule implements the core.Module interface for the templates module
@@ -76,8 +76,23 @@ func (m *CoreModule) Initialize(ctx core.ModuleContext) error {
 		m.templateService = services.NewTemplateService(ctx.DB, m.minioStorage)
 	}
 
+	// Initialize contract service
+	contractService := services.NewContractService(ctx.DB)
+
+	// Initialize seed service and run seeding
+	seedService := services.NewSeedService(ctx.DB)
+	if err := seedService.SeedDefaultTemplates(); err != nil {
+		ctx.Logger.Warn("Failed to seed templates:", err)
+	}
+
+	// Cast minioStorage to *storage.MinIOStorage for routes
+	minioStorageImpl, ok := m.minioStorage.(*storage.MinIOStorage)
+	if !ok {
+		ctx.Logger.Warn("MinIO storage is not *storage.MinIOStorage, routes may not work correctly")
+	}
+
 	// Initialize routes
-	m.templateRoutes = routes.NewTemplateRoutes(m.templateService, ctx.DB)
+	m.templateRoutes = routes.NewTemplateRoutes(m.templateService, contractService, minioStorageImpl, ctx.DB)
 
 	return nil
 }
@@ -99,6 +114,7 @@ func (m *CoreModule) Stop(ctx context.Context) error {
 func (m *CoreModule) Entities() []core.Entity {
 	return []core.Entity{
 		entities.NewTemplateEntity(),
+		entities.NewTemplateContractEntity(),
 	}
 }
 

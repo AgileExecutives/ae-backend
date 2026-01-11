@@ -8350,6 +8350,68 @@ const docTemplate = `{
                 }
             }
         },
+        "/public/templates/assets/{tenant}/{template}/{file}": {
+            "get": {
+                "description": "Retrieve a template asset (image, CSS, etc.) without authentication",
+                "produces": [
+                    "application/octet-stream"
+                ],
+                "tags": [
+                    "Templates"
+                ],
+                "summary": "Get public template asset",
+                "operationId": "getPublicTemplateAsset",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Tenant ID",
+                        "name": "tenant",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Template ID",
+                        "name": "template",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Asset filename",
+                        "name": "file",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "file"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/sessions": {
             "get": {
                 "security": [
@@ -9963,6 +10025,11 @@ const docTemplate = `{
         },
         "/templates": {
             "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "List templates with optional filters and pagination (organization_id from auth middleware)",
                 "produces": [
                     "application/json"
@@ -10002,7 +10069,8 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/handlers.SuccessResponse"
+                            "type": "object",
+                            "additionalProperties": true
                         }
                     },
                     "401": {
@@ -10050,7 +10118,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/handlers.CreateTemplateRequest"
+                            "$ref": "#/definitions/services.CreateTemplateRequest"
                         }
                     }
                 ],
@@ -10058,7 +10126,7 @@ const docTemplate = `{
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/handlers.TemplateResponse"
+                            "$ref": "#/definitions/entities.TemplateResponse"
                         }
                     },
                     "400": {
@@ -10072,6 +10140,353 @@ const docTemplate = `{
                     },
                     "401": {
                         "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/templates/contracts": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "List all contracts or filter by module",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Template Contracts"
+                ],
+                "summary": "List template contracts",
+                "operationId": "listContracts",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Filter by module name",
+                        "name": "module",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/entities.ContractResponse"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Register a new template contract or update existing one",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Template Contracts"
+                ],
+                "summary": "Register template contract",
+                "operationId": "registerContract",
+                "parameters": [
+                    {
+                        "description": "Contract data",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/entities.RegisterContractRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Contract updated",
+                        "schema": {
+                            "$ref": "#/definitions/entities.ContractResponse"
+                        }
+                    },
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/entities.ContractResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/templates/contracts/by-key/{module}/{template_key}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Get contract by module and template key",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Template Contracts"
+                ],
+                "summary": "Get template contract",
+                "operationId": "getContractByKey",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Module name",
+                        "name": "module",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Template key",
+                        "name": "template_key",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/entities.ContractResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/templates/contracts/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Get contract by ID",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Template Contracts"
+                ],
+                "summary": "Get template contract by ID",
+                "operationId": "getContractByID",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Contract ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/entities.ContractResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            },
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Update an existing template contract",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Template Contracts"
+                ],
+                "summary": "Update template contract",
+                "operationId": "updateContract",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Contract ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Update data",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/entities.UpdateContractRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/entities.ContractResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Delete a template contract (only if not in use)",
+                "tags": [
+                    "Template Contracts"
+                ],
+                "summary": "Delete template contract",
+                "operationId": "deleteContract",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Contract ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Contract deleted"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
                         "schema": {
                             "type": "object",
                             "additionalProperties": {
@@ -11593,6 +12008,43 @@ const docTemplate = `{
                 }
             }
         },
+        "entities.ContractResponse": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "default_sample_data": {
+                    "type": "object",
+                    "additionalProperties": true
+                },
+                "description": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "module": {
+                    "type": "string"
+                },
+                "supported_channels": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "template_key": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                },
+                "variable_schema": {
+                    "type": "object",
+                    "additionalProperties": true
+                }
+            }
+        },
         "entities.CostProviderResponse": {
             "type": "object",
             "properties": {
@@ -12846,6 +13298,40 @@ const docTemplate = `{
                 }
             }
         },
+        "entities.RegisterContractRequest": {
+            "type": "object",
+            "required": [
+                "module",
+                "supported_channels",
+                "template_key"
+            ],
+            "properties": {
+                "default_sample_data": {
+                    "type": "object",
+                    "additionalProperties": true
+                },
+                "description": {
+                    "type": "string"
+                },
+                "module": {
+                    "type": "string"
+                },
+                "supported_channels": {
+                    "type": "array",
+                    "minItems": 1,
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "template_key": {
+                    "type": "string"
+                },
+                "variable_schema": {
+                    "type": "object",
+                    "additionalProperties": true
+                }
+            }
+        },
         "entities.SessionDetailResponse": {
             "type": "object",
             "properties": {
@@ -13501,6 +13987,28 @@ const docTemplate = `{
                 "zip": {
                     "type": "string",
                     "example": "12345"
+                }
+            }
+        },
+        "entities.UpdateContractRequest": {
+            "type": "object",
+            "properties": {
+                "default_sample_data": {
+                    "type": "object",
+                    "additionalProperties": true
+                },
+                "description": {
+                    "type": "string"
+                },
+                "supported_channels": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "variable_schema": {
+                    "type": "object",
+                    "additionalProperties": true
                 }
             }
         },
@@ -14833,58 +15341,6 @@ const docTemplate = `{
                 }
             }
         },
-        "handlers.CreateTemplateRequest": {
-            "type": "object",
-            "required": [
-                "content",
-                "name",
-                "template_type"
-            ],
-            "properties": {
-                "content": {
-                    "type": "string",
-                    "example": "\u003c!DOCTYPE html\u003e..."
-                },
-                "description": {
-                    "type": "string",
-                    "example": "Default invoice template"
-                },
-                "is_active": {
-                    "type": "boolean",
-                    "example": true
-                },
-                "is_default": {
-                    "type": "boolean",
-                    "example": false
-                },
-                "name": {
-                    "type": "string",
-                    "example": "Standard Invoice"
-                },
-                "organization_id": {
-                    "type": "integer",
-                    "example": 10
-                },
-                "sample_data": {
-                    "type": "object",
-                    "additionalProperties": true
-                },
-                "template_type": {
-                    "type": "string",
-                    "example": "invoice"
-                },
-                "variables": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    },
-                    "example": [
-                        "customer_name",
-                        "date"
-                    ]
-                }
-            }
-        },
         "handlers.DownloadURLResponse": {
             "type": "object",
             "properties": {
@@ -15006,69 +15462,6 @@ const docTemplate = `{
                 "success": {
                     "type": "boolean",
                     "example": true
-                }
-            }
-        },
-        "handlers.TemplateResponse": {
-            "type": "object",
-            "properties": {
-                "created_at": {
-                    "type": "string",
-                    "example": "2025-12-26T10:00:00Z"
-                },
-                "description": {
-                    "type": "string",
-                    "example": "Default invoice template"
-                },
-                "id": {
-                    "type": "integer",
-                    "example": 1
-                },
-                "is_active": {
-                    "type": "boolean",
-                    "example": true
-                },
-                "is_default": {
-                    "type": "boolean",
-                    "example": false
-                },
-                "name": {
-                    "type": "string",
-                    "example": "Standard Invoice"
-                },
-                "organization_id": {
-                    "type": "integer",
-                    "example": 10
-                },
-                "sample_data": {
-                    "type": "object",
-                    "additionalProperties": true
-                },
-                "storage_key": {
-                    "type": "string",
-                    "example": "tenants/1/templates/invoice/..."
-                },
-                "template_type": {
-                    "type": "string",
-                    "example": "invoice"
-                },
-                "tenant_id": {
-                    "type": "integer",
-                    "example": 1
-                },
-                "updated_at": {
-                    "type": "string",
-                    "example": "2025-12-26T10:00:00Z"
-                },
-                "variables": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                },
-                "version": {
-                    "type": "integer",
-                    "example": 1
                 }
             }
         },
@@ -16279,6 +16672,54 @@ const docTemplate = `{
                 },
                 "timezone": {
                     "type": "string"
+                }
+            }
+        },
+        "services.CreateTemplateRequest": {
+            "type": "object",
+            "required": [
+                "content",
+                "name",
+                "template_type"
+            ],
+            "properties": {
+                "content": {
+                    "description": "HTML content",
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "is_active": {
+                    "type": "boolean"
+                },
+                "is_default": {
+                    "type": "boolean"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "organization_id": {
+                    "description": "NULL = system default",
+                    "type": "integer"
+                },
+                "sample_data": {
+                    "description": "Sample data for preview",
+                    "type": "object",
+                    "additionalProperties": true
+                },
+                "template_type": {
+                    "type": "string"
+                },
+                "tenant_id": {
+                    "type": "integer"
+                },
+                "variables": {
+                    "description": "List of variable names",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
                 }
             }
         },

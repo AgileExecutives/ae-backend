@@ -5,9 +5,9 @@ import (
 	"strconv"
 
 	baseAPI "github.com/ae-base-server/api"
+	"github.com/ae-base-server/modules/templates/entities"
+	"github.com/ae-base-server/modules/templates/services"
 	"github.com/gin-gonic/gin"
-	"github.com/unburdy/templates-module/entities"
-	"github.com/unburdy/templates-module/services"
 	"gorm.io/gorm"
 )
 
@@ -32,8 +32,8 @@ func NewTemplateHandler(service *services.TemplateService, db *gorm.DB) *Templat
 // @ID createTemplate
 // @Accept json
 // @Produce json
-// @Param request body handlers.CreateTemplateRequest true "Template data"
-// @Success 201 {object} handlers.TemplateResponse
+// @Param request body services.CreateTemplateRequest true "Template data"
+// @Success 201 {object} entities.TemplateResponse
 // @Failure 400 {object} map[string]string
 // @Failure 401 {object} map[string]string
 // @Failure 500 {object} map[string]string
@@ -109,15 +109,17 @@ func (h *TemplateHandler) GetTemplate(c *gin.Context) {
 // @Summary List templates
 // @Description List templates with optional filters and pagination (organization_id from auth middleware)
 // @Tags Templates
+// @ID listTemplates
 // @Produce json
 // @Param template_type query string false "Template type (email, pdf, invoice, document)"
 // @Param is_active query bool false "Active status filter"
 // @Param page query int false "Page number (default 1)"
 // @Param page_size query int false "Page size (default 20)"
-// @Success 200 {object} handlers.SuccessResponse
+// @Success 200 {object} map[string]interface{}
 // @Failure 401 {object} map[string]string
 // @Failure 500 {object} map[string]string
 // @Router /templates [get]
+// @Security BearerAuth
 // @ID listTemplates
 func (h *TemplateHandler) ListTemplates(c *gin.Context) {
 	tenantID, err := baseAPI.GetTenantID(c)

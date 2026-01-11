@@ -20,7 +20,7 @@ import (
 	documents "github.com/unburdy/documents-module"
 
 	// invoice "github.com/unburdy/invoice-module" // DEPRECATED: Replaced by client_management module
-	templates "github.com/unburdy/templates-module"
+	templates "github.com/ae-base-server/modules/templates"
 	_ "github.com/unburdy/unburdy-server-api/docs" // swagger docs
 	"github.com/unburdy/unburdy-server-api/modules/audit"
 	"github.com/unburdy/unburdy-server-api/modules/client_management"

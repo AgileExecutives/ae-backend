@@ -7,8 +7,8 @@ import (
 	"html/template"
 	"time"
 
-	"github.com/unburdy/templates-module/entities"
-	"github.com/unburdy/templates-module/services/storage"
+	"github.com/ae-base-server/modules/templates/entities"
+	"github.com/ae-base-server/modules/templates/services/storage"
 	"gorm.io/gorm"
 )
 
