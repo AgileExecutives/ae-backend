@@ -1,5 +1,132 @@
 basePath: /api/v1
 definitions:
+  entities.BulkSettingRequest:
+    properties:
+      settings:
+        items:
+          $ref: '#/definitions/entities.SettingRequest'
+        type: array
+    required:
+    - settings
+    type: object
+  entities.DomainResponse:
+    properties:
+      domains:
+        items:
+          type: string
+        type: array
+    type: object
+  entities.DomainSettingsRequest:
+    properties:
+      settings:
+        additionalProperties: true
+        type: object
+    required:
+    - settings
+    type: object
+  entities.HealthResponse:
+    properties:
+      database:
+        example: connected
+        type: string
+      modules:
+        example: 7
+        type: integer
+      status:
+        example: ok
+        type: string
+      version:
+        example: 1.0.0
+        type: string
+    type: object
+  entities.ModuleListResponse:
+    properties:
+      modules:
+        items:
+          type: string
+        type: array
+    type: object
+  entities.SettingRequest:
+    properties:
+      domain:
+        example: company
+        type: string
+      key:
+        example: company_name
+        type: string
+      type:
+        example: string
+        type: string
+      value: {}
+    required:
+    - domain
+    - key
+    - type
+    - value
+    type: object
+  entities.SettingResponse:
+    properties:
+      created_at:
+        example: "2025-01-09T10:00:00Z"
+        type: string
+      domain:
+        example: company
+        type: string
+      id:
+        example: 123
+        type: integer
+      key:
+        example: company_name
+        type: string
+      organization_id:
+        example: org-123
+        type: string
+      tenant_id:
+        example: 1
+        type: integer
+      type:
+        example: string
+        type: string
+      updated_at:
+        example: "2025-01-09T10:00:00Z"
+        type: string
+      value:
+        example: My Company
+        type: string
+    type: object
+  entities.SettingsResponse:
+    properties:
+      settings:
+        additionalProperties:
+          additionalProperties: true
+          type: object
+        type: object
+    type: object
+  entities.ValidationRequest:
+    properties:
+      domain:
+        example: company
+        type: string
+      settings:
+        additionalProperties: true
+        type: object
+    required:
+    - domain
+    - settings
+    type: object
+  entities.ValidationResponse:
+    properties:
+      errors:
+        items:
+          type: string
+        type: array
+      valid:
+        example: true
+        type: boolean
+    type: object
+  gin.H:
+    additionalProperties: {}
+    type: object
   github_com_ae-base-server_internal_models.APIResponse:
     properties:
       data: {}
@@ -386,6 +513,14 @@ definitions:
         description: '"YYYY" or "YY"'
         example: YYYY
         type: string
+    type: object
+  handlers.GenerateNextInvoiceNumberRequest:
+    properties:
+      organization_id:
+        description: Optional - will use authenticated user's organization if not
+          provided
+        example: 10
+        type: integer
     type: object
   handlers.InvoiceNumberResponse:
     properties:
@@ -1962,6 +2097,50 @@ paths:
       summary: Generate next invoice number
       tags:
       - Invoice Numbers
+  /invoice-numbers/generate/next:
+    post:
+      consumes:
+      - application/json
+      description: Generate the next sequential invoice number using organization
+        settings (prefix, next number)
+      operationId: generateNextInvoiceNumber
+      parameters:
+      - description: Organization ID
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.GenerateNextInvoiceNumberRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.InvoiceNumberResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Generate next invoice number from settings
+      tags:
+      - Invoice Numbers
   /invoice-numbers/history:
     get:
       description: Retrieve the history of generated invoice numbers
@@ -2521,6 +2700,579 @@ paths:
       summary: Update a plan
       tags:
       - plans
+  /settings/health:
+    get:
+      consumes:
+      - application/json
+      description: Check the health status of the settings system
+      operationId: settingsHealthCheck
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/entities.HealthResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/gin.H'
+      summary: Settings system health check
+      tags:
+      - settings
+  /settings/modules:
+    get:
+      consumes:
+      - application/json
+      description: Get list of all registered settings modules
+      operationId: getRegisteredModules
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/entities.ModuleListResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/gin.H'
+      summary: Get registered settings modules
+      tags:
+      - settings
+  /settings/organizations/{organization_id}:
+    get:
+      consumes:
+      - application/json
+      description: Get all settings for an organization grouped by domain
+      operationId: getOrganizationSettings
+      parameters:
+      - description: Organization ID
+        in: path
+        name: organization_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/entities.SettingsResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/gin.H'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/gin.H'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/gin.H'
+      security:
+      - BearerAuth: []
+      summary: Get organization settings
+      tags:
+      - settings
+    post:
+      consumes:
+      - application/json
+      description: Set a single setting for an organization
+      operationId: setOrganizationSetting
+      parameters:
+      - description: Organization ID
+        in: path
+        name: organization_id
+        required: true
+        type: string
+      - description: Setting data
+        in: body
+        name: setting
+        required: true
+        schema:
+          $ref: '#/definitions/entities.SettingRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/entities.SettingResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/gin.H'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/gin.H'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/gin.H'
+      security:
+      - BearerAuth: []
+      summary: Set organization setting
+      tags:
+      - settings
+  /settings/organizations/{organization_id}/{domain}/{key}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete a specific setting for an organization
+      operationId: deleteOrganizationSetting
+      parameters:
+      - description: Organization ID
+        in: path
+        name: organization_id
+        required: true
+        type: string
+      - description: Settings domain
+        in: path
+        name: domain
+        required: true
+        type: string
+      - description: Setting key
+        in: path
+        name: key
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/gin.H'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/gin.H'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/gin.H'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/gin.H'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/gin.H'
+      security:
+      - BearerAuth: []
+      summary: Delete organization setting
+      tags:
+      - settings
+    put:
+      consumes:
+      - application/json
+      description: Update a specific setting for an organization
+      operationId: updateOrganizationSetting
+      parameters:
+      - description: Organization ID
+        in: path
+        name: organization_id
+        required: true
+        type: string
+      - description: Settings domain
+        in: path
+        name: domain
+        required: true
+        type: string
+      - description: Setting key
+        in: path
+        name: key
+        required: true
+        type: string
+      - description: Updated setting data
+        in: body
+        name: setting
+        required: true
+        schema:
+          additionalProperties: true
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/entities.SettingResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/gin.H'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/gin.H'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/gin.H'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/gin.H'
+      security:
+      - BearerAuth: []
+      summary: Update organization setting
+      tags:
+      - settings
+  /settings/organizations/{organization_id}/bulk:
+    post:
+      consumes:
+      - application/json
+      description: Set multiple settings for an organization
+      operationId: bulkSetOrganizationSettings
+      parameters:
+      - description: Organization ID
+        in: path
+        name: organization_id
+        required: true
+        type: string
+      - description: Multiple settings data
+        in: body
+        name: settings
+        required: true
+        schema:
+          $ref: '#/definitions/entities.BulkSettingRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/gin.H'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/gin.H'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/gin.H'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/gin.H'
+      security:
+      - BearerAuth: []
+      summary: Bulk set organization settings
+      tags:
+      - settings
+  /settings/organizations/{organization_id}/domains:
+    get:
+      consumes:
+      - application/json
+      description: Get list of available settings domains for an organization
+      operationId: getOrganizationDomains
+      parameters:
+      - description: Organization ID
+        in: path
+        name: organization_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/entities.DomainResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/gin.H'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/gin.H'
+      security:
+      - BearerAuth: []
+      summary: Get organization domains
+      tags:
+      - settings
+  /settings/organizations/{organization_id}/domains/{domain}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete all settings for a specific domain
+      operationId: deleteOrganizationDomainSettings
+      parameters:
+      - description: Organization ID
+        in: path
+        name: organization_id
+        required: true
+        type: string
+      - description: Settings domain
+        in: path
+        name: domain
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/gin.H'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/gin.H'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/gin.H'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/gin.H'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/gin.H'
+      security:
+      - BearerAuth: []
+      summary: Delete domain settings
+      tags:
+      - settings
+    get:
+      consumes:
+      - application/json
+      description: Get all settings for a specific domain
+      operationId: getOrganizationDomainSettings
+      parameters:
+      - description: Organization ID
+        in: path
+        name: organization_id
+        required: true
+        type: string
+      - description: Settings domain
+        in: path
+        name: domain
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/gin.H'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/gin.H'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/gin.H'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/gin.H'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/gin.H'
+      security:
+      - BearerAuth: []
+      summary: Get domain settings
+      tags:
+      - settings
+    post:
+      consumes:
+      - application/json
+      description: Set multiple settings for a specific domain
+      operationId: setOrganizationDomainSettings
+      parameters:
+      - description: Organization ID
+        in: path
+        name: organization_id
+        required: true
+        type: string
+      - description: Settings domain
+        in: path
+        name: domain
+        required: true
+        type: string
+      - description: Domain settings
+        in: body
+        name: settings
+        required: true
+        schema:
+          $ref: '#/definitions/entities.DomainSettingsRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/gin.H'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/gin.H'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/gin.H'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/gin.H'
+      security:
+      - BearerAuth: []
+      summary: Set domain settings
+      tags:
+      - settings
+  /settings/organizations/{organization_id}/export:
+    get:
+      consumes:
+      - application/json
+      description: Export all settings for an organization
+      operationId: exportOrganizationSettings
+      parameters:
+      - description: Organization ID
+        in: path
+        name: organization_id
+        required: true
+        type: string
+      - description: Export format
+        enum:
+        - json
+        - yaml
+        in: query
+        name: format
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/gin.H'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/gin.H'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/gin.H'
+      security:
+      - BearerAuth: []
+      summary: Export organization settings
+      tags:
+      - settings
+  /settings/organizations/{organization_id}/import:
+    post:
+      consumes:
+      - application/json
+      description: Import settings for an organization
+      operationId: importOrganizationSettings
+      parameters:
+      - description: Organization ID
+        in: path
+        name: organization_id
+        required: true
+        type: string
+      - description: Settings to import
+        in: body
+        name: import
+        required: true
+        schema:
+          $ref: '#/definitions/gin.H'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/gin.H'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/gin.H'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/gin.H'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/gin.H'
+      security:
+      - BearerAuth: []
+      summary: Import organization settings
+      tags:
+      - settings
+  /settings/organizations/{organization_id}/validate:
+    post:
+      consumes:
+      - application/json
+      description: Validate settings against their schema definitions
+      operationId: validateOrganizationSettings
+      parameters:
+      - description: Organization ID
+        in: path
+        name: organization_id
+        required: true
+        type: string
+      - description: Settings to validate
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/entities.ValidationRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/entities.ValidationResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/entities.ValidationResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/gin.H'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/gin.H'
+      security:
+      - BearerAuth: []
+      summary: Validate settings
+      tags:
+      - settings
+  /settings/version:
+    get:
+      consumes:
+      - application/json
+      description: Get settings system version information
+      operationId: getSettingsVersion
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get settings system version
+      tags:
+      - settings
   /static:
     get:
       description: Get a list of all JSON files available in the statics/json directory

@@ -21,3 +21,8 @@ type InvoiceNumberResponse struct {
 	Year          int    `json:"year" example:"2025"`
 	Month         int    `json:"month" example:"12"`
 }
+
+// GenerateNextInvoiceNumberRequest represents request to generate next invoice number using settings
+type GenerateNextInvoiceNumberRequest struct {
+	OrganizationID uint `json:"organization_id,omitempty" example:"10"` // Optional - will use authenticated user's organization if not provided
+}

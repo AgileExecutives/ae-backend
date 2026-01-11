@@ -1,319 +1,254 @@
 package services
-package services
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-}	return false	}		}			return b		if b, ok := val.(bool); ok {	if val, ok := data[key]; ok {func getBool(data map[string]interface{}, key string) bool {}	return 0	}		}			return float64(i)		if i, ok := val.(int); ok {		}			return f		if f, ok := val.(float64); ok {	if val, ok := data[key]; ok {func getFloat64(data map[string]interface{}, key string) float64 {}	return 0	}		}			return int(f)		if f, ok := val.(float64); ok {		}			return i		if i, ok := val.(int); ok {	if val, ok := data[key]; ok {func getInt(data map[string]interface{}, key string) int {}	return ""	}		}			return str		if str, ok := val.(string); ok {	if val, ok := data[key]; ok {func getString(data map[string]interface{}, key string) string {// Helper functions for type conversion}	})		return s.SetLocalizationSettings(tenantID, localizationSettings)		}			AmountFormat: getString(orgData, "amount_format"),			TimeFormat:   getString(orgData, "time_format"),			DateFormat:   getString(orgData, "date_format"),			Locale:       getString(orgData, "locale"),		localizationSettings := entities.LocalizationSettings{		// Migrate localization settings		}			return err		if err := s.SetBillingSettings(tenantID, billingSettings); err != nil {		}			LineItemDoubleUnitText: getString(orgData, "line_item_double_unit_text"),			LineItemSingleUnitText: getString(orgData, "line_item_single_unit_text"),			TaxRate:                getFloat64(orgData, "tax_rate"),			UnitPrice:              getFloat64(orgData, "unit_price"),			Mode:                   getString(orgData, "extra_efforts_billing_mode"),		billingSettings := entities.BillingSettings{		// Migrate billing settings  		}			return err		if err := s.SetInvoicingSettings(tenantID, invoicingSettings); err != nil {		}			DefaultVATExempt:   getBool(orgData, "default_vat_exempt"),			DefaultVATRate:     getFloat64(orgData, "default_vat_rate"),			SecondReminderDays: getInt(orgData, "second_reminder_days"),			FirstReminderDays:  getInt(orgData, "first_reminder_days"),			PaymentDueDays:     getInt(orgData, "payment_due_days"),			NumberPrefix:       getString(orgData, "invoice_number_prefix"), 			NumberFormat:       getString(orgData, "invoice_number_format"),		invoicingSettings := entities.InvoicingSettings{		// Migrate invoicing settings		}			return err		if err := s.SetCompanySettings(tenantID, companySettings); err != nil {		}			BankAccountIBAN:          getString(orgData, "bankaccount_iban"),			BankAccountBIC:           getString(orgData, "bankaccount_bic"),			BankAccountBank:          getString(orgData, "bankaccount_bank"),			BankAccountOwner:         getString(orgData, "bankaccount_owner"),			TaxUstID:                 getString(orgData, "tax_ustid"),			TaxID:                    getString(orgData, "tax_id"),			Phone:                    getString(orgData, "phone"),			Email:                    getString(orgData, "email"),			City:                     getString(orgData, "city"),			Zip:                      getString(orgData, "zip"),			StreetAddress:            getString(orgData, "street_address"),			OwnerTitle:               getString(orgData, "owner_title"),			OwnerName:                getString(orgData, "owner_name"), 			Name:                     getString(orgData, "name"),		companySettings := entities.CompanySettings{		// Migrate company settings	return s.db.Transaction(func(tx *gorm.DB) error {func (s *SettingsService) MigrateFromOrganization(tenantID uint, orgData map[string]interface{}) error {// Migration helpers}	return nil	// For now, return nil - implement validation as needed	// This would integrate with a validation library like go-playground/validatorfunc (s *SettingsService) ValidateSettings(domain entities.SettingsDomain, settings interface{}) error {// Validation helpers}	return s.SetTypedSettings(tenantID, entities.DomainBooking, settings)func (s *SettingsService) SetBookingSettings(tenantID uint, settings entities.BookingSettings) error {}	return &settings, err	err := s.GetTypedSettings(tenantID, entities.DomainBooking, &settings)	var settings entities.BookingSettingsfunc (s *SettingsService) GetBookingSettings(tenantID uint) (*entities.BookingSettings, error) {// Booking Settings Helpers}	return s.SetTypedSettings(tenantID, entities.DomainLocalization, settings)func (s *SettingsService) SetLocalizationSettings(tenantID uint, settings entities.LocalizationSettings) error {}	return &settings, err	err := s.GetTypedSettings(tenantID, entities.DomainLocalization, &settings)	var settings entities.LocalizationSettingsfunc (s *SettingsService) GetLocalizationSettings(tenantID uint) (*entities.LocalizationSettings, error) {// Localization Settings Helpers}	return s.SetTypedSettings(tenantID, entities.DomainBilling, settings)func (s *SettingsService) SetBillingSettings(tenantID uint, settings entities.BillingSettings) error {}	return &settings, err	err := s.GetTypedSettings(tenantID, entities.DomainBilling, &settings)	var settings entities.BillingSettingsfunc (s *SettingsService) GetBillingSettings(tenantID uint) (*entities.BillingSettings, error) {// Billing Settings Helpers}	return s.SetTypedSettings(tenantID, entities.DomainInvoicing, settings)func (s *SettingsService) SetInvoicingSettings(tenantID uint, settings entities.InvoicingSettings) error {}	return &settings, err	err := s.GetTypedSettings(tenantID, entities.DomainInvoicing, &settings)	var settings entities.InvoicingSettingsfunc (s *SettingsService) GetInvoicingSettings(tenantID uint) (*entities.InvoicingSettings, error) {// Invoicing Settings Helpers  }	return s.SetTypedSettings(tenantID, entities.DomainCompany, settings)func (s *SettingsService) SetCompanySettings(tenantID uint, settings entities.CompanySettings) error {}	return &settings, err	err := s.GetTypedSettings(tenantID, entities.DomainCompany, &settings)	var settings entities.CompanySettingsfunc (s *SettingsService) GetCompanySettings(tenantID uint) (*entities.CompanySettings, error) {// Company Settings Helpers}	})		return nil		}			}				return fmt.Errorf("failed to set setting %s: %w", key, err)			if err := s.SetSetting(tenantID, domain, key, field.Interface()); err != nil {			// Set the setting						}				continue			if field.IsZero() && !fieldType.Tag.Get("required") != "" {			// Skip zero values unless explicitly set						}				}					}						}							break							key = jsonTag[:j]						if r == ',' {					for j, r := range jsonTag {				if idx := len(jsonTag); idx > 0 {			if commaIndex := len(jsonTag); commaIndex > 0 {			key := jsonTag						}				continue			if jsonTag == "" || jsonTag == "-" {			jsonTag := fieldType.Tag.Get("json")			// Get JSON tag name or use field name						fieldType := t.Field(i)			field := v.Field(i)		for i := 0; i < v.NumField(); i++ {	return s.db.Transaction(func(tx *gorm.DB) error {	// Start transaction		}		return fmt.Errorf("settings must be a struct or pointer to struct")	if v.Kind() != reflect.Struct {		}		t = t.Elem()		v = v.Elem()	if v.Kind() == reflect.Ptr {	// Handle pointer types		t := reflect.TypeOf(settings)	v := reflect.ValueOf(settings)	// Use reflection to iterate over struct fieldsfunc (s *SettingsService) SetTypedSettings(tenantID uint, domain entities.SettingsDomain, settings interface{}) error {// SetTypedSettings sets settings from a typed struct}	return json.Unmarshal(jsonData, target)		}		return fmt.Errorf("failed to marshal settings map: %w", err)	if err != nil {	jsonData, err := json.Marshal(settingsMap)	// Convert map to JSON and then unmarshal into target struct		}		return err	if err != nil {	settingsMap, err := s.GetDomainSettings(tenantID, domain)func (s *SettingsService) GetTypedSettings(tenantID uint, domain entities.SettingsDomain, target interface{}) error {// GetTypedSettings retrieves and unmarshals settings into a typed struct}	return result, nil		}		result[setting.Key] = value		}			return nil, fmt.Errorf("failed to unmarshal setting %s: %w", setting.Key, err)		if err := json.Unmarshal(setting.Value, &value); err != nil {		var value interface{}	for _, setting := range settings {	result := make(map[string]interface{})		}		return nil, fmt.Errorf("failed to retrieve domain settings: %w", err)	if err != nil {		Find(&settings).Error	err := s.db.Where("tenant_id = ? AND domain = ?", tenantID, domain).		var settings []entities.Settingfunc (s *SettingsService) GetDomainSettings(tenantID uint, domain entities.SettingsDomain) (map[string]interface{}, error) {// GetDomainSettings retrieves all settings for a specific domain}		FirstOrCreate(&setting).Error		Assign(&setting).	return s.db.Where("tenant_id = ? AND domain = ? AND key = ?", tenantID, domain, key).	// Upsert the setting		}		Description: desc,		Value:       valueJSON,		Key:         key,		Domain:      domain,		TenantID:    tenantID,	setting := entities.Setting{		}		desc = description[0]	if len(description) > 0 {	desc := ""		}		return fmt.Errorf("failed to marshal setting value: %w", err)	if err != nil {	valueJSON, err := json.Marshal(value)func (s *SettingsService) SetSetting(tenantID uint, domain entities.SettingsDomain, key string, value interface{}, description ...string) error {// SetSetting sets a single setting value}	return &setting, err		}		return nil, nil // Not found, return nil without error	if err == gorm.ErrRecordNotFound {			First(&setting).Error	err := s.db.Where("tenant_id = ? AND domain = ? AND key = ?", tenantID, domain, key).		var setting entities.Settingfunc (s *SettingsService) GetSetting(tenantID uint, domain entities.SettingsDomain, key string) (*entities.Setting, error) {// GetSetting retrieves a single setting value}	return &SettingsService{db: db}func NewSettingsService(db *gorm.DB) *SettingsService {// NewSettingsService creates a new settings service}	db *gorm.DBtype SettingsService struct {// SettingsService provides settings management functionality)	"gorm.io/gorm"	"github.com/ae-base-server/pkg/settings/entities"	"reflect"
+	"strconv"
+	"time"
+
+	"github.com/ae-base-server/pkg/settings/entities"
+	"github.com/ae-base-server/pkg/settings/repository"
+)
+
+// SettingsService provides business logic for settings management
+type SettingsService struct {
+	repo *repository.SettingsRepository
+}
+
+// NewSettingsService creates a new settings service
+func NewSettingsService(repo *repository.SettingsRepository) *SettingsService {
+	return &SettingsService{repo: repo}
+}
+
+// GetSetting retrieves and parses a setting value
+func (s *SettingsService) GetSetting(tenantID uint, organizationID, domain, key string) (interface{}, error) {
+	setting, err := s.repo.GetSetting(tenantID, organizationID, domain, key)
+	if err != nil {
+		return nil, err
+	}
+	return s.parseSettingValue(setting.Value, setting.Type)
+}
+
+// SetSetting creates or updates a setting
+func (s *SettingsService) SetSetting(tenantID uint, organizationID, domain, key string, value interface{}, valueType string) error {
+	serializedValue, err := s.serializeValue(value, valueType)
+	if err != nil {
+		return fmt.Errorf("failed to serialize value: %w", err)
+	}
+
+	setting := &entities.Setting{
+		TenantID:       tenantID,
+		OrganizationID: organizationID,
+		Domain:         domain,
+		Key:            key,
+		Value:          serializedValue,
+		Type:           valueType,
+		UpdatedAt:      time.Now(),
+	}
+
+	// Check if setting exists to set created time
+	existingSetting, err := s.repo.GetSetting(tenantID, organizationID, domain, key)
+	if err != nil && !errors.Is(err, errors.New("record not found")) {
+		return err
+	}
+
+	if existingSetting != nil {
+		setting.ID = existingSetting.ID
+		setting.CreatedAt = existingSetting.CreatedAt
+	} else {
+		setting.CreatedAt = time.Now()
+	}
+
+	return s.repo.SetSetting(setting)
+}
+
+// GetDomainSettings retrieves all settings for a domain
+func (s *SettingsService) GetDomainSettings(tenantID uint, organizationID, domain string) (map[string]interface{}, error) {
+	settings, err := s.repo.GetDomainSettings(tenantID, organizationID, domain)
+	if err != nil {
+		return nil, err
+	}
+
+	result := make(map[string]interface{})
+	for _, setting := range settings {
+		value, err := s.parseSettingValue(setting.Value, setting.Type)
+		if err != nil {
+			// Skip invalid settings
+			continue
+		}
+		result[setting.Key] = value
+	}
+
+	return result, nil
+}
+
+// GetAllSettings retrieves all settings grouped by domain
+func (s *SettingsService) GetAllSettings(tenantID uint, organizationID string) (map[string]map[string]interface{}, error) {
+	settings, err := s.repo.GetAllSettings(tenantID, organizationID)
+	if err != nil {
+		return nil, err
+	}
+
+	result := make(map[string]map[string]interface{})
+	for _, setting := range settings {
+		if result[setting.Domain] == nil {
+			result[setting.Domain] = make(map[string]interface{})
+		}
+
+		value, err := s.parseSettingValue(setting.Value, setting.Type)
+		if err != nil {
+			// Skip invalid settings
+			continue
+		}
+		result[setting.Domain][setting.Key] = value
+	}
+
+	return result, nil
+}
+
+// DeleteSetting removes a specific setting
+func (s *SettingsService) DeleteSetting(tenantID uint, organizationID, domain, key string) error {
+	return s.repo.DeleteSetting(tenantID, organizationID, domain, key)
+}
+
+// DeleteDomainSettings removes all settings for a domain
+func (s *SettingsService) DeleteDomainSettings(tenantID uint, organizationID, domain string) error {
+	return s.repo.DeleteDomainSettings(tenantID, organizationID, domain)
+}
+
+// GetDomains returns available domains for an organization
+func (s *SettingsService) GetDomains(tenantID uint, organizationID string) ([]string, error) {
+	return s.repo.GetDomains(tenantID, organizationID)
+}
+
+// ValidateSettings validates settings against basic rules
+func (s *SettingsService) ValidateSettings(domain string, settings map[string]interface{}) (bool, []string) {
+	var errors []string
+
+	// Basic validation rules
+	for key, value := range settings {
+		if value == nil {
+			errors = append(errors, fmt.Sprintf("%s cannot be null", key))
+			continue
+		}
+
+		// Domain-specific validation
+		switch domain {
+		case "company":
+			if key == "company_email" {
+				if str, ok := value.(string); ok {
+					if !isValidEmail(str) {
+						errors = append(errors, "company_email must be a valid email address")
+					}
+				}
+			}
+		case "invoice":
+			if key == "invoice_prefix" {
+				if str, ok := value.(string); ok {
+					if len(str) == 0 {
+						errors = append(errors, "invoice_prefix cannot be empty")
+					}
+				}
+			}
+		}
+	}
+
+	return len(errors) == 0, errors
+}
+
+// GetModules returns list of available modules
+func (s *SettingsService) GetModules() []string {
+	return []string{"company", "invoice", "billing", "localization", "booking", "notification", "integration"}
+}
+
+// HealthCheck performs system health check
+func (s *SettingsService) HealthCheck() (*entities.HealthResponse, error) {
+	err := s.repo.HealthCheck()
+	status := "ok"
+	dbStatus := "connected"
+
+	if err != nil {
+		status = "error"
+		dbStatus = "disconnected"
+	}
+
+	return &entities.HealthResponse{
+		Status:   status,
+		Database: dbStatus,
+		Modules:  len(s.GetModules()),
+		Version:  "1.0.0",
+	}, nil
+}
+
+// parseSettingValue converts stored string value back to appropriate type
+func (s *SettingsService) parseSettingValue(value, valueType string) (interface{}, error) {
+	switch valueType {
+	case "string":
+		return value, nil
+	case "int":
+		return strconv.Atoi(value)
+	case "bool":
+		return strconv.ParseBool(value)
+	case "float":
+		return strconv.ParseFloat(value, 64)
+	case "json":
+		var result interface{}
+		err := json.Unmarshal([]byte(value), &result)
+		return result, err
+	default:
+		return value, nil
+	}
+}
+
+// serializeValue converts value to string for storage
+func (s *SettingsService) serializeValue(value interface{}, valueType string) (string, error) {
+	switch valueType {
+	case "string":
+		if str, ok := value.(string); ok {
+			return str, nil
+		}
+		return fmt.Sprintf("%v", value), nil
+	case "int":
+		return fmt.Sprintf("%v", value), nil
+	case "bool":
+		return fmt.Sprintf("%v", value), nil
+	case "float":
+		return fmt.Sprintf("%v", value), nil
+	case "json":
+		bytes, err := json.Marshal(value)
+		if err != nil {
+			return "", err
+		}
+		return string(bytes), nil
+	default:
+		return fmt.Sprintf("%v", value), nil
+	}
+}
+
+// isValidEmail performs basic email validation
+func isValidEmail(email string) bool {
+	// Simple email validation - in production use a proper regex or library
+	return len(email) > 0 &&
+		len(email) < 254 &&
+		containsAt(email) &&
+		containsDot(email)
+}
+
+func containsAt(s string) bool {
+	for _, r := range s {
+		if r == '@' {
+			return true
+		}
+	}
+	return false
+}
+
+func containsDot(s string) bool {
+	for _, r := range s {
+		if r == '.' {
+			return true
+		}
+	}
+	return false
+}

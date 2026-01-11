@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/ae-base-server/modules/invoice_number/entities"
+	// "github.com/ae-base-server/pkg/settings/manager"
 	"gorm.io/gorm"
 )
 
@@ -36,7 +37,8 @@ func DefaultInvoiceConfig() InvoiceNumberConfig {
 
 // InvoiceNumberService handles invoice number generation with database
 type InvoiceNumberService struct {
-	db          *gorm.DB
+	db *gorm.DB
+	// settingsManager *manager.SettingsManager // TODO: Integrate with new settings system
 	mutex       sync.Mutex
 	cacheTTL    time.Duration
 	lockTimeout time.Duration
@@ -45,7 +47,8 @@ type InvoiceNumberService struct {
 // NewInvoiceNumberService creates a new invoice number service
 func NewInvoiceNumberService(db *gorm.DB) *InvoiceNumberService {
 	return &InvoiceNumberService{
-		db:          db,
+		db: db,
+		// settingsManager: settingsManager, // TODO: Integrate with new settings system
 		cacheTTL:    24 * time.Hour,
 		lockTimeout: 5 * time.Second,
 	}
@@ -95,6 +98,87 @@ func (s *InvoiceNumberService) GenerateInvoiceNumber(
 	response.Format = s.getFormatString(config)
 	return &response, nil
 }
+
+// GenerateNextInvoiceNumber generates the next invoice number using settings
+func (s *InvoiceNumberService) GenerateNextInvoiceNumber(
+	ctx context.Context,
+	tenantID uint,
+	organizationID uint,
+) (*entities.InvoiceNumberResponse, error) {
+	// TODO: Integrate with new settings system
+	// For now, use default config
+	config := DefaultInvoiceConfig()
+	return s.GenerateInvoiceNumber(ctx, tenantID, organizationID, config)
+}
+
+// Original settings integration (commented out for now):
+/*
+func (s *InvoiceNumberService) GenerateNextInvoiceNumberWithSettings(
+	ctx context.Context,
+	tenantID uint,
+	organizationID uint,
+) (*entities.InvoiceNumberResponse, error) {
+	// Get invoice accessor
+	invoiceAccessor, err := s.settingsManager.GetModuleAccessor("invoice")
+	if err != nil {
+		return nil, fmt.Errorf("failed to get invoice settings accessor: %w", err)
+	}
+
+	// Get settings from the accessor
+	prefix, err := invoiceAccessor.GetString("invoice_prefix")
+	if err != nil {
+		prefix = "INV" // Fallback default
+	}
+
+	// Get next invoice number and auto-increment
+	nextNumber, err := invoiceAccessor.GetInt("next_invoice_number")
+	if err != nil {
+		nextNumber = 1000 // Fallback default
+	}
+
+	// Increment the next invoice number
+	if err := invoiceAccessor.SetInt("next_invoice_number", nextNumber+1); err != nil {
+		return nil, fmt.Errorf("failed to increment invoice number: %w", err)
+	}
+
+	now := time.Now()
+	year := now.Year()
+	month := int(now.Month())
+
+	// Create a simplified config using settings
+	config := InvoiceNumberConfig{
+		Prefix:       prefix,
+		YearFormat:   "YYYY",
+		MonthFormat:  "MM",
+		Padding:      4,
+		Separator:    "-",
+		ResetMonthly: false, // Use continuous numbering by default
+	}
+
+	// Format the invoice number as: PREFIX-YYYY-NUMBER (e.g., INV-2025-1000)
+	invoiceNumber := fmt.Sprintf("%s-%04d-%0*d", prefix, year, config.Padding, nextNumber)
+
+	// Save to log
+	log := &entities.InvoiceNumberLog{
+		TenantID:       tenantID,
+		OrganizationID: organizationID,
+		InvoiceNumber:  invoiceNumber,
+		Year:           year,
+		Month:          month,
+		Sequence:       nextNumber,
+		Status:         "active",
+		GeneratedAt:    now,
+	}
+
+	if err := s.db.Create(log).Error; err != nil {
+		return nil, fmt.Errorf("failed to save invoice number log: %w", err)
+	}
+
+	response := log.ToResponse()
+	response.Format = fmt.Sprintf("%s-YYYY-NNNN", prefix)
+	return &response, nil
+}
+*/
 
 // getNextSequenceFromDB gets sequence from database
 func (s *InvoiceNumberService) getNextSequenceFromDB(

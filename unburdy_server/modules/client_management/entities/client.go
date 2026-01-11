@@ -94,7 +94,7 @@ type CreateClientRequest struct {
 	CostProviderID       *uint        `json:"cost_provider_id,omitempty" example:"1"`
 	FirstName            string       `json:"first_name" binding:"required" example:"John"`
 	LastName             string       `json:"last_name" binding:"required" example:"Doe"`
-	DateOfBirth          NullableDate `json:"date_of_birth,omitempty" example:"1990-01-15"`
+	DateOfBirth          NullableDate `json:"date_of_birth,omitempty"`
 	Gender               string       `json:"gender,omitempty" example:"male"`
 	PrimaryLanguage      string       `json:"primary_language,omitempty" example:"English"`
 	ContactFirstName     string       `json:"contact_first_name,omitempty" example:"Jane"`
@@ -113,10 +113,10 @@ type CreateClientRequest struct {
 	InvoicedIndividually *bool        `json:"invoiced_individually,omitempty" example:"false"`
 	TherapyTitle         string       `json:"therapy_title,omitempty" example:"Cognitive Behavioral Therapy"`
 	ProviderApprovalCode string       `json:"provider_approval_code,omitempty" example:"PROV123456"`
-	ProviderApprovalDate NullableDate `json:"provider_approval_date,omitempty" example:"2025-01-15"`
+	ProviderApprovalDate NullableDate `json:"provider_approval_date,omitempty"`
 	UnitPrice            *float64     `json:"unit_price,omitempty" example:"150.00"`
 	Status               string       `json:"status,omitempty" example:"waiting"`
-	AdmissionDate        NullableDate `json:"admission_date,omitempty" example:"2025-01-01"`
+	AdmissionDate        NullableDate `json:"admission_date,omitempty"`
 	ReferralSource       string       `json:"referral_source,omitempty" example:"Doctor Smith"`
 	Notes                string       `json:"notes,omitempty" example:"Additional notes about the client"`
 	Timezone             string       `json:"timezone,omitempty" example:"Europe/Berlin"`
@@ -127,7 +127,7 @@ type UpdateClientRequest struct {
 	CostProviderID       *uint         `json:"cost_provider_id,omitempty" example:"1"`
 	FirstName            *string       `json:"first_name,omitempty" example:"John"`
 	LastName             *string       `json:"last_name,omitempty" example:"Doe"`
-	DateOfBirth          *NullableDate `json:"date_of_birth,omitempty" example:"1990-01-15"`
+	DateOfBirth          *NullableDate `json:"date_of_birth,omitempty"`
 	Gender               *string       `json:"gender,omitempty" example:"male"`
 	PrimaryLanguage      *string       `json:"primary_language,omitempty" example:"English"`
 	ContactFirstName     *string       `json:"contact_first_name,omitempty" example:"Jane"`
@@ -146,10 +146,10 @@ type UpdateClientRequest struct {
 	InvoicedIndividually *bool         `json:"invoiced_individually,omitempty" example:"false"`
 	TherapyTitle         *string       `json:"therapy_title,omitempty" example:"Cognitive Behavioral Therapy"`
 	ProviderApprovalCode *string       `json:"provider_approval_code,omitempty" example:"PROV123456"`
-	ProviderApprovalDate *NullableDate `json:"provider_approval_date,omitempty" example:"2025-01-15"`
+	ProviderApprovalDate *NullableDate `json:"provider_approval_date,omitempty"`
 	UnitPrice            *float64      `json:"unit_price,omitempty" example:"150.00"`
 	Status               *string       `json:"status,omitempty" example:"active"`
-	AdmissionDate        *NullableDate `json:"admission_date,omitempty" example:"2025-01-01"`
+	AdmissionDate        *NullableDate `json:"admission_date,omitempty"`
 	ReferralSource       *string       `json:"referral_source,omitempty" example:"Doctor Smith"`
 	Notes                *string       `json:"notes,omitempty" example:"Additional notes about the client"`
 	Timezone             *string       `json:"timezone,omitempty" example:"Europe/Berlin"`

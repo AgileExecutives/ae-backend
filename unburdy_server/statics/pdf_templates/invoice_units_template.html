@@ -355,21 +355,21 @@
 
             <div class="total-section">
                 <table class="total-table">
-                    {{if .Invoice.NetTotal}}
+                    {{if .NetTotal}}
                     <tr>
                         <td class="label">Summe:</td>
-                        <td class="number-col">{{.Invoice.NetTotal}} €</td>
+                        <td class="number-col">{{printf "%.2f" .NetTotal}} €</td>
                     </tr>
                     {{end}}
                     {{if .Invoice.TaxAmount}}
                     <tr>
-                        <td class="label">{{.Invoice.TaxRate}}% MwSt.:</td>
-                        <td class="number-col">{{.Invoice.TaxAmount}} €</td>
+                        <td class="label">{{printf "%.0f" .TaxRate}}% MwSt.:</td>
+                        <td class="number-col">{{printf "%.2f" .Invoice.TaxAmount}} €</td>
                     </tr>
                     {{end}}
                     <tr class="final-total">
                         <td class="label">Gesamtbetrag:</td>
-                        <td class="number-col">{{.Invoice.GrossTotal}} €</td>
+                        <td class="number-col">{{printf "%.2f" .GrossTotal}} €</td>
                     </tr>
                 </table>
             </div>

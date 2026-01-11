@@ -46,9 +46,10 @@ func (s *InvoiceService) GenerateInvoicePDF(invoiceID, tenantID uint) ([]byte, e
 
 	// Get invoice with all related data
 	var invoice entities.Invoice
-	if err := s.db.Preload("Client.CostProvider").
-		Preload("Client.Organization").
+	if err := s.db.Preload("Organization").
 		Preload("InvoiceItems").
+		Preload("ClientInvoices.Client").
+		Preload("ClientInvoices.CostProvider").
 		Where("id = ? AND tenant_id = ?", invoiceID, tenantID).
 		First(&invoice).Error; err != nil {
 		return nil, fmt.Errorf("invoice not found: %w", err)
@@ -1726,6 +1727,7 @@ func (s *InvoiceService) UpdateInvoiceDocumentID(invoiceID, documentID, tenantID
 }
 
 // DeleteInvoice deletes an invoice and all its invoice items
+// Also reverts sessions and extra efforts back to their original state
 func (s *InvoiceService) DeleteInvoice(id, tenantID, userID uint) error {
 	// Verify invoice exists and belongs to user/tenant
 	var invoice entities.Invoice
@@ -1736,14 +1738,78 @@ func (s *InvoiceService) DeleteInvoice(id, tenantID, userID uint) error {
 		return fmt.Errorf("failed to fetch invoice: %w", err)
 	}
 
-	// Delete invoice items first (soft delete)
-	if err := s.db.Where("invoice_id = ?", id).Delete(&entities.InvoiceItem{}).Error; err != nil {
+	// Start transaction to ensure atomicity
+	tx := s.db.Begin()
+	defer func() {
+		if r := recover(); r != nil {
+			tx.Rollback()
+		}
+	}()
+
+	// Get all client_invoices for this invoice to revert session/effort states
+	var clientInvoices []entities.ClientInvoice
+	if err := tx.Where("invoice_id = ?", id).Find(&clientInvoices).Error; err != nil {
+		tx.Rollback()
+		return fmt.Errorf("failed to fetch client invoices: %w", err)
+	}
+
+	// Collect session IDs and extra effort IDs to revert
+	sessionIDs := make([]uint, 0)
+	extraEffortIDs := make([]uint, 0)
+
+	for _, ci := range clientInvoices {
+		if ci.SessionID > 0 {
+			sessionIDs = append(sessionIDs, ci.SessionID)
+		}
+		if ci.ExtraEffortID != nil {
+			extraEffortIDs = append(extraEffortIDs, *ci.ExtraEffortID)
+		}
+	}
+
+	// Revert sessions back to conducted status (so they appear in billable list again)
+	if len(sessionIDs) > 0 {
+		if err := tx.Model(&entities.Session{}).
+			Where("id IN ?", sessionIDs).
+			Update("status", "conducted").Error; err != nil {
+			tx.Rollback()
+			return fmt.Errorf("failed to revert session statuses: %w", err)
+		}
+	}
+
+	// Revert extra efforts back to unbilled status
+	if len(extraEffortIDs) > 0 {
+		if err := tx.Model(&entities.ExtraEffort{}).
+			Where("id IN ?", extraEffortIDs).
+			Updates(map[string]interface{}{
+				"billing_status":  "unbilled",
+				"invoice_item_id": nil,
+			}).Error; err != nil {
+			tx.Rollback()
+			return fmt.Errorf("failed to revert extra effort statuses: %w", err)
+		}
+	}
+
+	// Delete client_invoices (so sessions/efforts can be re-invoiced)
+	if err := tx.Where("invoice_id = ?", id).Delete(&entities.ClientInvoice{}).Error; err != nil {
+		tx.Rollback()
+		return fmt.Errorf("failed to delete client invoices: %w", err)
+	}
+
+	// Delete invoice items (soft delete)
+	if err := tx.Where("invoice_id = ?", id).Delete(&entities.InvoiceItem{}).Error; err != nil {
+		tx.Rollback()
 		return fmt.Errorf("failed to delete invoice items: %w", err)
 	}
 
 	// Delete invoice
-	if err := s.db.Delete(&invoice).Error; err != nil {
+	if err := tx.Delete(&invoice).Error; err != nil {
+		tx.Rollback()
 		return fmt.Errorf("failed to delete invoice: %w", err)
+	}
+
+	// Commit transaction
+	if err := tx.Commit().Error; err != nil {
+		return fmt.Errorf("failed to commit transaction: %w", err)
 	}
 
 	return nil

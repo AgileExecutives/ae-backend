@@ -7,6 +7,8 @@ import (
 
 	baseAPI "github.com/ae-base-server/api"
 	"github.com/ae-base-server/modules/invoice_number/services"
+
+	// "github.com/ae-base-server/pkg/settings/manager"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 )
@@ -14,14 +16,16 @@ import (
 // InvoiceNumberHandler handles invoice number generation requests
 type InvoiceNumberHandler struct {
 	service *services.InvoiceNumberService
-	db      *gorm.DB
+	// settingsManager *manager.SettingsManager // TODO: Integrate with new settings system
+	db *gorm.DB
 }
 
 // NewInvoiceNumberHandler creates a new invoice number handler
 func NewInvoiceNumberHandler(service *services.InvoiceNumberService, db *gorm.DB) *InvoiceNumberHandler {
 	return &InvoiceNumberHandler{
 		service: service,
-		db:      db,
+		// settingsManager: settingsManager, // TODO: Integrate with new settings system
+		db: db,
 	}
 }
 
@@ -91,6 +95,58 @@ func (h *InvoiceNumberHandler) GenerateInvoiceNumber(c *gin.Context) {
 		uint(tenantID),
 		organizationID,
 		config,
+	)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, result)
+}
+
+// GenerateNextInvoiceNumber generates the next invoice number using organization settings
+// @Summary Generate next invoice number from settings
+// @Description Generate the next sequential invoice number using organization settings (prefix, next number)
+// @Tags Invoice Numbers
+// @ID generateNextInvoiceNumber
+// @Accept json
+// @Produce json
+// @Param request body handlers.GenerateNextInvoiceNumberRequest true "Organization ID"
+// @Success 200 {object} handlers.InvoiceNumberResponse
+// @Failure 400 {object} map[string]string
+// @Failure 401 {object} map[string]string
+// @Failure 500 {object} map[string]string
+// @Router /invoice-numbers/generate/next [post]
+// @Security BearerAuth
+func (h *InvoiceNumberHandler) GenerateNextInvoiceNumber(c *gin.Context) {
+	tenantID, err := baseAPI.GetTenantID(c)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "tenant_id required"})
+		return
+	}
+
+	var req GenerateNextInvoiceNumberRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Get organization ID from authenticated user if not provided in request
+	organizationID := req.OrganizationID
+	if organizationID == 0 {
+		user, err := baseAPI.GetUser(c)
+		if err != nil {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "user not authenticated"})
+			return
+		}
+		organizationID = user.OrganizationID
+	}
+
+	// Generate invoice number using settings
+	result, err := h.service.GenerateNextInvoiceNumber(
+		c.Request.Context(),
+		uint(tenantID),
+		organizationID,
 	)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})

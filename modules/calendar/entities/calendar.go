@@ -14,7 +14,7 @@ type Calendar struct {
 	UserID             uint            `gorm:"not null;index" json:"user_id"`
 	Title              string          `gorm:"size:255;not null" json:"title" binding:"required" example:"My Calendar"`
 	Color              string          `gorm:"size:50" json:"color,omitempty" example:"#FF5733"`
-	WeeklyAvailability json.RawMessage `gorm:"type:json" json:"weekly_availability,omitempty" example:"{}"`
+	WeeklyAvailability json.RawMessage `gorm:"type:json" json:"weekly_availability,omitempty" `
 	CalendarUUID       string          `gorm:"size:255;uniqueIndex;not null" json:"calendar_uuid"`
 	Timezone           string          `gorm:"size:100" json:"timezone,omitempty" example:"UTC"`
 	CreatedAt          time.Time       `json:"created_at"`
@@ -91,7 +91,7 @@ type ExternalCalendar struct {
 	CalendarID   uint            `gorm:"not null;index" json:"calendar_id"`
 	Title        string          `gorm:"size:255;not null" json:"title" binding:"required" example:"External Calendar"`
 	URL          string          `gorm:"size:500" json:"url,omitempty" example:"https://calendar.google.com/ical/..."`
-	Settings     json.RawMessage `gorm:"type:json" json:"settings,omitempty" example:"{}"`
+	Settings     json.RawMessage `gorm:"type:json" json:"settings,omitempty" `
 	SyncLastRun  *time.Time      `gorm:"type:timestamp" json:"sync_last_run,omitempty"`
 	Color        string          `gorm:"size:50" json:"color,omitempty" example:"#33FF57"`
 	CalendarUUID string          `gorm:"size:255;uniqueIndex;not null" json:"calendar_uuid"`
@@ -107,7 +107,7 @@ type ExternalCalendar struct {
 type CreateCalendarRequest struct {
 	Title              string          `json:"title" binding:"required" example:"My Calendar"`
 	Color              string          `json:"color,omitempty" example:"#FF5733"`
-	WeeklyAvailability json.RawMessage `json:"weekly_availability,omitempty" example:"{}"`
+	WeeklyAvailability json.RawMessage `json:"weekly_availability,omitempty" `
 	Timezone           string          `json:"timezone,omitempty" example:"UTC"`
 }
 
@@ -115,7 +115,7 @@ type CreateCalendarRequest struct {
 type UpdateCalendarRequest struct {
 	Title              *string          `json:"title,omitempty" example:"My Updated Calendar"`
 	Color              *string          `json:"color,omitempty" example:"#FF5733"`
-	WeeklyAvailability *json.RawMessage `json:"weekly_availability,omitempty" example:"{}"`
+	WeeklyAvailability *json.RawMessage `json:"weekly_availability,omitempty" `
 	Timezone           *string          `json:"timezone,omitempty" example:"UTC"`
 }
 
@@ -195,7 +195,7 @@ type CreateExternalCalendarRequest struct {
 	CalendarID uint            `json:"calendar_id" binding:"required" example:"1"`
 	Title      string          `json:"title" binding:"required" example:"External Calendar"`
 	URL        string          `json:"url,omitempty" example:"https://calendar.google.com/ical/..."`
-	Settings   json.RawMessage `json:"settings,omitempty" example:"{}"`
+	Settings   json.RawMessage `json:"settings,omitempty" `
 	Color      string          `json:"color,omitempty" example:"#33FF57"`
 }
 
@@ -203,7 +203,7 @@ type CreateExternalCalendarRequest struct {
 type UpdateExternalCalendarRequest struct {
 	Title    *string          `json:"title,omitempty" example:"Updated External Calendar"`
 	URL      *string          `json:"url,omitempty" example:"https://calendar.google.com/ical/..."`
-	Settings *json.RawMessage `json:"settings,omitempty" example:"{}"`
+	Settings *json.RawMessage `json:"settings,omitempty" `
 	Color    *string          `json:"color,omitempty" example:"#33FF57"`
 }
 

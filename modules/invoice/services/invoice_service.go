@@ -5,18 +5,23 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/ae-base-server/pkg/settings/manager"
 	"github.com/unburdy/invoice-module/entities"
 	"gorm.io/gorm"
 )
 
 // InvoiceService handles invoice operations
 type InvoiceService struct {
-	db *gorm.DB
+	db              *gorm.DB
+	settingsManager *manager.SettingsManager
 }
 
 // NewInvoiceService creates a new invoice service
-func NewInvoiceService(db *gorm.DB) *InvoiceService {
-	return &InvoiceService{db: db}
+func NewInvoiceService(db *gorm.DB, settingsManager *manager.SettingsManager) *InvoiceService {
+	return &InvoiceService{
+		db:              db,
+		settingsManager: settingsManager,
+	}
 }
 
 // CreateInvoice creates a new invoice
@@ -75,6 +80,101 @@ func (s *InvoiceService) CreateInvoice(ctx context.Context, tenantID, userID uin
 	}
 
 	return invoice, nil
+}
+
+// CreateInvoiceWithAutoNumber creates a new invoice with auto-generated invoice number
+func (s *InvoiceService) CreateInvoiceWithAutoNumber(ctx context.Context, tenantID, userID uint, req *entities.CreateInvoiceRequest) (*entities.Invoice, error) {
+	// Generate invoice number using settings
+	invoiceNumber, err := s.generateInvoiceNumber(ctx, tenantID, req.OrganizationID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to generate invoice number: %w", err)
+	}
+
+	// Set the generated invoice number
+	req.InvoiceNumber = invoiceNumber
+
+	// Use the existing CreateInvoice method
+	return s.CreateInvoice(ctx, tenantID, userID, req)
+}
+
+// generateInvoiceNumber generates an invoice number using the settings system
+func (s *InvoiceService) generateInvoiceNumber(ctx context.Context, tenantID, organizationID uint) (string, error) {
+	// Get invoice settings accessor
+	invoiceAccessor, err := s.settingsManager.GetModuleAccessor("invoice")
+	if err != nil {
+		return "", fmt.Errorf("failed to get invoice settings: %w", err)
+	}
+
+	// Get invoice prefix from settings
+	prefix, err := invoiceAccessor.GetString("invoice_prefix")
+	if err != nil {
+		prefix = "INV" // Fallback default
+	}
+
+	// Get and increment next invoice number
+	nextNumber, err := invoiceAccessor.GetInt("next_invoice_number")
+	if err != nil {
+		nextNumber = 1000 // Fallback default
+	}
+
+	// Increment the counter for next use
+	if err := invoiceAccessor.SetInt("next_invoice_number", nextNumber+1); err != nil {
+		return "", fmt.Errorf("failed to increment invoice number: %w", err)
+	}
+
+	// Generate invoice number: PREFIX-YYYY-NNNN (e.g., INV-2025-1000)
+	now := time.Now()
+	invoiceNumber := fmt.Sprintf("%s-%04d-%04d", prefix, now.Year(), nextNumber)
+
+	return invoiceNumber, nil
+}
+
+// GetInvoiceSettings returns current invoice settings for an organization
+func (s *InvoiceService) GetInvoiceSettings(ctx context.Context, tenantID, organizationID uint) (map[string]interface{}, error) {
+	// Get invoice settings accessor
+	invoiceAccessor, err := s.settingsManager.GetModuleAccessor("invoice")
+	if err != nil {
+		return nil, fmt.Errorf("failed to get invoice settings: %w", err)
+	}
+
+	settings := make(map[string]interface{})
+
+	// Get common invoice settings
+	if prefix, err := invoiceAccessor.GetString("invoice_prefix"); err == nil {
+		settings["invoice_prefix"] = prefix
+	}
+
+	if nextNumber, err := invoiceAccessor.GetInt("next_invoice_number"); err == nil {
+		settings["next_invoice_number"] = nextNumber
+	}
+
+	if paymentTerms, err := invoiceAccessor.GetInt("payment_terms_days"); err == nil {
+		settings["payment_terms_days"] = paymentTerms
+	}
+
+	if autoSend, err := invoiceAccessor.GetBool("auto_send_invoice"); err == nil {
+		settings["auto_send_invoice"] = autoSend
+	}
+
+	if template, err := invoiceAccessor.GetString("invoice_template"); err == nil {
+		settings["invoice_template"] = template
+	}
+
+	if lateFee, err := invoiceAccessor.GetFloat("late_fee_percentage"); err == nil {
+		settings["late_fee_percentage"] = lateFee
+	}
+
+	if footer, err := invoiceAccessor.GetString("invoice_footer"); err == nil {
+		settings["invoice_footer"] = footer
+	}
+
+	// Get tax settings as JSON
+	var taxSettings map[string]interface{}
+	if err := invoiceAccessor.GetJSON("tax_settings", &taxSettings); err == nil {
+		settings["tax_settings"] = taxSettings
+	}
+
+	return settings, nil
 }
 
 // GetInvoice retrieves an invoice by ID

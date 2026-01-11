@@ -9,6 +9,7 @@ import (
 	"path/filepath"
 	"time"
 
+	baseAPI "github.com/ae-base-server/api"
 	"github.com/chromedp/cdproto/page"
 	"github.com/chromedp/chromedp"
 	documentStorage "github.com/unburdy/documents-module/services/storage"
@@ -39,11 +40,12 @@ func NewInvoicePDFService(db *gorm.DB, storage documentStorage.DocumentStorage) 
 }
 
 // InvoicePDFData represents the data structure for invoice PDF templates
+// All fields are guaranteed to be non-nil to prevent template rendering errors
 type InvoicePDFData struct {
 	Invoice               *entities.Invoice
-	Organization          interface{}
-	Client                interface{}
-	CostProvider          interface{}
+	Organization          *baseAPI.Organization
+	Client                *entities.Client
+	CostProvider          *entities.CostProvider
 	Sessions              []map[string]interface{}
 	InvoiceItems          []entities.InvoiceItem
 	IsDraft               bool
@@ -53,6 +55,11 @@ type InvoicePDFData struct {
 	VATExempt             bool
 	VATExemptionText      string
 	PaymentDueDate        string
+
+	// Computed fields for template convenience
+	NetTotal   float64 // Same as Invoice.SumAmount
+	TaxRate    float64 // Calculated from TaxAmount/SumAmount
+	GrossTotal float64 // Same as Invoice.TotalAmount
 }
 
 // GenerateDraftPDF generates a PDF for a draft invoice with watermark
@@ -112,12 +119,31 @@ func (s *InvoicePDFService) prepareInvoiceData(invoice *entities.Invoice, isDraf
 		}
 	}
 
+	// Initialize safe defaults for all template data
+	var client *entities.Client
+	var costProvider *entities.CostProvider
+
 	// Get client and cost provider from first ClientInvoice
-	var client interface{}
-	var costProvider interface{}
 	if len(invoice.ClientInvoices) > 0 {
-		client = invoice.ClientInvoices[0].Client
-		costProvider = invoice.ClientInvoices[0].CostProvider
+		if invoice.ClientInvoices[0].Client != nil {
+			client = invoice.ClientInvoices[0].Client
+		}
+		if invoice.ClientInvoices[0].CostProvider != nil {
+			costProvider = invoice.ClientInvoices[0].CostProvider
+		}
+	}
+
+	// Create empty structs if still nil to prevent template crashes
+	if client == nil {
+		client = &entities.Client{}
+	}
+	if costProvider == nil {
+		costProvider = &entities.CostProvider{}
+	}
+
+	organization := invoice.Organization
+	if organization == nil {
+		organization = &baseAPI.Organization{}
 	}
 
 	// Check if VAT exempt
@@ -168,9 +194,15 @@ func (s *InvoicePDFService) prepareInvoiceData(invoice *entities.Invoice, isDraf
 		}
 	}
 
+	// Calculate tax rate from amounts
+	taxRate := 0.0
+	if invoice.SumAmount > 0 && invoice.TaxAmount > 0 {
+		taxRate = (invoice.TaxAmount / invoice.SumAmount) * 100
+	}
+
 	return &InvoicePDFData{
 		Invoice:          invoice,
-		Organization:     invoice.Organization,
+		Organization:     organization,
 		Client:           client,
 		CostProvider:     costProvider,
 		Sessions:         sessions,
@@ -180,6 +212,9 @@ func (s *InvoicePDFService) prepareInvoiceData(invoice *entities.Invoice, isDraf
 		VATExempt:        vatExempt,
 		VATExemptionText: vatExemptionText,
 		PaymentDueDate:   paymentDueDate,
+		NetTotal:         invoice.SumAmount,
+		TaxRate:          taxRate,
+		GrossTotal:       invoice.TotalAmount,
 	}, nil
 }
 

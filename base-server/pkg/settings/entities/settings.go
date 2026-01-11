@@ -1,123 +1,82 @@
 package entities
-package entities
 
-import (
-	"time"
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-}	DocumentConfig      map[string]interface{} `json:"document_config"`	DocumentStorage     string                 `json:"document_storage"`	PaymentConfig       map[string]interface{} `json:"payment_config"`	PaymentProvider     string                 `json:"payment_provider"`	CalendarConfig      map[string]interface{} `json:"calendar_config"`	CalendarProvider    string                 `json:"calendar_provider"`type IntegrationSettings struct {// IntegrationSettings represents third-party integrations}	NotificationTemplates map[string]string `json:"notification_templates"`	ReminderDaysBefore    []int    `json:"reminder_days_before"`	PushEnabled           bool     `json:"push_enabled"`	SMSEnabled            bool     `json:"sms_enabled"`	EmailEnabled          bool     `json:"email_enabled"`type NotificationSettings struct {// NotificationSettings represents notification preferences}	MaxBookingsPerDay    int                    `json:"max_bookings_per_day" validate:"min=1"`	Timezone             string                 `json:"timezone"`	MinNoticeHours       int                    `json:"min_notice_hours" validate:"min=0"`	AdvanceBookingDays   int                    `json:"advance_booking_days" validate:"min=0"`	WeeklyAvailability   map[string]interface{} `json:"weekly_availability"`	NumberOfIntervals    int                    `json:"number_of_intervals" validate:"min=1"`	AllowedIntervals     []string               `json:"allowed_intervals"`	MaxSeriesBookings    int                    `json:"max_series_bookings" validate:"min=1"`type BookingSettings struct {// BookingSettings represents booking-specific configuration}	Timezone     string `json:"timezone"`	Currency     string `json:"currency" validate:"len=3"`	AmountFormat string `json:"amount_format" validate:"required"`	TimeFormat   string `json:"time_format" validate:"required"`  	DateFormat   string `json:"date_format" validate:"required"`	Locale       string `json:"locale" validate:"required"`type LocalizationSettings struct {// LocalizationSettings represents localization preferences}	LineItemDoubleUnitText string                 `json:"line_item_double_unit_text"`	LineItemSingleUnitText string                 `json:"line_item_single_unit_text"`	TaxRate                float64                `json:"tax_rate" validate:"min=0,max=100"`	UnitPrice              float64                `json:"unit_price" validate:"min=0"`	Config                 map[string]interface{} `json:"config"`	Mode                   string                 `json:"mode" validate:"oneof=ignore bundle_double_units separate_items preparation_allowance"`type BillingSettings struct {// BillingSettings represents billing-specific configuration  }	InvoiceContent    map[string]interface{} `json:"invoice_content"`	VATExemptionText  string                 `json:"vat_exemption_text"`	DefaultVATExempt  bool                   `json:"default_vat_exempt"`	DefaultVATRate    float64                `json:"default_vat_rate" validate:"min=0,max=100"`	SecondReminderDays int                   `json:"second_reminder_days" validate:"min=1,max=365"`	FirstReminderDays int                    `json:"first_reminder_days" validate:"min=1,max=365"`	PaymentDueDays    int                    `json:"payment_due_days" validate:"min=1,max=365"`	NumberPrefix      string                 `json:"number_prefix"`	NumberFormat      string                 `json:"number_format" validate:"oneof=sequential year_prefix year_month_prefix"`type InvoicingSettings struct {// InvoicingSettings represents invoice-specific configuration}	AdditionalPaymentMethods map[string]interface{} `json:"additional_payment_methods"`	BankAccountIBAN          string `json:"bank_account_iban"`	BankAccountBIC           string `json:"bank_account_bic"`	BankAccountBank          string `json:"bank_account_bank"`	BankAccountOwner         string `json:"bank_account_owner"`	TaxUstID                 string `json:"tax_ustid"`	TaxID                    string `json:"tax_id"`	Phone                    string `json:"phone"`	Email                    string `json:"email" validate:"email"`	City                     string `json:"city"`	Zip                      string `json:"zip"`	StreetAddress            string `json:"street_address"`	OwnerTitle               string `json:"owner_title"`	OwnerName                string `json:"owner_name"`	Name                     string `json:"name" validate:"required"`type CompanySettings struct {// CompanySettings represents company/organization information}	return "settings"func (Setting) TableName() string {// Unique constraint on tenant_id + domain + key}	DeletedAt   gorm.DeletedAt `gorm:"index" json:"-"`	UpdatedAt   time.Time      `json:"updated_at"`	CreatedAt   time.Time      `json:"created_at"`	IsDefault   bool           `gorm:"not null;default:false" json:"is_default"`	Description string         `gorm:"size:500" json:"description,omitempty"`	Value       datatypes.JSON `gorm:"type:jsonb" json:"value"`	Key         string         `gorm:"size:100;not null;index:idx_setting_key" json:"key"`	Domain      SettingsDomain `gorm:"size:50;not null;index:idx_setting_domain" json:"domain"`	TenantID    uint           `gorm:"not null;index:idx_setting_tenant" json:"tenant_id"`	ID          uint           `gorm:"primaryKey" json:"id"`type Setting struct {// Setting represents a single configuration setting)	DomainIntegration   SettingsDomain = "integration"	DomainNotification  SettingsDomain = "notification"	DomainBooking       SettingsDomain = "booking"	DomainLocalization  SettingsDomain = "localization"	DomainBilling       SettingsDomain = "billing"	DomainInvoicing     SettingsDomain = "invoicing" 	DomainCompany       SettingsDomain = "company"const (type SettingsDomain string// SettingsDomain represents different settings categories)	"gorm.io/gorm"	"gorm.io/datatypes"
+import "time"
+
+// Setting represents a single configuration setting
+type Setting struct {
+	ID             uint      `json:"id" gorm:"primarykey"`
+	TenantID       uint      `json:"tenant_id" gorm:"not null;index"`
+	OrganizationID string    `json:"organization_id" gorm:"not null;index"`
+	Domain         string    `json:"domain" gorm:"not null;index"`
+	Key            string    `json:"key" gorm:"not null;index"`
+	Value          string    `json:"value" gorm:"type:text"`
+	Type           string    `json:"type" gorm:"not null"` // string, int, bool, float, json
+	CreatedAt      time.Time `json:"created_at"`
+	UpdatedAt      time.Time `json:"updated_at"`
+}
+
+// SettingRequest represents a request to create/update a setting
+type SettingRequest struct {
+	Domain string      `json:"domain" binding:"required" example:"company"`
+	Key    string      `json:"key" binding:"required" example:"company_name"`
+	Type   string      `json:"type" binding:"required" example:"string"`
+	Value  interface{} `json:"value" binding:"required"`
+}
+
+// SettingResponse represents a setting response
+type SettingResponse struct {
+	ID             uint      `json:"id" example:"123"`
+	TenantID       uint      `json:"tenant_id" example:"1"`
+	OrganizationID string    `json:"organization_id" example:"org-123"`
+	Domain         string    `json:"domain" example:"company"`
+	Key            string    `json:"key" example:"company_name"`
+	Value          string    `json:"value" example:"My Company"`
+	Type           string    `json:"type" example:"string"`
+	CreatedAt      time.Time `json:"created_at" example:"2025-01-09T10:00:00Z"`
+	UpdatedAt      time.Time `json:"updated_at" example:"2025-01-09T10:00:00Z"`
+}
+
+// BulkSettingRequest represents a request to set multiple settings
+type BulkSettingRequest struct {
+	Settings []SettingRequest `json:"settings" binding:"required"`
+}
+
+// DomainSettingsRequest represents domain-specific settings request
+type DomainSettingsRequest struct {
+	Settings map[string]interface{} `json:"settings" binding:"required"`
+}
+
+// SettingsResponse represents grouped settings response
+type SettingsResponse struct {
+	Settings map[string]map[string]interface{} `json:"settings"`
+}
+
+// DomainResponse represents available domains
+type DomainResponse struct {
+	Domains []string `json:"domains"`
+}
+
+// ValidationRequest represents settings validation request
+type ValidationRequest struct {
+	Domain   string                 `json:"domain" binding:"required" example:"company"`
+	Settings map[string]interface{} `json:"settings" binding:"required"`
+}
+
+// ValidationResponse represents validation results
+type ValidationResponse struct {
+	Valid  bool     `json:"valid" example:"true"`
+	Errors []string `json:"errors,omitempty"`
+}
+
+// HealthResponse represents system health status
+type HealthResponse struct {
+	Status   string `json:"status" example:"ok"`
+	Database string `json:"database" example:"connected"`
+	Modules  int    `json:"modules" example:"7"`
+	Version  string `json:"version" example:"1.0.0"`
+}
+
+// ModuleListResponse represents registered modules
+type ModuleListResponse struct {
+	Modules []string `json:"modules"`
+}
