@@ -1,0 +1,120 @@
+{
+        "Organization": {
+            "Id": 1,
+            "TenantId": 1,
+            "Name": "Unburdy Verwaltung",
+            "OwnerName": "",
+            "OwnerTitle": "",
+            "StreetAddress": "",
+            "Zip": "",
+            "City": "",
+            "Email": "",
+            "Phone": "",
+            "TaxId": "",
+            "TaxRate": null,
+            "TaxUstid": "",
+            "UnitPrice": null,
+            "BankaccountOwner": "",
+            "BankaccountBank": "",
+            "BankaccountBic": "",
+            "BankaccountIban": "",
+            "AdditionalPaymentMethods": null,
+            "InvoiceContent": null,
+            "Locale": "de-DE",
+            "DateFormat": "02.01.2006",
+            "TimeFormat": "15:04",
+            "AmountFormat": "de",
+            "ExtraEffortsBillingMode": "ignore",
+            "ExtraEffortsConfig": {},
+            "LineItemSingleUnitText": "Einzelstunde",
+            "LineItemDoubleUnitText": "Doppelstunde",
+            "CreatedAt": "2026-01-12T15:46:19.733032+01:00",
+            "UpdatedAt": "2026-01-12T15:46:19.733032+01:00"
+        },
+        "InvoiceDate": "2026-01-12T18:33:38.525088+01:00",
+        "InvoiceNumber": "DRAFT-1-1768",
+        "NumberUnits": 2,
+        "SumAmount": 500,
+        "TaxAmount": 95,
+        "TotalAmount": 595,
+        "Status": "draft",
+        "NumReminders": 0,
+        "InvoiceItems": [
+            {
+                "Id": 16,
+                "InvoiceId": 4,
+                "ItemType": "session",
+                "Description": "Therapiesitzung vom 29.12.2025",
+                "NumberUnits": 1,
+                "UnitPrice": 150,
+                "TotalAmount": 150,
+                "UnitDurationMin": 45
+            },
+            {
+                "Id": 17,
+                "InvoiceId": 4,
+                "ItemType": "session",
+                "Description": "Therapiesitzung vom 27.12.2025",
+                "NumberUnits": 1,
+                "UnitPrice": 150,
+                "TotalAmount": 150,
+                "UnitDurationMin": 45
+            },
+            {
+                "Id": 18,
+                "InvoiceId": 4,
+                "ItemType": "extra_effort",
+                "SourceEffortId": 12,
+                "Description": "documentation: Prepared quarterly progress report",
+                "NumberUnits": 1,
+                "UnitPrice": 50,
+                "TotalAmount": 50,
+                "UnitDurationMin": 20
+            },
+            {
+                "Id": 19,
+                "InvoiceId": 4,
+                "ItemType": "extra_effort",
+                "SourceEffortId": 13,
+                "Description": "preparation: Copied therapy materials and worksheets",
+                "NumberUnits": 1,
+                "UnitPrice": 150,
+                "TotalAmount": 150,
+                "UnitDurationMin": 60
+            }
+        ],
+        "VatBreakdown": {
+            "Subtotal": 500,
+            "TotalTax": 95,
+            "GrandTotal": 595,
+            "Items": [
+                {
+                    "VatRate": 19,
+                    "NetAmount": 500,
+                    "TaxAmount": 95,
+                    "GrossAmount": 595
+                }
+            ]
+        },
+        "Client": {
+            "AdmissionDate": "30.07.2025",
+            "City": "Berlin",
+            "FirstName": "Max",
+            "LastName": "Mustermann",
+            "DateOfBirth": "01.01.2000"
+        },
+        "Therapy": {
+            "Description": "Lerntherapie LRS Einzelsetting",
+            "EndDate": "15.09.2025",
+            "StartDate": "01.08.2025",
+            "ApprovalNumber": "VT-2025-00123"
+        },
+        "Provider": {
+            "ProviderName": "Jugendämter Musterstadt",
+            "ContactPerson": "Frau Erika Beispiel",
+            "City": "München",
+            "State": "Bayern",
+            "Street": "Beispielweg 5",
+            "Zip": "80331"
+        }
+}

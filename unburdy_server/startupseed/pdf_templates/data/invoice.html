@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Rechnung {{.invoice_number}}</title>
+    <title>Rechnung {{.Invoice.InvoiceNumber}}</title>
     <style>
         @page {
             size: A4;
@@ -30,6 +30,20 @@
             padding-bottom: 2cm;
             background-color: #fff;
             overflow: hidden;
+        }
+
+        /* Draft watermark */
+        .draft-watermark {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotate(-45deg);
+            font-size: 120pt;
+            font-weight: bold;
+            color: rgba(200, 200, 200, 0.3);
+            z-index: 1000;
+            pointer-events: none;
+            user-select: none;
         }
 
         .header {
@@ -156,6 +170,41 @@
             font-size: 12pt;
         }
 
+        .vat-exemption-notice {
+            margin-top: 0.5cm;
+            padding: 8pt;
+            background-color: #f8f9fa;
+            border-left: 3pt solid #28a745;
+            font-size: 9pt;
+            color: #666;
+        }
+
+        .payment-info {
+            margin-top: 1cm;
+            padding: 10pt;
+            background-color: #f8f9fa;
+            border: 1px solid #ddd;
+        }
+
+        .payment-info h4 {
+            margin: 0 0 8pt 0;
+            font-size: 10pt;
+            font-weight: bold;
+        }
+
+        .payment-info p {
+            margin: 4pt 0;
+            font-size: 9pt;
+        }
+
+        .credit-note-header {
+            background-color: #fff3cd;
+            border: 2px solid #ffc107;
+            padding: 10pt;
+            margin-bottom: 1cm;
+            font-size: 10pt;
+        }
+
         .footer {
             position: fixed;
             bottom: 1cm;
@@ -192,6 +241,7 @@
             line-height: 1.2;
         }
 
+
         .invoice-details-table {
             border-collapse: collapse;
             margin-left: 1cm;
@@ -211,47 +261,51 @@
 </head>
 
 <body>
+    {{if .IsDraft}}
+    <div class="draft-watermark">ENTWURF</div>
+    {{end}}
+    
     <div class="page-margin-area">
         <div class="header">
             <div class="logo-area">
                 [LOGO]
             </div>
             <div class="company-info">
-                <strong>{{.organization.name}}</strong><br>
-                {{.organization.street_address}}<br>
-                {{.organization.zip}} {{.organization.city}}<br>
+                <strong>{{.Organization.Name}}</strong><br>
+                {{.Organization.StreetAddress}}<br>
+                {{.Organization.Zip}} {{.Organization.City}}<br>
                 <br>
-                Telefon: {{.organization.phone}}<br>
-                E-Mail: {{.organization.email}}
+                Telefon: {{.Organization.Phone}}<br>
+                E-Mail: {{.Organization.Email}}
             </div>
         </div>
 
         <div class="sender-line">
-            {{.organization.name}} · {{.organization.street_address}} · {{.organization.zip}} {{.organization.city}}
+            {{.Organization.Name}} · {{.Organization.StreetAddress}} · {{.Organization.Zip}} {{.Organization.City}}
         </div>
 
         <div class="address-section">
             <div class="address-invoice-flex">
                 <div class="address-block">
-                    {{.cost_provider.organization}}<br>
-                    {{if .cost_provider.department}}{{.cost_provider.department}}<br>{{end}}
-                    {{.cost_provider.street_address}}<br>
-                    {{.cost_provider.zip}} {{.cost_provider.city}}
+                    {{.CostProvider.Organization}}<br>
+                    {{if .CostProvider.Department}}{{.CostProvider.Department}}<br>{{end}}
+                    {{.CostProvider.StreetAddress}}<br>
+                    {{.CostProvider.Zip}} {{.CostProvider.City}}
                 </div>
                 <div class="invoice-details.flex-row">
                     <h1 style="text-align: right; font-size: 12pt; margin-top: 1cm;">RECHNUNG</h1>
                     <table class="invoice-details-table">
                         <tr>
                             <td class="label">Rechnungsnr.:</td>
-                            <td class="info">{{.invoice_number}}</td>
+                            <td class="info">{{.Invoice.InvoiceNumber}}</td>
                         </tr>
                         <tr>
                             <td class="label">Rechnungsdatum:</td>
-                            <td class="info">{{.invoice_date}}</td>
+                            <td class="info">{{.Invoice.InvoiceDate}}</td>
                         </tr>
                         <tr>
                             <td class="label">Bewilligung:</td>
-                            <td class="info">{{.client.provider_approval_code}}</td>
+                            <td class="info">{{.Client.ProviderApprovalCode}}</td>
                         </tr>
                     </table>
                 </div>
@@ -259,56 +313,104 @@
         </div>
 
         <div class="main-content">
-            <h2>Rechnung {{.client.therapy_title}} - {{.client.first_name}} {{.client.last_name}} geb. am {{.client.date_of_birth}}</h2>
+            {{if .IsCreditNote}}
+            <div class="credit-note-header">
+                <strong>GUTSCHRIFT</strong> zur Originalrechnung Nr. {{.OriginalInvoiceNumber}}<br>
+                {{if .CreditNoteReason}}Grund: {{.CreditNoteReason}}{{end}}
+            </div>
+            {{end}}
+            
+            <h2>Rechnung {{.Client.TherapyTitle}} - {{.Client.FirstName}} {{.Client.LastName}} geb. am {{.Client.DateOfBirth}}</h2>
             <h3>Sehr geehrte Damen und Herren,</h3>
-            <p>hiermit stelle ich folgende Leistungen ensprechend der Bewilligung {{.client.provider_approval_code}} in Rechnung:</p>
+            <p>hiermit stelle ich folgende Leistungen ensprechend der Bewilligung {{.Client.ProviderApprovalCode}} in Rechnung:</p>
             <table class="sessions-table">
                 <thead>
                     <tr>
+                        <th class="date-col">Datum</th>
                         <th>Leistung</th>
+                        <!--<th class="number-col">Dauer (Min.)</th>-->
+                        <!--<th class="number-col">Dauer (Min.)</th>-->
                     </tr>
                 </thead>
                 <tbody>
-                    {{range .invoice_items}}
+                    {{range .Sessions}}
                     <tr>
-                        <td>{{.description}}</td>
+                        <td class="date-col">{{index . "OriginalDate"}}</td>
+                        <td>{{if index . "Documentation"}}{{index . "Documentation"}}{{end}}</td>
+                        <!--td class="number-col">{{index . "DurationMin"}}</td-->
                     </tr>
                     {{end}}
                 </tbody>
             </table>
+
+            {{if .VATExempt}}
+            <div class="vat-exemption-notice">
+                {{if .VATExemptionText}}
+                ℹ️ {{.VATExemptionText}}
+                {{else}}
+                ℹ️ Umsatzsteuerfrei gemäß §4 Nr. 14 UStG
+                {{end}}
+            </div>
+            {{end}}
+
             <div class="total-section">
                 <table class="total-table">
+                    {{if .NetTotal}}
                     <tr>
                         <td class="label">Summe:</td>
-                        <td class="number-col">{{.totals.net_total}} €</td>
+                        <td class="number-col">{{printf "%.2f" .NetTotal}} €</td>
                     </tr>
+                    {{end}}
+                    {{if .Invoice.TaxAmount}}
                     <tr>
-                        <td class="label">{{.totals.tax_rate}}% MwSt.:</td>
-                        <td class="number-col">{{.totals.tax_amount}} €</td>
+                        <td class="label">{{printf "%.0f" .TaxRate}}% MwSt.:</td>
+                        <td class="number-col">{{printf "%.2f" .Invoice.TaxAmount}} €</td>
                     </tr>
+                    {{end}}
                     <tr class="final-total">
                         <td class="label">Gesamtbetrag:</td>
-                        <td class="number-col">{{.totals.gross_total}} €</td>
+                        <td class="number-col">{{printf "%.2f" .GrossTotal}} €</td>
                     </tr>
                 </table>
             </div>
-            <p>Es gilt die gesetzl. Umsatzsteuerbefreiung (Leistungen in der Kinder- und Jugendhilfe UstG§4 Nr.25, SGB VIII)</p>
-            <p>Bitte prüfen Sie die Rechnung und überweisen Sie den Gesamtbetrag innerhalb von 30 Tagen auf das unten angegebene Konto.</p>
+
+            {{if not .IsDraft}}
+            <div class="payment-info">
+                <h4>Zahlungsinformationen</h4>
+                <p><strong>Fällig bis:</strong> {{.PaymentDueDate}}</p>
+                <p>Bitte überweisen Sie den Betrag auf das unten angegebene Konto.</p>
+                {{if .Organization.BankAccountIBAN}}
+                <p><strong>IBAN:</strong> {{.Organization.BankAccountIBAN}}</p>
+                {{end}}
+                {{if .Organization.BankAccountBIC}}
+                <p><strong>BIC:</strong> {{.Organization.BankAccountBIC}}</p>
+                {{end}}
+                {{if .Organization.BankAccountBank}}
+                <p><strong>Bank:</strong> {{.Organization.BankAccountBank}}</p>
+                {{end}}
+            </div>
+            {{else}}
+            <p style="margin-top: 1cm; color: #999; font-style: italic;">Dies ist ein Rechnungsentwurf. Die endgültige Rechnung wird nach Finalisierung erstellt.</p>
+            {{end}}
+
+            <p>Es gilt die gesetzl. Umsatzsteuerbefreiung (Leistungen in der Kinder- und Jugendhilfe UstG§4 Nr.25, SGB VIII)
+            Bitte prüfen Sie die Rechnung und überweisen Sie den Gesamtbetrag innerhalb von 30 Tagen auf das unten 
+            angegebene Konto.</p>
             <p>Mit freundlichen Grüßen</p>
-            <p>{{.organization.owner_name}}</p>
+            <p>{{.Organization.OwnerName}}</p>
         </div>
 
         <div class="footer">
             <div class="footer-content">
                 <div class="footer-section">
-                    {{if .organization.bank_account.bank}}<p>{{.organization.bank_account.bank}}</p>{{end}}
-                    {{if .organization.bank_account.iban}}<p>IBAN: {{.organization.bank_account.iban}}</p>{{end}}
-                    {{if .organization.bank_account.bic}}<p>BIC: {{.organization.bank_account.bic}}</p>{{end}}
+                    {{if .Organization.BankAccountBank}}<p>{{.Organization.BankAccountBank}}</p>{{end}}
+                    {{if .Organization.BankAccountIBAN}}<p>IBAN: {{.Organization.BankAccountIBAN}}</p>{{end}}
+                    {{if .Organization.BankAccountBIC}}<p>BIC: {{.Organization.BankAccountBIC}}</p>{{end}}
                 </div>
                 <div class="footer-section">
-                    {{if .organization.tax_id}}<p>Steuernummer: {{.organization.tax_id}}</p>{{end}}
-                    <p>{{.organization.phone}}</p>
-                    <p>{{.organization.email}}</p>
+                    {{if .Organization.TaxID}}<p>Steuernummer: {{.Organization.TaxID}}</p>{{end}}
+                    <p>{{.Organization.Phone}}</p>
+                    <p>{{.Organization.Email}}</p>
                 </div>
             </div>
         </div>

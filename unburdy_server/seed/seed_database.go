@@ -520,7 +520,17 @@ func findSeedDataFile() string {
 		return "seed-data.json"
 	}
 
-	// Try parent directory (project root)
+	// Try parent directory startupseed folder (project root)
+	if _, err := os.Stat("../startupseed/seed-data.json"); err == nil {
+		return "../startupseed/seed-data.json"
+	}
+
+	// Try startupseed folder from current directory
+	if _, err := os.Stat("startupseed/seed-data.json"); err == nil {
+		return "startupseed/seed-data.json"
+	}
+
+	// Try parent directory (legacy location)
 	if _, err := os.Stat("../seed-data.json"); err == nil {
 		return "../seed-data.json"
 	}
@@ -663,7 +673,7 @@ func seedDocumentsData(db *gorm.DB) error {
 // seedInvoiceTemplate creates a sample invoice template
 func seedInvoiceTemplate(ctx context.Context, service *templateServices.TemplateService, tenantID uint) (*templateEntities.Template, error) {
 	// Check if template already exists
-	templates, count, err := service.ListTemplates(ctx, tenantID, nil, "invoice", nil, 1, 1)
+	templates, count, err := service.ListTemplates(ctx, tenantID, nil, "DOCUMENT", "invoice", nil, 1, 1)
 	if err == nil && count > 0 {
 		log.Println("📋 Invoice template already exists, skipping...")
 		return &templates[0], nil

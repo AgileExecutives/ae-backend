@@ -1,0 +1,97 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "title": "Invoice Template Contract",
+  "description": "Data contract for invoice template rendering",
+  "required": [
+    "invoice_number", 
+    "invoice_date", 
+    "organization", 
+    "client", 
+    "cost_provider",
+    "invoice_items",
+    "totals"
+  ],
+  "properties": {
+    "invoice_number": {
+      "type": "string",
+      "description": "Unique invoice identifier"
+    },
+    "invoice_date": {
+      "type": "string", 
+      "description": "Invoice creation date"
+    },
+    "organization": {
+      "type": "object",
+      "required": ["name", "owner_name", "street_address", "zip", "city", "email", "phone"],
+      "properties": {
+        "name": { "type": "string" },
+        "owner_name": { "type": "string" },
+        "owner_title": { "type": "string" },
+        "street_address": { "type": "string" },
+        "zip": { "type": "string" },
+        "city": { "type": "string" },
+        "email": { "type": "string", "format": "email" },
+        "phone": { "type": "string" },
+        "tax_id": { "type": "string" },
+        "bank_account": {
+          "type": "object",
+          "properties": {
+            "owner": { "type": "string" },
+            "bank": { "type": "string" },
+            "iban": { "type": "string" },
+            "bic": { "type": "string" }
+          }
+        }
+      }
+    },
+    "client": {
+      "type": "object", 
+      "required": ["first_name", "last_name", "date_of_birth"],
+      "properties": {
+        "first_name": { "type": "string" },
+        "last_name": { "type": "string" },
+        "date_of_birth": { "type": "string" },
+        "therapy_title": { "type": "string" },
+        "provider_approval_code": { "type": "string" }
+      }
+    },
+    "cost_provider": {
+      "type": "object",
+      "required": ["organization", "street_address", "zip", "city"],
+      "properties": {
+        "organization": { "type": "string" },
+        "department": { "type": "string" },
+        "contact_person": { "type": "string" },
+        "street_address": { "type": "string" },
+        "zip": { "type": "string" },
+        "city": { "type": "string" },
+        "state": { "type": "string" }
+      }
+    },
+    "invoice_items": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["description"],
+        "properties": {
+          "description": { "type": "string" },
+          "number_units": { "type": "number" },
+          "unit_price": { "type": "number" },
+          "total_amount": { "type": "number" },
+          "unit_duration_min": { "type": "number" }
+        }
+      }
+    },
+    "totals": {
+      "type": "object",
+      "required": ["net_total", "tax_amount", "gross_total"],
+      "properties": {
+        "net_total": { "type": "number" },
+        "tax_amount": { "type": "number" },
+        "tax_rate": { "type": "number" },
+        "gross_total": { "type": "number" }
+      }
+    }
+  }
+}

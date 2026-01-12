@@ -1,0 +1,19 @@
+{
+  "AppName": "Unburdy",
+  "CustomData": {
+    "AppointmentCount": 1,
+    "AppointmentDate": "2024-02-15",
+    "BookingId": "BK-12345",
+    "ClientName": "John Doe",
+    "Description": "Initial consultation meeting",
+    "Duration": "60",
+    "IsSeries": false,
+    "Location": "Office Room 1",
+    "TimeFrom": "10:00",
+    "TimeTo": "11:00",
+    "Title": "Consultation"
+  },
+  "booking_date": "2024-02-15",
+  "booking_id": "BK-12345",
+  "user_name": "John Doe"
+}

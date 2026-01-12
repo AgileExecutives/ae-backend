@@ -238,6 +238,38 @@ func (s *SeedService) seedTemplate(def TemplateDefinition) error {
 	return nil
 }
 
+// GenerateSampleDataFiles generates JSON files with sample data next to HTML templates
+func (s *SeedService) GenerateSampleDataFiles(serverDir string) error {
+	definitions := s.getTemplateDefinitions()
+	templatesDir := filepath.Join(serverDir, "startupseed", "email_templates")
+
+	// Ensure directory exists
+	if err := os.MkdirAll(templatesDir, 0755); err != nil {
+		return fmt.Errorf("failed to create templates directory: %w", err)
+	}
+
+	for _, def := range definitions {
+		// Generate JSON filename based on template key
+		jsonFileName := fmt.Sprintf("%s.json", def.TemplateKey)
+		jsonFilePath := filepath.Join(templatesDir, jsonFileName)
+
+		// Marshall sample data to JSON
+		jsonData, err := json.MarshalIndent(def.DefaultSampleData, "", "  ")
+		if err != nil {
+			return fmt.Errorf("failed to marshal sample data for %s: %w", def.TemplateKey, err)
+		}
+
+		// Write JSON file
+		if err := os.WriteFile(jsonFilePath, jsonData, 0644); err != nil {
+			return fmt.Errorf("failed to write sample data file %s: %w", jsonFilePath, err)
+		}
+
+		fmt.Printf("✓ Generated sample data: %s\n", jsonFilePath)
+	}
+
+	return nil
+}
+
 // TemplateSeedDefinition represents a template definition from JSON
 type TemplateSeedDefinition struct {
 	Module      string `json:"module"`
@@ -339,7 +371,7 @@ func (s *SeedService) seedTemplatesForTenant(tenantID uint, organizationID *uint
 			continue
 		}
 
-		// Unmarshal variable schema and sample data from JSON
+		// Unmarshal variable schema from contract
 		var variableSchema map[string]interface{}
 		if len(contract.VariableSchema) > 0 {
 			if err := json.Unmarshal(contract.VariableSchema, &variableSchema); err != nil {
@@ -348,11 +380,32 @@ func (s *SeedService) seedTemplatesForTenant(tenantID uint, organizationID *uint
 			}
 		}
 
+		// Read sample data from JSON file next to HTML template
 		var sampleData map[string]interface{}
-		if len(contract.DefaultSampleData) > 0 {
-			if err := json.Unmarshal(contract.DefaultSampleData, &sampleData); err != nil {
-				fmt.Printf("⚠️  Warning: Failed to unmarshal sample data: %v\n", err)
-				sampleData = nil
+		jsonFileName := fmt.Sprintf("%s.json", tmpl.TemplateKey)
+		jsonFilePath := filepath.Join(serverDir, "startupseed", "email_templates", jsonFileName)
+
+		if jsonContent, err := os.ReadFile(jsonFilePath); err == nil {
+			if err := json.Unmarshal(jsonContent, &sampleData); err != nil {
+				fmt.Printf("⚠️  Warning: Failed to parse sample data JSON %s: %v\n", jsonFilePath, err)
+				// Fallback to contract sample data if JSON parsing fails
+				if len(contract.DefaultSampleData) > 0 {
+					if err := json.Unmarshal(contract.DefaultSampleData, &sampleData); err != nil {
+						fmt.Printf("⚠️  Warning: Failed to unmarshal contract sample data: %v\n", err)
+						sampleData = nil
+					}
+				}
+			} else {
+				fmt.Printf("📄 Loaded sample data from: %s\n", jsonFilePath)
+			}
+		} else {
+			fmt.Printf("⚠️  Warning: Sample data JSON not found %s, using contract default\n", jsonFilePath)
+			// Fallback to contract sample data
+			if len(contract.DefaultSampleData) > 0 {
+				if err := json.Unmarshal(contract.DefaultSampleData, &sampleData); err != nil {
+					fmt.Printf("⚠️  Warning: Failed to unmarshal contract sample data: %v\n", err)
+					sampleData = nil
+				}
 			}
 		}
 

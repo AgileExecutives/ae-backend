@@ -1,0 +1,8 @@
+{
+  "app_name": "Unburdy",
+  "expires_in": "7 days",
+  "invitation_link": "https://app.unburdy.de/accept-invitation?token=inv123",
+  "invited_user_name": "Jane Smith",
+  "inviter_name": "John Doe",
+  "organization_name": "Acme Corp"
+}

@@ -27,8 +27,8 @@ echo "📍 Project root: $PROJECT_ROOT"
 cd "$PROJECT_ROOT"
 
 # Check if seed data files exist
-if [ ! -f "seed-data.json" ]; then
-    echo "❌ Error: seed-data.json file not found in project root"
+if [ ! -f "startupseed/seed-data.json" ]; then
+    echo "❌ Error: startupseed/seed-data.json file not found"
     exit 1
 fi
 

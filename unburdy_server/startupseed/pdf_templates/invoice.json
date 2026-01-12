@@ -1,0 +1,72 @@
+{
+  "invoice_number": "DRAFT-1-1768",
+  "invoice_date": "12.01.2026",
+  "organization": {
+    "name": "Müller Therapiezentrum",
+    "owner_name": "Peter Müller",
+    "owner_title": "Dipl.-Psych.",
+    "street_address": "Strasse des 17. Juni 135",
+    "zip": "10623",
+    "city": "Berlin",
+    "email": "info@unburdy.de",
+    "phone": "+49-30-1234567",
+    "tax_id": "DE123456789",
+    "bank_account": {
+      "owner": "Peter Müller",
+      "bank": "De Bank",
+      "iban": "DE89370400440532013000",
+      "bic": "BDEDEFFXXX"
+    }
+  },
+  "client": {
+    "first_name": "Max",
+    "last_name": "Mustermann",
+    "date_of_birth": "01.01.2000",
+    "therapy_title": "Lerntherapie LRS Einzelsetting",
+    "provider_approval_code": "VT-2025-00123"
+  },
+  "cost_provider": {
+    "organization": "Jugendämter Musterstadt",
+    "contact_person": "Frau Erika Beispiel",
+    "street_address": "Beispielweg 5",
+    "zip": "80331",
+    "city": "München",
+    "state": "Bayern"
+  },
+  "invoice_items": [
+    {
+      "description": "Therapiesitzung vom 29.12.2025",
+      "number_units": 1,
+      "unit_price": 150,
+      "total_amount": 150,
+      "unit_duration_min": 45
+    },
+    {
+      "description": "Therapiesitzung vom 27.12.2025",
+      "number_units": 1,
+      "unit_price": 150,
+      "total_amount": 150,
+      "unit_duration_min": 45
+    },
+    {
+      "description": "documentation: Prepared quarterly progress report",
+      "number_units": 1,
+      "unit_price": 50,
+      "total_amount": 50,
+      "unit_duration_min": 20
+    },
+    {
+      "description": "preparation: Copied therapy materials and worksheets",
+      "number_units": 1,
+      "unit_price": 150,
+      "total_amount": 150,
+      "unit_duration_min": 60
+    }
+  ],
+  "totals": {
+    "net_total": 500,
+    "tax_amount": 95,
+    "tax_rate": 19,
+    "gross_total": 595
+  }
+}
