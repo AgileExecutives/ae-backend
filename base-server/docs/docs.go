@@ -330,6 +330,30 @@ const docTemplate = `{
                 }
             }
         },
+        "/auth/password-security": {
+            "get": {
+                "description": "Returns the current password security requirements including minimum length and character requirements",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "authentication"
+                ],
+                "summary": "Get password security requirements",
+                "operationId": "getPasswordSecurity",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/utils.PasswordRequirements"
+                        }
+                    }
+                }
+            }
+        },
         "/auth/refresh": {
             "post": {
                 "security": [
@@ -3786,30 +3810,35 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "string",
+                        "example": "\"EMAIL\"",
                         "description": "Template channel (EMAIL, DOCUMENT)",
                         "name": "channel",
                         "in": "query"
                     },
                     {
                         "type": "string",
+                        "example": "\"welcome_email\"",
                         "description": "Template key (password_reset, invoice, etc.)",
                         "name": "template_key",
                         "in": "query"
                     },
                     {
                         "type": "boolean",
+                        "example": true,
                         "description": "Active status filter",
                         "name": "is_active",
                         "in": "query"
                     },
                     {
                         "type": "integer",
+                        "example": 1,
                         "description": "Page number (default 1)",
                         "name": "page",
                         "in": "query"
                     },
                     {
                         "type": "integer",
+                        "example": 10,
                         "description": "Page size (default 20)",
                         "name": "page_size",
                         "in": "query"
@@ -3819,8 +3848,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": true
+                            "$ref": "#/definitions/entities.TemplateListResponse"
                         }
                     },
                     "401": {
@@ -3863,7 +3891,7 @@ const docTemplate = `{
                 "operationId": "createTemplate",
                 "parameters": [
                     {
-                        "description": "Template data",
+                        "description": "Template creation request",
                         "name": "request",
                         "in": "body",
                         "required": true,
@@ -3876,7 +3904,7 @@ const docTemplate = `{
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/entities.TemplateResponse"
+                            "$ref": "#/definitions/entities.TemplateAPIResponse"
                         }
                     },
                     "400": {
@@ -4258,6 +4286,11 @@ const docTemplate = `{
         },
         "/templates/default": {
             "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Get the default template by channel and template key (organization from auth middleware)",
                 "produces": [
                     "application/json"
@@ -4270,12 +4303,14 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "string",
+                        "example": "\"EMAIL\"",
                         "description": "Template channel (EMAIL, DOCUMENT)",
                         "name": "channel",
                         "in": "query"
                     },
                     {
                         "type": "string",
+                        "example": "\"welcome_email\"",
                         "description": "Template key (password_reset, invoice, etc.)",
                         "name": "template_key",
                         "in": "query",
@@ -4286,7 +4321,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/entities.TemplateResponse"
+                            "$ref": "#/definitions/entities.TemplateAPIResponse"
                         }
                     },
                     "401": {
@@ -4315,7 +4350,12 @@ const docTemplate = `{
         },
         "/templates/{id}": {
             "get": {
-                "description": "Get template metadata by ID",
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Get template metadata by ID with preview URL and variables",
                 "produces": [
                     "application/json"
                 ],
@@ -4327,6 +4367,7 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "integer",
+                        "example": 1,
                         "description": "Template ID",
                         "name": "id",
                         "in": "path",
@@ -4337,7 +4378,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/entities.TemplateResponse"
+                            "$ref": "#/definitions/entities.TemplateAPIResponse"
                         }
                     },
                     "401": {
@@ -4364,6 +4405,11 @@ const docTemplate = `{
                 }
             },
             "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Update template metadata or content (creates new version)",
                 "consumes": [
                     "application/json"
@@ -4379,6 +4425,7 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "integer",
+                        "example": 1,
                         "description": "Template ID",
                         "name": "id",
                         "in": "path",
@@ -4398,7 +4445,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/entities.TemplateResponse"
+                            "$ref": "#/definitions/entities.TemplateAPIResponse"
                         }
                     },
                     "400": {
@@ -4432,7 +4479,12 @@ const docTemplate = `{
                 }
             },
             "delete": {
-                "description": "Soft delete a template",
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Soft delete a template (marks as deleted)",
                 "tags": [
                     "Templates"
                 ],
@@ -4441,6 +4493,7 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "integer",
+                        "example": 1,
                         "description": "Template ID",
                         "name": "id",
                         "in": "path",
@@ -4449,7 +4502,10 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "204": {
-                        "description": "No Content"
+                        "description": "Template deleted successfully",
+                        "schema": {
+                            "type": "string"
+                        }
                     },
                     "401": {
                         "description": "Unauthorized",
@@ -4477,7 +4533,12 @@ const docTemplate = `{
         },
         "/templates/{id}/duplicate": {
             "post": {
-                "description": "Create a copy of an existing template",
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Create a copy of an existing template with a new name",
                 "consumes": [
                     "application/json"
                 ],
@@ -4492,6 +4553,7 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "integer",
+                        "example": 1,
                         "description": "Template ID",
                         "name": "id",
                         "in": "path",
@@ -4512,7 +4574,7 @@ const docTemplate = `{
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/entities.TemplateResponse"
+                            "$ref": "#/definitions/entities.TemplateAPIResponse"
                         }
                     },
                     "400": {
@@ -4548,7 +4610,12 @@ const docTemplate = `{
         },
         "/templates/{id}/render": {
             "post": {
-                "description": "Render template with provided data",
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Render template with provided data variables",
                 "consumes": [
                     "application/json"
                 ],
@@ -4563,6 +4630,7 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "integer",
+                        "example": 1,
                         "description": "Template ID",
                         "name": "id",
                         "in": "path",
@@ -4581,7 +4649,7 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "HTML content",
+                        "description": "Rendered HTML content\" example(\"\u003ch1\u003eHello Alice Johnson!\u003c/h1\u003e\u003cp\u003eWelcome to Tech Innovators Inc. We're excited to have you!\u003c/p\u003e\")",
                         "schema": {
                             "type": "string"
                         }
@@ -5013,6 +5081,46 @@ const docTemplate = `{
                         "type": "object",
                         "additionalProperties": true
                     }
+                }
+            }
+        },
+        "entities.TemplateAPIResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/entities.TemplateResponse"
+                },
+                "message": {
+                    "type": "string"
+                },
+                "success": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "entities.TemplateListResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/entities.TemplateResponse"
+                    }
+                },
+                "limit": {
+                    "type": "integer"
+                },
+                "message": {
+                    "type": "string"
+                },
+                "page": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "total": {
+                    "type": "integer"
                 }
             }
         },
@@ -6525,6 +6633,14 @@ const docTemplate = `{
                     "type": "object",
                     "additionalProperties": true
                 },
+                "subject": {
+                    "description": "Required for EMAIL templates",
+                    "type": "string"
+                },
+                "template_key": {
+                    "description": "Key derived from filename",
+                    "type": "string"
+                },
                 "template_type": {
                     "type": "string"
                 },
@@ -6571,6 +6687,23 @@ const docTemplate = `{
                     "items": {
                         "type": "string"
                     }
+                }
+            }
+        },
+        "utils.PasswordRequirements": {
+            "type": "object",
+            "properties": {
+                "capital": {
+                    "type": "boolean"
+                },
+                "minLength": {
+                    "type": "integer"
+                },
+                "numbers": {
+                    "type": "boolean"
+                },
+                "special": {
+                    "type": "boolean"
                 }
             }
         }

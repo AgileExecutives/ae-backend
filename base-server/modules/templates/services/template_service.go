@@ -338,6 +338,9 @@ func (s *TemplateService) RenderTemplate(
 		return "", err
 	}
 
+	// Prepare template data with proper structure
+	templateData := s.prepareTemplateData(data)
+
 	// Parse template
 	htmlTemplate, err := template.New(tmpl.Name).Parse(content)
 	if err != nil {
@@ -346,7 +349,7 @@ func (s *TemplateService) RenderTemplate(
 
 	// Execute template
 	var buf bytes.Buffer
-	if err := htmlTemplate.Execute(&buf, data); err != nil {
+	if err := htmlTemplate.Execute(&buf, templateData); err != nil {
 		return "", fmt.Errorf("failed to execute template: %w", err)
 	}
 
@@ -526,4 +529,92 @@ func (s *TemplateService) GetTemplateByKey(ctx context.Context, tenantID uint, c
 	}
 
 	return string(content), nil
+}
+
+// prepareTemplateData maps input data to the expected template structure
+func (s *TemplateService) prepareTemplateData(data map[string]interface{}) map[string]interface{} {
+	templateData := make(map[string]interface{})
+
+	// Add standard template fields
+	templateData["AppName"] = getStringValue(data, "app_name", "Unburdy")
+
+	// Map common booking template variables to CustomData structure
+	customData := make(map[string]interface{})
+
+	// Map user/client information
+	if userName := getStringValue(data, "user_name", ""); userName != "" {
+		customData["ClientName"] = userName
+	}
+	if userFirstName := getStringValue(data, "user_first_name", ""); userFirstName != "" {
+		customData["ClientName"] = userFirstName
+	}
+
+	// Map booking/appointment information
+	if bookingDate := getStringValue(data, "booking_date", ""); bookingDate != "" {
+		customData["AppointmentDate"] = bookingDate
+	}
+	if bookingId := getStringValue(data, "booking_id", ""); bookingId != "" {
+		customData["BookingId"] = bookingId
+	}
+
+	// Map time information
+	customData["TimeFrom"] = getStringValue(data, "time_from", getStringValue(data, "start_time", ""))
+	customData["TimeTo"] = getStringValue(data, "time_to", getStringValue(data, "end_time", ""))
+
+	// Map additional common fields
+	customData["Title"] = getStringValue(data, "title", getStringValue(data, "service_name", ""))
+	customData["Description"] = getStringValue(data, "description", "")
+	customData["Duration"] = getStringValue(data, "duration", "")
+	customData["Location"] = getStringValue(data, "location", "")
+
+	// Handle series/multiple appointments
+	customData["IsSeries"] = getBoolValue(data, "is_series", false)
+	customData["AppointmentCount"] = getIntValue(data, "appointment_count", 1)
+
+	// Add appointments array for series
+	if appointments, exists := data["appointments"]; exists {
+		customData["Appointments"] = appointments
+	}
+
+	templateData["CustomData"] = customData
+
+	// Also include all original data as fallback
+	for key, value := range data {
+		if _, exists := templateData[key]; !exists {
+			templateData[key] = value
+		}
+	}
+
+	return templateData
+}
+
+// Helper functions for safe type conversion
+func getStringValue(data map[string]interface{}, key, defaultValue string) string {
+	if val, ok := data[key]; ok {
+		if str, ok := val.(string); ok {
+			return str
+		}
+	}
+	return defaultValue
+}
+
+func getBoolValue(data map[string]interface{}, key string, defaultValue bool) bool {
+	if val, ok := data[key]; ok {
+		if b, ok := val.(bool); ok {
+			return b
+		}
+	}
+	return defaultValue
+}
+
+func getIntValue(data map[string]interface{}, key string, defaultValue int) int {
+	if val, ok := data[key]; ok {
+		if i, ok := val.(int); ok {
+			return i
+		}
+		if f, ok := val.(float64); ok {
+			return int(f)
+		}
+	}
+	return defaultValue
 }

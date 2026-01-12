@@ -33,8 +33,18 @@ func NewTemplateHandler(service *services.TemplateService, db *gorm.DB) *Templat
 // @ID createTemplate
 // @Accept json
 // @Produce json
-// @Param request body services.CreateTemplateRequest true "Template data"
-// @Success 201 {object} entities.TemplateResponse
+//
+//	@Param request body services.CreateTemplateRequest true "Template creation request" example({
+//	  "name": "Welcome Email Template",
+//	  "description": "Email template for welcoming new users",
+//	  "template_type": "email",
+//	  "channel": "EMAIL",
+//	  "subject": "Welcome to {{.OrganizationName}}!",
+//	  "content": "<h1>Hello {{.FirstName}}!</h1><p>Welcome to {{.OrganizationName}}.</p>",
+//	  "variables": ["FirstName", "OrganizationName"]
+//	})
+//
+// @Success 201 {object} entities.TemplateAPIResponse
 // @Failure 400 {object} map[string]string
 // @Failure 401 {object} map[string]string
 // @Failure 500 {object} map[string]string
@@ -69,21 +79,26 @@ func (h *TemplateHandler) CreateTemplate(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusCreated, tmpl.ToResponse())
+	c.JSON(http.StatusCreated, entities.TemplateAPIResponse{
+		Success: true,
+		Message: "Template created successfully",
+		Data:    tmpl.ToResponse(),
+	})
 }
 
 // GetTemplate retrieves a template by ID
 // @Summary Get template
-// @Description Get template metadata by ID
+// @Description Get template metadata by ID with preview URL and variables
 // @Tags Templates
 // @Produce json
-// @Param id path int true "Template ID"
-// @Success 200 {object} entities.TemplateResponse
+// @Param id path int true "Template ID" example(1)
+// @Success 200 {object} entities.TemplateAPIResponse
 // @Failure 401 {object} map[string]interface{}
 // @Failure 404 {object} map[string]interface{}
 // @Failure 500 {object} map[string]interface{}
 // @Router /templates/{id} [get]
 // @ID getTemplate
+// @Security BearerAuth
 func (h *TemplateHandler) GetTemplate(c *gin.Context) {
 	tenantID, err := baseAPI.GetTenantID(c)
 	if err != nil {
@@ -103,7 +118,11 @@ func (h *TemplateHandler) GetTemplate(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, tmpl.ToResponse())
+	c.JSON(http.StatusOK, entities.TemplateAPIResponse{
+		Success: true,
+		Message: "Template retrieved successfully",
+		Data:    tmpl.ToResponse(),
+	})
 }
 
 // ListTemplates lists templates with filters
@@ -112,12 +131,12 @@ func (h *TemplateHandler) GetTemplate(c *gin.Context) {
 // @Tags Templates
 // @ID listTemplates
 // @Produce json
-// @Param channel query string false "Template channel (EMAIL, DOCUMENT)"
-// @Param template_key query string false "Template key (password_reset, invoice, etc.)"
-// @Param is_active query bool false "Active status filter"
-// @Param page query int false "Page number (default 1)"
-// @Param page_size query int false "Page size (default 20)"
-// @Success 200 {object} map[string]interface{}
+// @Param channel query string false "Template channel (EMAIL, DOCUMENT)" example("EMAIL")
+// @Param template_key query string false "Template key (password_reset, invoice, etc.)" example("welcome_email")
+// @Param is_active query bool false "Active status filter" example(true)
+// @Param page query int false "Page number (default 1)" example(1)
+// @Param page_size query int false "Page size (default 20)" example(10)
+// @Success 200 {object} entities.TemplateListResponse
 // @Failure 401 {object} map[string]string
 // @Failure 500 {object} map[string]string
 // @Router /templates [get]
@@ -182,12 +201,13 @@ func (h *TemplateHandler) ListTemplates(c *gin.Context) {
 		responses[i] = tmpl.ToResponse()
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"data":        responses,
-		"total":       total,
-		"page":        page,
-		"page_size":   pageSize,
-		"total_pages": (int(total) + pageSize - 1) / pageSize,
+	c.JSON(http.StatusOK, entities.TemplateListResponse{
+		Success: true,
+		Message: "Templates retrieved successfully",
+		Data:    responses,
+		Page:    page,
+		Limit:   pageSize,
+		Total:   total,
 	})
 }
 
@@ -197,15 +217,24 @@ func (h *TemplateHandler) ListTemplates(c *gin.Context) {
 // @Tags Templates
 // @Accept json
 // @Produce json
-// @Param id path int true "Template ID"
-// @Param request body services.UpdateTemplateRequest true "Update data"
-// @Success 200 {object} entities.TemplateResponse
+// @Param id path int true "Template ID" example(1)
+//
+//	@Param request body services.UpdateTemplateRequest true "Update data" example({
+//	  "name": "Updated Welcome Email Template",
+//	  "description": "Updated email template for welcoming new users with enhanced styling",
+//	  "content": "<h1>Hello {{.FirstName}} {{.LastName}}!</h1><p>Welcome to {{.OrganizationName}}. We're excited to have you!</p>",
+//	  "variables": ["FirstName", "LastName", "OrganizationName"],
+//	  "is_active": true
+//	})
+//
+// @Success 200 {object} entities.TemplateAPIResponse
 // @Failure 400 {object} map[string]interface{}
 // @Failure 401 {object} map[string]interface{}
 // @Failure 404 {object} map[string]interface{}
 // @Failure 500 {object} map[string]interface{}
 // @Router /templates/{id} [put]
 // @ID updateTemplate
+// @Security BearerAuth
 func (h *TemplateHandler) UpdateTemplate(c *gin.Context) {
 	tenantID, err := baseAPI.GetTenantID(c)
 	if err != nil {
@@ -240,20 +269,25 @@ func (h *TemplateHandler) UpdateTemplate(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, tmpl.ToResponse())
+	c.JSON(http.StatusOK, entities.TemplateAPIResponse{
+		Success: true,
+		Message: "Template updated successfully",
+		Data:    tmpl.ToResponse(),
+	})
 }
 
 // DeleteTemplate deletes a template
 // @Summary Delete template
-// @Description Soft delete a template
+// @Description Soft delete a template (marks as deleted)
 // @Tags Templates
-// @Param id path int true "Template ID"
-// @Success 204
+// @Param id path int true "Template ID" example(1)
+// @Success 204 {string} string "Template deleted successfully"
 // @Failure 401 {object} map[string]interface{}
 // @Failure 404 {object} map[string]interface{}
 // @Failure 500 {object} map[string]interface{}
 // @Router /templates/{id} [delete]
 // @ID deleteTemplate
+// @Security BearerAuth
 func (h *TemplateHandler) DeleteTemplate(c *gin.Context) {
 	tenantID, err := baseAPI.GetTenantID(c)
 	if err != nil {
@@ -277,14 +311,27 @@ func (h *TemplateHandler) DeleteTemplate(c *gin.Context) {
 
 // RenderTemplate renders template with custom data
 // @Summary Render template
-// @Description Render template with provided data
+// @Description Render template with provided data variables
 // @Tags Templates
 // @Accept json
 // @Produce html
-// @Param id path int true "Template ID"
-// @Param data body map[string]interface{} true "Template data"
-// @Success 200 {string} string "HTML content"
+// @Param id path int true "Template ID" example(1)
+//
+//	@Param data body map[string]interface{} true "Template data" example({
+//	  "FirstName": "Alice",
+//	  "LastName": "Johnson",
+//	  "OrganizationName": "Tech Innovators Inc",
+//	  "Email": "alice.johnson@techinnovators.com"
+//	})
+//
+// @Success 200 {string} string "Rendered HTML content" example("<h1>Hello Alice Johnson!</h1><p>Welcome to Tech Innovators Inc. We're excited to have you!</p>")
 // @Failure 400 {object} map[string]interface{}
+// @Failure 401 {object} map[string]interface{}
+// @Failure 404 {object} map[string]interface{}
+// @Failure 500 {object} map[string]interface{}
+// @Router /templates/{id}/render [post]
+// @ID renderTemplate
+// @Security BearerAuth
 // @Failure 401 {object} map[string]interface{}
 // @Failure 404 {object} map[string]interface{}
 // @Failure 500 {object} map[string]interface{}
@@ -318,19 +365,55 @@ func (h *TemplateHandler) RenderTemplate(c *gin.Context) {
 	c.Data(http.StatusOK, "text/html; charset=utf-8", []byte(html))
 }
 
+// GetTemplateContent retrieves the raw HTML content of a template
+// @Summary Get template content
+// @Description Get the raw HTML content of a template (without rendering variables)
+// @Tags Templates
+// @Produce text/html
+// @Param id path int true "Template ID" example(1)
+// @Success 200 {string} string "Raw HTML content"
+// @Failure 401 {object} map[string]interface{}
+// @Failure 404 {object} map[string]interface{}
+// @Failure 500 {object} map[string]interface{}
+// @Router /templates/{id}/content [get]
+// @ID getTemplateContent
+// @Security BearerAuth
+func (h *TemplateHandler) GetTemplateContent(c *gin.Context) {
+	tenantID, err := baseAPI.GetTenantID(c)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "tenant_id required"})
+		return
+	}
+
+	templateID, err := strconv.ParseUint(c.Param("id"), 10, 32)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid template_id"})
+		return
+	}
+
+	_, content, err := h.service.GetTemplateWithContent(c.Request.Context(), uint(tenantID), uint(templateID))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.Data(http.StatusOK, "text/html; charset=utf-8", []byte(content))
+}
+
 // GetDefaultTemplate gets the default template for a type
 // @Summary Get default template
 // @Description Get the default template by channel and template key (organization from auth middleware)
 // @Tags Templates
 // @Produce json
-// @Param channel query string false "Template channel (EMAIL, DOCUMENT)"
-// @Param template_key query string true "Template key (password_reset, invoice, etc.)"
-// @Success 200 {object} entities.TemplateResponse
+// @Param channel query string false "Template channel (EMAIL, DOCUMENT)" example("EMAIL")
+// @Param template_key query string true "Template key (password_reset, invoice, etc.)" example("welcome_email")
+// @Success 200 {object} entities.TemplateAPIResponse
 // @Failure 401 {object} map[string]interface{}
 // @Failure 404 {object} map[string]interface{}
 // @Failure 500 {object} map[string]interface{}
 // @Router /templates/default [get]
 // @ID getDefaultTemplate
+// @Security BearerAuth
 func (h *TemplateHandler) GetDefaultTemplate(c *gin.Context) {
 	tenantID, err := baseAPI.GetTenantID(c)
 	if err != nil {
@@ -357,24 +440,29 @@ func (h *TemplateHandler) GetDefaultTemplate(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, tmpl.ToResponse())
+	c.JSON(http.StatusOK, entities.TemplateAPIResponse{
+		Success: true,
+		Message: "Default template retrieved successfully",
+		Data:    tmpl.ToResponse(),
+	})
 }
 
 // DuplicateTemplate creates a copy of an existing template
 // @Summary Duplicate template
-// @Description Create a copy of an existing template
+// @Description Create a copy of an existing template with a new name
 // @Tags Templates
 // @Accept json
 // @Produce json
-// @Param id path int true "Template ID"
-// @Param request body map[string]interface{} true "Duplicate request with name"
-// @Success 201 {object} entities.TemplateResponse
+// @Param id path int true "Template ID" example(1)
+// @Param request body map[string]interface{} true "Duplicate request with name" example({"name": "Copy of Welcome Email Template"})
+// @Success 201 {object} entities.TemplateAPIResponse
 // @Failure 400 {object} map[string]interface{}
 // @Failure 401 {object} map[string]interface{}
 // @Failure 404 {object} map[string]interface{}
 // @Failure 500 {object} map[string]interface{}
 // @Router /templates/{id}/duplicate [post]
 // @ID duplicateTemplate
+// @Security BearerAuth
 func (h *TemplateHandler) DuplicateTemplate(c *gin.Context) {
 	tenantID, err := baseAPI.GetTenantID(c)
 	if err != nil {
@@ -402,5 +490,9 @@ func (h *TemplateHandler) DuplicateTemplate(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusCreated, tmpl.ToResponse())
+	c.JSON(http.StatusCreated, entities.TemplateAPIResponse{
+		Success: true,
+		Message: "Template duplicated successfully",
+		Data:    tmpl.ToResponse(),
+	})
 }

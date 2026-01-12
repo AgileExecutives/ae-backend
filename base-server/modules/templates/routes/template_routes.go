@@ -67,6 +67,7 @@ func (r *TemplateRoutes) RegisterRoutes(router *gin.RouterGroup, ctx core.Module
 		templates.DELETE("/:id", handler.DeleteTemplate)
 
 		// Template operations
+		templates.GET("/:id/content", handler.GetTemplateContent)
 		templates.POST("/:id/render", handler.RenderTemplate)
 		templates.POST("/:id/duplicate", handler.DuplicateTemplate)
 	}

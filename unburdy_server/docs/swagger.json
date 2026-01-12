@@ -10199,30 +10199,35 @@
                 "parameters": [
                     {
                         "type": "string",
+                        "example": "\"EMAIL\"",
                         "description": "Template channel (EMAIL, DOCUMENT)",
                         "name": "channel",
                         "in": "query"
                     },
                     {
                         "type": "string",
+                        "example": "\"welcome_email\"",
                         "description": "Template key (password_reset, invoice, etc.)",
                         "name": "template_key",
                         "in": "query"
                     },
                     {
                         "type": "boolean",
+                        "example": true,
                         "description": "Active status filter",
                         "name": "is_active",
                         "in": "query"
                     },
                     {
                         "type": "integer",
+                        "example": 1,
                         "description": "Page number (default 1)",
                         "name": "page",
                         "in": "query"
                     },
                     {
                         "type": "integer",
+                        "example": 10,
                         "description": "Page size (default 20)",
                         "name": "page_size",
                         "in": "query"
@@ -10232,8 +10237,7 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": true
+                            "$ref": "#/definitions/entities.TemplateListResponse"
                         }
                     },
                     "401": {
@@ -10276,7 +10280,7 @@
                 "operationId": "createTemplate",
                 "parameters": [
                     {
-                        "description": "Template data",
+                        "description": "Template creation request",
                         "name": "request",
                         "in": "body",
                         "required": true,
@@ -10289,7 +10293,7 @@
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/entities.TemplateResponse"
+                            "$ref": "#/definitions/entities.TemplateAPIResponse"
                         }
                     },
                     "400": {
@@ -10671,6 +10675,11 @@
         },
         "/templates/default": {
             "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Get the default template by channel and template key (organization from auth middleware)",
                 "produces": [
                     "application/json"
@@ -10683,12 +10692,14 @@
                 "parameters": [
                     {
                         "type": "string",
+                        "example": "\"EMAIL\"",
                         "description": "Template channel (EMAIL, DOCUMENT)",
                         "name": "channel",
                         "in": "query"
                     },
                     {
                         "type": "string",
+                        "example": "\"welcome_email\"",
                         "description": "Template key (password_reset, invoice, etc.)",
                         "name": "template_key",
                         "in": "query",
@@ -10699,7 +10710,7 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/entities.TemplateResponse"
+                            "$ref": "#/definitions/entities.TemplateAPIResponse"
                         }
                     },
                     "401": {
@@ -10728,7 +10739,12 @@
         },
         "/templates/{id}": {
             "get": {
-                "description": "Get template metadata by ID",
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Get template metadata by ID with preview URL and variables",
                 "produces": [
                     "application/json"
                 ],
@@ -10740,6 +10756,7 @@
                 "parameters": [
                     {
                         "type": "integer",
+                        "example": 1,
                         "description": "Template ID",
                         "name": "id",
                         "in": "path",
@@ -10750,7 +10767,7 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/entities.TemplateResponse"
+                            "$ref": "#/definitions/entities.TemplateAPIResponse"
                         }
                     },
                     "401": {
@@ -10777,6 +10794,11 @@
                 }
             },
             "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Update template metadata or content (creates new version)",
                 "consumes": [
                     "application/json"
@@ -10792,6 +10814,7 @@
                 "parameters": [
                     {
                         "type": "integer",
+                        "example": 1,
                         "description": "Template ID",
                         "name": "id",
                         "in": "path",
@@ -10811,7 +10834,7 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/entities.TemplateResponse"
+                            "$ref": "#/definitions/entities.TemplateAPIResponse"
                         }
                     },
                     "400": {
@@ -10845,7 +10868,12 @@
                 }
             },
             "delete": {
-                "description": "Soft delete a template",
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Soft delete a template (marks as deleted)",
                 "tags": [
                     "Templates"
                 ],
@@ -10854,6 +10882,7 @@
                 "parameters": [
                     {
                         "type": "integer",
+                        "example": 1,
                         "description": "Template ID",
                         "name": "id",
                         "in": "path",
@@ -10862,7 +10891,67 @@
                 ],
                 "responses": {
                     "204": {
-                        "description": "No Content"
+                        "description": "Template deleted successfully",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/templates/{id}/content": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Get the raw HTML content of a template (without rendering variables)",
+                "produces": [
+                    "text/html"
+                ],
+                "tags": [
+                    "Templates"
+                ],
+                "summary": "Get template content",
+                "operationId": "getTemplateContent",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "example": 1,
+                        "description": "Template ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Raw HTML content",
+                        "schema": {
+                            "type": "string"
+                        }
                     },
                     "401": {
                         "description": "Unauthorized",
@@ -10890,7 +10979,12 @@
         },
         "/templates/{id}/duplicate": {
             "post": {
-                "description": "Create a copy of an existing template",
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Create a copy of an existing template with a new name",
                 "consumes": [
                     "application/json"
                 ],
@@ -10905,6 +10999,7 @@
                 "parameters": [
                     {
                         "type": "integer",
+                        "example": 1,
                         "description": "Template ID",
                         "name": "id",
                         "in": "path",
@@ -10925,7 +11020,7 @@
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/entities.TemplateResponse"
+                            "$ref": "#/definitions/entities.TemplateAPIResponse"
                         }
                     },
                     "400": {
@@ -10961,7 +11056,12 @@
         },
         "/templates/{id}/render": {
             "post": {
-                "description": "Render template with provided data",
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Render template with provided data variables",
                 "consumes": [
                     "application/json"
                 ],
@@ -10976,6 +11076,7 @@
                 "parameters": [
                     {
                         "type": "integer",
+                        "example": 1,
                         "description": "Template ID",
                         "name": "id",
                         "in": "path",
@@ -10994,7 +11095,7 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "HTML content",
+                        "description": "Rendered HTML content\" example(\"\u003ch1\u003eHello Alice Johnson!\u003c/h1\u003e\u003cp\u003eWelcome to Tech Innovators Inc. We're excited to have you!\u003c/p\u003e\")",
                         "schema": {
                             "type": "string"
                         }
@@ -13707,6 +13808,46 @@
                             "$ref": "#/definitions/entities.WeeklyAvailability"
                         }
                     ]
+                }
+            }
+        },
+        "entities.TemplateAPIResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/entities.TemplateResponse"
+                },
+                "message": {
+                    "type": "string"
+                },
+                "success": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "entities.TemplateListResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/entities.TemplateResponse"
+                    }
+                },
+                "limit": {
+                    "type": "integer"
+                },
+                "message": {
+                    "type": "string"
+                },
+                "page": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "total": {
+                    "type": "integer"
                 }
             }
         },

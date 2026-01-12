@@ -1760,6 +1760,32 @@ definitions:
         - $ref: '#/definitions/entities.WeeklyAvailability'
         description: Weekly availability config
     type: object
+  entities.TemplateAPIResponse:
+    properties:
+      data:
+        $ref: '#/definitions/entities.TemplateResponse'
+      message:
+        type: string
+      success:
+        type: boolean
+    type: object
+  entities.TemplateListResponse:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/entities.TemplateResponse'
+        type: array
+      limit:
+        type: integer
+      message:
+        type: string
+      page:
+        type: integer
+      success:
+        type: boolean
+      total:
+        type: integer
+    type: object
   entities.TemplateResponse:
     properties:
       created_at:
@@ -10610,22 +10636,27 @@ paths:
       operationId: listTemplates
       parameters:
       - description: Template channel (EMAIL, DOCUMENT)
+        example: '"EMAIL"'
         in: query
         name: channel
         type: string
       - description: Template key (password_reset, invoice, etc.)
+        example: '"welcome_email"'
         in: query
         name: template_key
         type: string
       - description: Active status filter
+        example: true
         in: query
         name: is_active
         type: boolean
       - description: Page number (default 1)
+        example: 1
         in: query
         name: page
         type: integer
       - description: Page size (default 20)
+        example: 10
         in: query
         name: page_size
         type: integer
@@ -10635,8 +10666,7 @@ paths:
         "200":
           description: OK
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/entities.TemplateListResponse'
         "401":
           description: Unauthorized
           schema:
@@ -10660,7 +10690,7 @@ paths:
       description: Create a new email/PDF template with content stored in MinIO
       operationId: createTemplate
       parameters:
-      - description: Template data
+      - description: Template creation request
         in: body
         name: request
         required: true
@@ -10672,7 +10702,7 @@ paths:
         "201":
           description: Created
           schema:
-            $ref: '#/definitions/entities.TemplateResponse'
+            $ref: '#/definitions/entities.TemplateAPIResponse'
         "400":
           description: Bad Request
           schema:
@@ -10698,17 +10728,20 @@ paths:
       - Templates
   /templates/{id}:
     delete:
-      description: Soft delete a template
+      description: Soft delete a template (marks as deleted)
       operationId: deleteTemplate
       parameters:
       - description: Template ID
+        example: 1
         in: path
         name: id
         required: true
         type: integer
       responses:
         "204":
-          description: No Content
+          description: Template deleted successfully
+          schema:
+            type: string
         "401":
           description: Unauthorized
           schema:
@@ -10724,14 +10757,17 @@ paths:
           schema:
             additionalProperties: true
             type: object
+      security:
+      - BearerAuth: []
       summary: Delete template
       tags:
       - Templates
     get:
-      description: Get template metadata by ID
+      description: Get template metadata by ID with preview URL and variables
       operationId: getTemplate
       parameters:
       - description: Template ID
+        example: 1
         in: path
         name: id
         required: true
@@ -10742,7 +10778,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/entities.TemplateResponse'
+            $ref: '#/definitions/entities.TemplateAPIResponse'
         "401":
           description: Unauthorized
           schema:
@@ -10758,6 +10794,8 @@ paths:
           schema:
             additionalProperties: true
             type: object
+      security:
+      - BearerAuth: []
       summary: Get template
       tags:
       - Templates
@@ -10768,6 +10806,7 @@ paths:
       operationId: updateTemplate
       parameters:
       - description: Template ID
+        example: 1
         in: path
         name: id
         required: true
@@ -10784,7 +10823,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/entities.TemplateResponse'
+            $ref: '#/definitions/entities.TemplateAPIResponse'
         "400":
           description: Bad Request
           schema:
@@ -10805,17 +10844,58 @@ paths:
           schema:
             additionalProperties: true
             type: object
+      security:
+      - BearerAuth: []
       summary: Update template
+      tags:
+      - Templates
+  /templates/{id}/content:
+    get:
+      description: Get the raw HTML content of a template (without rendering variables)
+      operationId: getTemplateContent
+      parameters:
+      - description: Template ID
+        example: 1
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - text/html
+      responses:
+        "200":
+          description: Raw HTML content
+          schema:
+            type: string
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Get template content
       tags:
       - Templates
   /templates/{id}/duplicate:
     post:
       consumes:
       - application/json
-      description: Create a copy of an existing template
+      description: Create a copy of an existing template with a new name
       operationId: duplicateTemplate
       parameters:
       - description: Template ID
+        example: 1
         in: path
         name: id
         required: true
@@ -10833,7 +10913,7 @@ paths:
         "201":
           description: Created
           schema:
-            $ref: '#/definitions/entities.TemplateResponse'
+            $ref: '#/definitions/entities.TemplateAPIResponse'
         "400":
           description: Bad Request
           schema:
@@ -10854,6 +10934,8 @@ paths:
           schema:
             additionalProperties: true
             type: object
+      security:
+      - BearerAuth: []
       summary: Duplicate template
       tags:
       - Templates
@@ -10861,10 +10943,11 @@ paths:
     post:
       consumes:
       - application/json
-      description: Render template with provided data
+      description: Render template with provided data variables
       operationId: renderTemplate
       parameters:
       - description: Template ID
+        example: 1
         in: path
         name: id
         required: true
@@ -10880,7 +10963,8 @@ paths:
       - text/html
       responses:
         "200":
-          description: HTML content
+          description: Rendered HTML content" example("<h1>Hello Alice Johnson!</h1><p>Welcome
+            to Tech Innovators Inc. We're excited to have you!</p>")
           schema:
             type: string
         "400":
@@ -10903,6 +10987,8 @@ paths:
           schema:
             additionalProperties: true
             type: object
+      security:
+      - BearerAuth: []
       summary: Render template
       tags:
       - Templates
@@ -11137,10 +11223,12 @@ paths:
       operationId: getDefaultTemplate
       parameters:
       - description: Template channel (EMAIL, DOCUMENT)
+        example: '"EMAIL"'
         in: query
         name: channel
         type: string
       - description: Template key (password_reset, invoice, etc.)
+        example: '"welcome_email"'
         in: query
         name: template_key
         required: true
@@ -11151,7 +11239,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/entities.TemplateResponse'
+            $ref: '#/definitions/entities.TemplateAPIResponse'
         "401":
           description: Unauthorized
           schema:
@@ -11167,6 +11255,8 @@ paths:
           schema:
             additionalProperties: true
             type: object
+      security:
+      - BearerAuth: []
       summary: Get default template
       tags:
       - Templates

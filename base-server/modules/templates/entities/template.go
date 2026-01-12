@@ -1,6 +1,7 @@
 package entities
 
 import (
+	"encoding/json"
 	"time"
 
 	"gorm.io/datatypes"
@@ -71,8 +72,8 @@ type TemplateResponse struct {
 	IsActive       bool                   `json:"is_active"`
 	IsDefault      bool                   `json:"is_default"`
 	PreviewURL     string                 `json:"preview_url,omitempty"`
-	Variables      []string               `json:"variables,omitempty"`
-	SampleData     map[string]interface{} `json:"sample_data,omitempty"`
+	Variables      []string               `json:"variables"`
+	SampleData     map[string]interface{} `json:"sample_data"`
 	CreatedAt      time.Time              `json:"created_at"`
 	UpdatedAt      time.Time              `json:"updated_at"`
 }
@@ -93,18 +94,24 @@ func (t *Template) ToResponse() TemplateResponse {
 		UpdatedAt:      t.UpdatedAt,
 	}
 
+	// Always initialize Variables and SampleData slices (even if empty)
+	resp.Variables = []string{}
+	resp.SampleData = make(map[string]interface{})
+
 	// Parse variables if present
 	if len(t.Variables) > 0 {
 		var variables []string
-		_ = t.Variables.Scan(&variables)
-		resp.Variables = variables
+		if err := json.Unmarshal(t.Variables, &variables); err == nil {
+			resp.Variables = variables
+		}
 	}
 
 	// Parse sample data if present
 	if len(t.SampleData) > 0 {
 		var sampleData map[string]interface{}
-		_ = t.SampleData.Scan(&sampleData)
-		resp.SampleData = sampleData
+		if err := json.Unmarshal(t.SampleData, &sampleData); err == nil {
+			resp.SampleData = sampleData
+		}
 	}
 
 	return resp

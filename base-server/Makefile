@@ -62,10 +62,10 @@ lint: ## Run golangci-lint
 	golangci-lint run
 
 # Documentation
-swag-install: ## Install Swagger CLI tool
+swagger-install: ## Install Swagger CLI tool
 	go install github.com/swaggo/swag/cmd/swag@latest
 
-swag: ## Generate Swagger documentation
+swagger: ## Generate Swagger documentation
 	swag init -g main.go -o ./docs
 
 docs: swag ## Alias for swag target
