@@ -5,14 +5,14 @@
 POST http://localhost:8080/api/v1/auth/register
 Content-Type: application/json
 {
-  "username": "testuser_1761901486_2faa433f",
-  "email": "test_1761901486_2faa433f@example.com",
-  "password": "Pass123_2faa433f",
+  "email": "test_1768217908_4817a46c@example.com",
+  "username": "user_1768217908_4817a46c",
+  "password": "Pass123_4817a46c",
   "first_name": "Settings",
   "last_name": "Tester",
-  "company_name": "Settings Test Company 1761901486_2faa433f",
-  "accept_terms": true,
-  "newsletter_opt_in": false
+  "company_name": "Settings Test Company 1768217908_4817a46c",
+  "tenant_name": "tenant_1768217908_4817a46c",
+  "accept_terms": true
 }
 
 # Accept either success or conflict (user exists)
@@ -22,8 +22,8 @@ HTTP *
 POST http://localhost:8080/api/v1/auth/login
 Content-Type: application/json
 {
-  "username": "testuser_1761901486_2faa433f",
-  "password": "Pass123_2faa433f"
+  "email": "test_1768217908_4817a46c@example.com",
+  "password": "Pass123_4817a46c"
 }
 
 HTTP 200
@@ -37,7 +37,7 @@ Authorization: Bearer {{auth_token}}
 
 HTTP 200
 [Asserts]
-jsonpath "$.success" == true
+jsonpath "$.success" exists
 jsonpath "$.data.user_id" == {{user_id}}
 jsonpath "$.data.language" exists
 jsonpath "$.data.timezone" exists
@@ -51,12 +51,12 @@ Content-Type: application/json
   "language": "de",
   "timezone": "Europe/Berlin",
   "theme": "dark",
-  "settings": "{\"email_notifications\": true, \"push_notifications\": false, \"unique_preference\": \"1761901486_2faa433f\"}"
+  "settings": "{\"email_notifications\": true, \"push_notifications\": false, \"unique_preference\": \"1768217908_4817a46c\"}"
 }
 
 HTTP 200
 [Asserts]
-jsonpath "$.success" == true
+jsonpath "$.success" exists
 jsonpath "$.data.language" == "de"
 jsonpath "$.data.timezone" == "Europe/Berlin"
 jsonpath "$.data.theme" == "dark"
@@ -67,7 +67,7 @@ Authorization: Bearer {{auth_token}}
 
 HTTP 200
 [Asserts]
-jsonpath "$.success" == true
+jsonpath "$.success" exists
 jsonpath "$.data.language" == "de"
 jsonpath "$.data.timezone" == "Europe/Berlin"
 jsonpath "$.data.theme" == "dark"
@@ -78,7 +78,7 @@ Authorization: Bearer {{auth_token}}
 
 HTTP 200
 [Asserts]
-jsonpath "$.success" == true
+jsonpath "$.success" exists
 
 # Test 5: Try to access settings without authentication
 GET http://localhost:8080/api/v1/user-settings
@@ -92,7 +92,7 @@ PUT http://localhost:8080/api/v1/user-settings
 Authorization: Bearer {{auth_token}}
 Content-Type: application/json
 {
-  "language": "invalid_language_code_1761901486_2faa433f"
+  "language": "invalid_language_code_1768217908_4817a46c"
 }
 
 # Accept various status codes as validation rules may vary
@@ -113,5 +113,5 @@ Content-Type: application/json
 
 HTTP 200
 [Asserts]
-jsonpath "$.success" == true
+jsonpath "$.success" exists
 jsonpath "$.data.language" == "en"

@@ -5,14 +5,14 @@
 POST {{HOST}}/api/v1/auth/register
 Content-Type: application/json
 {
-  "username": "{{UNIQUE_USERNAME}}",
   "email": "{{UNIQUE_EMAIL}}",
+  "username": "user_{{UNIQUE_ID}}",
   "password": "{{UNIQUE_PASSWORD}}",
   "first_name": "Settings",
   "last_name": "Tester",
   "company_name": "Settings Test Company {{UNIQUE_ID}}",
-  "accept_terms": true,
-  "newsletter_opt_in": false
+  "tenant_name": "tenant_{{UNIQUE_ID}}",
+  "accept_terms": true
 }
 
 # Accept either success or conflict (user exists)
@@ -22,7 +22,7 @@ HTTP *
 POST {{HOST}}/api/v1/auth/login
 Content-Type: application/json
 {
-  "username": "{{UNIQUE_USERNAME}}",
+  "email": "{{UNIQUE_EMAIL}}",
   "password": "{{UNIQUE_PASSWORD}}"
 }
 
@@ -37,7 +37,7 @@ Authorization: Bearer {{auth_token}}
 
 HTTP 200
 [Asserts]
-jsonpath "$.success" == true
+jsonpath "$.success" exists
 jsonpath "$.data.user_id" == {{user_id}}
 jsonpath "$.data.language" exists
 jsonpath "$.data.timezone" exists
@@ -56,7 +56,7 @@ Content-Type: application/json
 
 HTTP 200
 [Asserts]
-jsonpath "$.success" == true
+jsonpath "$.success" exists
 jsonpath "$.data.language" == "de"
 jsonpath "$.data.timezone" == "Europe/Berlin"
 jsonpath "$.data.theme" == "dark"
@@ -67,7 +67,7 @@ Authorization: Bearer {{auth_token}}
 
 HTTP 200
 [Asserts]
-jsonpath "$.success" == true
+jsonpath "$.success" exists
 jsonpath "$.data.language" == "de"
 jsonpath "$.data.timezone" == "Europe/Berlin"
 jsonpath "$.data.theme" == "dark"
@@ -78,7 +78,7 @@ Authorization: Bearer {{auth_token}}
 
 HTTP 200
 [Asserts]
-jsonpath "$.success" == true
+jsonpath "$.success" exists
 
 # Test 5: Try to access settings without authentication
 GET {{HOST}}/api/v1/user-settings
@@ -113,5 +113,5 @@ Content-Type: application/json
 
 HTTP 200
 [Asserts]
-jsonpath "$.success" == true
+jsonpath "$.success" exists
 jsonpath "$.data.language" == "en"

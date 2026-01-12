@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"context"
 	"log"
 	"net/http"
 	"os"
@@ -22,9 +23,10 @@ import (
 
 // AuthHandlers provides authentication related handlers
 type AuthHandlers struct {
-	db     *gorm.DB
-	logger core.Logger
-	cfg    config.Config
+	db             *gorm.DB
+	logger         core.Logger
+	cfg            config.Config
+	moduleRegistry core.ModuleRegistry
 }
 
 // NewAuthHandlers creates new auth handlers
@@ -34,6 +36,11 @@ func NewAuthHandlers(db *gorm.DB, logger core.Logger) *AuthHandlers {
 		logger: logger,
 		cfg:    config.Load(),
 	}
+}
+
+// SetModuleRegistry sets the module registry (called after initialization)
+func (h *AuthHandlers) SetModuleRegistry(registry core.ModuleRegistry) {
+	h.moduleRegistry = registry
 }
 
 // Login handles user authentication
@@ -212,6 +219,9 @@ func (h *AuthHandlers) Register(c *gin.Context) {
 		req.Role = "admin"
 
 		log.Printf("✅ Created new tenant: %s (ID: %d, Slug: %s)", tenant.Name, tenant.ID, tenant.Slug)
+
+		// Seed email templates for the new tenant
+		h.seedEmailTemplates(tenantID, nil)
 	}
 
 	// Hash password
@@ -285,10 +295,37 @@ func (h *AuthHandlers) Register(c *gin.Context) {
 		}
 		verificationURL := frontendURL + "/verify-email?token=" + verificationToken
 
-		emailService := services.NewEmailService()
-		err = emailService.SendVerificationEmail(user.Email, user.FirstName, verificationURL)
+		// Get tenant info for email
+		var tenant models.Tenant
+		orgName := req.CompanyName // Default to company name from request
+		if err := h.db.First(&tenant, user.TenantID).Error; err == nil {
+			orgName = tenant.Name
+		}
+
+		// Get template service for email templates
+		var templateGetter services.TemplateGetter
+		if h.moduleRegistry != nil {
+			if moduleInterface, exists := h.moduleRegistry.Get("templates"); exists {
+				if tg, ok := moduleInterface.(services.TemplateGetter); ok {
+					templateGetter = tg
+				}
+			}
+		}
+
+		emailService := services.NewEmailServiceWithDB(h.db, templateGetter)
+		err = emailService.SendVerificationEmailWithTenant(
+			user.Email,
+			user.FirstName,
+			user.LastName,
+			user.Username,
+			orgName,
+			verificationURL,
+			user.TenantID,
+		)
 		if err != nil {
 			log.Printf("⚠️ Register: Failed to send verification email: %v (continuing anyway)", err)
+		} else {
+			log.Printf("✅ Sent verification email to %s (tenant %d)", user.Email, user.TenantID)
 		}
 	}
 
@@ -690,4 +727,57 @@ func (h *AuthHandlers) ResetPassword(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, models.SuccessResponse("Password has been reset successfully", nil))
+}
+
+// seedEmailTemplates seeds email templates for a tenant by copying from tenant 2, org 2
+func (h *AuthHandlers) seedEmailTemplates(tenantID uint, organizationID *uint) {
+	if h.moduleRegistry == nil {
+		log.Printf("⚠️  Module registry not available, skipping email template seeding for tenant %d", tenantID)
+		return
+	}
+
+	// Get templates module
+	moduleInterface, exists := h.moduleRegistry.Get("templates")
+	if !exists {
+		log.Printf("⚠️  Templates module not registered, skipping email template seeding for tenant %d", tenantID)
+		return
+	}
+
+	// Type assert to get the templates module with copy capability
+	type TemplateModuleWithCopy interface {
+		CopyTemplatesFromTenant2Org2(ctx context.Context, targetTenantID, targetOrganizationID uint) error
+	}
+
+	templatesModule, ok := moduleInterface.(TemplateModuleWithCopy)
+	if !ok {
+		log.Printf("⚠️  Templates module does not support copying, skipping for tenant %d", tenantID)
+		return
+	}
+
+	// Use organization ID 1 if not provided
+	targetOrgID := uint(1)
+	if organizationID != nil {
+		targetOrgID = *organizationID
+	}
+
+	// Copy templates from tenant 2, org 2
+	if err := templatesModule.CopyTemplatesFromTenant2Org2(context.Background(), tenantID, targetOrgID); err != nil {
+		log.Printf("⚠️  Failed to copy templates from tenant 2, org 2 for tenant %d: %v", tenantID, err)
+	} else {
+		log.Printf("✅ Copied templates from tenant 2, org 2 for tenant %d, org %d", tenantID, targetOrgID)
+	}
+}
+
+// GetPasswordSecurity returns the current password security requirements
+// @Summary Get password security requirements
+// @ID getPasswordSecurity
+// @Description Returns the current password security requirements including minimum length and character requirements
+// @Tags authentication
+// @Accept json
+// @Produce json
+// @Success 200 {object} utils.PasswordRequirements
+// @Router /auth/password-security [get]
+func (h *AuthHandlers) GetPasswordSecurity(c *gin.Context) {
+	requirements := utils.GetPasswordRequirements()
+	c.JSON(http.StatusOK, requirements)
 }

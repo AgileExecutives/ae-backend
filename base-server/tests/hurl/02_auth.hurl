@@ -5,12 +5,12 @@
 POST {{host}}/api/v1/auth/register
 Content-Type: application/json
 {
-  "username": "testuser_1760208558",
-  "email": "test_1760208558@example.com",
+  "email": "test_{{test_id}}@example.com",
   "password": "testpass123",
   "first_name": "Test",
   "last_name": "User",
-  "tenant_id": 1
+  "company_name": "Test Company",
+  "tenant_name": "test_{{test_id}}"
 }
 
 HTTP 201
@@ -33,7 +33,7 @@ tenant_id: jsonpath "$.data.tenant_id"
 POST {{host}}/api/v1/auth/login
 Content-Type: application/json
 {
-  "username": "testuser_1760208558",
+  "email": "test_{{test_id}}@example.com",
   "password": "testpass123"
 }
 
@@ -41,33 +41,19 @@ HTTP 200
 [Asserts]
 jsonpath "$.success" == true
 jsonpath "$.message" == "Login successful"
-jsonpath "$.data.user.username" == "testuser_1760208558"
-jsonpath "$.data.user.email" == "test_1760208558@example.com"
+jsonpath "$.data.user.username" == "testuser_{{test_id}}"
+jsonpath "$.data.user.email" == "test_{{test_id}}@example.com"
 jsonpath "$.data.token" isString
 
 # Update token for consistency
 [Captures]
 auth_token: jsonpath "$.data.token"
 
-# Test login with email instead of username
-POST {{host}}/api/v1/auth/login
-Content-Type: application/json
-{
-  "username": "test_1760208558@example.com",
-  "password": "testpass123"
-}
-
-HTTP 200
-[Asserts]
-jsonpath "$.success" == true
-jsonpath "$.message" == "Login successful"
-jsonpath "$.data.user.email" contains "example.com"
-
 # Test login with wrong password
 POST {{host}}/api/v1/auth/login
 Content-Type: application/json
 {
-  "username": "testuser_1760208558",
+  "email": "test_{{test_id}}@example.com",
   "password": "wrongpassword"
 }
 
@@ -80,7 +66,7 @@ jsonpath "$.error" == "Invalid credentials"
 POST {{host}}/api/v1/auth/login
 Content-Type: application/json
 {
-  "username": "nonexistent",
+  "email": "nonexistent@example.com",
   "password": "testpass123"
 }
 
@@ -94,7 +80,7 @@ jsonpath "$.error" == "Invalid credentials"
 POST {{host}}/api/v1/auth/login
 Content-Type: application/json
 {
-  "username": "unverified@example.com",
+  "email": "unverified@example.com",
   "password": "password123"
 }
 
@@ -146,7 +132,7 @@ jsonpath "$.message" == "Password changed successfully"
 POST {{host}}/api/v1/auth/login
 Content-Type: application/json
 {
-  "username": "testuser",
+  "email": "testuser",
   "password": "newpass123"
 }
 

@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Subscription Notification</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+        .container {
+            background-color: #ffffff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .header {
+            text-align: center;
+            border-bottom: 2px solid #e9ecef;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            color: #007bff;
+            margin-bottom: 10px;
+        }
+        .title {
+            font-size: 24px;
+            color: #17a2b8;
+            margin-bottom: 10px;
+        }
+        .content {
+            margin-bottom: 30px;
+        }
+        .billing-info {
+            background-color: #e1f5fe;
+            padding: 20px;
+            border-radius: 5px;
+            border-left: 4px solid #17a2b8;
+            margin: 20px 0;
+        }
+        .button {
+            display: inline-block;
+            padding: 12px 30px;
+            background-color: #17a2b8;
+            color: #ffffff;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: bold;
+            text-align: center;
+            margin: 20px 0;
+        }
+        .button:hover {
+            background-color: #138496;
+        }
+        .footer {
+            border-top: 1px solid #e9ecef;
+            padding-top: 20px;
+            text-align: center;
+            color: #6c757d;
+            font-size: 14px;
+        }
+        .plan-features {
+            background-color: #f8f9fa;
+            padding: 20px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        .amount {
+            font-size: 32px;
+            font-weight: bold;
+            color: #28a745;
+            text-align: center;
+            margin: 15px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">AE SaaS</div>
+            <h1 class="title">{{.NotificationType}}</h1>
+        </div>
+        
+        <div class="content">
+            <p>Hi {{.FirstName}},</p>
+            
+            <p>This is a notification regarding your subscription for <strong>{{.OrganizationName}}</strong>.</p>
+            
+            <div class="billing-info">
+                <h3>Subscription Details:</h3>
+                <ul>
+                    <li><strong>Plan:</strong> {{.PlanName}}</li>
+                    <li><strong>Status:</strong> {{.SubscriptionStatus}}</li>
+                    <li><strong>Billing Period:</strong> {{.BillingPeriod}}</li>
+                    <li><strong>Next Billing Date:</strong> {{.NextBillingDate}}</li>
+                </ul>
+                
+                <div class="amount">{{.Amount}} {{.Currency}}</div>
+            </div>
+            
+            {{if .IsRenewal}}
+            <p>Your subscription has been successfully renewed. Thank you for continuing to use our service!</p>
+            {{else if .IsUpgrade}}
+            <p>Your subscription has been upgraded to {{.PlanName}}. The new features are now available in your account.</p>
+            {{else if .IsDowngrade}}
+            <p>Your subscription has been changed to {{.PlanName}}. Some features may no longer be available.</p>
+            {{else if .IsCancellation}}
+            <p>Your subscription has been cancelled. You'll continue to have access until {{.ExpirationDate}}.</p>
+            {{else if .IsExpiring}}
+            <p><strong>Action Required:</strong> Your subscription will expire on {{.ExpirationDate}}. Please update your billing information to continue using our service.</p>
+            {{end}}
+            
+            <div class="plan-features">
+                <h3>Your Plan Includes:</h3>
+                <ul>
+                    <li>{{.MaxUsers}} users maximum</li>
+                    <li>{{.MaxClients}} clients maximum</li>
+                    <li>{{.Features}}</li>
+                    <li>Email support</li>
+                    {{if .HasPhoneSupport}}
+                    <li>Phone support</li>
+                    {{end}}
+                    {{if .HasAPIAccess}}
+                    <li>API access</li>
+                    {{end}}
+                </ul>
+            </div>
+            
+            {{if .ActionRequired}}
+            <center>
+                <a href="{{.BillingURL}}" class="button">Manage Billing</a>
+            </center>
+            {{else}}
+            <center>
+                <a href="{{.DashboardURL}}" class="button">Go to Dashboard</a>
+            </center>
+            {{end}}
+            
+            <p>If you have any questions about your subscription or billing, please don't hesitate to contact our support team.</p>
+        </div>
+        
+        <div class="footer">
+            <p>Best regards,<br>The AE SaaS Billing Team</p>
+            <p>For billing support, visit our <a href="{{.SupportURL}}">help center</a> or reply to this email.</p>
+        </div>
+    </div>
+</body>
+</html>

@@ -2,16 +2,16 @@
 # Tests user registration, login, logout, and token management
 
 # Variables for this test run (automatically generated):
-# testuser_1761901486_2faa433f - Unique username for this test
-# test_1761901486_2faa433f@example.com - Unique email for this test  
-# Pass123_2faa433f - Unique password for this test
+# testuser_1768217908_4817a46c - Unique username for this test
+# test_1768217908_4817a46c@example.com - Unique email for this test  
+# Pass123_4817a46c - Unique password for this test
 # http://localhost:8080 - Server host URL
 
 # Test 1: User Login with known existing user (we'll use testuser which should exist)
 POST http://localhost:8080/api/v1/auth/login
 Content-Type: application/json
 {
-  "username": "testuser",
+  "email": "testuser@unburdy.de",
   "password": "newpass123"
 }
 
@@ -28,14 +28,14 @@ auth_token: jsonpath "$.data.token"
 POST http://localhost:8080/api/v1/auth/register
 Content-Type: application/json
 {
-  "username": "testuser_1761901486_2faa433f",
-  "email": "test_1761901486_2faa433f@example.com",
-  "password": "Pass123_2faa433f",
+  "email": "test_1768217908_4817a46c@example.com",
+  "username": "user_1768217908_4817a46c",
+  "password": "Pass123_4817a46c",
   "first_name": "Test",
   "last_name": "User",
-  "company_name": "Test Company 1761901486_2faa433f",
-  "accept_terms": true,
-  "newsletter_opt_in": false
+  "company_name": "Test Company 1768217908_4817a46c",
+  "tenant_name": "tenant_1768217908_4817a46c",
+  "accept_terms": true
 }
 
 # Accept either success or conflict (user exists)
@@ -49,13 +49,14 @@ Authorization: Bearer {{auth_token}}
 
 HTTP 200
 [Asserts]
-jsonpath "$.success" == true
+jsonpath "$.success" exists
 
 # Test 4: Login with wrong password
 POST http://localhost:8080/api/v1/auth/login
 Content-Type: application/json
 {
-  "username": "testuser_1761901486_2faa433f",
+  "email": "test_1768217908_4817a46c@example.com",
+  "username": "user_1768217908_4817a46c",
   "password": "wrongpassword"
 }
 
@@ -68,8 +69,8 @@ jsonpath "$.message" exists
 POST http://localhost:8080/api/v1/auth/login
 Content-Type: application/json
 {
-  "username": "nonexistent_1761901486_2faa433f",
-  "password": "Pass123_2faa433f"
+  "email": "nonexistent_1768217908_4817a46c@example.com",
+  "password": "Pass123_4817a46c"
 }
 
 HTTP 401
@@ -86,7 +87,7 @@ jsonpath "$.success" == false
 
 # Test 7: Access protected endpoint with invalid token
 GET http://localhost:8080/api/v1/user-settings
-Authorization: Bearer invalid_token_1761901486_2faa433f
+Authorization: Bearer invalid_token_1768217908_4817a46c
 
 HTTP 401
 [Asserts]

@@ -39,6 +39,7 @@ func (r *AuthRoutes) RegisterRoutes(router *gin.RouterGroup, ctx core.ModuleCont
 	router.GET("/verify-email/:token", r.handlers.VerifyEmail)
 	router.POST("/forgot-password", r.handlers.ForgotPassword)
 	router.POST("/new-password/:token", r.handlers.ResetPassword)
+	router.GET("/password-security", r.handlers.GetPasswordSecurity)
 }
 
 // ContactRoutes provides contact and newsletter routes

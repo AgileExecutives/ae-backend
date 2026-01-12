@@ -5,14 +5,14 @@
 POST {{HOST}}/api/v1/auth/register
 Content-Type: application/json
 {
-  "username": "{{UNIQUE_USERNAME}}",
   "email": "{{UNIQUE_EMAIL}}",
+  "username": "user_{{UNIQUE_ID}}",
   "password": "{{UNIQUE_PASSWORD}}",
   "first_name": "PDF",
   "last_name": "Tester",
   "company_name": "PDF Test Company {{UNIQUE_ID}}",
-  "accept_terms": true,
-  "newsletter_opt_in": false
+  "tenant_name": "tenant_{{UNIQUE_ID}}",
+  "accept_terms": true
 }
 
 # Accept either success or conflict (user exists)
@@ -22,7 +22,7 @@ HTTP *
 POST {{HOST}}/api/v1/auth/login
 Content-Type: application/json
 {
-  "username": "{{UNIQUE_USERNAME}}",
+  "email": "{{UNIQUE_EMAIL}}",
   "password": "{{UNIQUE_PASSWORD}}"
 }
 

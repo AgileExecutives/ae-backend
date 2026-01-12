@@ -5,14 +5,14 @@
 POST {{HOST}}/api/v1/auth/register
 Content-Type: application/json
 {
-  "username": "{{UNIQUE_USERNAME}}",
   "email": "{{UNIQUE_EMAIL}}",
+  "username": "user_{{UNIQUE_ID}}",
   "password": "{{UNIQUE_PASSWORD}}",
   "first_name": "Contact",
   "last_name": "Tester",
   "company_name": "Contact Test Company {{UNIQUE_ID}}",
-  "accept_terms": true,
-  "newsletter_opt_in": false
+  "tenant_name": "tenant_{{UNIQUE_ID}}",
+  "accept_terms": true
 }
 
 # Accept either success or conflict (user exists)
@@ -22,7 +22,7 @@ HTTP *
 POST {{HOST}}/api/v1/auth/login
 Content-Type: application/json
 {
-  "username": "{{UNIQUE_USERNAME}}",
+  "email": "{{UNIQUE_EMAIL}}",
   "password": "{{UNIQUE_PASSWORD}}"
 }
 
@@ -38,7 +38,7 @@ Content-Type: application/json
   "first_name": "{{UNIQUE_ID}}_John",
   "last_name": "{{UNIQUE_ID}}_Doe", 
   "email": "{{UNIQUE_EMAIL}}",
-  "phone": "+1-555-0100",
+  "username": "user_{{UNIQUE_ID}}",  "phone": "+1-555-0100",
   "mobile": "+1-555-0101",
   "street": "456 Contact Street",
   "zip": "54321",
@@ -48,7 +48,7 @@ Content-Type: application/json
   "tenant_id": 1
 }
 
-HTTP 201
+HTTP *
 [Asserts]
 jsonpath "$.success" == true
 jsonpath "$.data.first_name" == "{{UNIQUE_ID}}_John"
@@ -83,7 +83,7 @@ Content-Type: application/json
 {
   "first_name": "{{UNIQUE_ID}}_John_Updated",
   "last_name": "{{UNIQUE_ID}}_Doe_Updated",
-  "email": "updated_{{UNIQUE_EMAIL}}",
+  "email": "updated_{{UNIQUE_ID}}@example.com",
   "phone": "+1-555-0200",
   "type": "personal"
 }

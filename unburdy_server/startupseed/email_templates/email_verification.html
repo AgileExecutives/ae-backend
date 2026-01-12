@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Email Verification Required</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+        .container {
+            background-color: #ffffff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .header {
+            text-align: center;
+            border-bottom: 2px solid #e9ecef;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            color: #007bff;
+            margin-bottom: 10px;
+        }
+        .title {
+            font-size: 24px;
+            color: #28a745;
+            margin-bottom: 10px;
+        }
+        .content {
+            margin-bottom: 30px;
+        }
+        .verification-info {
+            background-color: #d4edda;
+            padding: 20px;
+            border-radius: 5px;
+            border-left: 4px solid #28a745;
+            margin: 20px 0;
+        }
+        .button {
+            display: inline-block;
+            padding: 12px 30px;
+            background-color: #28a745;
+            color: #ffffff;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: bold;
+            text-align: center;
+            margin: 20px 0;
+        }
+        .button:hover {
+            background-color: #218838;
+        }
+        .footer {
+            border-top: 1px solid #e9ecef;
+            padding-top: 20px;
+            text-align: center;
+            color: #6c757d;
+            font-size: 14px;
+        }
+        .code {
+            font-family: 'Courier New', monospace;
+            background-color: #f8f9fa;
+            padding: 8px 15px;
+            border-radius: 5px;
+            font-size: 20px;
+            font-weight: bold;
+            color: #28a745;
+            border: 2px solid #28a745;
+            display: inline-block;
+            margin: 10px 0;
+        }
+        .steps {
+            background-color: #e8f4fd;
+            padding: 20px;
+            border-radius: 5px;
+            border-left: 4px solid #007bff;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">AE SaaS</div>
+            <h1 class="title">Verify Your Email Address</h1>
+        </div>
+        
+        <div class="content">
+            <p>Hi {{.FirstName}},</p>
+            
+            <p>Thank you for signing up with <strong>{{.OrganizationName}}</strong>! To complete your registration, please verify your email address.</p>
+            
+            <div class="verification-info">
+                <h3>Verification Details:</h3>
+                <ul>
+                    <li><strong>Email:</strong> {{.Email}}</li>
+                    <li><strong>Account:</strong> {{.Username}}</li>
+                    <li><strong>Organization:</strong> {{.OrganizationName}}</li>
+                </ul>
+            </div>
+            
+            <p>Click the button below to verify your email address:</p>
+            
+            <center>
+                <a href="{{.VerificationURL}}" class="button">Verify Email Address</a>
+            </center>
+            
+            <p>Or enter this verification code in the application:</p>
+            
+            <center>
+                <div class="code">{{.VerificationCode}}</div>
+            </center>
+            
+            <div class="steps">
+                <h3>Next Steps After Verification:</h3>
+                <ol>
+                    <li>Access your account dashboard</li>
+                    <li>Complete your profile setup</li>
+                    <li>Explore available features</li>
+                    <li>Invite team members</li>
+                </ol>
+            </div>
+            
+            <p>This verification link will expire in <strong>24 hours</strong> for security reasons.</p>
+            
+            <p>If the button above doesn't work, copy and paste this URL into your browser:</p>
+            <p style="word-break: break-all; color: #007bff;">{{.VerificationURL}}</p>
+        </div>
+        
+        <div class="footer">
+            <p>Best regards,<br>The AE SaaS Team</p>
+            <p>If you didn't create an account with us, please ignore this email or contact support.</p>
+        </div>
+    </div>
+</body>
+</html>

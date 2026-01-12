@@ -30,14 +30,15 @@ type Module interface {
 
 // ModuleContext provides dependencies to modules
 type ModuleContext struct {
-	DB           *gorm.DB
-	Router       *gin.Engine
-	EventBus     EventBus
-	Config       interface{}
-	Logger       Logger
-	Services     ServiceRegistry
-	Auth         AuthService
-	TokenService TokenService
+	DB             *gorm.DB
+	Router         *gin.Engine
+	EventBus       EventBus
+	Config         interface{}
+	Logger         Logger
+	Services       ServiceRegistry
+	Auth           AuthService
+	TokenService   TokenService
+	ModuleRegistry ModuleRegistry
 }
 
 // Entity represents a database entity with migrations

@@ -20,6 +20,7 @@ type BaseModule struct {
 	authService          *services.AuthService
 	eventHandlers        *events.BaseEventHandlers
 	authMiddleware       *middleware.AuthMiddleware
+	moduleContext        core.ModuleContext
 }
 
 // NewBaseModule creates a new base module instance
@@ -42,6 +43,9 @@ func (m *BaseModule) Dependencies() []string {
 func (m *BaseModule) Initialize(ctx core.ModuleContext) error {
 	ctx.Logger.Info("Initializing base module...")
 
+	// Store context for later use
+	m.moduleContext = ctx
+
 	// Initialize services
 	m.authService = services.NewAuthService(ctx.DB, ctx.Logger)
 
@@ -62,7 +66,14 @@ func (m *BaseModule) Initialize(ctx core.ModuleContext) error {
 }
 
 func (m *BaseModule) Start(ctx context.Context) error {
-	// Start any background services if needed
+	// Set module registry in auth handler now that all modules are initialized
+	// This needs to be done in Start() because it happens after all Initialize() calls
+	if m.authHandlers != nil && m.moduleContext.ModuleRegistry != nil {
+		m.authHandlers.SetModuleRegistry(m.moduleContext.ModuleRegistry)
+		m.moduleContext.Logger.Info("Base module started - auth handlers configured with module registry for template seeding")
+	} else {
+		m.moduleContext.Logger.Warn("Base module started - module registry not available for template seeding")
+	}
 	return nil
 }
 

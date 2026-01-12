@@ -12,6 +12,7 @@ import (
 	"github.com/ae-base-server/modules/organization"
 	"github.com/ae-base-server/modules/pdf"
 	"github.com/ae-base-server/modules/static"
+	"github.com/ae-base-server/modules/templates"
 	"github.com/ae-base-server/pkg/bootstrap"
 	"github.com/ae-base-server/pkg/config"
 	"github.com/ae-base-server/pkg/core"
@@ -106,6 +107,7 @@ func main() {
 		customer.NewCustomerModule(),           // Customer and plan management
 		organization.NewOrganizationModule(),   // Organization management within tenants
 		invoicenumber.NewInvoiceNumberModule(), // Invoice number generation
+		templates.NewCoreModule(),              // Template management (contracts and instances)
 		email.NewEmailModule(),                 // Email management and notifications
 		pdf.NewPDFModule(),                     // PDF generation services
 		static.NewStaticModule(),               // Static JSON file serving

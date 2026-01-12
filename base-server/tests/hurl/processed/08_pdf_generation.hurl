@@ -5,14 +5,14 @@
 POST http://localhost:8080/api/v1/auth/register
 Content-Type: application/json
 {
-  "username": "testuser_1761901486_2faa433f",
-  "email": "test_1761901486_2faa433f@example.com",
-  "password": "Pass123_2faa433f",
+  "email": "test_1768217908_4817a46c@example.com",
+  "username": "user_1768217908_4817a46c",
+  "password": "Pass123_4817a46c",
   "first_name": "PDF",
   "last_name": "Tester",
-  "company_name": "PDF Test Company 1761901486_2faa433f",
-  "accept_terms": true,
-  "newsletter_opt_in": false
+  "company_name": "PDF Test Company 1768217908_4817a46c",
+  "tenant_name": "tenant_1768217908_4817a46c",
+  "accept_terms": true
 }
 
 # Accept either success or conflict (user exists)
@@ -22,8 +22,8 @@ HTTP *
 POST http://localhost:8080/api/v1/auth/login
 Content-Type: application/json
 {
-  "username": "testuser_1761901486_2faa433f",
-  "password": "Pass123_2faa433f"
+  "email": "test_1768217908_4817a46c@example.com",
+  "password": "Pass123_4817a46c"
 }
 
 HTTP 200
@@ -37,14 +37,14 @@ Authorization: Bearer {{auth_token}}
 Content-Type: application/json
 {
   "data": {
-    "invoice_number": "INV-1761901486_2faa433f",
-    "customer_name": "customer_1761901486_2faa433f",
+    "invoice_number": "INV-1768217908_4817a46c",
+    "customer_name": "customer_1768217908_4817a46c",
     "amount": "€123.45",
     "date": "2025-10-27",
-    "unique_id": "1761901486_2faa433f"
+    "unique_id": "1768217908_4817a46c"
   },
   "templateName": "report.html",
-  "fileName": "test-invoice-1761901486_2faa433f"
+  "fileName": "test-invoice-1768217908_4817a46c"
 }
 
 # Accept either success or server error (if template missing or Chrome not available)  
@@ -59,11 +59,11 @@ Authorization: Bearer {{auth_token}}
 Content-Type: application/json
 {
   "data": {
-    "title": "Simple Test 1761901486_2faa433f",
+    "title": "Simple Test 1768217908_4817a46c",
     "content": "PDF generation test"
   },
   "templateName": "invoice_units_template.html",
-  "fileName": "simple-test-1761901486_2faa433f"
+  "fileName": "simple-test-1768217908_4817a46c"
 }
 
 # Accept either success or server error

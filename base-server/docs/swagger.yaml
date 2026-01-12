@@ -222,9 +222,6 @@ definitions:
         example: true
         type: boolean
     type: object
-  gin.H:
-    additionalProperties: {}
-    type: object
   github_com_ae-base-server_internal_models.APIResponse:
     properties:
       data: {}
@@ -1179,6 +1176,9 @@ definitions:
     type: object
   services.CreateTemplateRequest:
     properties:
+      channel:
+        description: EMAIL or DOCUMENT
+        type: string
       content:
         description: HTML content
         type: string
@@ -2913,7 +2913,9 @@ paths:
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/gin.H'
+            additionalProperties:
+              type: string
+            type: object
       summary: Settings system health check
       tags:
       - settings
@@ -2933,7 +2935,9 @@ paths:
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/gin.H'
+            additionalProperties:
+              type: string
+            type: object
       summary: Get registered settings modules
       tags:
       - settings
@@ -2959,15 +2963,21 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/gin.H'
+            additionalProperties:
+              type: string
+            type: object
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/gin.H'
+            additionalProperties:
+              type: string
+            type: object
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/gin.H'
+            additionalProperties:
+              type: string
+            type: object
       security:
       - BearerAuth: []
       summary: Get organization settings
@@ -3000,15 +3010,21 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/gin.H'
+            additionalProperties:
+              type: string
+            type: object
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/gin.H'
+            additionalProperties:
+              type: string
+            type: object
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/gin.H'
+            additionalProperties:
+              type: string
+            type: object
       security:
       - BearerAuth: []
       summary: Set organization setting
@@ -3042,23 +3058,33 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/gin.H'
+            additionalProperties:
+              type: string
+            type: object
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/gin.H'
+            additionalProperties:
+              type: string
+            type: object
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/gin.H'
+            additionalProperties:
+              type: string
+            type: object
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/gin.H'
+            additionalProperties:
+              type: string
+            type: object
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/gin.H'
+            additionalProperties:
+              type: string
+            type: object
       security:
       - BearerAuth: []
       summary: Delete organization setting
@@ -3102,19 +3128,27 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/gin.H'
+            additionalProperties:
+              type: string
+            type: object
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/gin.H'
+            additionalProperties:
+              type: string
+            type: object
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/gin.H'
+            additionalProperties:
+              type: string
+            type: object
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/gin.H'
+            additionalProperties:
+              type: string
+            type: object
       security:
       - BearerAuth: []
       summary: Update organization setting
@@ -3144,19 +3178,27 @@ paths:
         "201":
           description: Created
           schema:
-            $ref: '#/definitions/gin.H'
+            additionalProperties:
+              type: string
+            type: object
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/gin.H'
+            additionalProperties:
+              type: string
+            type: object
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/gin.H'
+            additionalProperties:
+              type: string
+            type: object
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/gin.H'
+            additionalProperties:
+              type: string
+            type: object
       security:
       - BearerAuth: []
       summary: Bulk set organization settings
@@ -3184,11 +3226,15 @@ paths:
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/gin.H'
+            additionalProperties:
+              type: string
+            type: object
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/gin.H'
+            additionalProperties:
+              type: string
+            type: object
       security:
       - BearerAuth: []
       summary: Get organization domains
@@ -3217,23 +3263,33 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/gin.H'
+            additionalProperties:
+              type: string
+            type: object
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/gin.H'
+            additionalProperties:
+              type: string
+            type: object
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/gin.H'
+            additionalProperties:
+              type: string
+            type: object
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/gin.H'
+            additionalProperties:
+              type: string
+            type: object
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/gin.H'
+            additionalProperties:
+              type: string
+            type: object
       security:
       - BearerAuth: []
       summary: Delete domain settings
@@ -3261,23 +3317,33 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/gin.H'
+            additionalProperties:
+              type: string
+            type: object
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/gin.H'
+            additionalProperties:
+              type: string
+            type: object
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/gin.H'
+            additionalProperties:
+              type: string
+            type: object
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/gin.H'
+            additionalProperties:
+              type: string
+            type: object
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/gin.H'
+            additionalProperties:
+              type: string
+            type: object
       security:
       - BearerAuth: []
       summary: Get domain settings
@@ -3311,19 +3377,27 @@ paths:
         "201":
           description: Created
           schema:
-            $ref: '#/definitions/gin.H'
+            additionalProperties:
+              type: string
+            type: object
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/gin.H'
+            additionalProperties:
+              type: string
+            type: object
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/gin.H'
+            additionalProperties:
+              type: string
+            type: object
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/gin.H'
+            additionalProperties:
+              type: string
+            type: object
       security:
       - BearerAuth: []
       summary: Set domain settings
@@ -3354,15 +3428,21 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/gin.H'
+            additionalProperties:
+              type: string
+            type: object
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/gin.H'
+            additionalProperties:
+              type: string
+            type: object
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/gin.H'
+            additionalProperties:
+              type: string
+            type: object
       security:
       - BearerAuth: []
       summary: Export organization settings
@@ -3385,26 +3465,35 @@ paths:
         name: import
         required: true
         schema:
-          $ref: '#/definitions/gin.H'
+          additionalProperties: true
+          type: object
       produces:
       - application/json
       responses:
         "201":
           description: Created
           schema:
-            $ref: '#/definitions/gin.H'
+            additionalProperties:
+              type: string
+            type: object
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/gin.H'
+            additionalProperties:
+              type: string
+            type: object
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/gin.H'
+            additionalProperties:
+              type: string
+            type: object
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/gin.H'
+            additionalProperties:
+              type: string
+            type: object
       security:
       - BearerAuth: []
       summary: Import organization settings
@@ -3442,11 +3531,15 @@ paths:
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/gin.H'
+            additionalProperties:
+              type: string
+            type: object
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/gin.H'
+            additionalProperties:
+              type: string
+            type: object
       security:
       - BearerAuth: []
       summary: Validate settings
@@ -3548,9 +3641,13 @@ paths:
         from auth middleware)
       operationId: listTemplates
       parameters:
-      - description: Template type (email, pdf, invoice, document)
+      - description: Template channel (EMAIL, DOCUMENT)
         in: query
-        name: template_type
+        name: channel
+        type: string
+      - description: Template key (password_reset, invoice, etc.)
+        in: query
+        name: template_key
         type: string
       - description: Active status filter
         in: query
@@ -4067,13 +4164,17 @@ paths:
       - Template Contracts
   /templates/default:
     get:
-      description: Get the default template for a specific type (organization from
-        auth middleware)
+      description: Get the default template by channel and template key (organization
+        from auth middleware)
       operationId: getDefaultTemplate
       parameters:
-      - description: Template type (email, pdf, invoice, document)
+      - description: Template channel (EMAIL, DOCUMENT)
         in: query
-        name: template_type
+        name: channel
+        type: string
+      - description: Template key (password_reset, invoice, etc.)
+        in: query
+        name: template_key
         required: true
         type: string
       produces:

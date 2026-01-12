@@ -1,21 +1,30 @@
 package services
 
 import (
+	"context"
 	"errors"
 	"fmt"
+	"log"
 
 	"github.com/ae-base-server/internal/models"
+	"github.com/ae-base-server/modules/templates/services"
 	"gorm.io/gorm"
 )
 
 // OrganizationService handles business logic for organizations
 type OrganizationService struct {
-	db *gorm.DB
+	db              *gorm.DB
+	templateService *services.TemplateService
 }
 
 // NewOrganizationService creates a new organization service
 func NewOrganizationService(db *gorm.DB) *OrganizationService {
 	return &OrganizationService{db: db}
+}
+
+// SetTemplateService sets the template service for copying templates
+func (s *OrganizationService) SetTemplateService(templateService *services.TemplateService) {
+	s.templateService = templateService
 }
 
 // CreateOrganization creates a new organization
@@ -44,6 +53,17 @@ func (s *OrganizationService) CreateOrganization(req models.CreateOrganizationRe
 
 	if err := s.db.Create(&organization).Error; err != nil {
 		return nil, fmt.Errorf("failed to create organization: %w", err)
+	}
+
+	// Copy templates from tenant 2 org 2 for new organizations (but not for initial seed orgs)
+	// Skip tenant 1 org 1 (Unburdy Verwaltung) and tenant 2 org 2 (Standard Organisation)
+	if s.templateService != nil && !(tenantID == 1 && organization.ID == 1) && !(tenantID == 2 && organization.ID == 2) {
+		log.Printf("📋 Copying templates from tenant 2 org 2 to new organization (tenant %d, org %d)...", tenantID, organization.ID)
+		ctx := context.Background()
+		if err := s.templateService.CopyTemplatesFromTenant2Org2(ctx, tenantID, organization.ID); err != nil {
+			log.Printf("⚠️  Warning: Failed to copy templates for new organization: %v", err)
+			// Don't fail organization creation if template copy fails
+		}
 	}
 
 	return &organization, nil

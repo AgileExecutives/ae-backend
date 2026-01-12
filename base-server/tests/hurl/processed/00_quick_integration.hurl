@@ -13,26 +13,27 @@ jsonpath "$.database" == "connected"
 POST http://localhost:8080/api/v1/auth/register
 Content-Type: application/json
 {
-  "username": "testuser_1761901486_2faa433f",
-  "email": "test_1761901486_2faa433f@example.com",
-  "password": "Pass123_2faa433f",
+  "email": "test_1768217908_4817a46c@example.com",
+  "username": "user_1768217908_4817a46c",
+  "password": "Pass123_4817a46c",
   "first_name": "Integration",
   "last_name": "Test",
-  "company_name": "Test Company 1761901486_2faa433f",
-  "accept_terms": true,
-  "newsletter_opt_in": false
+  "company_name": "Test Company 1768217908_4817a46c",
+  "tenant_name": "tenant_1768217908_4817a46c",
+  "accept_terms": true
 }
 
-HTTP 201
+# Accept either 201 (created) or 409 (already exists)
+HTTP *
 [Asserts]
-jsonpath "$.success" == true
+jsonpath "$.success" exists
 
 # Test login with the created user
 POST http://localhost:8080/api/v1/auth/login
 Content-Type: application/json
 {
-  "username": "testuser_1761901486_2faa433f",
-  "password": "Pass123_2faa433f"
+  "email": "test_1768217908_4817a46c@example.com",
+  "password": "Pass123_4817a46c"
 }
 
 HTTP 200

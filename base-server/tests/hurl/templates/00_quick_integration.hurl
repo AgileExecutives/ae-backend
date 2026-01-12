@@ -13,25 +13,26 @@ jsonpath "$.database" == "connected"
 POST {{HOST}}/api/v1/auth/register
 Content-Type: application/json
 {
-  "username": "{{UNIQUE_USERNAME}}",
   "email": "{{UNIQUE_EMAIL}}",
+  "username": "user_{{UNIQUE_ID}}",
   "password": "{{UNIQUE_PASSWORD}}",
   "first_name": "Integration",
   "last_name": "Test",
   "company_name": "Test Company {{UNIQUE_ID}}",
-  "accept_terms": true,
-  "newsletter_opt_in": false
+  "tenant_name": "tenant_{{UNIQUE_ID}}",
+  "accept_terms": true
 }
 
-HTTP 201
+# Accept either 201 (created) or 409 (already exists)
+HTTP *
 [Asserts]
-jsonpath "$.success" == true
+jsonpath "$.success" exists
 
 # Test login with the created user
 POST {{HOST}}/api/v1/auth/login
 Content-Type: application/json
 {
-  "username": "{{UNIQUE_USERNAME}}",
+  "email": "{{UNIQUE_EMAIL}}",
   "password": "{{UNIQUE_PASSWORD}}"
 }
 

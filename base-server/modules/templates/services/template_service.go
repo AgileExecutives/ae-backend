@@ -41,6 +41,9 @@ type CreateTemplateRequest struct {
 	TenantID       uint                   `json:"tenant_id"`
 	OrganizationID *uint                  `json:"organization_id,omitempty"` // NULL = system default
 	TemplateType   string                 `json:"template_type" binding:"required"`
+	TemplateKey    string                 `json:"template_key,omitempty"` // Key derived from filename
+	Channel        string                 `json:"channel,omitempty"`      // EMAIL or DOCUMENT
+	Subject        *string                `json:"subject,omitempty"`      // Required for EMAIL templates
 	Name           string                 `json:"name" binding:"required"`
 	Description    string                 `json:"description"`
 	Content        string                 `json:"content" binding:"required"` // HTML content
@@ -109,6 +112,9 @@ func (s *TemplateService) CreateTemplate(ctx context.Context, req *CreateTemplat
 		TenantID:       req.TenantID,
 		OrganizationID: req.OrganizationID,
 		TemplateType:   req.TemplateType,
+		TemplateKey:    req.TemplateKey,               // Set template key from filename
+		Channel:        entities.Channel(req.Channel), // Set channel from request
+		Subject:        req.Subject,                   // Set subject for EMAIL templates
 		Name:           req.Name,
 		Description:    req.Description,
 		Version:        1,
@@ -119,11 +125,15 @@ func (s *TemplateService) CreateTemplate(ctx context.Context, req *CreateTemplat
 		SampleData:     sampleDataJSON,
 	}
 
+	fmt.Printf("🔍 DEBUG: Creating template with TemplateKey='%s' (req.TemplateKey='%s')\n", tmpl.TemplateKey, req.TemplateKey)
+
 	if err := s.db.Create(tmpl).Error; err != nil {
 		// Rollback storage if DB insert fails
 		s.storage.Delete(ctx, "templates", storageKey)
 		return nil, fmt.Errorf("failed to create template: %w", err)
 	}
+
+	fmt.Printf("🔍 DEBUG: After Create - TemplateKey='%s', ID=%d\n", tmpl.TemplateKey, tmpl.ID)
 
 	return tmpl, nil
 }
@@ -158,7 +168,8 @@ func (s *TemplateService) ListTemplates(
 	ctx context.Context,
 	tenantID uint,
 	organizationID *uint,
-	templateType string,
+	channel string,
+	templateKey string,
 	isActive *bool,
 	page int,
 	pageSize int,
@@ -171,8 +182,11 @@ func (s *TemplateService) ListTemplates(
 	if organizationID != nil {
 		query = query.Where("organization_id = ?", *organizationID)
 	}
-	if templateType != "" {
-		query = query.Where("template_type = ?", templateType)
+	if channel != "" {
+		query = query.Where("channel = ?", channel)
+	}
+	if templateKey != "" {
+		query = query.Where("template_key = ?", templateKey)
 	}
 	if isActive != nil {
 		query = query.Where("is_active = ?", *isActive)
@@ -413,6 +427,7 @@ func (s *TemplateService) DuplicateTemplate(
 		TenantID:       tenantID,
 		OrganizationID: source.OrganizationID,
 		TemplateType:   source.TemplateType,
+		TemplateKey:    source.TemplateKey, // Preserve template key when copying
 		Name:           newName,
 		Description:    fmt.Sprintf("Copy of %s", source.Name),
 		Content:        content,
@@ -423,4 +438,92 @@ func (s *TemplateService) DuplicateTemplate(
 	}
 
 	return s.CreateTemplate(ctx, req)
+}
+
+// CopyTemplatesFromTenant2Org2 copies all templates from tenant 2, org 2 to a new organization
+// This is used when creating new tenants/organizations to provide default templates
+func (s *TemplateService) CopyTemplatesFromTenant2Org2(ctx context.Context, targetTenantID, targetOrganizationID uint) error {
+	// Get all templates from tenant 2, organization 2
+	var sourceTemplates []entities.Template
+	if err := s.db.Where("tenant_id = ? AND organization_id = ?", 2, 2).Find(&sourceTemplates).Error; err != nil {
+		return fmt.Errorf("failed to get source templates from tenant 2 org 2: %w", err)
+	}
+
+	if len(sourceTemplates) == 0 {
+		return fmt.Errorf("no templates found in tenant 2 org 2 to copy")
+	}
+
+	fmt.Printf("📋 Copying %d templates from tenant 2 org 2 to tenant %d org %d...\n", len(sourceTemplates), targetTenantID, targetOrganizationID)
+
+	// Copy each template
+	copiedCount := 0
+	for _, source := range sourceTemplates {
+		// Get the content from storage
+		content, err := s.storage.Retrieve(ctx, "templates", source.StorageKey)
+		if err != nil {
+			fmt.Printf("⚠️  Warning: Could not read template content for %s: %v\n", source.Name, err)
+			continue
+		}
+
+		// Get variables and sample data
+		var variables []string
+		var sampleData map[string]interface{}
+
+		if len(source.Variables) > 0 {
+			entities.UnmarshalJSON(source.Variables, &variables)
+		}
+		if len(source.SampleData) > 0 {
+			entities.UnmarshalJSON(source.SampleData, &sampleData)
+		}
+
+		// Create new template for target tenant/org
+		req := &CreateTemplateRequest{
+			TenantID:       targetTenantID,
+			OrganizationID: &targetOrganizationID,
+			TemplateType:   source.TemplateType,
+			TemplateKey:    source.TemplateKey, // Preserve template key when copying
+			Channel:        string(source.Channel),
+			Name:           source.Name,
+			Description:    source.Description,
+			Content:        string(content),
+			Variables:      variables,
+			SampleData:     sampleData,
+			IsActive:       source.IsActive,
+			IsDefault:      source.IsDefault,
+		}
+
+		if _, err := s.CreateTemplate(ctx, req); err != nil {
+			fmt.Printf("⚠️  Warning: Failed to copy template %s: %v\\n", source.Name, err)
+			continue
+		}
+
+		copiedCount++
+	}
+
+	fmt.Printf("✅ Successfully copied %d/%d templates from tenant 2 org 2\\n", copiedCount, len(sourceTemplates))
+	return nil
+}
+
+// GetTemplateByKey retrieves a template by its key for a specific tenant and channel
+func (s *TemplateService) GetTemplateByKey(ctx context.Context, tenantID uint, channel, templateKey string) (string, error) {
+	var tmpl entities.Template
+
+	query := s.db.Where("tenant_id = ? AND template_key = ? AND is_active = ?", tenantID, templateKey, true)
+
+	if channel != "" {
+		query = query.Where("channel = ?", channel)
+	}
+
+	// Order by is_default DESC to prefer default templates, then by created_at DESC for newest
+	if err := query.Order("is_default DESC, created_at DESC").First(&tmpl).Error; err != nil {
+		return "", fmt.Errorf("template not found: %w", err)
+	}
+
+	// Retrieve content from storage
+	content, err := s.storage.Retrieve(ctx, "templates", tmpl.StorageKey)
+	if err != nil {
+		return "", fmt.Errorf("failed to retrieve template content: %w", err)
+	}
+
+	return string(content), nil
 }

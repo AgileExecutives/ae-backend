@@ -205,14 +205,15 @@ func (app *Application) initializeCoreServices() error {
 
 	// Create module context
 	app.context = core.ModuleContext{
-		DB:           db,
-		Router:       router,
-		EventBus:     eventBus,
-		Config:       app.config,
-		Logger:       app.logger,
-		Services:     services,
-		Auth:         authService,
-		TokenService: tokenService,
+		DB:             db,
+		Router:         router,
+		EventBus:       eventBus,
+		Config:         app.config,
+		Logger:         app.logger,
+		Services:       services,
+		Auth:           authService,
+		TokenService:   tokenService,
+		ModuleRegistry: app.registry,
 	}
 
 	app.server = router

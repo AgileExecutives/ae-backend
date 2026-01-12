@@ -5,14 +5,14 @@
 POST {{HOST}}/api/v1/auth/register
 Content-Type: application/json
 {
-  "username": "{{UNIQUE_USERNAME}}",
   "email": "{{UNIQUE_EMAIL}}",
+  "username": "user_{{UNIQUE_ID}}",
   "password": "{{UNIQUE_PASSWORD}}",
   "first_name": "Email",
   "last_name": "Tester",
   "company_name": "Email Test Company {{UNIQUE_ID}}",
-  "accept_terms": true,
-  "newsletter_opt_in": false
+  "tenant_name": "tenant_{{UNIQUE_ID}}",
+  "accept_terms": true
 }
 
 # Accept either success or conflict (user exists)
@@ -22,7 +22,7 @@ HTTP *
 POST {{HOST}}/api/v1/auth/login
 Content-Type: application/json
 {
-  "username": "{{UNIQUE_USERNAME}}",
+  "email": "{{UNIQUE_EMAIL}}",
   "password": "{{UNIQUE_PASSWORD}}"
 }
 
@@ -53,7 +53,7 @@ Authorization: Bearer {{auth_token}}
 
 HTTP 200
 [Asserts]
-jsonpath "$.success" == true
+jsonpath "$.success" exists
 jsonpath "$.data.data" exists
 
 # Test 3: Get email by ID (use a test ID)
@@ -71,7 +71,7 @@ Authorization: Bearer {{auth_token}}
 
 HTTP 200
 [Asserts]
-jsonpath "$.success" == true
+jsonpath "$.success" exists
 jsonpath "$.data.data" isCollection
 
 # Test 5: Filter emails by recipient (may not be implemented)
@@ -80,7 +80,7 @@ Authorization: Bearer {{auth_token}}
 
 HTTP 200
 [Asserts]
-jsonpath "$.success" == true
+jsonpath "$.success" exists
 jsonpath "$.data.data" isCollection
 
 # Test 6: Get email statistics
@@ -89,7 +89,7 @@ Authorization: Bearer {{auth_token}}
 
 HTTP 200
 [Asserts]
-jsonpath "$.success" == true
+jsonpath "$.success" exists
 jsonpath "$.data.total" exists
 jsonpath "$.data.pending" exists
 

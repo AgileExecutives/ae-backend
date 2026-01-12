@@ -1,0 +1,74 @@
+{
+  "templates": [
+    {
+      "module": "identity",
+      "template_key": "password_reset",
+      "channel": "EMAIL",
+      "name": "Password Reset Email",
+      "description": "Email sent when a user requests a password reset",
+      "subject": "Password Reset Request",
+      "file_path": "email_templates/password_reset.html"
+    },
+    {
+      "module": "identity",
+      "template_key": "email_verification",
+      "channel": "EMAIL",
+      "name": "Email Verification",
+      "description": "Email sent to verify a user's email address",
+      "subject": "Verify Your Email Address",
+      "file_path": "email_templates/email_verification.html"
+    },
+    {
+      "module": "identity",
+      "template_key": "welcome",
+      "channel": "EMAIL",
+      "name": "Welcome Email",
+      "description": "Welcome email sent to new users after registration",
+      "subject": "Welcome to Our Platform",
+      "file_path": "email_templates/welcome.html"
+    },
+    {
+      "module": "notification",
+      "template_key": "booking_confirmation",
+      "channel": "EMAIL",
+      "name": "Booking Confirmation",
+      "description": "Email sent to confirm a booking",
+      "subject": "Booking Confirmation",
+      "file_path": "email_templates/booking_confirmation.html"
+    },
+    {
+      "module": "identity",
+      "template_key": "user_invitation",
+      "channel": "EMAIL",
+      "name": "User Invitation",
+      "description": "Email sent to invite a user to the platform",
+      "subject": "You've Been Invited",
+      "file_path": "email_templates/user_invitation.html"
+    },
+    {
+      "module": "notification",
+      "template_key": "subscription_notification",
+      "channel": "EMAIL",
+      "name": "Subscription Notification",
+      "description": "Email sent for subscription-related notifications",
+      "subject": "Subscription Update",
+      "file_path": "email_templates/subscription_notification.html"
+    },
+    {
+      "module": "billing",
+      "template_key": "invoice",
+      "channel": "DOCUMENT",
+      "name": "Invoice Template",
+      "description": "PDF template for invoices",
+      "file_path": "pdf_templates/invoice.html"
+    },
+    {
+      "module": "reporting",
+      "template_key": "report",
+      "channel": "DOCUMENT",
+      "name": "Report Template",
+      "description": "PDF template for reports",
+      "file_path": "pdf_templates/report.html"
+    }
+  ]
+}

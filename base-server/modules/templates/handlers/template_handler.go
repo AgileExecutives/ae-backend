@@ -3,6 +3,7 @@ package handlers
 import (
 	"net/http"
 	"strconv"
+	"strings"
 
 	baseAPI "github.com/ae-base-server/api"
 	"github.com/ae-base-server/modules/templates/entities"
@@ -111,7 +112,8 @@ func (h *TemplateHandler) GetTemplate(c *gin.Context) {
 // @Tags Templates
 // @ID listTemplates
 // @Produce json
-// @Param template_type query string false "Template type (email, pdf, invoice, document)"
+// @Param channel query string false "Template channel (EMAIL, DOCUMENT)"
+// @Param template_key query string false "Template key (password_reset, invoice, etc.)"
 // @Param is_active query bool false "Active status filter"
 // @Param page query int false "Page number (default 1)"
 // @Param page_size query int false "Page size (default 20)"
@@ -120,7 +122,6 @@ func (h *TemplateHandler) GetTemplate(c *gin.Context) {
 // @Failure 500 {object} map[string]string
 // @Router /templates [get]
 // @Security BearerAuth
-// @ID listTemplates
 func (h *TemplateHandler) ListTemplates(c *gin.Context) {
 	tenantID, err := baseAPI.GetTenantID(c)
 	if err != nil {
@@ -135,7 +136,13 @@ func (h *TemplateHandler) ListTemplates(c *gin.Context) {
 		organizationID = &orgIDVal
 	}
 
-	templateType := c.Query("template_type")
+	channel := c.Query("channel")
+	templateKey := c.Query("template_key")
+
+	// Normalize channel to uppercase (accept "email" or "EMAIL")
+	if channel != "" {
+		channel = strings.ToUpper(channel)
+	}
 
 	var isActive *bool
 	if activeStr := c.Query("is_active"); activeStr != "" {
@@ -158,7 +165,8 @@ func (h *TemplateHandler) ListTemplates(c *gin.Context) {
 		c.Request.Context(),
 		uint(tenantID),
 		organizationID,
-		templateType,
+		channel,
+		templateKey,
 		isActive,
 		page,
 		pageSize,
@@ -312,10 +320,11 @@ func (h *TemplateHandler) RenderTemplate(c *gin.Context) {
 
 // GetDefaultTemplate gets the default template for a type
 // @Summary Get default template
-// @Description Get the default template for a specific type (organization from auth middleware)
+// @Description Get the default template by channel and template key (organization from auth middleware)
 // @Tags Templates
 // @Produce json
-// @Param template_type query string true "Template type (email, pdf, invoice, document)"
+// @Param channel query string false "Template channel (EMAIL, DOCUMENT)"
+// @Param template_key query string true "Template key (password_reset, invoice, etc.)"
 // @Success 200 {object} entities.TemplateResponse
 // @Failure 401 {object} map[string]interface{}
 // @Failure 404 {object} map[string]interface{}

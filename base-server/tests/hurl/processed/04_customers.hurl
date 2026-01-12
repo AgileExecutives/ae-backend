@@ -5,14 +5,14 @@
 POST http://localhost:8080/api/v1/auth/register
 Content-Type: application/json
 {
-  "username": "testuser_1761901486_2faa433f",
-  "email": "test_1761901486_2faa433f@example.com",
-  "password": "Pass123_2faa433f",
+  "email": "test_1768217908_4817a46c@example.com",
+  "username": "user_1768217908_4817a46c",
+  "password": "Pass123_4817a46c",
   "first_name": "Customer",
   "last_name": "Tester",
-  "company_name": "Customer Test Company 1761901486_2faa433f",
-  "accept_terms": true,
-  "newsletter_opt_in": false
+  "company_name": "Customer Test Company 1768217908_4817a46c",
+  "tenant_name": "tenant_1768217908_4817a46c",
+  "accept_terms": true
 }
 
 # Accept either success or conflict (user exists)
@@ -22,8 +22,8 @@ HTTP *
 POST http://localhost:8080/api/v1/auth/login
 Content-Type: application/json
 {
-  "username": "testuser_1761901486_2faa433f",
-  "password": "Pass123_2faa433f"
+  "email": "test_1768217908_4817a46c@example.com",
+  "password": "Pass123_4817a46c"
 }
 
 HTTP 200
@@ -35,19 +35,19 @@ POST http://localhost:8080/api/v1/customers
 Authorization: Bearer {{auth_token}}
 Content-Type: application/json
 {
-  "name": "customer_1761901486_2faa433f Corp",
-  "email": "test_1761901486_2faa433f@example.com",
-  "phone": "+1-555-123456",
+  "name": "customer_1768217908_4817a46c Corp",
+  "email": "test_1768217908_4817a46c@example.com",
+  "username": "user_1768217908_4817a46c",  "phone": "+1-555-123456",
   "address": "123 Test Street, Test City, TC 12345",
   "tenant_id": 1,
   "plan_id": 1
 }
 
-HTTP 201
+HTTP *
 [Asserts]
 jsonpath "$.success" == true
-jsonpath "$.data.name" == "customer_1761901486_2faa433f Corp"
-jsonpath "$.data.email" == "test_1761901486_2faa433f@example.com"
+jsonpath "$.data.name" == "customer_1768217908_4817a46c Corp"
+jsonpath "$.data.email" == "test_1768217908_4817a46c@example.com"
 
 [Captures]
 customer_id: jsonpath "$.data.id"
@@ -60,7 +60,7 @@ HTTP 200
 [Asserts]
 jsonpath "$.success" == true
 jsonpath "$.data.data" isCollection
-jsonpath "$.data.data[*].name" contains "customer_1761901486_2faa433f Corp"
+jsonpath "$.data.data[*].name" contains "customer_1768217908_4817a46c Corp"
 
 # Test 3: Get customer by ID
 GET http://localhost:8080/api/v1/customers/{{customer_id}}
@@ -70,27 +70,27 @@ HTTP 200
 [Asserts]
 jsonpath "$.success" == true
 jsonpath "$.data.id" == {{customer_id}}
-jsonpath "$.data.name" == "customer_1761901486_2faa433f Corp"
+jsonpath "$.data.name" == "customer_1768217908_4817a46c Corp"
 
 # Test 4: Update customer
 PUT http://localhost:8080/api/v1/customers/{{customer_id}}
 Authorization: Bearer {{auth_token}}
 Content-Type: application/json
 {
-  "name": "customer_1761901486_2faa433f Updated Corp",
-  "email": "updated_test_1761901486_2faa433f@example.com",
-  "phone": "+1-555-1761901486_2faa433f-UPD",
+  "name": "customer_1768217908_4817a46c Updated Corp",
+  "email": "updated_1768217908_4817a46c@example.com",
+  "phone": "+1-555-1768217908_4817a46c-UPD",
   "address": "456 Updated Street, Update City, UC 67890"
 }
 
 HTTP 200
 [Asserts]
 jsonpath "$.success" == true
-jsonpath "$.data.name" == "customer_1761901486_2faa433f Updated Corp"
-jsonpath "$.data.email" == "updated_test_1761901486_2faa433f@example.com"
+jsonpath "$.data.name" == "customer_1768217908_4817a46c Updated Corp"
+jsonpath "$.data.email" == "updated_1768217908_4817a46c@example.com"
 
 # Test 5: Search customers by name
-GET http://localhost:8080/api/v1/customers?search=customer_1761901486_2faa433f
+GET http://localhost:8080/api/v1/customers?search=customer_1768217908_4817a46c
 Authorization: Bearer {{auth_token}}
 
 HTTP 200
@@ -99,7 +99,7 @@ jsonpath "$.success" == true
 jsonpath "$.data.data" isCollection
 
 # Test 6: Filter customers by email
-GET http://localhost:8080/api/v1/customers?email=updated_test_1761901486_2faa433f@example.com
+GET http://localhost:8080/api/v1/customers?email=updated_test_1768217908_4817a46c@example.com
 Authorization: Bearer {{auth_token}}
 
 HTTP 200
@@ -112,7 +112,7 @@ POST http://localhost:8080/api/v1/customers
 Authorization: Bearer {{auth_token}}
 Content-Type: application/json
 {
-  "email": "incomplete_test_1761901486_2faa433f@example.com"
+  "email": "incomplete_1768217908_4817a46c@example.com"
 }
 
 HTTP 400

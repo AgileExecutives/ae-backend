@@ -74,7 +74,7 @@ type SeedUser struct {
 	EmailVerified  bool   `json:"email_verified"`
 }
 
-// loadSeedData loads seed data from JSON file
+// loadSeedData loads seed data from JSON file in startupseed folder
 func loadSeedData() (*SeedData, error) {
 	// Get the current working directory
 	pwd, err := os.Getwd()
@@ -82,15 +82,17 @@ func loadSeedData() (*SeedData, error) {
 		return nil, fmt.Errorf("failed to get current directory: %w", err)
 	}
 
-	// Look for seed-data.json in current directory or parent directories
-	seedDataPath := filepath.Join(pwd, "seed-data.json")
+	// Look for seed-data.json in startupseed folder
+	seedDataPath := filepath.Join(pwd, "startupseed", "seed-data.json")
 	if _, err := os.Stat(seedDataPath); os.IsNotExist(err) {
 		// Try parent directory (in case running from subdirectory)
-		seedDataPath = filepath.Join(filepath.Dir(pwd), "seed-data.json")
+		seedDataPath = filepath.Join(filepath.Dir(pwd), "startupseed", "seed-data.json")
 		if _, err := os.Stat(seedDataPath); os.IsNotExist(err) {
-			return nil, fmt.Errorf("seed-data.json not found in current or parent directory")
+			return nil, fmt.Errorf("seed-data.json not found in startupseed folder")
 		}
 	}
+
+	log.Printf("Loading seed data from: %s", seedDataPath)
 
 	// Read the JSON file
 	data, err := os.ReadFile(seedDataPath)
@@ -165,6 +167,8 @@ func Seed(db *gorm.DB) error {
 				return fmt.Errorf("failed to create organization %s: %w", orgData.Name, err)
 			}
 			log.Printf("Created organization: %s", orgData.Name)
+
+			// Note: Templates will be seeded by the templates module after initialization
 		}
 	}
 

@@ -6,7 +6,7 @@
 POST {{HOST}}/api/v1/auth/login
 Content-Type: application/json
 {
-  "username": "testuser",
+  "email": "testuser@unburdy.de",
   "password": "newpass123"
 }
 

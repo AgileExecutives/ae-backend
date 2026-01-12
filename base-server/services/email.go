@@ -2,6 +2,7 @@ package services
 
 import (
 	"bytes"
+	"context"
 	"crypto/tls"
 	"fmt"
 	"html/template"
@@ -13,6 +14,7 @@ import (
 	"strings"
 
 	"github.com/ae-base-server/pkg/utils"
+	"gorm.io/gorm"
 )
 
 // EmailProvider represents different email service providers
@@ -39,28 +41,48 @@ const (
 
 // EmailData contains data to be passed to email templates
 type EmailData struct {
-	RecipientName   string
-	SenderName      string
-	Subject         string
-	VerificationURL string
-	ResetURL        string
-	AppName         string
-	SupportEmail    string
-	CompanyName     string
-	CompanyAddress  string
-	CustomData      map[string]interface{}
+	RecipientName    string
+	FirstName        string
+	LastName         string
+	Email            string
+	Username         string
+	OrganizationName string
+	VerificationCode string
+	SenderName       string
+	Subject          string
+	VerificationURL  string
+	ResetURL         string
+	AppName          string
+	SupportEmail     string
+	CompanyName      string
+	CompanyAddress   string
+	CustomData       map[string]interface{}
+}
+
+// TemplateGetter interface for retrieving templates from database
+type TemplateGetter interface {
+	GetTemplateByKey(ctx context.Context, tenantID uint, channel, templateKey string) (string, error)
 }
 
 // EmailService handles email operations
 type EmailService struct {
-	provider  EmailProvider
-	templates map[EmailTemplate]*template.Template
+	provider       EmailProvider
+	templates      map[EmailTemplate]*template.Template
+	db             *gorm.DB
+	templateGetter TemplateGetter
 }
 
 // NewEmailService creates a new email service
 func NewEmailService() *EmailService {
+	return NewEmailServiceWithDB(nil, nil)
+}
+
+// NewEmailServiceWithDB creates a new email service with database support
+func NewEmailServiceWithDB(db *gorm.DB, templateGetter TemplateGetter) *EmailService {
 	service := &EmailService{
-		templates: make(map[EmailTemplate]*template.Template),
+		templates:      make(map[EmailTemplate]*template.Template),
+		db:             db,
+		templateGetter: templateGetter,
 	}
 
 	// Determine provider based on environment
@@ -118,6 +140,11 @@ func (e *EmailService) SendEmail(to, subject, htmlBody, textBody string) error {
 
 // SendTemplateEmail sends an email using a predefined template
 func (e *EmailService) SendTemplateEmail(to string, template EmailTemplate, data EmailData) error {
+	return e.SendTemplateEmailWithTenant(to, template, data, 0)
+}
+
+// SendTemplateEmailWithTenant sends an email using a template from database (if available) or falls back to static files
+func (e *EmailService) SendTemplateEmailWithTenant(to string, templateType EmailTemplate, data EmailData, tenantID uint) error {
 	// Set default data
 	if data.AppName == "" {
 		data.AppName = utils.GetEnv("APP_NAME", "Unburdy")
@@ -129,21 +156,59 @@ func (e *EmailService) SendTemplateEmail(to string, template EmailTemplate, data
 		data.CompanyName = utils.GetEnv("COMPANY_NAME", "Unburdy")
 	}
 
-	// Try to use loaded template first
-	if tmpl, exists := e.templates[template]; exists {
+	// Try to get template from database first (if template getter is available and tenant is specified)
+	if e.templateGetter != nil && tenantID > 0 {
+		templateKey := e.getTemplateKey(templateType)
+		if templateKey != "" {
+			htmlContent, err := e.templateGetter.GetTemplateByKey(context.Background(), tenantID, "EMAIL", templateKey)
+			if err == nil && htmlContent != "" {
+				// Render the database template with data
+				tmpl, err := template.New("email").Parse(htmlContent)
+				if err == nil {
+					var htmlBuffer bytes.Buffer
+					if err := tmpl.Execute(&htmlBuffer, data); err == nil {
+						textBody := e.htmlToText(htmlBuffer.String())
+						log.Printf("📧 Using database template for %s (tenant %d)", templateKey, tenantID)
+						return e.SendEmail(to, data.Subject, htmlBuffer.String(), textBody)
+					}
+				}
+				log.Printf("⚠️  Failed to render database template for %s: %v, falling back to static", templateKey, err)
+			} else {
+				log.Printf("⚠️  Database template not found for %s (tenant %d): %v, falling back to static", templateKey, tenantID, err)
+			}
+		}
+	}
+
+	// Try to use loaded static template
+	if tmpl, exists := e.templates[templateType]; exists {
 		var htmlBuffer bytes.Buffer
 		err := tmpl.Execute(&htmlBuffer, data)
 		if err != nil {
-			log.Printf("Failed to execute template %s: %v", template, err)
-			return e.sendDefaultTemplate(to, template, data)
+			log.Printf("Failed to execute static template %s: %v", templateType, err)
+			return e.sendDefaultTemplate(to, templateType, data)
 		}
 
 		textBody := e.htmlToText(htmlBuffer.String())
+		log.Printf("📧 Using static file template for %s", templateType)
 		return e.SendEmail(to, data.Subject, htmlBuffer.String(), textBody)
 	}
 
 	// Fall back to default template
-	return e.sendDefaultTemplate(to, template, data)
+	log.Printf("📧 Using default hardcoded template for %s", templateType)
+	return e.sendDefaultTemplate(to, templateType, data)
+}
+
+// getTemplateKey maps EmailTemplate to template_key in database
+func (e *EmailService) getTemplateKey(templateType EmailTemplate) string {
+	mapping := map[EmailTemplate]string{
+		TemplateVerification:  "email_verification",
+		TemplatePasswordReset: "password_reset",
+		TemplateWelcome:       "welcome",
+		TemplateInvoice:       "invoice",
+		TemplateAppointment:   "booking_confirmation",
+		TemplateNotification:  "notification",
+	}
+	return mapping[templateType]
 }
 
 // sendSMTP sends email via SMTP
@@ -392,14 +457,39 @@ func (e *EmailService) htmlToText(html string) string {
 
 // Convenience methods for specific email types
 
-// SendVerificationEmail sends a verification email
+// SendVerificationEmail sends a verification email (without tenant context)
 func (e *EmailService) SendVerificationEmail(to, recipientName, verificationURL string) error {
-	data := EmailData{
-		RecipientName:   recipientName,
-		Subject:         "Please verify your email address",
-		VerificationURL: verificationURL,
+	return e.SendVerificationEmailWithTenant(to, recipientName, "", to, "", verificationURL, 0)
+}
+
+// SendVerificationEmailWithTenant sends a verification email with tenant-specific template
+func (e *EmailService) SendVerificationEmailWithTenant(email, firstName, lastName, username, orgName, verificationURL string, tenantID uint) error {
+	// Extract verification code from token if present (last segment after last .)
+	verificationCode := ""
+	if len(verificationURL) > 0 {
+		// Extract token from URL
+		parts := strings.Split(verificationURL, "token=")
+		if len(parts) > 1 {
+			token := parts[1]
+			// Take last 6 characters as code
+			if len(token) >= 6 {
+				verificationCode = token[len(token)-6:]
+			}
+		}
 	}
-	return e.SendTemplateEmail(to, TemplateVerification, data)
+
+	data := EmailData{
+		RecipientName:    firstName,
+		FirstName:        firstName,
+		LastName:         lastName,
+		Email:            email,
+		Username:         username,
+		OrganizationName: orgName,
+		Subject:          "Please verify your email address",
+		VerificationURL:  verificationURL,
+		VerificationCode: verificationCode,
+	}
+	return e.SendTemplateEmailWithTenant(email, TemplateVerification, data, tenantID)
 }
 
 // SendPasswordResetEmail sends a password reset email

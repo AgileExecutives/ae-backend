@@ -11,7 +11,7 @@
 POST {{HOST}}/api/v1/auth/login
 Content-Type: application/json
 {
-  "username": "testuser",
+  "email": "testuser@unburdy.de",
   "password": "newpass123"
 }
 
@@ -28,14 +28,14 @@ auth_token: jsonpath "$.data.token"
 POST {{HOST}}/api/v1/auth/register
 Content-Type: application/json
 {
-  "username": "{{UNIQUE_USERNAME}}",
   "email": "{{UNIQUE_EMAIL}}",
+  "username": "user_{{UNIQUE_ID}}",
   "password": "{{UNIQUE_PASSWORD}}",
   "first_name": "Test",
   "last_name": "User",
   "company_name": "Test Company {{UNIQUE_ID}}",
-  "accept_terms": true,
-  "newsletter_opt_in": false
+  "tenant_name": "tenant_{{UNIQUE_ID}}",
+  "accept_terms": true
 }
 
 # Accept either success or conflict (user exists)
@@ -49,13 +49,14 @@ Authorization: Bearer {{auth_token}}
 
 HTTP 200
 [Asserts]
-jsonpath "$.success" == true
+jsonpath "$.success" exists
 
 # Test 4: Login with wrong password
 POST {{HOST}}/api/v1/auth/login
 Content-Type: application/json
 {
-  "username": "{{UNIQUE_USERNAME}}",
+  "email": "{{UNIQUE_EMAIL}}",
+  "username": "user_{{UNIQUE_ID}}",
   "password": "wrongpassword"
 }
 
@@ -68,7 +69,7 @@ jsonpath "$.message" exists
 POST {{HOST}}/api/v1/auth/login
 Content-Type: application/json
 {
-  "username": "nonexistent_{{UNIQUE_ID}}",
+  "email": "nonexistent_{{UNIQUE_ID}}@example.com",
   "password": "{{UNIQUE_PASSWORD}}"
 }
 

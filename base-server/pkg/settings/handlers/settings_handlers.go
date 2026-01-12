@@ -27,7 +27,7 @@ func NewSettingsHandler(service *services.SettingsService) *SettingsHandler {
 // @Accept json
 // @Produce json
 // @Success 200 {object} entities.HealthResponse
-// @Failure 500 {object} gin.H
+// @Failure 500 {object} map[string]string
 // @Router /settings/health [get]
 func (h *SettingsHandler) HealthCheck(c *gin.Context) {
 	health, err := h.service.HealthCheck()
@@ -45,7 +45,7 @@ func (h *SettingsHandler) HealthCheck(c *gin.Context) {
 // @Accept json
 // @Produce json
 // @Success 200 {object} entities.ModuleListResponse
-// @Failure 500 {object} gin.H
+// @Failure 500 {object} map[string]string
 // @Router /settings/modules [get]
 func (h *SettingsHandler) GetRegisteredModules(c *gin.Context) {
 	modules := h.service.GetModules()
@@ -76,9 +76,9 @@ func (h *SettingsHandler) GetVersion(c *gin.Context) {
 // @Security BearerAuth
 // @Param organization_id path string true "Organization ID"
 // @Success 200 {object} entities.SettingsResponse
-// @Failure 400 {object} gin.H
-// @Failure 401 {object} gin.H
-// @Failure 500 {object} gin.H
+// @Failure 400 {object} map[string]string
+// @Failure 401 {object} map[string]string
+// @Failure 500 {object} map[string]string
 // @Router /settings/organizations/{organization_id} [get]
 func (h *SettingsHandler) GetOrganizationSettings(c *gin.Context) {
 	tenantID, organizationID, err := h.extractTenantAndOrg(c)
@@ -106,9 +106,9 @@ func (h *SettingsHandler) GetOrganizationSettings(c *gin.Context) {
 // @Param organization_id path string true "Organization ID"
 // @Param setting body entities.SettingRequest true "Setting data"
 // @Success 201 {object} entities.SettingResponse
-// @Failure 400 {object} gin.H
-// @Failure 401 {object} gin.H
-// @Failure 500 {object} gin.H
+// @Failure 400 {object} map[string]string
+// @Failure 401 {object} map[string]string
+// @Failure 500 {object} map[string]string
 // @Router /settings/organizations/{organization_id} [post]
 func (h *SettingsHandler) SetOrganizationSetting(c *gin.Context) {
 	tenantID, organizationID, err := h.extractTenantAndOrg(c)
@@ -154,10 +154,10 @@ func (h *SettingsHandler) SetOrganizationSetting(c *gin.Context) {
 // @Param key path string true "Setting key"
 // @Param setting body map[string]interface{} true "Updated setting data"
 // @Success 200 {object} entities.SettingResponse
-// @Failure 400 {object} gin.H
-// @Failure 401 {object} gin.H
-// @Failure 404 {object} gin.H
-// @Failure 500 {object} gin.H
+// @Failure 400 {object} map[string]string
+// @Failure 401 {object} map[string]string
+// @Failure 404 {object} map[string]string
+// @Failure 500 {object} map[string]string
 // @Router /settings/organizations/{organization_id}/{domain}/{key} [put]
 func (h *SettingsHandler) UpdateOrganizationSetting(c *gin.Context) {
 	tenantID, organizationID, err := h.extractTenantAndOrg(c)
@@ -207,11 +207,11 @@ func (h *SettingsHandler) UpdateOrganizationSetting(c *gin.Context) {
 // @Param organization_id path string true "Organization ID"
 // @Param domain path string true "Settings domain"
 // @Param key path string true "Setting key"
-// @Success 200 {object} gin.H
-// @Failure 400 {object} gin.H
-// @Failure 401 {object} gin.H
-// @Failure 404 {object} gin.H
-// @Failure 500 {object} gin.H
+// @Success 200 {object} map[string]string
+// @Failure 400 {object} map[string]string
+// @Failure 401 {object} map[string]string
+// @Failure 404 {object} map[string]string
+// @Failure 500 {object} map[string]string
 // @Router /settings/organizations/{organization_id}/{domain}/{key} [delete]
 func (h *SettingsHandler) DeleteOrganizationSetting(c *gin.Context) {
 	tenantID, organizationID, err := h.extractTenantAndOrg(c)
@@ -245,10 +245,10 @@ func (h *SettingsHandler) DeleteOrganizationSetting(c *gin.Context) {
 // @Security BearerAuth
 // @Param organization_id path string true "Organization ID"
 // @Param settings body entities.BulkSettingRequest true "Multiple settings data"
-// @Success 201 {object} gin.H
-// @Failure 400 {object} gin.H
-// @Failure 401 {object} gin.H
-// @Failure 500 {object} gin.H
+// @Success 201 {object} map[string]string
+// @Failure 400 {object} map[string]string
+// @Failure 401 {object} map[string]string
+// @Failure 500 {object} map[string]string
 // @Router /settings/organizations/{organization_id}/bulk [post]
 func (h *SettingsHandler) BulkSetOrganizationSettings(c *gin.Context) {
 	tenantID, organizationID, err := h.extractTenantAndOrg(c)
@@ -296,8 +296,8 @@ func (h *SettingsHandler) BulkSetOrganizationSettings(c *gin.Context) {
 // @Security BearerAuth
 // @Param organization_id path string true "Organization ID"
 // @Success 200 {object} entities.DomainResponse
-// @Failure 401 {object} gin.H
-// @Failure 500 {object} gin.H
+// @Failure 401 {object} map[string]string
+// @Failure 500 {object} map[string]string
 // @Router /settings/organizations/{organization_id}/domains [get]
 func (h *SettingsHandler) GetOrganizationDomains(c *gin.Context) {
 	tenantID, organizationID, err := h.extractTenantAndOrg(c)
@@ -324,11 +324,11 @@ func (h *SettingsHandler) GetOrganizationDomains(c *gin.Context) {
 // @Security BearerAuth
 // @Param organization_id path string true "Organization ID"
 // @Param domain path string true "Settings domain"
-// @Success 200 {object} gin.H
-// @Failure 400 {object} gin.H
-// @Failure 401 {object} gin.H
-// @Failure 404 {object} gin.H
-// @Failure 500 {object} gin.H
+// @Success 200 {object} map[string]string
+// @Failure 400 {object} map[string]string
+// @Failure 401 {object} map[string]string
+// @Failure 404 {object} map[string]string
+// @Failure 500 {object} map[string]string
 // @Router /settings/organizations/{organization_id}/domains/{domain} [get]
 func (h *SettingsHandler) GetOrganizationDomainSettings(c *gin.Context) {
 	tenantID, organizationID, err := h.extractTenantAndOrg(c)
@@ -357,10 +357,10 @@ func (h *SettingsHandler) GetOrganizationDomainSettings(c *gin.Context) {
 // @Param organization_id path string true "Organization ID"
 // @Param domain path string true "Settings domain"
 // @Param settings body entities.DomainSettingsRequest true "Domain settings"
-// @Success 201 {object} gin.H
-// @Failure 400 {object} gin.H
-// @Failure 401 {object} gin.H
-// @Failure 500 {object} gin.H
+// @Success 201 {object} map[string]string
+// @Failure 400 {object} map[string]string
+// @Failure 401 {object} map[string]string
+// @Failure 500 {object} map[string]string
 // @Router /settings/organizations/{organization_id}/domains/{domain} [post]
 func (h *SettingsHandler) SetOrganizationDomainSettings(c *gin.Context) {
 	tenantID, organizationID, err := h.extractTenantAndOrg(c)
@@ -420,11 +420,11 @@ func (h *SettingsHandler) SetOrganizationDomainSettings(c *gin.Context) {
 // @Security BearerAuth
 // @Param organization_id path string true "Organization ID"
 // @Param domain path string true "Settings domain"
-// @Success 200 {object} gin.H
-// @Failure 400 {object} gin.H
-// @Failure 401 {object} gin.H
-// @Failure 404 {object} gin.H
-// @Failure 500 {object} gin.H
+// @Success 200 {object} map[string]string
+// @Failure 400 {object} map[string]string
+// @Failure 401 {object} map[string]string
+// @Failure 404 {object} map[string]string
+// @Failure 500 {object} map[string]string
 // @Router /settings/organizations/{organization_id}/domains/{domain} [delete]
 func (h *SettingsHandler) DeleteOrganizationDomainSettings(c *gin.Context) {
 	tenantID, organizationID, err := h.extractTenantAndOrg(c)
@@ -454,8 +454,8 @@ func (h *SettingsHandler) DeleteOrganizationDomainSettings(c *gin.Context) {
 // @Param request body entities.ValidationRequest true "Settings to validate"
 // @Success 200 {object} entities.ValidationResponse
 // @Failure 400 {object} entities.ValidationResponse
-// @Failure 401 {object} gin.H
-// @Failure 500 {object} gin.H
+// @Failure 401 {object} map[string]string
+// @Failure 500 {object} map[string]string
 // @Router /settings/organizations/{organization_id}/validate [post]
 func (h *SettingsHandler) ValidateOrganizationSettings(c *gin.Context) {
 	var req entities.ValidationRequest
@@ -487,9 +487,9 @@ func (h *SettingsHandler) ValidateOrganizationSettings(c *gin.Context) {
 // @Security BearerAuth
 // @Param organization_id path string true "Organization ID"
 // @Param format query string false "Export format" Enums(json, yaml)
-// @Success 200 {object} gin.H
-// @Failure 401 {object} gin.H
-// @Failure 500 {object} gin.H
+// @Success 200 {object} map[string]string
+// @Failure 401 {object} map[string]string
+// @Failure 500 {object} map[string]string
 // @Router /settings/organizations/{organization_id}/export [get]
 func (h *SettingsHandler) ExportOrganizationSettings(c *gin.Context) {
 	tenantID, organizationID, err := h.extractTenantAndOrg(c)
@@ -522,11 +522,11 @@ func (h *SettingsHandler) ExportOrganizationSettings(c *gin.Context) {
 // @Produce json
 // @Security BearerAuth
 // @Param organization_id path string true "Organization ID"
-// @Param import body gin.H true "Settings to import"
-// @Success 201 {object} gin.H
-// @Failure 400 {object} gin.H
-// @Failure 401 {object} gin.H
-// @Failure 500 {object} gin.H
+// @Param import body map[string]interface{} true "Settings to import"
+// @Success 201 {object} map[string]string
+// @Failure 400 {object} map[string]string
+// @Failure 401 {object} map[string]string
+// @Failure 500 {object} map[string]string
 // @Router /settings/organizations/{organization_id}/import [post]
 func (h *SettingsHandler) ImportOrganizationSettings(c *gin.Context) {
 	tenantID, organizationID, err := h.extractTenantAndOrg(c)

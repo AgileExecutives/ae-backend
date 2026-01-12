@@ -6,3 +6,4 @@ unburdy_server/unburdy-server-api
 minimal-server/minimal-server
 tmp/**
 
+startup.log
