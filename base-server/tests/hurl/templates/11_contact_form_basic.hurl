@@ -2,7 +2,7 @@
 # Test the public contact form functionality that we know is working
 
 # Test 1: Basic contact form submission (no newsletter)
-POST {{HOST}}/api/v1/contact/form
+POST {{HOST}}/api/v1/contacts/form
 Content-Type: application/json
 {
   "name": "Test User Basic",
@@ -19,7 +19,7 @@ HTTP 200
 jsonpath "$.message" == "Contact form submitted successfully"
 
 # Test 2: Contact form with newsletter subscription (may show partial success)
-POST {{HOST}}/api/v1/contact/form
+POST {{HOST}}/api/v1/contacts/form
 Content-Type: application/json
 {
   "name": "Newsletter Test User",
@@ -36,7 +36,7 @@ HTTP 200
 jsonpath "$.message" == "Contact form submitted successfully"
 
 # Test 3: Contact form validation - missing required fields
-POST {{HOST}}/api/v1/contact/form
+POST {{HOST}}/api/v1/contacts/form
 Content-Type: application/json
 {
   "name": "Incomplete User",
@@ -48,7 +48,7 @@ HTTP 400
 jsonpath "$.error" exists
 
 # Test 4: Contact form validation - invalid email format
-POST {{HOST}}/api/v1/contact/form
+POST {{HOST}}/api/v1/contacts/form
 Content-Type: application/json
 {
   "name": "Invalid Email User",
@@ -63,7 +63,7 @@ HTTP 400
 jsonpath "$.error" exists
 
 # Test 5: Contact form validation - empty fields
-POST {{HOST}}/api/v1/contact/form
+POST {{HOST}}/api/v1/contacts/form
 Content-Type: application/json
 {
   "name": "",
@@ -77,14 +77,14 @@ HTTP 400
 jsonpath "$.error" exists
 
 # Test 6: Verify newsletter endpoints require authentication (security test)
-GET {{HOST}}/api/v1/contact/newsletter
+GET {{HOST}}/api/v1/contacts/newsletter
 
 HTTP 401
 [Asserts]
 jsonpath "$.message" contains "Authorization required"
 
 # Test 7: Verify unsubscribe endpoint requires authentication (security test)  
-DELETE {{HOST}}/api/v1/contact/newsletter/unsubscribe?email=test@example.com
+DELETE {{HOST}}/api/v1/contacts/newsletter/unsubscribe?email=test@example.com
 
 HTTP 401
 [Asserts]

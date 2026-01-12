@@ -37,7 +37,8 @@ Content-Type: application/json
 {
   "name": "{{UNIQUE_CUSTOMER}} Corp",
   "email": "{{UNIQUE_EMAIL}}",
-  "username": "user_{{UNIQUE_ID}}",  "phone": "+1-555-123456",
+  "username": "user_{{UNIQUE_ID}}",
+  "phone": "+1-555-123456",
   "address": "123 Test Street, Test City, TC 12345",
   "tenant_id": 1,
   "plan_id": 1

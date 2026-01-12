@@ -644,14 +644,39 @@ func (h *AuthHandlers) ForgotPassword(c *gin.Context) {
 
 	resetURL := frontendURL + resetRouteSlug + token
 
-	// Send email
-	emailService := services.NewEmailService()
+	// Get tenant info for email
+	var tenant models.Tenant
+	orgName := "Unburdy" // Default
+	if err := h.db.First(&tenant, user.TenantID).Error; err == nil {
+		orgName = tenant.Name
+	}
+
+	// Get template service for email templates
+	var templateGetter services.TemplateGetter
+	if h.moduleRegistry != nil {
+		if moduleInterface, exists := h.moduleRegistry.Get("templates"); exists {
+			if tg, ok := moduleInterface.(services.TemplateGetter); ok {
+				templateGetter = tg
+			}
+		}
+	}
+
+	// Send email with database templates
+	emailService := services.NewEmailServiceWithDB(h.db, templateGetter)
 	userName := user.FirstName
 	if userName == "" {
 		userName = user.Username
 	}
 
-	if err := emailService.SendPasswordResetEmail(user.Email, userName, resetURL); err != nil {
+	if err := emailService.SendPasswordResetEmailWithTenant(
+		user.Email,
+		user.FirstName,
+		user.LastName,
+		user.Username,
+		orgName,
+		resetURL,
+		user.TenantID,
+	); err != nil {
 		c.JSON(http.StatusInternalServerError, models.ErrorResponseFunc("Failed to send reset email", err.Error()))
 		return
 	}

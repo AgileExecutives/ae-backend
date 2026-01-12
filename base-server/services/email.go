@@ -492,23 +492,43 @@ func (e *EmailService) SendVerificationEmailWithTenant(email, firstName, lastNam
 	return e.SendTemplateEmailWithTenant(email, TemplateVerification, data, tenantID)
 }
 
-// SendPasswordResetEmail sends a password reset email
+// SendPasswordResetEmail sends a password reset email (without tenant context)
 func (e *EmailService) SendPasswordResetEmail(to, recipientName, resetURL string) error {
-	data := EmailData{
-		RecipientName: recipientName,
-		Subject:       "Password Reset Request",
-		ResetURL:      resetURL,
-	}
-	return e.SendTemplateEmail(to, TemplatePasswordReset, data)
+	return e.SendPasswordResetEmailWithTenant(to, recipientName, "", "", "", resetURL, 0)
 }
 
-// SendWelcomeEmail sends a welcome email
-func (e *EmailService) SendWelcomeEmail(to, recipientName string) error {
+// SendPasswordResetEmailWithTenant sends a password reset email with tenant-specific template
+func (e *EmailService) SendPasswordResetEmailWithTenant(email, firstName, lastName, username, orgName, resetURL string, tenantID uint) error {
 	data := EmailData{
-		RecipientName: recipientName,
-		Subject:       "Welcome to " + utils.GetEnv("APP_NAME", "Unburdy"),
+		RecipientName:    firstName,
+		FirstName:        firstName,
+		LastName:         lastName,
+		Email:            email,
+		Username:         username,
+		OrganizationName: orgName,
+		Subject:          "Password Reset Request",
+		ResetURL:         resetURL,
 	}
-	return e.SendTemplateEmail(to, TemplateWelcome, data)
+	return e.SendTemplateEmailWithTenant(email, TemplatePasswordReset, data, tenantID)
+}
+
+// SendWelcomeEmail sends a welcome email (without tenant context)
+func (e *EmailService) SendWelcomeEmail(to, recipientName string) error {
+	return e.SendWelcomeEmailWithTenant(to, recipientName, "", "", "", 0)
+}
+
+// SendWelcomeEmailWithTenant sends a welcome email with tenant-specific template
+func (e *EmailService) SendWelcomeEmailWithTenant(email, firstName, lastName, username, orgName string, tenantID uint) error {
+	data := EmailData{
+		RecipientName:    firstName,
+		FirstName:        firstName,
+		LastName:         lastName,
+		Email:            email,
+		Username:         username,
+		OrganizationName: orgName,
+		Subject:          "Welcome to " + utils.GetEnv("APP_NAME", "Unburdy"),
+	}
+	return e.SendTemplateEmailWithTenant(email, TemplateWelcome, data, tenantID)
 }
 
 // SendNotificationEmail sends a notification email

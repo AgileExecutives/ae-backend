@@ -3,7 +3,7 @@
 # This test focuses on security and authentication edge cases
 
 # Test 1: Verify contact form is publicly accessible (no auth required)
-POST {{HOST}}/api/v1/contact/form
+POST {{HOST}}/api/v1/contacts/form
 Content-Type: application/json
 {
   "name": "Public Access Test",
@@ -19,18 +19,18 @@ HTTP 200
 jsonpath "$.message" == "Contact form submitted successfully"
 
 # Test 2: Newsletter management requires authentication - test GET endpoint
-GET {{HOST}}/api/v1/contact/newsletter
+GET {{HOST}}/api/v1/contacts/newsletter
 
 HTTP 401
 [Asserts]
-jsonpath "$.error" contains "Authorization"
+jsonpath "$.message" contains "Authorization required"
 
 # Test 3: Newsletter unsubscribe requires authentication
-DELETE {{HOST}}/api/v1/contact/newsletter/unsubscribe?email=test@example.com
+DELETE {{HOST}}/api/v1/contacts/newsletter/unsubscribe?email=test@example.com
 
 HTTP 401
 [Asserts]
-jsonpath "$.error" contains "Authorization"
+jsonpath "$.message" contains "Authorization required"
 
 # Setup authentication for protected tests
 # Use the same pattern as the existing working auth tests
@@ -65,7 +65,7 @@ HTTP 200
 contact_auth_token: jsonpath "$.data.token"
 
 # Test 4: Newsletter management with valid authentication
-GET {{HOST}}/api/v1/contact/newsletter
+GET {{HOST}}/api/v1/contacts/newsletter
 Authorization: Bearer {{contact_auth_token}}
 
 HTTP 200
@@ -73,7 +73,7 @@ HTTP 200
 jsonpath "$" isCollection
 
 # Test 5: Contact form with newsletter subscription to create test data
-POST {{HOST}}/api/v1/contact/form
+POST {{HOST}}/api/v1/contacts/form
 Content-Type: application/json
 {
   "name": "Auth Newsletter Test",
@@ -89,7 +89,7 @@ HTTP 200
 jsonpath "$.message" == "Contact form submitted successfully"
 
 # Test 6: Newsletter unsubscribe with valid authentication
-DELETE {{HOST}}/api/v1/contact/newsletter/unsubscribe?email=auth_newsletter_test@example.com
+DELETE {{HOST}}/api/v1/contacts/newsletter/unsubscribe?email=auth_newsletter_test@example.com
 Authorization: Bearer {{contact_auth_token}}
 
 HTTP 200
@@ -97,23 +97,23 @@ HTTP 200
 jsonpath "$.message" contains "unsubscribed"
 
 # Test 7: Newsletter unsubscribe with invalid token
-DELETE {{HOST}}/api/v1/contact/newsletter/unsubscribe?email=test@example.com
+DELETE {{HOST}}/api/v1/contacts/newsletter/unsubscribe?email=test@example.com
 Authorization: Bearer invalid_token_12345
 
 HTTP 401
 [Asserts]
-jsonpath "$.error" contains "Authorization"
+jsonpath "$.message" contains "Invalid token"
 
 # Test 8: Newsletter GET with malformed authorization header
-GET {{HOST}}/api/v1/contact/newsletter
+GET {{HOST}}/api/v1/contacts/newsletter
 Authorization: InvalidFormat
 
 HTTP 401
 [Asserts]
-jsonpath "$.error" contains "Authorization"
+jsonpath "$.message" contains "Invalid authorization format"
 
 # Test 9: Test that contact form still works after auth tests
-POST {{HOST}}/api/v1/contact/form
+POST {{HOST}}/api/v1/contacts/form
 Content-Type: application/json
 {
   "name": "Final Auth Test",
