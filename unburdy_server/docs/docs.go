@@ -2792,6 +2792,64 @@ const docTemplate = `{
                 }
             }
         },
+        "/client-invoices/draft": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Create a new draft invoice with sessions, extra efforts, and/or custom line items. Items are reserved with status 'invoice-draft'.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "client-invoices"
+                ],
+                "summary": "Create a draft invoice",
+                "operationId": "createDraftInvoice",
+                "parameters": [
+                    {
+                        "description": "Draft invoice information",
+                        "name": "invoice",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/entities.CreateDraftInvoiceRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/entities.InvoiceAPIResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/client-invoices/from-sessions": {
             "post": {
                 "description": "Adapts session data and creates an invoice in the invoice module",
@@ -2885,6 +2943,42 @@ const docTemplate = `{
                     },
                     "500": {
                         "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/client-invoices/vat-categories": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Get list of available VAT categories with rates and exemption information",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "client-invoices"
+                ],
+                "summary": "Get available VAT categories",
+                "operationId": "getVATCategories",
+                "responses": {
+                    "200": {
+                        "description": "List of VAT categories with code, description, rate, is_exempt fields",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "type": "object",
+                                "additionalProperties": true
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
                         "schema": {
                             "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse"
                         }
@@ -3048,6 +3142,610 @@ const docTemplate = `{
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/entities.InvoiceDeleteResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/client-invoices/{id}/credit-note": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Create a credit note for an existing invoice with selected line items",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "invoices"
+                ],
+                "summary": "Create a credit note",
+                "operationId": "createCreditNote",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Original Invoice ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Credit note details",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/entities.CreateCreditNoteRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/entities.InvoiceAPIResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse"
+                        }
+                    },
+                    "422": {
+                        "description": "Unprocessable Entity",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/client-invoices/{id}/finalize": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Finalize a draft invoice by generating invoice number and changing status to 'sent'",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "invoices"
+                ],
+                "summary": "Finalize a draft invoice",
+                "operationId": "finalizeInvoice",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Invoice ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/entities.InvoiceAPIResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse"
+                        }
+                    },
+                    "422": {
+                        "description": "Unprocessable Entity",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/client-invoices/{id}/mark-overdue": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Mark an invoice as overdue if payment is past due date",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "invoices"
+                ],
+                "summary": "Mark an invoice as overdue",
+                "operationId": "markInvoiceAsOverdue",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Invoice ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/entities.InvoiceAPIResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse"
+                        }
+                    },
+                    "422": {
+                        "description": "Unprocessable Entity",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/client-invoices/{id}/mark-paid": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Mark an invoice as paid with optional payment date and reference",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "invoices"
+                ],
+                "summary": "Mark an invoice as paid",
+                "operationId": "markInvoiceAsPaid",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Invoice ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Payment details",
+                        "name": "request",
+                        "in": "body",
+                        "schema": {
+                            "$ref": "#/definitions/entities.MarkInvoiceAsPaidRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/entities.InvoiceAPIResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/client-invoices/{id}/pdf": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Download the PDF document for a finalized invoice",
+                "produces": [
+                    "application/pdf"
+                ],
+                "tags": [
+                    "client-invoices"
+                ],
+                "summary": "Download invoice PDF",
+                "operationId": "downloadInvoicePDF",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Invoice ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "PDF file",
+                        "schema": {
+                            "type": "file"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse"
+                        }
+                    },
+                    "422": {
+                        "description": "Invoice not finalized",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/client-invoices/{id}/preview-pdf": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Generate and display PDF for preview without download",
+                "produces": [
+                    "application/pdf"
+                ],
+                "tags": [
+                    "client-invoices"
+                ],
+                "summary": "Preview invoice PDF",
+                "operationId": "previewInvoicePDF",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Invoice ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "PDF file for preview",
+                        "schema": {
+                            "type": "file"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/client-invoices/{id}/reminder": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Send a payment reminder email for an overdue invoice",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "invoices"
+                ],
+                "summary": "Send payment reminder",
+                "operationId": "sendReminder",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Invoice ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success message",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/client-invoices/{id}/send-email": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Send an invoice to the client via email",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "invoices"
+                ],
+                "summary": "Send invoice via email",
+                "operationId": "sendInvoiceEmail",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Invoice ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success message",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/client-invoices/{id}/xrechnung": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Generate and download XRechnung-compliant UBL XML for a finalized invoice to a government customer",
+                "produces": [
+                    "application/xml"
+                ],
+                "tags": [
+                    "client-invoices"
+                ],
+                "summary": "Export invoice as XRechnung XML",
+                "operationId": "exportXRechnung",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Invoice ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "XRechnung XML file",
+                        "schema": {
+                            "type": "file"
                         }
                     },
                     "400": {
@@ -6642,100 +7340,6 @@ const docTemplate = `{
                 }
             }
         },
-        "/invoices/draft": {
-            "post": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "Create a new draft invoice with sessions, extra efforts, and/or custom line items. Items are reserved with status 'invoice-draft'.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "client-invoices"
-                ],
-                "summary": "Create a draft invoice",
-                "operationId": "createDraftInvoice",
-                "parameters": [
-                    {
-                        "description": "Draft invoice information",
-                        "name": "invoice",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/entities.CreateDraftInvoiceRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "201": {
-                        "description": "Created",
-                        "schema": {
-                            "$ref": "#/definitions/entities.InvoiceAPIResponse"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse"
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/invoices/vat-categories": {
-            "get": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "Get list of available VAT categories with rates and exemption information",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "client-invoices"
-                ],
-                "summary": "Get available VAT categories",
-                "operationId": "getVATCategories",
-                "responses": {
-                    "200": {
-                        "description": "List of VAT categories with code, description, rate, is_exempt fields",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "type": "object",
-                                "additionalProperties": true
-                            }
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse"
-                        }
-                    }
-                }
-            }
-        },
         "/invoices/{id}": {
             "get": {
                 "security": [
@@ -6802,7 +7406,7 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "Edit a draft invoice by adding/removing items and recalculating totals",
+                "description": "Update an existing invoice's details",
                 "consumes": [
                     "application/json"
                 ],
@@ -6810,10 +7414,9 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "invoices"
+                    "Invoices"
                 ],
-                "summary": "Update a draft invoice",
-                "operationId": "updateDraftInvoice",
+                "summary": "Update invoice",
                 "parameters": [
                     {
                         "type": "integer",
@@ -6823,12 +7426,12 @@ const docTemplate = `{
                         "required": true
                     },
                     {
-                        "description": "Update request",
-                        "name": "request",
+                        "description": "Updated invoice data",
+                        "name": "invoice",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/entities.UpdateDraftInvoiceRequest"
+                            "$ref": "#/definitions/github_com_unburdy_invoice-module_entities.UpdateInvoiceRequest"
                         }
                     }
                 ],
@@ -6836,37 +7439,34 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/entities.InvoiceAPIResponse"
+                            "$ref": "#/definitions/github_com_unburdy_invoice-module_entities.InvoiceResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse"
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse"
-                        }
-                    },
-                    "403": {
-                        "description": "Forbidden",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse"
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse"
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse"
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
                         }
                     }
                 }
@@ -6877,15 +7477,14 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "Cancel a draft invoice and revert all item statuses",
+                "description": "Soft delete an invoice by ID",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "invoices"
+                    "Invoices"
                 ],
-                "summary": "Cancel a draft invoice",
-                "operationId": "cancelDraftInvoice",
+                "summary": "Delete invoice",
                 "parameters": [
                     {
                         "type": "integer",
@@ -6897,7 +7496,7 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "Success message",
+                        "description": "OK",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
@@ -6906,256 +7505,28 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse"
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse"
-                        }
-                    },
-                    "403": {
-                        "description": "Forbidden",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse"
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse"
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/invoices/{id}/credit-note": {
-            "post": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "Create a credit note for an existing invoice with selected line items",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "invoices"
-                ],
-                "summary": "Create a credit note",
-                "operationId": "createCreditNote",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "Original Invoice ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "Credit note details",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/entities.CreateCreditNoteRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "201": {
-                        "description": "Created",
-                        "schema": {
-                            "$ref": "#/definitions/entities.InvoiceAPIResponse"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse"
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse"
-                        }
-                    },
-                    "403": {
-                        "description": "Forbidden",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse"
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse"
-                        }
-                    },
-                    "422": {
-                        "description": "Unprocessable Entity",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/invoices/{id}/finalize": {
-            "post": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "Finalize a draft invoice by generating invoice number and changing status to 'sent'",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "invoices"
-                ],
-                "summary": "Finalize a draft invoice",
-                "operationId": "finalizeInvoice",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "Invoice ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/entities.InvoiceAPIResponse"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse"
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse"
-                        }
-                    },
-                    "403": {
-                        "description": "Forbidden",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse"
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse"
-                        }
-                    },
-                    "422": {
-                        "description": "Unprocessable Entity",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/invoices/{id}/mark-overdue": {
-            "post": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "Mark an invoice as overdue if payment is past due date",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "invoices"
-                ],
-                "summary": "Mark an invoice as overdue",
-                "operationId": "markInvoiceAsOverdue",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "Invoice ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/entities.InvoiceAPIResponse"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse"
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse"
-                        }
-                    },
-                    "403": {
-                        "description": "Forbidden",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse"
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse"
-                        }
-                    },
-                    "422": {
-                        "description": "Unprocessable Entity",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse"
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
                         }
                     }
                 }
@@ -7168,7 +7539,7 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "Mark an invoice as paid with optional payment date and reference",
+                "description": "Mark an invoice as paid with payment date",
                 "consumes": [
                     "application/json"
                 ],
@@ -7176,10 +7547,9 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "invoices"
+                    "Invoices"
                 ],
-                "summary": "Mark an invoice as paid",
-                "operationId": "markInvoiceAsPaid",
+                "summary": "Mark invoice as paid",
                 "parameters": [
                     {
                         "type": "integer",
@@ -7189,11 +7559,15 @@ const docTemplate = `{
                         "required": true
                     },
                     {
-                        "description": "Payment details",
-                        "name": "request",
+                        "description": "Payment date (RFC3339 format)",
+                        "name": "payment",
                         "in": "body",
+                        "required": true,
                         "schema": {
-                            "$ref": "#/definitions/entities.MarkInvoiceAsPaidRequest"
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
                         }
                     }
                 ],
@@ -7201,183 +7575,6 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/entities.InvoiceAPIResponse"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse"
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse"
-                        }
-                    },
-                    "403": {
-                        "description": "Forbidden",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse"
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/invoices/{id}/pdf": {
-            "get": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "Download the PDF document for a finalized invoice",
-                "produces": [
-                    "application/pdf"
-                ],
-                "tags": [
-                    "client-invoices"
-                ],
-                "summary": "Download invoice PDF",
-                "operationId": "downloadInvoicePDF",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "Invoice ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "PDF file",
-                        "schema": {
-                            "type": "file"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse"
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse"
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse"
-                        }
-                    },
-                    "422": {
-                        "description": "Invoice not finalized",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/invoices/{id}/preview-pdf": {
-            "get": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "Generate and display PDF for preview without download",
-                "produces": [
-                    "application/pdf"
-                ],
-                "tags": [
-                    "client-invoices"
-                ],
-                "summary": "Preview invoice PDF",
-                "operationId": "previewInvoicePDF",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "Invoice ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "PDF file for preview",
-                        "schema": {
-                            "type": "file"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse"
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse"
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/invoices/{id}/reminder": {
-            "post": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "Send a payment reminder email for an overdue invoice",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "invoices"
-                ],
-                "summary": "Send payment reminder",
-                "operationId": "sendReminder",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "Invoice ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Success message",
-                        "schema": {
                             "type": "object",
                             "additionalProperties": true
                         }
@@ -7385,156 +7582,28 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse"
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse"
-                        }
-                    },
-                    "403": {
-                        "description": "Forbidden",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse"
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/invoices/{id}/send-email": {
-            "post": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "Send an invoice to the client via email",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "invoices"
-                ],
-                "summary": "Send invoice via email",
-                "operationId": "sendInvoiceEmail",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "Invoice ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Success message",
                         "schema": {
                             "type": "object",
-                            "additionalProperties": true
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse"
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse"
-                        }
-                    },
-                    "403": {
-                        "description": "Forbidden",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse"
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse"
+                            "additionalProperties": {
+                                "type": "string"
+                            }
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/invoices/{id}/xrechnung": {
-            "get": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "Generate and download XRechnung-compliant UBL XML for a finalized invoice to a government customer",
-                "produces": [
-                    "application/xml"
-                ],
-                "tags": [
-                    "client-invoices"
-                ],
-                "summary": "Export invoice as XRechnung XML",
-                "operationId": "exportXRechnung",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "Invoice ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "XRechnung XML file",
-                        "schema": {
-                            "type": "file"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse"
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse"
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse"
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
                         }
                     }
                 }
@@ -17087,6 +17156,10 @@ const docTemplate = `{
                 },
                 "is_default": {
                     "type": "boolean"
+                },
+                "module": {
+                    "description": "Module name for contract binding",
+                    "type": "string"
                 },
                 "name": {
                     "type": "string"

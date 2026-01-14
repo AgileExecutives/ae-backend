@@ -4013,6 +4013,9 @@ definitions:
         type: boolean
       is_default:
         type: boolean
+      module:
+        description: Module name for contract binding
+        type: string
       name:
         type: string
       organization_id:
@@ -6046,6 +6049,438 @@ paths:
       summary: Update an invoice
       tags:
       - client-invoices
+  /client-invoices/{id}/credit-note:
+    post:
+      consumes:
+      - application/json
+      description: Create a credit note for an existing invoice with selected line
+        items
+      operationId: createCreditNote
+      parameters:
+      - description: Original Invoice ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Credit note details
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/entities.CreateCreditNoteRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/entities.InvoiceAPIResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Create a credit note
+      tags:
+      - invoices
+  /client-invoices/{id}/finalize:
+    post:
+      description: Finalize a draft invoice by generating invoice number and changing
+        status to 'sent'
+      operationId: finalizeInvoice
+      parameters:
+      - description: Invoice ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/entities.InvoiceAPIResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Finalize a draft invoice
+      tags:
+      - invoices
+  /client-invoices/{id}/mark-overdue:
+    post:
+      description: Mark an invoice as overdue if payment is past due date
+      operationId: markInvoiceAsOverdue
+      parameters:
+      - description: Invoice ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/entities.InvoiceAPIResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Mark an invoice as overdue
+      tags:
+      - invoices
+  /client-invoices/{id}/mark-paid:
+    post:
+      consumes:
+      - application/json
+      description: Mark an invoice as paid with optional payment date and reference
+      operationId: markInvoiceAsPaid
+      parameters:
+      - description: Invoice ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Payment details
+        in: body
+        name: request
+        schema:
+          $ref: '#/definitions/entities.MarkInvoiceAsPaidRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/entities.InvoiceAPIResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Mark an invoice as paid
+      tags:
+      - invoices
+  /client-invoices/{id}/pdf:
+    get:
+      description: Download the PDF document for a finalized invoice
+      operationId: downloadInvoicePDF
+      parameters:
+      - description: Invoice ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/pdf
+      responses:
+        "200":
+          description: PDF file
+          schema:
+            type: file
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse'
+        "422":
+          description: Invoice not finalized
+          schema:
+            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Download invoice PDF
+      tags:
+      - client-invoices
+  /client-invoices/{id}/preview-pdf:
+    get:
+      description: Generate and display PDF for preview without download
+      operationId: previewInvoicePDF
+      parameters:
+      - description: Invoice ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/pdf
+      responses:
+        "200":
+          description: PDF file for preview
+          schema:
+            type: file
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Preview invoice PDF
+      tags:
+      - client-invoices
+  /client-invoices/{id}/reminder:
+    post:
+      description: Send a payment reminder email for an overdue invoice
+      operationId: sendReminder
+      parameters:
+      - description: Invoice ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Success message
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Send payment reminder
+      tags:
+      - invoices
+  /client-invoices/{id}/send-email:
+    post:
+      description: Send an invoice to the client via email
+      operationId: sendInvoiceEmail
+      parameters:
+      - description: Invoice ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Success message
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Send invoice via email
+      tags:
+      - invoices
+  /client-invoices/{id}/xrechnung:
+    get:
+      description: Generate and download XRechnung-compliant UBL XML for a finalized
+        invoice to a government customer
+      operationId: exportXRechnung
+      parameters:
+      - description: Invoice ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/xml
+      responses:
+        "200":
+          description: XRechnung XML file
+          schema:
+            type: file
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Export invoice as XRechnung XML
+      tags:
+      - client-invoices
+  /client-invoices/draft:
+    post:
+      consumes:
+      - application/json
+      description: Create a new draft invoice with sessions, extra efforts, and/or
+        custom line items. Items are reserved with status 'invoice-draft'.
+      operationId: createDraftInvoice
+      parameters:
+      - description: Draft invoice information
+        in: body
+        name: invoice
+        required: true
+        schema:
+          $ref: '#/definitions/entities.CreateDraftInvoiceRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/entities.InvoiceAPIResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Create a draft invoice
+      tags:
+      - client-invoices
   /client-invoices/from-sessions:
     post:
       consumes:
@@ -6110,6 +6545,30 @@ paths:
       security:
       - BearerAuth: []
       summary: Get clients with unbilled sessions
+      tags:
+      - client-invoices
+  /client-invoices/vat-categories:
+    get:
+      description: Get list of available VAT categories with rates and exemption information
+      operationId: getVATCategories
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of VAT categories with code, description, rate, is_exempt
+            fields
+          schema:
+            items:
+              additionalProperties: true
+              type: object
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get available VAT categories
       tags:
       - client-invoices
   /client/{token}:
@@ -8358,8 +8817,7 @@ paths:
       - Invoices
   /invoices/{id}:
     delete:
-      description: Cancel a draft invoice and revert all item statuses
-      operationId: cancelDraftInvoice
+      description: Soft delete an invoice by ID
       parameters:
       - description: Invoice ID
         in: path
@@ -8370,35 +8828,33 @@ paths:
       - application/json
       responses:
         "200":
-          description: Success message
+          description: OK
           schema:
             additionalProperties: true
             type: object
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse'
+            additionalProperties:
+              type: string
+            type: object
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse'
-        "403":
-          description: Forbidden
-          schema:
-            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse'
-        "404":
-          description: Not Found
-          schema:
-            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse'
+            additionalProperties:
+              type: string
+            type: object
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse'
+            additionalProperties:
+              type: string
+            type: object
       security:
       - BearerAuth: []
-      summary: Cancel a draft invoice
+      summary: Delete invoice
       tags:
-      - invoices
+      - Invoices
     get:
       description: Retrieve a single invoice by its ID
       parameters:
@@ -8440,509 +8896,99 @@ paths:
     put:
       consumes:
       - application/json
-      description: Edit a draft invoice by adding/removing items and recalculating
-        totals
-      operationId: updateDraftInvoice
+      description: Update an existing invoice's details
       parameters:
       - description: Invoice ID
         in: path
         name: id
         required: true
         type: integer
-      - description: Update request
-        in: body
-        name: request
-        required: true
-        schema:
-          $ref: '#/definitions/entities.UpdateDraftInvoiceRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/entities.InvoiceAPIResponse'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse'
-        "401":
-          description: Unauthorized
-          schema:
-            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse'
-        "403":
-          description: Forbidden
-          schema:
-            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse'
-        "404":
-          description: Not Found
-          schema:
-            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse'
-      security:
-      - BearerAuth: []
-      summary: Update a draft invoice
-      tags:
-      - invoices
-  /invoices/{id}/credit-note:
-    post:
-      consumes:
-      - application/json
-      description: Create a credit note for an existing invoice with selected line
-        items
-      operationId: createCreditNote
-      parameters:
-      - description: Original Invoice ID
-        in: path
-        name: id
-        required: true
-        type: integer
-      - description: Credit note details
-        in: body
-        name: request
-        required: true
-        schema:
-          $ref: '#/definitions/entities.CreateCreditNoteRequest'
-      produces:
-      - application/json
-      responses:
-        "201":
-          description: Created
-          schema:
-            $ref: '#/definitions/entities.InvoiceAPIResponse'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse'
-        "401":
-          description: Unauthorized
-          schema:
-            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse'
-        "403":
-          description: Forbidden
-          schema:
-            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse'
-        "404":
-          description: Not Found
-          schema:
-            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse'
-        "422":
-          description: Unprocessable Entity
-          schema:
-            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse'
-      security:
-      - BearerAuth: []
-      summary: Create a credit note
-      tags:
-      - invoices
-  /invoices/{id}/finalize:
-    post:
-      description: Finalize a draft invoice by generating invoice number and changing
-        status to 'sent'
-      operationId: finalizeInvoice
-      parameters:
-      - description: Invoice ID
-        in: path
-        name: id
-        required: true
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/entities.InvoiceAPIResponse'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse'
-        "401":
-          description: Unauthorized
-          schema:
-            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse'
-        "403":
-          description: Forbidden
-          schema:
-            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse'
-        "404":
-          description: Not Found
-          schema:
-            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse'
-        "422":
-          description: Unprocessable Entity
-          schema:
-            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse'
-      security:
-      - BearerAuth: []
-      summary: Finalize a draft invoice
-      tags:
-      - invoices
-  /invoices/{id}/mark-overdue:
-    post:
-      description: Mark an invoice as overdue if payment is past due date
-      operationId: markInvoiceAsOverdue
-      parameters:
-      - description: Invoice ID
-        in: path
-        name: id
-        required: true
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/entities.InvoiceAPIResponse'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse'
-        "401":
-          description: Unauthorized
-          schema:
-            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse'
-        "403":
-          description: Forbidden
-          schema:
-            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse'
-        "404":
-          description: Not Found
-          schema:
-            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse'
-        "422":
-          description: Unprocessable Entity
-          schema:
-            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse'
-      security:
-      - BearerAuth: []
-      summary: Mark an invoice as overdue
-      tags:
-      - invoices
-  /invoices/{id}/mark-paid:
-    post:
-      consumes:
-      - application/json
-      description: Mark an invoice as paid with optional payment date and reference
-      operationId: markInvoiceAsPaid
-      parameters:
-      - description: Invoice ID
-        in: path
-        name: id
-        required: true
-        type: integer
-      - description: Payment details
-        in: body
-        name: request
-        schema:
-          $ref: '#/definitions/entities.MarkInvoiceAsPaidRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/entities.InvoiceAPIResponse'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse'
-        "401":
-          description: Unauthorized
-          schema:
-            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse'
-        "403":
-          description: Forbidden
-          schema:
-            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse'
-        "404":
-          description: Not Found
-          schema:
-            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse'
-      security:
-      - BearerAuth: []
-      summary: Mark an invoice as paid
-      tags:
-      - invoices
-  /invoices/{id}/pdf:
-    get:
-      description: Download the PDF document for a finalized invoice
-      operationId: downloadInvoicePDF
-      parameters:
-      - description: Invoice ID
-        in: path
-        name: id
-        required: true
-        type: integer
-      produces:
-      - application/pdf
-      responses:
-        "200":
-          description: PDF file
-          schema:
-            type: file
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse'
-        "401":
-          description: Unauthorized
-          schema:
-            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse'
-        "404":
-          description: Not Found
-          schema:
-            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse'
-        "422":
-          description: Invoice not finalized
-          schema:
-            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse'
-      security:
-      - BearerAuth: []
-      summary: Download invoice PDF
-      tags:
-      - client-invoices
-  /invoices/{id}/preview-pdf:
-    get:
-      description: Generate and display PDF for preview without download
-      operationId: previewInvoicePDF
-      parameters:
-      - description: Invoice ID
-        in: path
-        name: id
-        required: true
-        type: integer
-      produces:
-      - application/pdf
-      responses:
-        "200":
-          description: PDF file for preview
-          schema:
-            type: file
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse'
-        "401":
-          description: Unauthorized
-          schema:
-            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse'
-        "404":
-          description: Not Found
-          schema:
-            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse'
-      security:
-      - BearerAuth: []
-      summary: Preview invoice PDF
-      tags:
-      - client-invoices
-  /invoices/{id}/reminder:
-    post:
-      description: Send a payment reminder email for an overdue invoice
-      operationId: sendReminder
-      parameters:
-      - description: Invoice ID
-        in: path
-        name: id
-        required: true
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: Success message
-          schema:
-            additionalProperties: true
-            type: object
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse'
-        "401":
-          description: Unauthorized
-          schema:
-            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse'
-        "403":
-          description: Forbidden
-          schema:
-            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse'
-        "404":
-          description: Not Found
-          schema:
-            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse'
-      security:
-      - BearerAuth: []
-      summary: Send payment reminder
-      tags:
-      - invoices
-  /invoices/{id}/send-email:
-    post:
-      description: Send an invoice to the client via email
-      operationId: sendInvoiceEmail
-      parameters:
-      - description: Invoice ID
-        in: path
-        name: id
-        required: true
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: Success message
-          schema:
-            additionalProperties: true
-            type: object
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse'
-        "401":
-          description: Unauthorized
-          schema:
-            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse'
-        "403":
-          description: Forbidden
-          schema:
-            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse'
-        "404":
-          description: Not Found
-          schema:
-            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse'
-      security:
-      - BearerAuth: []
-      summary: Send invoice via email
-      tags:
-      - invoices
-  /invoices/{id}/xrechnung:
-    get:
-      description: Generate and download XRechnung-compliant UBL XML for a finalized
-        invoice to a government customer
-      operationId: exportXRechnung
-      parameters:
-      - description: Invoice ID
-        in: path
-        name: id
-        required: true
-        type: integer
-      produces:
-      - application/xml
-      responses:
-        "200":
-          description: XRechnung XML file
-          schema:
-            type: file
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse'
-        "401":
-          description: Unauthorized
-          schema:
-            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse'
-        "404":
-          description: Not Found
-          schema:
-            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse'
-      security:
-      - BearerAuth: []
-      summary: Export invoice as XRechnung XML
-      tags:
-      - client-invoices
-  /invoices/draft:
-    post:
-      consumes:
-      - application/json
-      description: Create a new draft invoice with sessions, extra efforts, and/or
-        custom line items. Items are reserved with status 'invoice-draft'.
-      operationId: createDraftInvoice
-      parameters:
-      - description: Draft invoice information
+      - description: Updated invoice data
         in: body
         name: invoice
         required: true
         schema:
-          $ref: '#/definitions/entities.CreateDraftInvoiceRequest'
-      produces:
-      - application/json
-      responses:
-        "201":
-          description: Created
-          schema:
-            $ref: '#/definitions/entities.InvoiceAPIResponse'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse'
-        "401":
-          description: Unauthorized
-          schema:
-            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse'
-      security:
-      - BearerAuth: []
-      summary: Create a draft invoice
-      tags:
-      - client-invoices
-  /invoices/vat-categories:
-    get:
-      description: Get list of available VAT categories with rates and exemption information
-      operationId: getVATCategories
+          $ref: '#/definitions/github_com_unburdy_invoice-module_entities.UpdateInvoiceRequest'
       produces:
       - application/json
       responses:
         "200":
-          description: List of VAT categories with code, description, rate, is_exempt
-            fields
+          description: OK
           schema:
-            items:
-              additionalProperties: true
-              type: object
-            type: array
+            $ref: '#/definitions/github_com_unburdy_invoice-module_entities.InvoiceResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse'
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
       security:
       - BearerAuth: []
-      summary: Get available VAT categories
+      summary: Update invoice
       tags:
-      - client-invoices
+      - Invoices
+  /invoices/{id}/mark-paid:
+    post:
+      consumes:
+      - application/json
+      description: Mark an invoice as paid with payment date
+      parameters:
+      - description: Invoice ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Payment date (RFC3339 format)
+        in: body
+        name: payment
+        required: true
+        schema:
+          additionalProperties:
+            type: string
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Mark invoice as paid
+      tags:
+      - Invoices
   /organizations:
     get:
       description: Retrieve all organizations for the authenticated user with pagination

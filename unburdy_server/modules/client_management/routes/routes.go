@@ -83,33 +83,23 @@ func (rp *RouteProvider) RegisterRoutes(router *gin.RouterGroup, ctx *core.Modul
 	clientInvoices := router.Group("/client-invoices")
 	{
 		clientInvoices.GET("/unbilled-sessions", rp.invoiceHandler.GetClientsWithUnbilledSessions)
+		clientInvoices.GET("/vat-categories", rp.invoiceHandler.GetVATCategories)
 		clientInvoices.POST("/from-sessions", rp.invoiceAdapterHandler.CreateInvoiceFromSessions)
-		// clientInvoices.POST("/generate", rp.invoiceHandler.GenerateInvoiceWithPDF) // TODO: Implement
+		clientInvoices.POST("/draft", rp.invoiceHandler.CreateDraftInvoice)
 		clientInvoices.POST("", rp.invoiceHandler.CreateInvoice)
 		clientInvoices.GET("", rp.invoiceHandler.GetAllInvoices)
 		clientInvoices.GET("/:id", rp.invoiceHandler.GetInvoice)
-		clientInvoices.PUT("/:id", rp.invoiceHandler.UpdateInvoice)
-		// clientInvoices.POST("/:id/cancel", rp.invoiceHandler.CancelInvoice) // TODO: Implement
-		clientInvoices.DELETE("/:id", rp.invoiceHandler.DeleteInvoice)
-	}
-
-	// Draft invoice workflow endpoints (new workflow)
-	invoices := router.Group("/invoices")
-	{
-		invoices.GET("/vat-categories", rp.invoiceHandler.GetVATCategories)
-		invoices.POST("/draft", rp.invoiceHandler.CreateDraftInvoice)
-		invoices.GET("/:id", rp.invoiceHandler.GetInvoice)
-		invoices.PUT("/:id", rp.invoiceHandler.UpdateDraftInvoice)
-		invoices.DELETE("/:id", rp.invoiceHandler.CancelDraftInvoice)
-		invoices.POST("/:id/finalize", rp.invoiceHandler.FinalizeInvoice)
-		invoices.POST("/:id/send-email", rp.invoiceHandler.SendInvoiceEmail)
-		invoices.POST("/:id/mark-paid", rp.invoiceHandler.MarkInvoiceAsPaid)
-		invoices.POST("/:id/mark-overdue", rp.invoiceHandler.MarkInvoiceAsOverdue)
-		invoices.POST("/:id/reminder", rp.invoiceHandler.SendReminder)
-		invoices.POST("/:id/credit-note", rp.invoiceHandler.CreateCreditNote)
-		invoices.GET("/:id/xrechnung", rp.invoiceHandler.ExportXRechnung)
-		invoices.GET("/:id/pdf", rp.invoiceHandler.DownloadInvoicePDF)
-		invoices.GET("/:id/preview-pdf", rp.invoiceHandler.PreviewInvoicePDF)
+		clientInvoices.GET("/:id/pdf", rp.invoiceHandler.DownloadInvoicePDF)
+		clientInvoices.GET("/:id/preview-pdf", rp.invoiceHandler.PreviewInvoicePDF)
+		clientInvoices.GET("/:id/xrechnung", rp.invoiceHandler.ExportXRechnung)
+		clientInvoices.PUT("/:id", rp.invoiceHandler.UpdateDraftInvoice)
+		clientInvoices.DELETE("/:id", rp.invoiceHandler.CancelDraftInvoice)
+		clientInvoices.POST("/:id/finalize", rp.invoiceHandler.FinalizeInvoice)
+		clientInvoices.POST("/:id/send-email", rp.invoiceHandler.SendInvoiceEmail)
+		clientInvoices.POST("/:id/mark-paid", rp.invoiceHandler.MarkInvoiceAsPaid)
+		clientInvoices.POST("/:id/mark-overdue", rp.invoiceHandler.MarkInvoiceAsOverdue)
+		clientInvoices.POST("/:id/reminder", rp.invoiceHandler.SendReminder)
+		clientInvoices.POST("/:id/credit-note", rp.invoiceHandler.CreateCreditNote)
 	}
 
 	// Extra efforts management endpoints (authenticated)

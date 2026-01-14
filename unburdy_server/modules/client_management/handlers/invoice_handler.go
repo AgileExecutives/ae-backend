@@ -115,7 +115,7 @@ func (h *InvoiceHandler) CreateInvoice(c *gin.Context) {
 // @Failure 401 {object} models.ErrorResponse
 // @Failure 500 {object} models.ErrorResponse
 // @Security BearerAuth
-// @Router /invoices/draft [post]
+// @Router /client-invoices/draft [post]
 func (h *InvoiceHandler) CreateDraftInvoice(c *gin.Context) {
 	var req entities.CreateDraftInvoiceRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -170,7 +170,7 @@ func (h *InvoiceHandler) CreateDraftInvoice(c *gin.Context) {
 // @Failure 404 {object} models.ErrorResponse
 // @Failure 500 {object} models.ErrorResponse
 // @Security BearerAuth
-// @Router /invoices/{id} [put]
+// @Router /client-invoices/{id} [put]
 func (h *InvoiceHandler) UpdateDraftInvoice(c *gin.Context) {
 	id, err := strconv.ParseUint(c.Param("id"), 10, 32)
 	if err != nil {
@@ -237,7 +237,7 @@ func (h *InvoiceHandler) UpdateDraftInvoice(c *gin.Context) {
 // @Failure 404 {object} models.ErrorResponse
 // @Failure 500 {object} models.ErrorResponse
 // @Security BearerAuth
-// @Router /invoices/{id} [delete]
+// @Router /client-invoices/{id} [delete]
 func (h *InvoiceHandler) CancelDraftInvoice(c *gin.Context) {
 	id, err := strconv.ParseUint(c.Param("id"), 10, 32)
 	if err != nil {
@@ -296,7 +296,7 @@ func (h *InvoiceHandler) CancelDraftInvoice(c *gin.Context) {
 // @Failure 422 {object} models.ErrorResponse
 // @Failure 500 {object} models.ErrorResponse
 // @Security BearerAuth
-// @Router /invoices/{id}/finalize [post]
+// @Router /client-invoices/{id}/finalize [post]
 func (h *InvoiceHandler) FinalizeInvoice(c *gin.Context) {
 	id, err := strconv.ParseUint(c.Param("id"), 10, 32)
 	if err != nil {
@@ -363,7 +363,7 @@ func (h *InvoiceHandler) FinalizeInvoice(c *gin.Context) {
 // @Failure 404 {object} models.ErrorResponse
 // @Failure 500 {object} models.ErrorResponse
 // @Security BearerAuth
-// @Router /invoices/{id}/send-email [post]
+// @Router /client-invoices/{id}/send-email [post]
 func (h *InvoiceHandler) SendInvoiceEmail(c *gin.Context) {
 	id, err := strconv.ParseUint(c.Param("id"), 10, 32)
 	if err != nil {
@@ -423,7 +423,7 @@ func (h *InvoiceHandler) SendInvoiceEmail(c *gin.Context) {
 // @Failure 404 {object} models.ErrorResponse
 // @Failure 500 {object} models.ErrorResponse
 // @Security BearerAuth
-// @Router /invoices/{id}/mark-paid [post]
+// @Router /client-invoices/{id}/mark-paid [post]
 func (h *InvoiceHandler) MarkInvoiceAsPaid(c *gin.Context) {
 	id, err := strconv.ParseUint(c.Param("id"), 10, 32)
 	if err != nil {
@@ -496,7 +496,7 @@ func (h *InvoiceHandler) MarkInvoiceAsPaid(c *gin.Context) {
 // @Failure 422 {object} models.ErrorResponse
 // @Failure 500 {object} models.ErrorResponse
 // @Security BearerAuth
-// @Router /invoices/{id}/mark-overdue [post]
+// @Router /client-invoices/{id}/mark-overdue [post]
 func (h *InvoiceHandler) MarkInvoiceAsOverdue(c *gin.Context) {
 	id, err := strconv.ParseUint(c.Param("id"), 10, 32)
 	if err != nil {
@@ -559,7 +559,7 @@ func (h *InvoiceHandler) MarkInvoiceAsOverdue(c *gin.Context) {
 // @Failure 404 {object} models.ErrorResponse
 // @Failure 500 {object} models.ErrorResponse
 // @Security BearerAuth
-// @Router /invoices/{id}/reminder [post]
+// @Router /client-invoices/{id}/reminder [post]
 func (h *InvoiceHandler) SendReminder(c *gin.Context) {
 	id, err := strconv.ParseUint(c.Param("id"), 10, 32)
 	if err != nil {
@@ -620,7 +620,7 @@ func (h *InvoiceHandler) SendReminder(c *gin.Context) {
 // @Failure 422 {object} models.ErrorResponse
 // @Failure 500 {object} models.ErrorResponse
 // @Security BearerAuth
-// @Router /invoices/{id}/credit-note [post]
+// @Router /client-invoices/{id}/credit-note [post]
 func (h *InvoiceHandler) CreateCreditNote(c *gin.Context) {
 	id, err := strconv.ParseUint(c.Param("id"), 10, 32)
 	if err != nil {
@@ -921,7 +921,7 @@ func (h *InvoiceHandler) GetClientsWithUnbilledSessions(c *gin.Context) {
 // @Failure 404 {object} models.ErrorResponse
 // @Failure 500 {object} models.ErrorResponse
 // @Security BearerAuth
-// @Router /invoices/{id}/xrechnung [get]
+// @Router /client-invoices/{id}/xrechnung [get]
 func (h *InvoiceHandler) ExportXRechnung(c *gin.Context) {
 	id, err := strconv.ParseUint(c.Param("id"), 10, 32)
 	if err != nil {
@@ -1023,7 +1023,7 @@ func (h *InvoiceHandler) ExportXRechnung(c *gin.Context) {
 // @Success 200 {array} map[string]interface{} "List of VAT categories with code, description, rate, is_exempt fields"
 // @Failure 401 {object} models.ErrorResponse
 // @Security BearerAuth
-// @Router /invoices/vat-categories [get]
+// @Router /client-invoices/vat-categories [get]
 func (h *InvoiceHandler) GetVATCategories(c *gin.Context) {
 	vatService := clientServices.NewVATService()
 	categories := vatService.GetVATCategories()
@@ -1044,7 +1044,7 @@ func (h *InvoiceHandler) GetVATCategories(c *gin.Context) {
 // @Failure 404 {object} models.ErrorResponse
 // @Failure 422 {object} models.ErrorResponse "Invoice not finalized"
 // @Security BearerAuth
-// @Router /invoices/{id}/pdf [get]
+// @Router /client-invoices/{id}/pdf [get]
 func (h *InvoiceHandler) DownloadInvoicePDF(c *gin.Context) {
 	invoiceIDStr := c.Param("id")
 	invoiceID, err := strconv.ParseUint(invoiceIDStr, 10, 32)
@@ -1105,7 +1105,7 @@ func (h *InvoiceHandler) DownloadInvoicePDF(c *gin.Context) {
 // @Failure 401 {object} models.ErrorResponse
 // @Failure 404 {object} models.ErrorResponse
 // @Security BearerAuth
-// @Router /invoices/{id}/preview-pdf [get]
+// @Router /client-invoices/{id}/preview-pdf [get]
 func (h *InvoiceHandler) PreviewInvoicePDF(c *gin.Context) {
 	invoiceIDStr := c.Param("id")
 	invoiceID, err := strconv.ParseUint(invoiceIDStr, 10, 32)
