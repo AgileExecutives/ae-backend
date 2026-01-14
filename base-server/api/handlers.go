@@ -35,7 +35,7 @@ func NewAuthHandler(db *gorm.DB) *handlers.AuthHandler {
 	// Create services for tenant bucket management
 	tenantBucketService := pkgServices.NewTenantBucketService(minioStorage)
 	tenantService := services.NewTenantService(db, tenantBucketService)
-	
+
 	return handlers.NewAuthHandler(db, tenantService)
 }
 

@@ -97,7 +97,7 @@ func (r *Renderer) RenderTemplate(templateName, contractName string, jsonData []
 	if err != nil {
 		return nil, fmt.Errorf("failed to read template file: %w", err)
 	}
-	
+
 	tmpl, err := template.New(templateName).Option("missingkey=zero").Parse(string(templateContent))
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse template: %w", err)

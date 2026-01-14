@@ -16,7 +16,6 @@ import (
 	"github.com/ae-base-server/pkg/bootstrap"
 	"github.com/ae-base-server/pkg/config"
 	"github.com/ae-base-server/pkg/core"
-	"github.com/ae-base-server/pkg/startup"
 	"github.com/joho/godotenv"
 )
 

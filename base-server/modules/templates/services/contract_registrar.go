@@ -32,7 +32,7 @@ func (r *ContractRegistrar) RegisterContractWithSampleData(tenantID uint, regist
 	// Check if contract already exists
 	var existingContract entities.TemplateContract
 	err := r.db.Where("module = ? AND template_key = ?", registration.ModuleName, registration.TemplateKey).First(&existingContract).Error
-	
+
 	if err == nil {
 		// Update existing contract
 		return r.updateContractWithSampleData(&existingContract, tenantID, registration, sampleData)
@@ -40,7 +40,7 @@ func (r *ContractRegistrar) RegisterContractWithSampleData(tenantID uint, regist
 		// Create new contract
 		return r.createContractWithSampleData(tenantID, registration, sampleData)
 	}
-	
+
 	return fmt.Errorf("failed to check existing contract: %w", err)
 }
 

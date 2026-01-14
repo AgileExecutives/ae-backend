@@ -23,7 +23,7 @@ func NewTenantBucketService(storage *storage.MinIOStorage) *TenantBucketService 
 // CreateTenantBucket creates a MinIO bucket for a tenant
 func (s *TenantBucketService) CreateTenantBucket(ctx context.Context, tenantID uint) error {
 	bucketName := fmt.Sprintf("tenant-%04d", tenantID)
-	
+
 	// Create bucket by storing a dummy object (this will create the bucket if it doesn't exist)
 	req := storage.StoreRequest{
 		Bucket:      bucketName,
@@ -31,17 +31,17 @@ func (s *TenantBucketService) CreateTenantBucket(ctx context.Context, tenantID u
 		Data:        []byte(fmt.Sprintf("Tenant %d initialized", tenantID)),
 		ContentType: "text/plain",
 		Metadata: map[string]string{
-			"tenant-id":    fmt.Sprintf("%d", tenantID),
-			"created-by":   "tenant-bucket-service",
-			"purpose":      "bucket-initialization",
+			"tenant-id":  fmt.Sprintf("%d", tenantID),
+			"created-by": "tenant-bucket-service",
+			"purpose":    "bucket-initialization",
 		},
 	}
-	
+
 	_, err := s.storage.Store(ctx, req)
 	if err != nil {
 		return fmt.Errorf("failed to create bucket for tenant %d: %w", tenantID, err)
 	}
-	
+
 	log.Printf("✅ Created MinIO bucket for tenant %d: %s", tenantID, bucketName)
 	return nil
 }

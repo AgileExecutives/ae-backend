@@ -33,7 +33,7 @@ func TestContractRegistration_Integration(t *testing.T) {
 	err := registerEmailContractsForTest(contractRegistrar, tenantID)
 	assert.NoError(t, err)
 
-	// Register base contracts (simulated) 
+	// Register base contracts (simulated)
 	err = registerBaseContractsForTest(contractRegistrar, tenantID)
 	assert.NoError(t, err)
 
@@ -54,10 +54,10 @@ func TestContractRegistration_Integration(t *testing.T) {
 
 func TestTemplateSystemEndToEnd_Integration(t *testing.T) {
 	db := setupIntegrationTestDB(t)
-	
+
 	// Setup the complete system
 	contractRegistrar := NewContractRegistrar(db)
-	
+
 	tenantID := uint(1)
 
 	// 1. Register contracts
@@ -86,7 +86,7 @@ func TestTemplateSystemEndToEnd_Integration(t *testing.T) {
 func TestContractValidation_Integration(t *testing.T) {
 	db := setupIntegrationTestDB(t)
 	contractRegistrar := NewContractRegistrar(db)
-	
+
 	tenantID := uint(1)
 
 	// Register a contract with strict validation
@@ -123,7 +123,7 @@ func TestContractValidation_Integration(t *testing.T) {
 
 	// Test validation with DB contract provider
 	contractProvider := NewDBContractProvider(db)
-	
+
 	// Verify the contract exists and can be retrieved
 	contractSchema, err := contractProvider.GetContract("strict_validation")
 	assert.NoError(t, err)
@@ -173,7 +173,7 @@ func registerEmailContractsForTest(registrar *ContractRegistrar, tenantID uint) 
 			"LastName":         "User",
 			"OrganizationName": "Test Org",
 			"AppName":          "Test App",
-			"RecipientName":    "Test User", 
+			"RecipientName":    "Test User",
 			"ResetURL":         "https://test.com/reset",
 		}
 		if err := registrar.RegisterContractWithSampleData(tenantID, contract, sampleData); err != nil {

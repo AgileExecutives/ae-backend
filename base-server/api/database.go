@@ -49,7 +49,7 @@ func SeedBaseData(db *gorm.DB) error {
 	// Create services for tenant bucket management
 	tenantBucketService := pkgServices.NewTenantBucketService(minioStorage)
 	tenantService := internalServices.NewTenantService(db, tenantBucketService)
-	
+
 	return internalDB.Seed(db, tenantService)
 }
 

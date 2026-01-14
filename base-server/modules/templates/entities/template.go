@@ -156,5 +156,5 @@ type RenderTemplateRequest struct {
 	FirstName        string `json:"FirstName,omitempty" example:"Alice"`
 	LastName         string `json:"LastName,omitempty" example:"Johnson"`
 	OrganizationName string `json:"OrganizationName,omitempty" example:"Tech Innovators Inc"`
-	Email           string `json:"Email,omitempty" example:"alice.johnson@techinnovators.com"`
+	Email            string `json:"Email,omitempty" example:"alice.johnson@techinnovators.com"`
 }

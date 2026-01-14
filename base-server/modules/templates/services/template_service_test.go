@@ -128,18 +128,18 @@ func TestTemplateService_GetTemplate(t *testing.T) {
 	storageKey := "test-storage-key"
 
 	template := &entities.Template{
-		TenantID:       1,
-		TemplateType:   "email",
-		TemplateKey:    "test_key",
-		Channel:        "EMAIL",
-		Subject:        stringPtr("Test Subject"),
-		Name:           "Test Template",
-		Description:    "Test Description",
-		StorageKey:     storageKey,
-		Variables:      datatypes.JSON(`["Name"]`),
-		SampleData:     datatypes.JSON(`{"Name": "John"}`),
-		IsActive:       true,
-		IsDefault:      false,
+		TenantID:     1,
+		TemplateType: "email",
+		TemplateKey:  "test_key",
+		Channel:      "EMAIL",
+		Subject:      stringPtr("Test Subject"),
+		Name:         "Test Template",
+		Description:  "Test Description",
+		StorageKey:   storageKey,
+		Variables:    datatypes.JSON(`["Name"]`),
+		SampleData:   datatypes.JSON(`{"Name": "John"}`),
+		IsActive:     true,
+		IsDefault:    false,
 	}
 
 	err := db.Create(template).Error

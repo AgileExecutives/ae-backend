@@ -412,7 +412,7 @@ func (app *Application) seedDatabase() error {
 	// Create services for tenant bucket management
 	tenantBucketService := pkgServices.NewTenantBucketService(minioStorage)
 	tenantService := internalServices.NewTenantService(app.context.DB, tenantBucketService)
-	
+
 	// Use the enhanced seed function that creates MinIO buckets
 	return internalDB.Seed(app.context.DB, tenantService)
 }

@@ -10,7 +10,7 @@ import (
 
 // StorageService is a unified service for all MinIO storage operations
 type StorageService struct {
-	minioStorage *storage.MinIOStorage
+	minioStorage  *storage.MinIOStorage
 	bucketService *TenantBucketService
 }
 
@@ -18,7 +18,7 @@ type StorageService struct {
 func NewStorageService(minioStorage *storage.MinIOStorage) *StorageService {
 	bucketService := NewTenantBucketService(minioStorage)
 	return &StorageService{
-		minioStorage: minioStorage,
+		minioStorage:  minioStorage,
 		bucketService: bucketService,
 	}
 }
