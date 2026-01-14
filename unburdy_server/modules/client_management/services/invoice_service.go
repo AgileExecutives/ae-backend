@@ -31,6 +31,11 @@ func (s *InvoiceService) SetPDFService(pdfService *InvoicePDFService) {
 	s.pdfService = pdfService
 }
 
+// GetPDFService returns the PDF service
+func (s *InvoiceService) GetPDFService() *InvoicePDFService {
+	return s.pdfService
+}
+
 // SetDocumentStorage initializes the PDF service with document storage
 func (s *InvoiceService) SetDocumentStorage(storage documentStorage.DocumentStorage) {
 	if s.pdfService == nil {
@@ -150,7 +155,7 @@ func (s *InvoiceService) CreateDraftInvoice(req entities.CreateDraftInvoiceReque
 				errorMsg += fmt.Sprintf("Sessions not in 'conducted' status: %v (they need to be marked as completed first). ", wrongStatus)
 			}
 
-			return nil, fmt.Errorf(errorMsg)
+			return nil, errors.New(errorMsg)
 		}
 	}
 
@@ -314,6 +319,24 @@ func (s *InvoiceService) CreateDraftInvoice(req entities.CreateDraftInvoiceReque
 		}
 	}
 
+	// Create client_invoices relationship
+	// This is required for PDF generation to load client and cost_provider data
+	// We need at least one session and one invoice item for the relationship
+	if len(sessions) > 0 && len(invoiceItems) > 0 {
+		clientInvoice := entities.ClientInvoice{
+			InvoiceID:      invoice.ID,
+			ClientID:       req.ClientID,
+			CostProviderID: *client.CostProviderID,
+			SessionID:      sessions[0].ID,
+			InvoiceItemID:  invoiceItems[0].ID,
+		}
+
+		if err := tx.Create(&clientInvoice).Error; err != nil {
+			tx.Rollback()
+			return nil, fmt.Errorf("failed to create client_invoices relationship: %w", err)
+		}
+	}
+
 	// Update session statuses to 'invoice-draft'
 	if len(req.SessionIDs) > 0 {
 		if err := tx.Model(&entities.Session{}).
@@ -339,8 +362,8 @@ func (s *InvoiceService) CreateDraftInvoice(req entities.CreateDraftInvoiceReque
 		return nil, fmt.Errorf("failed to commit transaction: %w", err)
 	}
 
-	// Reload invoice with items
-	if err := s.db.Preload("InvoiceItems").Preload("Organization").First(&invoice, invoice.ID).Error; err != nil {
+	// Reload invoice with items and client relationship
+	if err := s.db.Preload("InvoiceItems").Preload("Organization").Preload("ClientInvoices").First(&invoice, invoice.ID).Error; err != nil {
 		return nil, fmt.Errorf("failed to reload invoice: %w", err)
 	}
 

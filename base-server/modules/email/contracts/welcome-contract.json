@@ -1,0 +1,47 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "title": "Welcome Email Template Contract",
+  "description": "Data contract for welcome email template rendering",
+  "required": [
+    "FirstName",
+    "LastName",
+    "OrganizationName", 
+    "Email",
+    "Username",
+    "PlanName",
+    "LoginURL"
+  ],
+  "properties": {
+    "FirstName": {
+      "type": "string",
+      "description": "User's first name"
+    },
+    "LastName": {
+      "type": "string", 
+      "description": "User's last name"
+    },
+    "OrganizationName": {
+      "type": "string",
+      "description": "Name of the organization"
+    },
+    "Email": {
+      "type": "string",
+      "format": "email",
+      "description": "User's email address"
+    },
+    "Username": {
+      "type": "string",
+      "description": "User's username"
+    },
+    "PlanName": {
+      "type": "string",
+      "description": "Name of the subscription plan"
+    },
+    "LoginURL": {
+      "type": "string",
+      "format": "uri",
+      "description": "URL to login to the application"
+    }
+  }
+}

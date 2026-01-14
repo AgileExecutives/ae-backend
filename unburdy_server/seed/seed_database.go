@@ -25,14 +25,8 @@ import (
 	// Calendar seeding
 	calendarSeeding "github.com/unburdy/calendar-module/seeding"
 
-	// Documents and Templates modules
+	// Invoice numbers module
 	invoiceNumberServices "github.com/ae-base-server/modules/invoice_number/services"
-	templateEntities "github.com/ae-base-server/modules/templates/entities"
-	templateServices "github.com/ae-base-server/modules/templates/services"
-	templateStorage "github.com/ae-base-server/modules/templates/services/storage"
-	documentEntities "github.com/unburdy/documents-module/entities"
-	documentServices "github.com/unburdy/documents-module/services"
-	documentStorage "github.com/unburdy/documents-module/services/storage"
 
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -134,9 +128,9 @@ func main() {
 			log.Fatal("Failed to seed application data:", err)
 		}
 
-		// Step 4: Seed documents module data (templates, invoice numbers, sample documents)
-		if err := seedDocumentsData(db); err != nil {
-			log.Printf("⚠️  Warning: Documents data seeding failed: %v", err)
+		// Step 4: Seed invoice numbers (templates are now seeded during startup)
+		if err := seedInvoiceNumbersOnly(db); err != nil {
+			log.Printf("⚠️  Warning: Invoice numbers seeding failed: %v", err)
 		}
 	} else {
 		log.Println("⏭️  Skipping base data and application data seeding (calendar-only mode)")
@@ -573,6 +567,9 @@ func loadJugendaemterData() ([]JugendamtSeedData, error) {
 	return jugendaemter, nil
 }
 
+/*
+// DEPRECATED: seedDocumentsData - Templates are now seeded during application startup
+// This function is kept for reference but is no longer used
 // seedDocumentsData seeds documents module data (templates, invoice numbers, sample documents)
 func seedDocumentsData(db *gorm.DB) error {
 	log.Println("📄 Seeding documents module data (templates, invoice numbers, documents)...")
@@ -669,7 +666,37 @@ func seedDocumentsData(db *gorm.DB) error {
 	log.Println("✅ Documents module seeding completed")
 	return nil
 }
+*/
 
+// seedInvoiceNumbersOnly seeds only invoice numbers (templates are now seeded during startup)
+func seedInvoiceNumbersOnly(db *gorm.DB) error {
+	log.Println("🔢 Seeding invoice numbers...")
+
+	// Get tenant for entity relationships
+	var tenant baseAPI.Tenant
+	if err := db.First(&tenant).Error; err != nil {
+		return fmt.Errorf("no tenant found: %w", err)
+	}
+
+	// Initialize invoice number service
+	invoiceNumberService := baseAPI.NewInvoiceNumberService(db)
+
+	// Create context for operations
+	ctx := context.Background()
+
+	// Generate some invoice numbers
+	log.Println("🔢 Generating sample invoice numbers...")
+	invoiceNumbers, err := seedInvoiceNumbers(ctx, invoiceNumberService, tenant.ID)
+	if err != nil {
+		return fmt.Errorf("failed to generate invoice numbers: %w", err)
+	}
+
+	log.Printf("✅ Generated %d invoice numbers", len(invoiceNumbers))
+	return nil
+}
+
+/*
+// DEPRECATED TEMPLATE FUNCTIONS - Templates are now seeded during application startup
 // seedInvoiceTemplate creates a sample invoice template
 func seedInvoiceTemplate(ctx context.Context, service *templateServices.TemplateService, tenantID uint) (*templateEntities.Template, error) {
 	// Check if template already exists
@@ -990,6 +1017,9 @@ func seedEmailTemplate(ctx context.Context, service *templateServices.TemplateSe
 }
 
 // seedInvoiceNumbers generates sample invoice numbers
+*/
+
+// seedInvoiceNumbers generates sample invoice numbers
 func seedInvoiceNumbers(ctx context.Context, service *baseAPI.InvoiceNumberService, tenantID uint) ([]string, error) {
 	var invoiceNumbers []string
 
@@ -1010,6 +1040,8 @@ func seedInvoiceNumbers(ctx context.Context, service *baseAPI.InvoiceNumberServi
 	return invoiceNumbers, nil
 }
 
+/*
+// DEPRECATED: Sample invoice PDF generation - kept for reference
 // seedSampleInvoices generates sample invoice PDFs
 func seedSampleInvoices(ctx context.Context, db *gorm.DB, pdfService *documentServices.PDFService, templateID uint, invoiceNumbers []string, tenantID, userID uint) error {
 	// Get some clients for realistic invoice data
@@ -1142,6 +1174,7 @@ func showDocumentsStatistics(db *gorm.DB) {
 		}
 	}
 }
+*/
 
 // seedSessions creates sessions linked to calendar entries with various statuses
 // Creates sessions from 5 weeks ago to 10 weeks ahead

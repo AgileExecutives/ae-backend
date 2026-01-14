@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"context"
 	"log"
 	"net/http"
 	"os"
@@ -9,25 +10,28 @@ import (
 
 	"github.com/ae-base-server/internal/eventbus"
 	"github.com/ae-base-server/internal/models"
+	"github.com/ae-base-server/internal/services"
 	"github.com/ae-base-server/pkg/auth"
 	"github.com/ae-base-server/pkg/config"
 	"github.com/ae-base-server/pkg/utils"
-	"github.com/ae-base-server/services"
+	emailServices "github.com/ae-base-server/services"
 	"github.com/gin-gonic/gin"
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 )
 
 type AuthHandler struct {
-	db  *gorm.DB
-	cfg config.Config
+	db            *gorm.DB
+	cfg           config.Config
+	tenantService *services.TenantService
 }
 
 // NewAuthHandler creates a new auth handler
-func NewAuthHandler(db *gorm.DB) *AuthHandler {
+func NewAuthHandler(db *gorm.DB, tenantService *services.TenantService) *AuthHandler {
 	return &AuthHandler{
-		db:  db,
-		cfg: config.Load(),
+		db:            db,
+		cfg:           config.Load(),
+		tenantService: tenantService,
 	}
 }
 
@@ -241,13 +245,13 @@ func (h *AuthHandler) Register(c *gin.Context) {
 		}
 		slug = utils.EnsureUniqueSlug(slug, existingSlugs)
 
-		// Create new tenant
-		tenant := models.Tenant{
+		// Create new tenant with MinIO bucket
+		tenantReq := models.TenantCreateRequest{
 			Name: req.CompanyName,
 			Slug: slug,
 		}
-
-		if err := h.db.Create(&tenant).Error; err != nil {
+		tenant, err := h.tenantService.CreateTenant(context.Background(), tenantReq)
+		if err != nil {
 			log.Printf("❌ Register: Failed to create tenant: %v", err)
 			c.JSON(http.StatusInternalServerError, models.ErrorResponseFunc("Failed to create tenant", err.Error()))
 			return
@@ -258,7 +262,7 @@ func (h *AuthHandler) Register(c *gin.Context) {
 		// User is admin of their own tenant
 		req.Role = "admin"
 
-		log.Printf("✅ Created new tenant: %s (ID: %d, Slug: %s)", tenant.Name, tenant.ID, tenant.Slug)
+		log.Printf("✅ Created new tenant with MinIO bucket: %s (ID: %d, Slug: %s)", tenant.Name, tenant.ID, tenant.Slug)
 	}
 
 	// Hash password
@@ -333,7 +337,7 @@ func (h *AuthHandler) Register(c *gin.Context) {
 		}
 		verificationURL := frontendURL + "/verify-email?token=" + verificationToken
 
-		emailService := services.NewEmailService()
+		emailService := emailServices.NewEmailService()
 		err = emailService.SendVerificationEmail(user.Email, user.FirstName, verificationURL)
 		if err != nil {
 			log.Printf("⚠️ Register: Failed to send verification email: %v (continuing anyway)", err)
@@ -514,7 +518,7 @@ func (h *AuthHandler) ForgotPassword(c *gin.Context) {
 	resetURL := frontendURL + resetRouteSlug + token
 
 	// Send email
-	emailService := services.NewEmailService()
+	emailService := emailServices.NewEmailService()
 	userName := user.FirstName
 	if userName == "" {
 		userName = user.Username

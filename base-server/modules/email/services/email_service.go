@@ -79,7 +79,7 @@ func NewEmailService() *EmailService {
 
 // loadTemplates loads email templates from files
 func (e *EmailService) loadTemplates() {
-	templatesDir := utils.GetEnv("EMAIL_TEMPLATES_DIR", "./statics/email_templates")
+	templatesDir := utils.GetEnv("TEMPLATES_DIR", "./statics/templates")
 
 	templates := map[EmailTemplate]string{
 		TemplateVerification:        "email_verification.html",

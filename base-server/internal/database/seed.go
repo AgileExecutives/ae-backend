@@ -7,14 +7,22 @@
 package database
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
+	"time"
 
 	"github.com/ae-base-server/internal/models"
+	"github.com/ae-base-server/internal/services"
+	"github.com/ae-base-server/modules/templates/entities"
+	"github.com/ae-base-server/modules/templates/services/storage"
+	pkgServices "github.com/ae-base-server/pkg/services"
 	"golang.org/x/crypto/bcrypt"
+	"gorm.io/datatypes"
 	"gorm.io/gorm"
 )
 
@@ -25,6 +33,24 @@ type SeedData struct {
 	Organizations []SeedOrganization `json:"organizations"`
 	Plans         []SeedPlan         `json:"plans"`
 	Users         []SeedUser         `json:"users"`
+}
+
+// TemplateSeedData represents template seeding data structure
+type TemplateSeedData struct {
+	Templates []SeedTemplate `json:"templates"`
+}
+
+// SeedTemplate represents template seed data
+type SeedTemplate struct {
+	Module         string `json:"module"`
+	TemplateKey    string `json:"template_key"`
+	Channel        string `json:"channel"`
+	Name           string `json:"name"`
+	Description    string `json:"description"`
+	Subject        string `json:"subject,omitempty"`
+	FilePath       string `json:"file_path"`
+	OrganizationID *uint  `json:"organization_id,omitempty"`
+	TenantID       *uint  `json:"tenant_id,omitempty"`
 }
 
 // SeedCustomer represents customer seed data
@@ -110,7 +136,7 @@ func loadSeedData() (*SeedData, error) {
 }
 
 // Seed adds initial data to the database
-func Seed(db *gorm.DB) error {
+func Seed(db *gorm.DB, tenantService *services.TenantService) error {
 	log.Println("Seeding database with initial data...")
 
 	// Load seed data from JSON file
@@ -137,11 +163,12 @@ func Seed(db *gorm.DB) error {
 		}
 	}
 
-	// Create tenants
+	// Create tenants with MinIO buckets
 	var tenantCount int64
 	db.Model(&models.Tenant{}).Count(&tenantCount)
 	if tenantCount == 0 {
 		for _, tenantData := range seedData.Tenants {
+			// First create tenant in database (needed for CustomerID foreign key)
 			tenant := models.Tenant{
 				CustomerID: tenantData.CustomerID,
 				Name:       tenantData.Name,
@@ -150,7 +177,14 @@ func Seed(db *gorm.DB) error {
 			if err := db.Create(&tenant).Error; err != nil {
 				return fmt.Errorf("failed to create tenant %s: %w", tenantData.Name, err)
 			}
-			log.Printf("Created tenant: %s", tenantData.Name)
+
+			// Then ensure MinIO bucket exists for this tenant
+			if err := tenantService.EnsureTenantBucket(context.Background(), tenant.ID); err != nil {
+				log.Printf("⚠️ Warning: Failed to create MinIO bucket for tenant %s (ID: %d): %v", tenantData.Name, tenant.ID, err)
+				// Don't fail the entire seed process if bucket creation fails
+			}
+
+			log.Printf("Created tenant with bucket: %s (ID: %d)", tenantData.Name, tenant.ID)
 		}
 	}
 
@@ -245,6 +279,249 @@ func Seed(db *gorm.DB) error {
 		}
 	}
 
+	// Seed templates from startupseed directory
+	err = seedTemplates(db, tenantService)
+	if err != nil {
+		log.Printf("⚠️ Warning: Failed to seed templates: %v", err)
+		// Don't fail the entire seed process if template seeding fails
+	}
+
 	log.Println("Database seeding completed successfully! 🎉")
 	return nil
+}
+
+// seedTemplates seeds templates from startupseed directory
+func seedTemplates(db *gorm.DB, tenantService *services.TenantService) error {
+	log.Println("Seeding templates from startupseed directory...")
+
+	// Load template seed data
+	templateSeedData, err := loadTemplateSeedData()
+	if err != nil {
+		return fmt.Errorf("failed to load template seed data: %w", err)
+	}
+
+	// Initialize MinIO storage for template storage
+	minioConfig := storage.MinIOConfig{
+		Endpoint:        "localhost:9000",
+		AccessKeyID:     "minioadmin",
+		SecretAccessKey: "minioadmin123",
+		UseSSL:          false,
+		Region:          "us-east-1",
+	}
+	minioStorage, err := storage.NewMinIOStorage(minioConfig)
+	if err != nil {
+		return fmt.Errorf("failed to initialize MinIO storage: %w", err)
+	}
+
+	// Create unified storage service for template storage
+	storageService := pkgServices.NewStorageService(minioStorage)
+
+	// Get all tenants to seed templates for each
+	var tenants []models.Tenant
+	if err := db.Find(&tenants).Error; err != nil {
+		return fmt.Errorf("failed to retrieve tenants: %w", err)
+	}
+
+	// Seed templates based on seed data (check per-template to allow re-seeding individual templates)
+	log.Printf("Seeding templates from seed data...")
+
+	for _, templateData := range templateSeedData.Templates {
+		// Use tenant_id from template data, or skip if not specified
+		if templateData.TenantID == nil {
+			log.Printf("⚠️ Warning: Template %s has no tenant_id specified, skipping", templateData.Name)
+			continue
+		}
+
+		tenantID := *templateData.TenantID
+
+		// Verify that the tenant exists
+		var tenant models.Tenant
+		if err := db.First(&tenant, tenantID).Error; err != nil {
+			log.Printf("⚠️ Warning: Tenant ID %d not found for template %s, skipping", tenantID, templateData.Name)
+			continue
+		}
+
+		// Check if this specific template already exists for this tenant
+		var existingTemplate entities.Template
+		err := db.Where("tenant_id = ? AND template_key = ? AND channel = ?", tenantID, templateData.TemplateKey, templateData.Channel).First(&existingTemplate).Error
+		if err == nil {
+			log.Printf("  ⏭️  Template %s/%s already exists for tenant %d, skipping", templateData.Channel, templateData.TemplateKey, tenantID)
+			continue
+		}
+
+		err = createTemplateFromSeed(db, storageService, tenantID, templateData)
+		if err != nil {
+			log.Printf("⚠️ Warning: Failed to create template %s for tenant %d: %v",
+				templateData.Name, tenantID, err)
+			// Continue with other templates
+			continue
+		}
+		log.Printf("✅ Created template: %s for tenant %s (ID: %d)", templateData.Name, tenant.Name, tenantID)
+	}
+
+	log.Printf("Template seeding completed for %d tenants", len(tenants))
+	return nil
+}
+
+// loadTemplateSeedData loads template seed data from startupseed/templates_seed.json
+func loadTemplateSeedData() (*TemplateSeedData, error) {
+	// Get the base directory - from base-server directory, go to startupseed
+	baseDir := "startupseed"
+	if _, err := os.Stat(baseDir); os.IsNotExist(err) {
+		// Try relative path from different locations
+		possiblePaths := []string{
+			"./startupseed",
+			"../startupseed",
+			"../../base-server/startupseed",
+		}
+		for _, path := range possiblePaths {
+			if _, err := os.Stat(path); err == nil {
+				baseDir = path
+				break
+			}
+		}
+	}
+
+	seedFilePath := filepath.Join(baseDir, "templates_seed.json")
+	data, err := ioutil.ReadFile(seedFilePath)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read template seed file %s: %w", seedFilePath, err)
+	}
+
+	var templateSeedData TemplateSeedData
+	if err := json.Unmarshal(data, &templateSeedData); err != nil {
+		return nil, fmt.Errorf("failed to parse template seed data: %w", err)
+	}
+
+	return &templateSeedData, nil
+}
+
+// createTemplateFromSeed creates a template from seed data and stores it using storage service
+func createTemplateFromSeed(db *gorm.DB, storageService *pkgServices.StorageService,
+	tenantID uint, templateData SeedTemplate) error {
+
+	// Tenant ID is already correctly passed from the calling function
+	// Use organization_id from seed data if available
+
+	// Read template content from file
+	baseDir := "startupseed"
+	if _, err := os.Stat(baseDir); os.IsNotExist(err) {
+		possiblePaths := []string{
+			"./startupseed",
+			"../startupseed",
+			"../../base-server/startupseed",
+		}
+		for _, path := range possiblePaths {
+			if _, err := os.Stat(path); err == nil {
+				baseDir = path
+				break
+			}
+		}
+	}
+
+	templateFilePath := filepath.Join(baseDir, templateData.FilePath)
+	content, err := ioutil.ReadFile(templateFilePath)
+	if err != nil {
+		return fmt.Errorf("failed to read template file %s: %w", templateFilePath, err)
+	}
+
+	// Generate storage key with tenant ID for uniqueness
+	storageKey := fmt.Sprintf("templates/%s/%s_%s_%d_t%d.html",
+		templateData.Channel,
+		templateData.Module,
+		templateData.TemplateKey,
+		time.Now().Unix(),
+		tenantID,
+	)
+
+	// Store template content using storage service
+	err = storageService.StoreTemplateWithKey(context.Background(), tenantID, storageKey, string(content), map[string]string{
+		"module":       templateData.Module,
+		"template_key": templateData.TemplateKey,
+		"channel":      templateData.Channel,
+		"seeded":       "true",
+	})
+	if err != nil {
+		return fmt.Errorf("failed to store template content: %w", err)
+	}
+
+	// Get contract data for variables and sample data
+	log.Printf("🔍 Looking for contract: module=%s, template_key=%s", templateData.Module, templateData.TemplateKey)
+	variablesJSON, sampleDataJSON, err := getContractData(db, templateData.Module, templateData.TemplateKey)
+	if err != nil {
+		log.Printf("⚠️ Warning: Failed to get contract data for %s.%s: %v", templateData.Module, templateData.TemplateKey, err)
+		// Use empty defaults
+		variablesJSON = datatypes.JSON([]byte("[]"))
+		sampleDataJSON = datatypes.JSON([]byte("{}"))
+	} else {
+		log.Printf("✅ Retrieved contract data for %s.%s - variables: %d bytes, sample_data: %d bytes",
+			templateData.Module, templateData.TemplateKey, len(variablesJSON), len(sampleDataJSON))
+	}
+
+	// Create template record in database
+	template := entities.Template{
+		TenantID:    tenantID,
+		Module:      templateData.Module,
+		TemplateKey: templateData.TemplateKey,
+		Channel:     entities.Channel(templateData.Channel),
+		Name:        templateData.Name,
+		Description: templateData.Description,
+		StorageKey:  storageKey,
+		Version:     1,
+		IsActive:    true,
+		IsDefault:   true,           // Mark seeded templates as default
+		Variables:   variablesJSON,  // From contract
+		SampleData:  sampleDataJSON, // From contract
+	}
+
+	// Set organization_id from seed data if available
+	if templateData.OrganizationID != nil {
+		// Verify that the organization exists and belongs to the correct tenant
+		var organization models.Organization
+		if err := db.Where("id = ? AND tenant_id = ?", *templateData.OrganizationID, tenantID).First(&organization).Error; err != nil {
+			return fmt.Errorf("organization ID %d not found for tenant %d: %w", *templateData.OrganizationID, tenantID, err)
+		}
+		template.OrganizationID = templateData.OrganizationID
+		log.Printf("✅ Template %s assigned to organization: %s (ID: %d)", templateData.Name, organization.Name, *templateData.OrganizationID)
+	}
+
+	// Set subject for EMAIL templates
+	if templateData.Channel == "EMAIL" && templateData.Subject != "" {
+		template.Subject = &templateData.Subject
+	}
+
+	// Legacy template type mapping
+	template.TemplateType = templateData.TemplateKey
+
+	if err := db.Create(&template).Error; err != nil {
+		return fmt.Errorf("failed to create template record: %w", err)
+	}
+
+	return nil
+}
+
+// getContractData retrieves variables and sample data from the template contract
+func getContractData(db *gorm.DB, module, templateKey string) (datatypes.JSON, datatypes.JSON, error) {
+	var contract entities.TemplateContract
+	err := db.Where("module = ? AND template_key = ?", module, templateKey).First(&contract).Error
+	if err != nil {
+		return nil, nil, fmt.Errorf("contract not found: %w", err)
+	}
+
+	log.Printf("🔍 Contract found for %s.%s - VariableSchema: %d bytes, DefaultSampleData: %d bytes",
+		module, templateKey, len(contract.VariableSchema), len(contract.DefaultSampleData))
+
+	// Extract variable schema as variables (convert schema to variable list if needed)
+	variablesJSON := contract.VariableSchema
+	if len(variablesJSON) == 0 {
+		variablesJSON = datatypes.JSON([]byte("[]"))
+	}
+
+	// Use default sample data from contract
+	sampleDataJSON := contract.DefaultSampleData
+	if len(sampleDataJSON) == 0 {
+		sampleDataJSON = datatypes.JSON([]byte("{}"))
+	}
+
+	return variablesJSON, sampleDataJSON, nil
 }

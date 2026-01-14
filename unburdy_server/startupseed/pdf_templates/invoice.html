@@ -192,6 +192,7 @@
             line-height: 1.2;
         }
 
+
         .invoice-details-table {
             border-collapse: collapse;
             margin-left: 1cm;
@@ -234,7 +235,7 @@
             <div class="address-invoice-flex">
                 <div class="address-block">
                     {{.cost_provider.organization}}<br>
-                    {{if .cost_provider.department}}{{.cost_provider.department}}<br>{{end}}
+                    {{.cost_provider.contact_person}}<br>
                     {{.cost_provider.street_address}}<br>
                     {{.cost_provider.zip}} {{.cost_provider.city}}
                 </div>
@@ -249,67 +250,83 @@
                             <td class="label">Rechnungsdatum:</td>
                             <td class="info">{{.invoice_date}}</td>
                         </tr>
+                        {{if .client.provider_approval_code}}
                         <tr>
                             <td class="label">Bewilligung:</td>
                             <td class="info">{{.client.provider_approval_code}}</td>
                         </tr>
+                        {{end}}
                     </table>
                 </div>
             </div>
         </div>
 
         <div class="main-content">
-            <h2>Rechnung {{.client.therapy_title}} - {{.client.first_name}} {{.client.last_name}} geb. am {{.client.date_of_birth}}</h2>
+            {{if .client.first_name}}
+            <h2>Rechnung {{.client.therapy_title}} - {{.client.first_name}} {{.client.last_name}}{{if .client.date_of_birth}} geb. am {{.client.date_of_birth}}{{end}}</h2>
+            {{else}}
+            <h2>Rechnung {{.invoice_number}}</h2>
+            {{end}}
             <h3>Sehr geehrte Damen und Herren,</h3>
-            <p>hiermit stelle ich folgende Leistungen ensprechend der Bewilligung {{.client.provider_approval_code}} in Rechnung:</p>
+            <p>hiermit stelle ich folgende Leistungen{{if .client.provider_approval_code}} entsprechend der Bewilligung {{.client.provider_approval_code}}{{end}} in Rechnung:</p>
             <table class="sessions-table">
                 <thead>
                     <tr>
                         <th>Leistung</th>
+                        <th class="number-col">Anzahl</th>
+                        <th class="number-col">Einzelpreis</th>
+                        <th class="number-col">Gesamtpreis</th>
                     </tr>
                 </thead>
                 <tbody>
                     {{range .invoice_items}}
                     <tr>
                         <td>{{.description}}</td>
+                        <td class="number-col">{{.number_units}}</td>
+                        <td class="number-col">{{.unit_price}} €</td>
+                        <td class="number-col">{{.total_amount}} €</td>
                     </tr>
                     {{end}}
                 </tbody>
             </table>
+            
             <div class="total-section">
                 <table class="total-table">
                     <tr>
-                        <td class="label">Summe:</td>
-                        <td class="number-col">{{.totals.net_total}} €</td>
+                        <td class="label">Nettobetrag:</td>
+                        <td class="info">{{.totals.net_total}} €</td>
                     </tr>
                     <tr>
-                        <td class="label">{{.totals.tax_rate}}% MwSt.:</td>
-                        <td class="number-col">{{.totals.tax_amount}} €</td>
+                        <td class="label">MwSt. ({{.totals.tax_rate}}%):</td>
+                        <td class="info">{{.totals.tax_amount}} €</td>
                     </tr>
                     <tr class="final-total">
                         <td class="label">Gesamtbetrag:</td>
-                        <td class="number-col">{{.totals.gross_total}} €</td>
+                        <td class="info">{{.totals.gross_total}} €</td>
                     </tr>
                 </table>
             </div>
-            <p>Es gilt die gesetzl. Umsatzsteuerbefreiung (Leistungen in der Kinder- und Jugendhilfe UstG§4 Nr.25, SGB VIII)</p>
-            <p>Bitte prüfen Sie die Rechnung und überweisen Sie den Gesamtbetrag innerhalb von 30 Tagen auf das unten angegebene Konto.</p>
+
+            <p>Bitte prüfen Sie die Rechnung und überweisen Sie den Gesamtbetrag innerhalb von 30 Tagen auf das unten 
+            angegebene Konto.</p>
             <p>Mit freundlichen Grüßen</p>
             <p>{{.organization.owner_name}}</p>
         </div>
+    </div>
 
-        <div class="footer">
-            <div class="footer-content">
-                <div class="footer-section">
-                    {{if .organization.bank_account.bank}}<p>{{.organization.bank_account.bank}}</p>{{end}}
-                    {{if .organization.bank_account.iban}}<p>IBAN: {{.organization.bank_account.iban}}</p>{{end}}
-                    {{if .organization.bank_account.bic}}<p>BIC: {{.organization.bank_account.bic}}</p>{{end}}
-                </div>
-                <div class="footer-section">
-                    {{if .organization.tax_id}}<p>Steuernummer: {{.organization.tax_id}}</p>{{end}}
-                    <p>{{.organization.phone}}</p>
-                    <p>{{.organization.email}}</p>
-                </div>
+    <div class="footer">
+        <div class="footer-content">
+            <div class="footer-section">
+                {{if .organization.bank_account}}
+                {{if .organization.bank_account.bank}}<p>{{.organization.bank_account.bank}}</p>{{end}}
+                {{if .organization.bank_account.iban}}<p>IBAN: {{.organization.bank_account.iban}}</p>{{end}}
+                {{if .organization.bank_account.bic}}<p>BIC: {{.organization.bank_account.bic}}</p>{{end}}
+                {{end}}
+            </div>
+            <div class="footer-section">
+                {{if .organization.tax_id}}<p>Steuernummer: {{.organization.tax_id}}</p>{{end}}
+                <p>{{.organization.phone}}</p>
+                <p>{{.organization.email}}</p>
             </div>
         </div>
     </div>

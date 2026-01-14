@@ -74,6 +74,8 @@ func (s *InvoiceNumberService) GenerateInvoiceNumber(organizationID uint, invoic
 			Where("organization_id = ? AND status != ? AND invoice_number NOT LIKE ?",
 				organizationID, "draft", "DRAFT-%")
 
+		fmt.Printf("🔍 DEBUG InvoiceNumber: orgID=%d, format=%s, prefix=%s\n", organizationID, format, prefix)
+
 		// For year-based formats, only consider invoices from the same year
 		if format == InvoiceNumberFormatYearPrefix {
 			yearStr := invoiceDate.Format("2006")
@@ -95,11 +97,13 @@ func (s *InvoiceNumberService) GenerateInvoiceNumber(organizationID uint, invoic
 		if err := query.Order("invoice_number DESC").First(&lastInvoice).Error; err != nil {
 			if err == gorm.ErrRecordNotFound {
 				lastNumber = ""
+				fmt.Printf("🔍 DEBUG InvoiceNumber: No existing invoice found\n")
 			} else {
 				return fmt.Errorf("failed to query last invoice: %w", err)
 			}
 		} else {
 			lastNumber = lastInvoice.InvoiceNumber
+			fmt.Printf("🔍 DEBUG InvoiceNumber: Found last invoice number: %s\n", lastNumber)
 		}
 
 		// Generate the next number based on format
@@ -108,6 +112,8 @@ func (s *InvoiceNumberService) GenerateInvoiceNumber(organizationID uint, invoic
 		if err != nil {
 			return err
 		}
+
+		fmt.Printf("🔍 DEBUG InvoiceNumber: Generated invoice number: %s\n", invoiceNumber)
 
 		return nil
 	})

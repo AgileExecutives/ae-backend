@@ -145,3 +145,16 @@ type TemplateAPIResponse struct {
 	Message string           `json:"message"`
 	Data    TemplateResponse `json:"data"`
 }
+
+// DuplicateTemplateRequest represents a request to duplicate a template
+type DuplicateTemplateRequest struct {
+	Name string `json:"name" binding:"required" example:"Copy of Welcome Email Template"`
+}
+
+// RenderTemplateRequest represents a request to render a template with data
+type RenderTemplateRequest struct {
+	FirstName        string `json:"FirstName,omitempty" example:"Alice"`
+	LastName         string `json:"LastName,omitempty" example:"Johnson"`
+	OrganizationName string `json:"OrganizationName,omitempty" example:"Tech Innovators Inc"`
+	Email           string `json:"Email,omitempty" example:"alice.johnson@techinnovators.com"`
+}

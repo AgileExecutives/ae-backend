@@ -1317,6 +1317,14 @@ definitions:
     required:
     - settings
     type: object
+  entities.DuplicateTemplateRequest:
+    properties:
+      name:
+        example: Copy of Welcome Email Template
+        type: string
+    required:
+    - name
+    type: object
   entities.EntityType:
     enum:
     - invoice
@@ -1614,6 +1622,21 @@ definitions:
     - module
     - supported_channels
     - template_key
+    type: object
+  entities.RenderTemplateRequest:
+    properties:
+      Email:
+        example: alice.johnson@techinnovators.com
+        type: string
+      FirstName:
+        example: Alice
+        type: string
+      LastName:
+        example: Johnson
+        type: string
+      OrganizationName:
+        example: Tech Innovators Inc
+        type: string
     type: object
   entities.SessionDetailResponse:
     properties:
@@ -10740,22 +10763,23 @@ paths:
       responses:
         "204":
           description: Template deleted successfully
-          schema:
-            type: string
         "401":
           description: Unauthorized
           schema:
-            additionalProperties: true
+            additionalProperties:
+              type: string
             type: object
         "404":
           description: Not Found
           schema:
-            additionalProperties: true
+            additionalProperties:
+              type: string
             type: object
         "500":
           description: Internal Server Error
           schema:
-            additionalProperties: true
+            additionalProperties:
+              type: string
             type: object
       security:
       - BearerAuth: []
@@ -10782,17 +10806,20 @@ paths:
         "401":
           description: Unauthorized
           schema:
-            additionalProperties: true
+            additionalProperties:
+              type: string
             type: object
         "404":
           description: Not Found
           schema:
-            additionalProperties: true
+            additionalProperties:
+              type: string
             type: object
         "500":
           description: Internal Server Error
           schema:
-            additionalProperties: true
+            additionalProperties:
+              type: string
             type: object
       security:
       - BearerAuth: []
@@ -10827,22 +10854,26 @@ paths:
         "400":
           description: Bad Request
           schema:
-            additionalProperties: true
+            additionalProperties:
+              type: string
             type: object
         "401":
           description: Unauthorized
           schema:
-            additionalProperties: true
+            additionalProperties:
+              type: string
             type: object
         "404":
           description: Not Found
           schema:
-            additionalProperties: true
+            additionalProperties:
+              type: string
             type: object
         "500":
           description: Internal Server Error
           schema:
-            additionalProperties: true
+            additionalProperties:
+              type: string
             type: object
       security:
       - BearerAuth: []
@@ -10870,17 +10901,20 @@ paths:
         "401":
           description: Unauthorized
           schema:
-            additionalProperties: true
+            additionalProperties:
+              type: string
             type: object
         "404":
           description: Not Found
           schema:
-            additionalProperties: true
+            additionalProperties:
+              type: string
             type: object
         "500":
           description: Internal Server Error
           schema:
-            additionalProperties: true
+            additionalProperties:
+              type: string
             type: object
       security:
       - BearerAuth: []
@@ -10905,8 +10939,7 @@ paths:
         name: request
         required: true
         schema:
-          additionalProperties: true
-          type: object
+          $ref: '#/definitions/entities.DuplicateTemplateRequest'
       produces:
       - application/json
       responses:
@@ -10917,22 +10950,26 @@ paths:
         "400":
           description: Bad Request
           schema:
-            additionalProperties: true
+            additionalProperties:
+              type: string
             type: object
         "401":
           description: Unauthorized
           schema:
-            additionalProperties: true
+            additionalProperties:
+              type: string
             type: object
         "404":
           description: Not Found
           schema:
-            additionalProperties: true
+            additionalProperties:
+              type: string
             type: object
         "500":
           description: Internal Server Error
           schema:
-            additionalProperties: true
+            additionalProperties:
+              type: string
             type: object
       security:
       - BearerAuth: []
@@ -10957,8 +10994,7 @@ paths:
         name: data
         required: true
         schema:
-          additionalProperties: true
-          type: object
+          $ref: '#/definitions/entities.RenderTemplateRequest'
       produces:
       - text/html
       responses:
@@ -10970,22 +11006,26 @@ paths:
         "400":
           description: Bad Request
           schema:
-            additionalProperties: true
+            additionalProperties:
+              type: string
             type: object
         "401":
           description: Unauthorized
           schema:
-            additionalProperties: true
+            additionalProperties:
+              type: string
             type: object
         "404":
           description: Not Found
           schema:
-            additionalProperties: true
+            additionalProperties:
+              type: string
             type: object
         "500":
           description: Internal Server Error
           schema:
-            additionalProperties: true
+            additionalProperties:
+              type: string
             type: object
       security:
       - BearerAuth: []
@@ -11227,10 +11267,10 @@ paths:
         in: query
         name: channel
         type: string
-      - description: Template key (password_reset, invoice, etc.)
+      - description: Template type (password_reset, invoice, etc.)
         example: '"welcome_email"'
         in: query
-        name: template_key
+        name: template_type
         required: true
         type: string
       produces:
@@ -11243,17 +11283,20 @@ paths:
         "401":
           description: Unauthorized
           schema:
-            additionalProperties: true
+            additionalProperties:
+              type: string
             type: object
         "404":
           description: Not Found
           schema:
-            additionalProperties: true
+            additionalProperties:
+              type: string
             type: object
         "500":
           description: Internal Server Error
           schema:
-            additionalProperties: true
+            additionalProperties:
+              type: string
             type: object
       security:
       - BearerAuth: []

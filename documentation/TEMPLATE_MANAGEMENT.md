@@ -249,7 +249,7 @@ Retrieves the default template for a type. Falls back to system default if organ
 ```go
 // base-server/services/email.go
 func (e *EmailService) loadTemplates() {
-    templatesDir := utils.GetEnv("EMAIL_TEMPLATES_DIR", "./statics/email_templates")
+    templatesDir := utils.GetEnv(\"TEMPLATES_DIR\", \"./statics/templates\")
     templates := map[EmailTemplate]string{
         TemplateVerification:  "verification.html",
         TemplatePasswordReset: "password_reset.html",

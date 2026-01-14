@@ -177,17 +177,20 @@ func (m *CoreModule) Initialize(ctx core.ModuleContext) error {
 		ctx.Logger.Warn("⚠️ Client Management: Document storage not found in registry")
 	}
 
-	// Get template service from registry (for PDF generation)
-	// var templateService *templateServices.TemplateService
+	// Get template service from registry (for contract-based PDF generation)
 	if templateSvcRaw, ok := ctx.Services.Get("template_service"); ok {
-		if _, ok := templateSvcRaw.(*templateServices.TemplateService); ok {
-			// templateService = templateSvc
+		if templateSvc, ok := templateSvcRaw.(*templateServices.TemplateService); ok {
 			ctx.Logger.Info("✅ Client Management: Template service successfully retrieved from registry")
+			// Inject template service into PDF service for contract-based rendering
+			if invoiceService.GetPDFService() != nil {
+				invoiceService.GetPDFService().SetTemplateService(templateSvc)
+				ctx.Logger.Info("✅ Client Management: Template service injected into PDF service")
+			}
 		} else {
 			ctx.Logger.Warn("⚠️ Client Management: Template service type assertion failed")
 		}
 	} else {
-		ctx.Logger.Warn("⚠️ Client Management: Template service not found in registry - invoice PDF generation will not work")
+		ctx.Logger.Warn("⚠️ Client Management: Template service not found in registry - invoice PDF generation will use fallback")
 	}
 
 	// Get audit service from registry (for audit logging)

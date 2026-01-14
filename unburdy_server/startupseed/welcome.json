@@ -1,0 +1,9 @@
+{
+  "FirstName": "John",
+  "LastName": "Doe",
+  "OrganizationName": "AE Technology Solutions",
+  "Email": "john.doe@example.com",
+  "Username": "johndoe",
+  "PlanName": "Professional Plan",
+  "LoginURL": "https://app.example.com/login"
+}

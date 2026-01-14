@@ -10,6 +10,7 @@ import (
 	"github.com/ae-base-server/modules/templates/services"
 	"github.com/ae-base-server/modules/templates/services/storage"
 	"github.com/ae-base-server/pkg/core"
+	pkgServices "github.com/ae-base-server/pkg/services"
 	"github.com/redis/go-redis/v9"
 )
 
@@ -76,7 +77,15 @@ func (m *CoreModule) Initialize(ctx core.ModuleContext) error {
 
 	// Initialize services if not already created
 	if m.templateService == nil {
-		m.templateService = services.NewTemplateService(ctx.DB, m.minioStorage)
+		// Create unified storage service for tenant-specific storage - type assert to concrete type
+		if minioStorage, ok := m.minioStorage.(*storage.MinIOStorage); ok {
+			storageService := pkgServices.NewStorageService(minioStorage)
+			bucketService := pkgServices.NewTenantBucketService(minioStorage)
+			m.templateService = services.NewTemplateService(ctx.DB, storageService, bucketService)
+		} else {
+			// Fallback without storage service if not using MinIO storage
+			m.templateService = services.NewTemplateService(ctx.DB, nil, nil)
+		}
 	}
 
 	// Initialize contract service
@@ -184,7 +193,10 @@ func (p *templateServiceProvider) Factory(ctx core.ModuleContext) (interface{}, 
 	}
 
 	// Create and store the service in the module
-	p.module.templateService = services.NewTemplateService(ctx.DB, minioStorage)
+	// Create unified storage service and bucket service for tenant-specific storage
+	storageService := pkgServices.NewStorageService(minioStorage)
+	bucketService := pkgServices.NewTenantBucketService(minioStorage)
+	p.module.templateService = services.NewTemplateService(ctx.DB, storageService, bucketService)
 	p.module.minioStorage = minioStorage
 
 	return p.module.templateService, nil

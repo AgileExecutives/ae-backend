@@ -137,3 +137,13 @@ func (e *TemplateContractEntity) GetModel() interface{} {
 func (e *TemplateContractEntity) GetMigrations() []baseCore.Migration {
 	return []baseCore.Migration{}
 }
+
+// ContractRegistration represents the registration of a contract by a module
+type ContractRegistration struct {
+	ModuleName  string                 `json:"module_name"`
+	TemplateKey string                 `json:"template_key"`
+	Name        string                 `json:"name"`
+	Description string                 `json:"description"`
+	Schema      map[string]interface{} `json:"schema"`
+	Version     string                 `json:"version"`
+}

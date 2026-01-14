@@ -3,12 +3,14 @@ package services
 import (
 	"bytes"
 	"context"
+	"encoding/json"
 	"fmt"
 	"html/template"
 	"time"
 
 	"github.com/ae-base-server/modules/templates/entities"
-	"github.com/ae-base-server/modules/templates/services/storage"
+	"github.com/ae-base-server/modules/templates/services/renderer"
+	"github.com/ae-base-server/pkg/services"
 	"gorm.io/gorm"
 )
 
@@ -24,16 +26,42 @@ const (
 
 // TemplateService handles template management operations
 type TemplateService struct {
-	db      *gorm.DB
-	storage storage.DocumentStorage
+	db               *gorm.DB
+	storageService   *services.StorageService
+	dbRenderer       *renderer.DBRenderer
+	contractProvider *DBContractProvider
+	bucketService    *services.TenantBucketService
 }
 
 // NewTemplateService creates a new template service
-func NewTemplateService(db *gorm.DB, storage storage.DocumentStorage) *TemplateService {
-	return &TemplateService{
-		db:      db,
-		storage: storage,
+func NewTemplateService(db *gorm.DB, storageService *services.StorageService, bucketService *services.TenantBucketService) *TemplateService {
+	// Initialize database contract provider and renderer
+	templatesDir := "statics/templates"
+	contractProvider := NewDBContractProvider(db)
+	dbRenderer, err := renderer.NewDBRenderer(templatesDir, contractProvider)
+	if err != nil {
+		fmt.Printf("Warning: Failed to initialize database renderer: %v\n", err)
 	}
+
+	return &TemplateService{
+		db:               db,
+		storageService:   storageService,
+		dbRenderer:       dbRenderer,
+		contractProvider: contractProvider,
+		bucketService:    bucketService,
+	}
+}
+
+// getTenantBucketName returns the bucket name for a given tenant ID
+func (s *TemplateService) getTenantBucketName(tenantID uint) string {
+	if s.storageService != nil {
+		return s.storageService.GetTenantBucketName(tenantID)
+	}
+	if s.bucketService != nil {
+		return s.bucketService.GetTenantBucketName(tenantID)
+	}
+	// Fallback to legacy bucket if neither service is available
+	return "templates"
 }
 
 // CreateTemplateRequest represents template creation request
@@ -41,6 +69,7 @@ type CreateTemplateRequest struct {
 	TenantID       uint                   `json:"tenant_id"`
 	OrganizationID *uint                  `json:"organization_id,omitempty"` // NULL = system default
 	TemplateType   string                 `json:"template_type" binding:"required"`
+	Module         string                 `json:"module,omitempty"`       // Module name for contract binding
 	TemplateKey    string                 `json:"template_key,omitempty"` // Key derived from filename
 	Channel        string                 `json:"channel,omitempty"`      // EMAIL or DOCUMENT
 	Subject        *string                `json:"subject,omitempty"`      // Required for EMAIL templates
@@ -74,24 +103,8 @@ func (s *TemplateService) CreateTemplate(ctx context.Context, req *CreateTemplat
 		}
 	}
 
-	// Store template content in MinIO
-	storageKey := fmt.Sprintf("tenants/%d/templates/%s/%s_%d.html",
-		req.TenantID,
-		req.TemplateType,
-		req.Name,
-		time.Now().Unix(),
-	)
-
-	_, err := s.storage.Store(ctx, storage.StoreRequest{
-		Bucket:      "templates",
-		Key:         storageKey,
-		Data:        []byte(req.Content),
-		ContentType: "text/html",
-		Metadata: map[string]string{
-			"template_type": req.TemplateType,
-			"template_name": req.Name,
-		},
-	})
+	// Store template content using storage service
+	storageKey, err := s.storageService.StoreTemplate(ctx, req.TenantID, req.TemplateType, req.Name, req.Content)
 	if err != nil {
 		return nil, fmt.Errorf("failed to store template content: %w", err)
 	}
@@ -107,11 +120,37 @@ func (s *TemplateService) CreateTemplate(ctx context.Context, req *CreateTemplat
 		sampleDataJSON, _ = entities.MarshalJSON(req.SampleData)
 	}
 
+	// If variables or sample data not provided, try to get from contract
+	// Note: len(variablesJSON) == 0 means no variables were provided (not even empty slice)
+	if (len(variablesJSON) == 0 || len(req.Variables) == 0) && req.Module != "" && req.TemplateKey != "" {
+		if contractVariables, contractSampleData, err := s.getContractData(req.Module, req.TemplateKey); err == nil {
+			if len(variablesJSON) == 0 || len(req.Variables) == 0 {
+				variablesJSON = contractVariables
+				fmt.Printf("📋 Using contract variable schema (%d bytes)\n", len(contractVariables))
+			}
+			if len(sampleDataJSON) == 0 || len(req.SampleData) == 0 {
+				sampleDataJSON = contractSampleData
+				fmt.Printf("📄 Using contract sample data (%d bytes)\n", len(contractSampleData))
+			}
+		} else {
+			fmt.Printf("⚠️  Could not get contract data for %s.%s: %v\n", req.Module, req.TemplateKey, err)
+		}
+	}
+
+	// Use empty defaults if still empty
+	if len(variablesJSON) == 0 {
+		variablesJSON = []byte("[]")
+	}
+	if len(sampleDataJSON) == 0 {
+		sampleDataJSON = []byte("{}")
+	}
+
 	// Create template record
 	tmpl := &entities.Template{
 		TenantID:       req.TenantID,
 		OrganizationID: req.OrganizationID,
 		TemplateType:   req.TemplateType,
+		Module:         req.Module,                    // Set module for contract binding
 		TemplateKey:    req.TemplateKey,               // Set template key from filename
 		Channel:        entities.Channel(req.Channel), // Set channel from request
 		Subject:        req.Subject,                   // Set subject for EMAIL templates
@@ -129,7 +168,7 @@ func (s *TemplateService) CreateTemplate(ctx context.Context, req *CreateTemplat
 
 	if err := s.db.Create(tmpl).Error; err != nil {
 		// Rollback storage if DB insert fails
-		s.storage.Delete(ctx, "templates", storageKey)
+		s.storageService.DeleteTemplate(ctx, req.TenantID, storageKey)
 		return nil, fmt.Errorf("failed to create template: %w", err)
 	}
 
@@ -154,8 +193,8 @@ func (s *TemplateService) GetTemplateWithContent(ctx context.Context, tenantID u
 		return nil, "", err
 	}
 
-	// Retrieve content from storage
-	content, err := s.storage.Retrieve(ctx, "templates", tmpl.StorageKey)
+	// Retrieve content from storage using storage service
+	content, err := s.storageService.RetrieveTemplate(ctx, tmpl.TenantID, tmpl.StorageKey)
 	if err != nil {
 		return nil, "", fmt.Errorf("failed to retrieve template content: %w", err)
 	}
@@ -224,24 +263,17 @@ func (s *TemplateService) UpdateTemplate(
 	// If content is being updated, create new version
 	if req.Content != nil {
 		newVersion := tmpl.Version + 1
-		storageKey := fmt.Sprintf("tenants/%d/templates/%s/%s_v%d_%d.html",
-			tenantID,
+		storageKey := fmt.Sprintf("templates/%s/%s_v%d_%d.html",
 			tmpl.TemplateType,
 			tmpl.Name,
 			newVersion,
 			time.Now().Unix(),
 		)
 
-		_, err := s.storage.Store(ctx, storage.StoreRequest{
-			Bucket:      "templates",
-			Key:         storageKey,
-			Data:        []byte(*req.Content),
-			ContentType: "text/html",
-			Metadata: map[string]string{
-				"template_type": tmpl.TemplateType,
-				"template_name": tmpl.Name,
-				"version":       fmt.Sprintf("%d", newVersion),
-			},
+		err := s.storageService.StoreTemplateWithKey(ctx, tmpl.TenantID, storageKey, *req.Content, map[string]string{
+			"template_type": tmpl.TemplateType,
+			"template_name": tmpl.Name,
+			"version":       fmt.Sprintf("%d", newVersion),
 		})
 		if err != nil {
 			return nil, fmt.Errorf("failed to store new template version: %w", err)
@@ -261,10 +293,20 @@ func (s *TemplateService) UpdateTemplate(
 	if req.Variables != nil {
 		variablesJSON, _ := entities.MarshalJSON(*req.Variables)
 		tmpl.Variables = variablesJSON
+	} else if len(tmpl.Variables) == 0 {
+		// If no variables stored and none provided, try to get from contract
+		if contractVariables, _, err := s.getContractData(tmpl.Module, tmpl.TemplateKey); err == nil {
+			tmpl.Variables = contractVariables
+		}
 	}
 	if req.SampleData != nil {
 		sampleDataJSON, _ := entities.MarshalJSON(*req.SampleData)
 		tmpl.SampleData = sampleDataJSON
+	} else if len(tmpl.SampleData) == 0 {
+		// If no sample data stored and none provided, try to get from contract
+		if _, contractSampleData, err := s.getContractData(tmpl.Module, tmpl.TemplateKey); err == nil {
+			tmpl.SampleData = contractSampleData
+		}
 	}
 	if req.IsActive != nil {
 		tmpl.IsActive = *req.IsActive
@@ -338,7 +380,31 @@ func (s *TemplateService) RenderTemplate(
 		return "", err
 	}
 
-	// Prepare template data with proper structure
+	// Use new renderer for templates with contract binding
+	if s.dbRenderer != nil && tmpl.Module != "" && tmpl.TemplateKey != "" {
+		// Use contract from template's Module.TemplateKey binding
+		contractName := tmpl.TemplateKey
+
+		fmt.Printf("🎨 Rendering template with contract: %s.%s\n", tmpl.Module, tmpl.TemplateKey)
+
+		// Convert data to JSON
+		jsonData, err := json.Marshal(data)
+		if err != nil {
+			return "", fmt.Errorf("failed to marshal template data: %w", err)
+		}
+
+		// Use the database renderer with contract validation
+		result, err := s.dbRenderer.RenderTemplateFromContent(content, contractName, jsonData)
+		if err != nil {
+			// Fall back to legacy rendering if contract validation fails
+			fmt.Printf("⚠️  Warning: Contract validation failed for %s, falling back to legacy rendering: %v\n", contractName, err)
+		} else {
+			fmt.Printf("✅ Successfully rendered template with contract validation\n")
+			return string(result), nil
+		}
+	}
+
+	// Legacy rendering for unsupported templates or fallback
 	templateData := s.prepareTemplateData(data)
 
 	// Parse template
@@ -373,7 +439,30 @@ func (s *TemplateService) PreviewTemplate(ctx context.Context, tenantID uint, te
 		sampleData = map[string]interface{}{}
 	}
 
-	// Parse and execute template
+	// Use database renderer for templates with contract binding
+	if s.dbRenderer != nil && tmpl.Module != "" && tmpl.TemplateKey != "" {
+		contractName := tmpl.TemplateKey
+
+		fmt.Printf("🎨 Previewing template with contract: %s.%s\n", tmpl.Module, tmpl.TemplateKey)
+
+		// Convert sample data to JSON
+		jsonData, err := json.Marshal(sampleData)
+		if err != nil {
+			return "", fmt.Errorf("failed to marshal sample data: %w", err)
+		}
+
+		// Use the database renderer with contract validation
+		result, err := s.dbRenderer.RenderTemplateFromContent(content, contractName, jsonData)
+		if err != nil {
+			// Fall back to legacy rendering if contract validation fails
+			fmt.Printf("⚠️  Warning: Contract validation failed for %s preview, falling back to legacy rendering: %v\n", contractName, err)
+		} else {
+			fmt.Printf("✅ Successfully previewed template with contract validation\n")
+			return string(result), nil
+		}
+	}
+
+	// Legacy rendering for unsupported templates or fallback
 	htmlTemplate, err := template.New(tmpl.Name).Parse(content)
 	if err != nil {
 		return "", fmt.Errorf("failed to parse template: %w", err)
@@ -462,7 +551,7 @@ func (s *TemplateService) CopyTemplatesFromTenant2Org2(ctx context.Context, targ
 	copiedCount := 0
 	for _, source := range sourceTemplates {
 		// Get the content from storage
-		content, err := s.storage.Retrieve(ctx, "templates", source.StorageKey)
+		content, err := s.storageService.RetrieveTemplate(ctx, source.TenantID, source.StorageKey)
 		if err != nil {
 			fmt.Printf("⚠️  Warning: Could not read template content for %s: %v\n", source.Name, err)
 			continue
@@ -523,7 +612,7 @@ func (s *TemplateService) GetTemplateByKey(ctx context.Context, tenantID uint, c
 	}
 
 	// Retrieve content from storage
-	content, err := s.storage.Retrieve(ctx, "templates", tmpl.StorageKey)
+	content, err := s.storageService.RetrieveTemplate(ctx, tmpl.TenantID, tmpl.StorageKey)
 	if err != nil {
 		return "", fmt.Errorf("failed to retrieve template content: %w", err)
 	}
@@ -617,4 +706,39 @@ func getIntValue(data map[string]interface{}, key string, defaultValue int) int 
 		}
 	}
 	return defaultValue
+}
+
+// getContractData retrieves variables and sample data from the template contract
+func (s *TemplateService) getContractData(module, templateKey string) ([]byte, []byte, error) {
+	var contract entities.TemplateContract
+	err := s.db.Where("module = ? AND template_key = ?", module, templateKey).First(&contract).Error
+	if err != nil {
+		return nil, nil, fmt.Errorf("contract not found: %w", err)
+	}
+
+	// Extract variable names from schema
+	var variablesJSON []byte
+	if len(contract.VariableSchema) > 0 {
+		var schema map[string]interface{}
+		if err := json.Unmarshal(contract.VariableSchema, &schema); err == nil {
+			// Extract top-level keys as variable names
+			variableNames := make([]string, 0, len(schema))
+			for key := range schema {
+				variableNames = append(variableNames, key)
+			}
+			variablesJSON, _ = json.Marshal(variableNames)
+		} else {
+			variablesJSON = []byte("[]")
+		}
+	} else {
+		variablesJSON = []byte("[]")
+	}
+
+	// Use default sample data from contract
+	sampleDataJSON := []byte(contract.DefaultSampleData)
+	if len(sampleDataJSON) == 0 {
+		sampleDataJSON = []byte("{}")
+	}
+
+	return variablesJSON, sampleDataJSON, nil
 }

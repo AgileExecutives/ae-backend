@@ -43,6 +43,30 @@ type TemplateDefinition struct {
 	DefaultSampleData map[string]interface{}
 }
 
+// getTemplateData loads sample data from file with fallback to default
+func (s *SeedService) getTemplateData(fileName string, defaultData map[string]interface{}) map[string]interface{} {
+	if fileSampleData, err := s.loadSampleDataFromFile(fileName); err == nil {
+		return fileSampleData
+	}
+	return defaultData
+}
+
+// loadSampleDataFromFile loads sample data from a JSON file
+func (s *SeedService) loadSampleDataFromFile(fileName string) (map[string]interface{}, error) {
+	filePath := filepath.Join("startupseed", fileName)
+	data, err := os.ReadFile(filePath)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read sample data file %s: %w", filePath, err)
+	}
+
+	var sampleData map[string]interface{}
+	if err := json.Unmarshal(data, &sampleData); err != nil {
+		return nil, fmt.Errorf("failed to parse sample data from %s: %w", filePath, err)
+	}
+
+	return sampleData, nil
+}
+
 // SeedDefaultTemplates seeds default template contracts if none exist
 func (s *SeedService) SeedDefaultTemplates() error { // First ensure table exists by running auto-migration
 	if err := s.db.AutoMigrate(&entities.TemplateContract{}); err != nil {
@@ -76,6 +100,61 @@ func (s *SeedService) SeedDefaultTemplates() error { // First ensure table exist
 
 // getTemplateDefinitions returns all template definitions to seed
 func (s *SeedService) getTemplateDefinitions() []TemplateDefinition {
+	// Load sample data from files, fallback to hardcoded data
+	invoiceSampleData := s.getTemplateData("invoice.json", map[string]interface{}{
+		"invoice_number": "INV-2024-001",
+		"invoice_date":   "2024-01-15",
+		"organization": map[string]interface{}{
+			"name": "Sample Organization GmbH",
+		},
+		"client": map[string]interface{}{
+			"first_name": "Max",
+			"last_name":  "Mustermann",
+		},
+		"totals": map[string]interface{}{
+			"net_total":   1500.00,
+			"tax_rate":    19.0,
+			"gross_total": 1785.00,
+		},
+	})
+
+	passwordResetSampleData := s.getTemplateData("password_reset.json", map[string]interface{}{
+		"AppName":       "AE SaaS Platform",
+		"RecipientName": "John Doe",
+		"CompanyName":   "AE Technology Solutions",
+		"ResetURL":      "https://app.example.com/reset-password?token=abc123",
+		"SupportEmail":  "support@example.com",
+	})
+
+	welcomeSampleData := s.getTemplateData("welcome.json", map[string]interface{}{
+		"FirstName":        "John",
+		"LastName":         "Doe",
+		"OrganizationName": "AE Technology Solutions",
+		"Email":            "john.doe@example.com",
+		"Username":         "johndoe",
+		"PlanName":         "Professional Plan",
+		"LoginURL":         "https://app.example.com/login",
+	})
+
+	emailVerificationSampleData := s.getTemplateData("email_verification.json", map[string]interface{}{
+		"FirstName":        "Jane",
+		"OrganizationName": "AE Technology Solutions",
+		"Email":            "jane.smith@example.com",
+		"Username":         "janesmith",
+		"VerificationURL":  "https://app.example.com/verify-email?token=xyz789",
+		"VerificationCode": "481592",
+	})
+
+	bookingConfirmationSampleData := s.getTemplateData("booking_confirmation.json", map[string]interface{}{
+		"AppName":        "Unburdy Therapy Center",
+		"Date":           "15. Februar 2026",
+		"TimeFrom":       "14:00",
+		"TimeTo":         "15:00",
+		"CompanyName":    "Unburdy Therapiezentrum GmbH",
+		"SupportEmail":   "info@unburdy.de",
+		"CompanyAddress": "Musterstraße 123, 12345 Berlin",
+	})
+
 	return []TemplateDefinition{
 		// Billing: Invoice
 		{
@@ -84,57 +163,15 @@ func (s *SeedService) getTemplateDefinitions() []TemplateDefinition {
 			Description:       "Invoice template for client billing",
 			SupportedChannels: []string{"DOCUMENT"},
 			VariableSchema: map[string]interface{}{
-				"Invoice": map[string]interface{}{
-					"type":     "object",
-					"required": true,
-					"properties": map[string]interface{}{
-						"InvoiceNumber": map[string]interface{}{"type": "string", "required": true},
-						"IsDraft":       map[string]interface{}{"type": "boolean"},
-						"InvoiceDate":   map[string]interface{}{"type": "string"},
-						"DueDate":       map[string]interface{}{"type": "string"},
-					},
-				},
-				"Organization": map[string]interface{}{
-					"type":     "object",
-					"required": true,
-					"properties": map[string]interface{}{
-						"Name":    map[string]interface{}{"type": "string", "required": true},
-						"Address": map[string]interface{}{"type": "string"},
-						"Email":   map[string]interface{}{"type": "string"},
-					},
-				},
-				"Client": map[string]interface{}{
-					"type":     "object",
-					"required": true,
-					"properties": map[string]interface{}{
-						"Name":    map[string]interface{}{"type": "string", "required": true},
-						"Address": map[string]interface{}{"type": "string"},
-					},
-				},
-				"NetTotal":   map[string]interface{}{"type": "number", "required": true},
-				"TaxRate":    map[string]interface{}{"type": "number", "required": true},
-				"GrossTotal": map[string]interface{}{"type": "number", "required": true},
+				"invoice_number": map[string]interface{}{"type": "string", "required": true},
+				"invoice_date":   map[string]interface{}{"type": "string", "required": true},
+				"organization":   map[string]interface{}{"type": "object", "required": true},
+				"client":         map[string]interface{}{"type": "object", "required": true},
+				"cost_provider":  map[string]interface{}{"type": "object", "required": true},
+				"invoice_items":  map[string]interface{}{"type": "array", "required": true},
+				"totals":         map[string]interface{}{"type": "object", "required": true},
 			},
-			DefaultSampleData: map[string]interface{}{
-				"Invoice": map[string]interface{}{
-					"InvoiceNumber": "INV-2024-001",
-					"IsDraft":       false,
-					"InvoiceDate":   "2024-01-15",
-					"DueDate":       "2024-02-15",
-				},
-				"Organization": map[string]interface{}{
-					"Name":    "Sample Organization GmbH",
-					"Address": "Musterstraße 1, 12345 Berlin",
-					"Email":   "info@example.com",
-				},
-				"Client": map[string]interface{}{
-					"Name":    "Sample Client GmbH",
-					"Address": "Kundenstraße 2, 54321 Hamburg",
-				},
-				"NetTotal":   1500.00,
-				"TaxRate":    19.0,
-				"GrossTotal": 1785.00,
-			},
+			DefaultSampleData: invoiceSampleData,
 		},
 		// Identity: Password Reset
 		{
@@ -143,15 +180,13 @@ func (s *SeedService) getTemplateDefinitions() []TemplateDefinition {
 			Description:       "Password reset email template",
 			SupportedChannels: []string{"EMAIL"},
 			VariableSchema: map[string]interface{}{
-				"user_email": map[string]interface{}{"type": "string", "required": true},
-				"reset_link": map[string]interface{}{"type": "string", "required": true},
-				"expires_in": map[string]interface{}{"type": "string"},
+				"AppName":       map[string]interface{}{"type": "string", "required": true},
+				"RecipientName": map[string]interface{}{"type": "string", "required": true},
+				"CompanyName":   map[string]interface{}{"type": "string", "required": true},
+				"ResetURL":      map[string]interface{}{"type": "string", "required": true},
+				"SupportEmail":  map[string]interface{}{"type": "string", "required": true},
 			},
-			DefaultSampleData: map[string]interface{}{
-				"user_email": "user@example.com",
-				"reset_link": "https://example.com/reset-password?token=abc123",
-				"expires_in": "24 hours",
-			},
+			DefaultSampleData: passwordResetSampleData,
 		},
 		// Identity: Email Verification
 		{
@@ -160,13 +195,14 @@ func (s *SeedService) getTemplateDefinitions() []TemplateDefinition {
 			Description:       "Email verification template",
 			SupportedChannels: []string{"EMAIL"},
 			VariableSchema: map[string]interface{}{
-				"user_name":         map[string]interface{}{"type": "string", "required": true},
-				"verification_link": map[string]interface{}{"type": "string", "required": true},
+				"FirstName":        map[string]interface{}{"type": "string", "required": true},
+				"OrganizationName": map[string]interface{}{"type": "string", "required": true},
+				"Email":            map[string]interface{}{"type": "string", "required": true},
+				"Username":         map[string]interface{}{"type": "string", "required": true},
+				"VerificationURL":  map[string]interface{}{"type": "string", "required": true},
+				"VerificationCode": map[string]interface{}{"type": "string", "required": true},
 			},
-			DefaultSampleData: map[string]interface{}{
-				"user_name":         "John Doe",
-				"verification_link": "https://example.com/verify?token=xyz789",
-			},
+			DefaultSampleData: emailVerificationSampleData,
 		},
 		// Identity: Welcome Email
 		{
@@ -175,11 +211,15 @@ func (s *SeedService) getTemplateDefinitions() []TemplateDefinition {
 			Description:       "Welcome email for new users",
 			SupportedChannels: []string{"EMAIL"},
 			VariableSchema: map[string]interface{}{
-				"user_name": map[string]interface{}{"type": "string", "required": true},
+				"FirstName":        map[string]interface{}{"type": "string", "required": true},
+				"LastName":         map[string]interface{}{"type": "string", "required": true},
+				"OrganizationName": map[string]interface{}{"type": "string", "required": true},
+				"Email":            map[string]interface{}{"type": "string", "required": true},
+				"Username":         map[string]interface{}{"type": "string", "required": true},
+				"PlanName":         map[string]interface{}{"type": "string", "required": true},
+				"LoginURL":         map[string]interface{}{"type": "string", "required": true},
 			},
-			DefaultSampleData: map[string]interface{}{
-				"user_name": "John Doe",
-			},
+			DefaultSampleData: welcomeSampleData,
 		},
 		// Notification: Booking Confirmation
 		{
@@ -188,15 +228,15 @@ func (s *SeedService) getTemplateDefinitions() []TemplateDefinition {
 			Description:       "Booking confirmation email",
 			SupportedChannels: []string{"EMAIL"},
 			VariableSchema: map[string]interface{}{
-				"booking_id":   map[string]interface{}{"type": "string", "required": true},
-				"user_name":    map[string]interface{}{"type": "string", "required": true},
-				"booking_date": map[string]interface{}{"type": "string"},
+				"AppName":        map[string]interface{}{"type": "string", "required": true},
+				"Date":           map[string]interface{}{"type": "string", "required": true},
+				"TimeFrom":       map[string]interface{}{"type": "string", "required": true},
+				"TimeTo":         map[string]interface{}{"type": "string", "required": true},
+				"CompanyName":    map[string]interface{}{"type": "string", "required": true},
+				"SupportEmail":   map[string]interface{}{"type": "string", "required": true},
+				"CompanyAddress": map[string]interface{}{"type": "string", "required": true},
 			},
-			DefaultSampleData: map[string]interface{}{
-				"booking_id":   "BK-12345",
-				"user_name":    "John Doe",
-				"booking_date": "2024-02-15",
-			},
+			DefaultSampleData: bookingConfirmationSampleData,
 		},
 	}
 }
@@ -377,13 +417,17 @@ func (s *SeedService) seedTemplatesForTenant(tenantID uint, organizationID *uint
 			if err := json.Unmarshal(contract.VariableSchema, &variableSchema); err != nil {
 				fmt.Printf("⚠️  Warning: Failed to unmarshal variable schema: %v\n", err)
 				variableSchema = nil
+			} else {
+				fmt.Printf("📋 Contract variable schema has %d variables\n", len(variableSchema))
 			}
+		} else {
+			fmt.Printf("⚠️  Warning: Contract has empty variable schema for %s.%s\n", tmpl.Module, tmpl.TemplateKey)
 		}
 
-		// Read sample data from JSON file next to HTML template
+		// Read sample data from JSON file in startupseed root directory
 		var sampleData map[string]interface{}
 		jsonFileName := fmt.Sprintf("%s.json", tmpl.TemplateKey)
-		jsonFilePath := filepath.Join(serverDir, "startupseed", "email_templates", jsonFileName)
+		jsonFilePath := filepath.Join(serverDir, "startupseed", jsonFileName)
 
 		if jsonContent, err := os.ReadFile(jsonFilePath); err == nil {
 			if err := json.Unmarshal(jsonContent, &sampleData); err != nil {
@@ -415,11 +459,22 @@ func (s *SeedService) seedTemplatesForTenant(tenantID uint, organizationID *uint
 			variableNames = append(variableNames, key)
 		}
 
+		// If no variables from schema, try to extract from sample data
+		if len(variableNames) == 0 && sampleData != nil {
+			fmt.Printf("📋 No variables in schema, extracting from sample data\n")
+			for key := range sampleData {
+				variableNames = append(variableNames, key)
+			}
+		}
+
+		fmt.Printf("📋 Template will have %d variables: %v\n", len(variableNames), variableNames)
+
 		// Create template instance
 		createReq := &CreateTemplateRequest{
 			TenantID:       tenantID,
 			OrganizationID: organizationID,
 			TemplateType:   tmpl.TemplateKey,
+			Module:         tmpl.Module, // Set module for contract binding
 			TemplateKey:    tmpl.TemplateKey,
 			Channel:        tmpl.Channel,
 			Name:           tmpl.Name,

@@ -1,0 +1,8 @@
+{
+  "FirstName": "Jane",
+  "OrganizationName": "AE Technology Solutions",
+  "Email": "jane.smith@example.com",
+  "Username": "janesmith",
+  "VerificationURL": "https://app.example.com/verify-email?token=xyz789abc123",
+  "VerificationCode": "481592"
+}

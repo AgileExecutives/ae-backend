@@ -90,14 +90,14 @@ func (h *TemplateHandler) CreateTemplate(c *gin.Context) {
 // @Summary Get template
 // @Description Get template metadata by ID with preview URL and variables
 // @Tags Templates
+// @ID getTemplate
 // @Produce json
 // @Param id path int true "Template ID" example(1)
 // @Success 200 {object} entities.TemplateAPIResponse
-// @Failure 401 {object} map[string]interface{}
-// @Failure 404 {object} map[string]interface{}
-// @Failure 500 {object} map[string]interface{}
+// @Failure 401 {object} map[string]string
+// @Failure 404 {object} map[string]string
+// @Failure 500 {object} map[string]string
 // @Router /templates/{id} [get]
-// @ID getTemplate
 // @Security BearerAuth
 func (h *TemplateHandler) GetTemplate(c *gin.Context) {
 	tenantID, err := baseAPI.GetTenantID(c)
@@ -228,10 +228,10 @@ func (h *TemplateHandler) ListTemplates(c *gin.Context) {
 //	})
 //
 // @Success 200 {object} entities.TemplateAPIResponse
-// @Failure 400 {object} map[string]interface{}
-// @Failure 401 {object} map[string]interface{}
-// @Failure 404 {object} map[string]interface{}
-// @Failure 500 {object} map[string]interface{}
+// @Failure 400 {object} map[string]string
+// @Failure 401 {object} map[string]string
+// @Failure 404 {object} map[string]string
+// @Failure 500 {object} map[string]string
 // @Router /templates/{id} [put]
 // @ID updateTemplate
 // @Security BearerAuth
@@ -280,13 +280,13 @@ func (h *TemplateHandler) UpdateTemplate(c *gin.Context) {
 // @Summary Delete template
 // @Description Soft delete a template (marks as deleted)
 // @Tags Templates
-// @Param id path int true "Template ID" example(1)
-// @Success 204 {string} string "Template deleted successfully"
-// @Failure 401 {object} map[string]interface{}
-// @Failure 404 {object} map[string]interface{}
-// @Failure 500 {object} map[string]interface{}
-// @Router /templates/{id} [delete]
 // @ID deleteTemplate
+// @Param id path int true "Template ID" example(1)
+// @Success 204 "Template deleted successfully"
+// @Failure 401 {object} map[string]string
+// @Failure 404 {object} map[string]string
+// @Failure 500 {object} map[string]string
+// @Router /templates/{id} [delete]
 // @Security BearerAuth
 func (h *TemplateHandler) DeleteTemplate(c *gin.Context) {
 	tenantID, err := baseAPI.GetTenantID(c)
@@ -317,7 +317,7 @@ func (h *TemplateHandler) DeleteTemplate(c *gin.Context) {
 // @Produce html
 // @Param id path int true "Template ID" example(1)
 //
-//	@Param data body map[string]interface{} true "Template data" example({
+//	@Param data body entities.RenderTemplateRequest true "Template data"
 //	  "FirstName": "Alice",
 //	  "LastName": "Johnson",
 //	  "OrganizationName": "Tech Innovators Inc",
@@ -325,18 +325,13 @@ func (h *TemplateHandler) DeleteTemplate(c *gin.Context) {
 //	})
 //
 // @Success 200 {string} string "Rendered HTML content" example("<h1>Hello Alice Johnson!</h1><p>Welcome to Tech Innovators Inc. We're excited to have you!</p>")
-// @Failure 400 {object} map[string]interface{}
-// @Failure 401 {object} map[string]interface{}
-// @Failure 404 {object} map[string]interface{}
-// @Failure 500 {object} map[string]interface{}
+// @Failure 400 {object} map[string]string
+// @Failure 401 {object} map[string]string
+// @Failure 404 {object} map[string]string
+// @Failure 500 {object} map[string]string
 // @Router /templates/{id}/render [post]
 // @ID renderTemplate
 // @Security BearerAuth
-// @Failure 401 {object} map[string]interface{}
-// @Failure 404 {object} map[string]interface{}
-// @Failure 500 {object} map[string]interface{}
-// @Router /templates/{id}/render [post]
-// @ID renderTemplate
 func (h *TemplateHandler) RenderTemplate(c *gin.Context) {
 	tenantID, err := baseAPI.GetTenantID(c)
 	if err != nil {
@@ -372,9 +367,9 @@ func (h *TemplateHandler) RenderTemplate(c *gin.Context) {
 // @Produce text/html
 // @Param id path int true "Template ID" example(1)
 // @Success 200 {string} string "Raw HTML content"
-// @Failure 401 {object} map[string]interface{}
-// @Failure 404 {object} map[string]interface{}
-// @Failure 500 {object} map[string]interface{}
+// @Failure 401 {object} map[string]string
+// @Failure 404 {object} map[string]string
+// @Failure 500 {object} map[string]string
 // @Router /templates/{id}/content [get]
 // @ID getTemplateContent
 // @Security BearerAuth
@@ -406,11 +401,11 @@ func (h *TemplateHandler) GetTemplateContent(c *gin.Context) {
 // @Tags Templates
 // @Produce json
 // @Param channel query string false "Template channel (EMAIL, DOCUMENT)" example("EMAIL")
-// @Param template_key query string true "Template key (password_reset, invoice, etc.)" example("welcome_email")
+// @Param template_type query string true "Template type (password_reset, invoice, etc.)" example("welcome_email")
 // @Success 200 {object} entities.TemplateAPIResponse
-// @Failure 401 {object} map[string]interface{}
-// @Failure 404 {object} map[string]interface{}
-// @Failure 500 {object} map[string]interface{}
+// @Failure 401 {object} map[string]string
+// @Failure 404 {object} map[string]string
+// @Failure 500 {object} map[string]string
 // @Router /templates/default [get]
 // @ID getDefaultTemplate
 // @Security BearerAuth
@@ -454,12 +449,12 @@ func (h *TemplateHandler) GetDefaultTemplate(c *gin.Context) {
 // @Accept json
 // @Produce json
 // @Param id path int true "Template ID" example(1)
-// @Param request body map[string]interface{} true "Duplicate request with name" example({"name": "Copy of Welcome Email Template"})
+// @Param request body entities.DuplicateTemplateRequest true "Duplicate request with name" example({"name": "Copy of Welcome Email Template"})
 // @Success 201 {object} entities.TemplateAPIResponse
-// @Failure 400 {object} map[string]interface{}
-// @Failure 401 {object} map[string]interface{}
-// @Failure 404 {object} map[string]interface{}
-// @Failure 500 {object} map[string]interface{}
+// @Failure 400 {object} map[string]string
+// @Failure 401 {object} map[string]string
+// @Failure 404 {object} map[string]string
+// @Failure 500 {object} map[string]string
 // @Router /templates/{id}/duplicate [post]
 // @ID duplicateTemplate
 // @Security BearerAuth

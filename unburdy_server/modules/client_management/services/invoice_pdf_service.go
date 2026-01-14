@@ -3,8 +3,10 @@ package services
 import (
 	"bytes"
 	"context"
+	"encoding/base64"
 	"fmt"
 	"html/template"
+	"log"
 	"os"
 	"path/filepath"
 	"time"
@@ -15,13 +17,16 @@ import (
 	documentStorage "github.com/unburdy/documents-module/services/storage"
 	"github.com/unburdy/unburdy-server-api/modules/client_management/entities"
 	"gorm.io/gorm"
+
+	templateServices "github.com/ae-base-server/modules/templates/services"
 )
 
 // InvoicePDFService handles PDF generation for invoices
 type InvoicePDFService struct {
-	db           *gorm.DB
-	storage      documentStorage.DocumentStorage
-	templatePath string // Fallback for direct file loading
+	db              *gorm.DB
+	storage         documentStorage.DocumentStorage
+	templatePath    string // Fallback for direct file loading
+	templateService *templateServices.TemplateService
 }
 
 // NewInvoicePDFService creates a new invoice PDF service
@@ -33,10 +38,16 @@ func NewInvoicePDFService(db *gorm.DB, storage documentStorage.DocumentStorage) 
 	}
 
 	return &InvoicePDFService{
-		db:           db,
-		storage:      storage,
-		templatePath: templatePath,
+		db:              db,
+		storage:         storage,
+		templatePath:    templatePath,
+		templateService: nil, // Will be set later if needed
 	}
+}
+
+// SetTemplateService sets the template service for contract-based rendering
+func (s *InvoicePDFService) SetTemplateService(templateService *templateServices.TemplateService) {
+	s.templateService = templateService
 }
 
 // InvoicePDFData represents the data structure for invoice PDF templates
@@ -124,7 +135,10 @@ func (s *InvoicePDFService) prepareInvoiceData(invoice *entities.Invoice, isDraf
 	var costProvider *entities.CostProvider
 
 	// Get client and cost provider from first ClientInvoice
+	fmt.Printf("🔍 DEBUG prepareInvoiceData: invoice.ClientInvoices length: %d\n", len(invoice.ClientInvoices))
 	if len(invoice.ClientInvoices) > 0 {
+		fmt.Printf("🔍 DEBUG prepareInvoiceData: ClientInvoice[0].Client=%+v\n", invoice.ClientInvoices[0].Client)
+		fmt.Printf("🔍 DEBUG prepareInvoiceData: ClientInvoice[0].CostProvider=%+v\n", invoice.ClientInvoices[0].CostProvider)
 		if invoice.ClientInvoices[0].Client != nil {
 			client = invoice.ClientInvoices[0].Client
 		}
@@ -141,9 +155,13 @@ func (s *InvoicePDFService) prepareInvoiceData(invoice *entities.Invoice, isDraf
 		costProvider = &entities.CostProvider{}
 	}
 
-	organization := invoice.Organization
-	if organization == nil {
-		organization = &baseAPI.Organization{}
+	// Reload organization to get latest data (invoice might have stale data)
+	organization := &baseAPI.Organization{}
+	if invoice.OrganizationID > 0 {
+		if err := s.db.First(organization, invoice.OrganizationID).Error; err != nil {
+			log.Printf("⚠️ Warning: Failed to load organization %d: %v", invoice.OrganizationID, err)
+			organization = &baseAPI.Organization{} // Use empty to prevent crashes
+		}
 	}
 
 	// Check if VAT exempt
@@ -226,14 +244,52 @@ func (s *InvoicePDFService) generatePDF(ctx context.Context, data *InvoicePDFDat
 		return nil, fmt.Errorf("failed to render template: %w", err)
 	}
 
+	fmt.Printf("🔍 DEBUG: Full HTML to convert to PDF - length: %d bytes\n", len(html))
+	fmt.Printf("🔍 DEBUG: First 2000 chars:\n%s\n", html[:min(2000, len(html))])
+
+	// Save HTML to file for debugging
+	os.MkdirAll("tmp", 0755)
+	os.WriteFile("tmp/invoice_debug.html", []byte(html), 0644)
+	fmt.Println("💾 Saved HTML to tmp/invoice_debug.html for inspection")
+
 	// Convert HTML to PDF using chromedp
 	return s.convertHTMLToPDF(ctx, html)
 }
 
 // renderTemplate renders the invoice HTML template
 func (s *InvoicePDFService) renderTemplate(data *InvoicePDFData) (string, error) {
-	// For now, use file-based template
-	// TODO: Integrate with contract-based template system once it's stabilized
+	// Try to use contract-based template service if available
+	if s.templateService != nil {
+		ctx := context.Background()
+
+		// Convert invoice data to contract format
+		contractData := s.convertToContractFormat(data)
+
+		fmt.Printf("🔍 DEBUG: Contract data: %+v\n", contractData)
+
+		// Get the invoice template by template_key
+		templates, count, err := s.templateService.ListTemplates(ctx, data.Invoice.TenantID, nil, "DOCUMENT", "invoice", nil, 1, 1)
+		if err == nil && count > 0 {
+			fmt.Printf("✅ Found invoice template: ID=%d, Module=%s, TemplateKey=%s\n", templates[0].ID, templates[0].Module, templates[0].TemplateKey)
+
+			// Render using template service
+			html, err := s.templateService.RenderTemplate(ctx, data.Invoice.TenantID, templates[0].ID, contractData)
+			if err != nil {
+				fmt.Printf("⚠️  Warning: Contract-based rendering failed, falling back to file-based: %v\n", err)
+				// Fall through to file-based rendering
+			} else {
+				fmt.Printf("✅ Successfully rendered invoice using contract-based template (length: %d bytes)\n", len(html))
+				fmt.Printf("🔍 DEBUG: First 500 chars of HTML: %s\n", html[:min(500, len(html))])
+				return html, nil
+			}
+		} else {
+			fmt.Printf("⚠️  No invoice template found (count=%d, err=%v), falling back to file-based\n", count, err)
+		}
+	} else {
+		fmt.Printf("⚠️  Template service not available, using file-based rendering\n")
+	}
+
+	// Fallback: use file-based template
 	tmpl, err := template.ParseFiles(s.templatePath)
 	if err != nil {
 		return "", fmt.Errorf("failed to parse template: %w", err)
@@ -248,6 +304,103 @@ func (s *InvoicePDFService) renderTemplate(data *InvoicePDFData) (string, error)
 	return buf.String(), nil
 }
 
+// convertToContractFormat converts InvoicePDFData to the contract-based data format
+func (s *InvoicePDFService) convertToContractFormat(data *InvoicePDFData) map[string]interface{} {
+	// Build organization data
+	org := data.Organization
+	orgData := map[string]interface{}{
+		"name":           org.Name,
+		"owner_name":     org.OwnerName,
+		"owner_title":    org.OwnerTitle,
+		"street_address": org.StreetAddress,
+		"zip":            org.Zip,
+		"city":           org.City,
+		"email":          org.Email,
+		"phone":          org.Phone,
+		"tax_id":         org.TaxID,
+	}
+
+	// Add bank account if available
+	if org.BankAccountIBAN != "" {
+		orgData["bank_account"] = map[string]interface{}{
+			"owner": org.BankAccountOwner,
+			"bank":  org.BankAccountBank,
+			"iban":  org.BankAccountIBAN,
+			"bic":   org.BankAccountBIC,
+		}
+	}
+
+	// Build client data with nil checks
+	client := data.Client
+	clientData := map[string]interface{}{
+		"first_name":             "",
+		"last_name":              "",
+		"date_of_birth":          "",
+		"therapy_title":          "",
+		"provider_approval_code": "",
+	}
+
+	if client != nil {
+		clientData["first_name"] = client.FirstName
+		clientData["last_name"] = client.LastName
+		if client.DateOfBirth != nil && !client.DateOfBirth.IsZero() {
+			clientData["date_of_birth"] = client.DateOfBirth.Format("02.01.2006")
+		}
+		clientData["therapy_title"] = client.TherapyTitle
+		clientData["provider_approval_code"] = client.ProviderApprovalCode
+	}
+
+	// Build cost provider data with nil checks
+	costProvider := data.CostProvider
+	costProviderData := map[string]interface{}{
+		"organization":   "",
+		"contact_person": "",
+		"street_address": "",
+		"zip":            "",
+		"city":           "",
+		"state":          "",
+	}
+
+	if costProvider != nil {
+		costProviderData["organization"] = costProvider.Organization
+		costProviderData["contact_person"] = costProvider.ContactName
+		costProviderData["street_address"] = costProvider.StreetAddress
+		costProviderData["zip"] = costProvider.Zip
+		costProviderData["city"] = costProvider.City
+	}
+
+	// Build invoice items
+	items := make([]map[string]interface{}, 0, len(data.InvoiceItems))
+	for _, item := range data.InvoiceItems {
+		items = append(items, map[string]interface{}{
+			"description":       item.Description,
+			"number_units":      item.NumberUnits,
+			"unit_price":        item.UnitPrice,
+			"total_amount":      item.TotalAmount,
+			"unit_duration_min": item.UnitDurationMin,
+		})
+	}
+
+	// Build totals
+	totalsData := map[string]interface{}{
+		"net_total":   data.NetTotal,
+		"tax_amount":  data.Invoice.TaxAmount,
+		"tax_rate":    data.TaxRate,
+		"gross_total": data.GrossTotal,
+	}
+
+	// Return contract-compatible data format
+	return map[string]interface{}{
+		"invoice_number": data.Invoice.InvoiceNumber,
+		"invoice_date":   data.Invoice.InvoiceDate.Format("02.01.2006"),
+		"organization":   orgData,
+		"client":         clientData,
+		"cost_provider":  costProviderData,
+		"invoice_items":  items,
+		"totals":         totalsData,
+	}
+}
+
 // convertHTMLToPDF converts HTML content to PDF using chromedp
 func (s *InvoicePDFService) convertHTMLToPDF(ctx context.Context, html string) ([]byte, error) {
 	// Create a context with timeout
@@ -260,9 +413,15 @@ func (s *InvoicePDFService) convertHTMLToPDF(ctx context.Context, html string) (
 
 	var pdfData []byte
 
+	// Encode HTML as base64 data URL to handle special characters properly
+	encodedHTML := base64.StdEncoding.EncodeToString([]byte(html))
+	dataURL := "data:text/html;base64," + encodedHTML
+
 	// Navigate to data URL and print to PDF
 	err := chromedp.Run(allocCtx,
-		chromedp.Navigate("data:text/html,"+html),
+		chromedp.Navigate(dataURL),
+		chromedp.WaitReady("body", chromedp.ByQuery),
+		chromedp.Sleep(500*time.Millisecond), // Give time for CSS to apply
 		chromedp.ActionFunc(func(ctx context.Context) error {
 			var err error
 			pdfData, _, err = page.PrintToPDF().
@@ -273,6 +432,7 @@ func (s *InvoicePDFService) convertHTMLToPDF(ctx context.Context, html string) (
 				WithMarginRight(0).
 				WithPaperWidth(8.27).   // A4 width in inches
 				WithPaperHeight(11.69). // A4 height in inches
+				WithPreferCSSPageSize(false).
 				Do(ctx)
 			return err
 		}),
@@ -352,12 +512,15 @@ func (s *InvoicePDFService) StoreFinalPDFToMinIO(ctx context.Context, invoice *e
 		return "", fmt.Errorf("failed to generate final PDF: %w", err)
 	}
 
-	// Generate storage key
-	storageKey := fmt.Sprintf("invoices/final/%d/%s.pdf", invoice.TenantID, invoice.InvoiceNumber)
+	// Generate storage key in tenant bucket: documents/invoices/{invoice_number}.pdf
+	storageKey := fmt.Sprintf("documents/invoices/%s.pdf", invoice.InvoiceNumber)
+
+	// Get tenant bucket name (tenant-0001, tenant-0002, etc.)
+	bucketName := fmt.Sprintf("tenant-%04d", invoice.TenantID)
 
 	// Store in MinIO
 	storeReq := documentStorage.StoreRequest{
-		Bucket:      "invoices",
+		Bucket:      bucketName,
 		Key:         storageKey,
 		Data:        pdfData,
 		ContentType: "application/pdf",
@@ -392,12 +555,15 @@ func (s *InvoicePDFService) StoreCreditNotePDFToMinIO(ctx context.Context, credi
 		return "", fmt.Errorf("failed to generate credit note PDF: %w", err)
 	}
 
-	// Generate storage key
-	storageKey := fmt.Sprintf("invoices/credit-notes/%d/%s.pdf", creditNote.TenantID, creditNote.InvoiceNumber)
+	// Generate storage key in tenant bucket: documents/invoices/credit-notes/{invoice_number}.pdf
+	storageKey := fmt.Sprintf("documents/invoices/credit-notes/%s.pdf", creditNote.InvoiceNumber)
+
+	// Get tenant bucket name (tenant-0001, tenant-0002, etc.)
+	bucketName := fmt.Sprintf("tenant-%04d", creditNote.TenantID)
 
 	// Store in MinIO
 	storeReq := documentStorage.StoreRequest{
-		Bucket:      "invoices",
+		Bucket:      bucketName,
 		Key:         storageKey,
 		Data:        pdfData,
 		ContentType: "application/pdf",

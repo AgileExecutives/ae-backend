@@ -5,12 +5,15 @@ import (
 	"fmt"
 
 	internalDB "github.com/ae-base-server/internal/database"
+	internalServices "github.com/ae-base-server/internal/services"
 	"github.com/ae-base-server/modules/base"
 	"github.com/ae-base-server/modules/customer"
 	"github.com/ae-base-server/modules/email"
 	"github.com/ae-base-server/modules/pdf"
+	"github.com/ae-base-server/modules/templates/services/storage"
 	"github.com/ae-base-server/pkg/core"
 	"github.com/ae-base-server/pkg/database"
+	pkgServices "github.com/ae-base-server/pkg/services"
 	"gorm.io/gorm"
 )
 
@@ -27,9 +30,27 @@ func ConnectDatabaseWithAutoCreate(config DatabaseConfig) (*gorm.DB, error) {
 	return database.ConnectWithAutoCreate(config)
 }
 
-// SeedBaseData loads and seeds data from seed-data.json
+// SeedBaseData loads and seeds data from seed-data.json with MinIO bucket creation
 func SeedBaseData(db *gorm.DB) error {
-	return internalDB.Seed(db)
+	// Initialize MinIO storage for tenant buckets
+	minioConfig := storage.MinIOConfig{
+		Endpoint:        "localhost:9000",
+		AccessKeyID:     "minioadmin",
+		SecretAccessKey: "minioadmin123",
+		UseSSL:          false,
+		Region:          "us-east-1",
+	}
+	minioStorage, err := storage.NewMinIOStorage(minioConfig)
+	if err != nil {
+		// Log error but don't fail entirely - some features may not work
+		fmt.Printf("⚠️ Warning: Failed to initialize MinIO storage for seeding: %v\n", err)
+	}
+
+	// Create services for tenant bucket management
+	tenantBucketService := pkgServices.NewTenantBucketService(minioStorage)
+	tenantService := internalServices.NewTenantService(db, tenantBucketService)
+	
+	return internalDB.Seed(db, tenantService)
 }
 
 // MigrateBaseEntities migrates all base-server entities (users, tenants, etc.)

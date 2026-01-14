@@ -1,6 +1,4 @@
 {
-  "app_name": "Unburdy",
-  "user_email": "john.doe@example.com",
   "user_name": "John Doe",
-  "verification_link": "https://app.unburdy.com/verify?token=xyz789"
+  "verification_link": "https://example.com/verify?token=xyz789"
 }

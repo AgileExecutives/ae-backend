@@ -1,0 +1,20 @@
+{
+  "AppName": "Unburdy Therapy Center",
+  "Date": "15. Februar 2026",
+  "TimeFrom": "14:00",
+  "TimeTo": "15:00",
+  "CompanyName": "Unburdy Therapiezentrum GmbH",
+  "SupportEmail": "info@unburdy.de",
+  "CompanyAddress": "Musterstraße 123, 12345 Berlin",
+  "CustomData": {
+    "ClientName": "Max Mustermann",
+    "IsSeries": false,
+    "AppointmentDate": "15. Februar 2026",
+    "TimeFrom": "14:00",
+    "TimeTo": "15:00",
+    "Title": "Einzeltherapie Sitzung",
+    "Description": "Psychotherapeutische Behandlung",
+    "Duration": 50,
+    "Location": "Praxis Berlin-Mitte"
+  }
+}

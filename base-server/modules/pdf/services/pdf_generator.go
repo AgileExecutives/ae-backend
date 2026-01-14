@@ -122,7 +122,7 @@ func (pg *PDFGenerator) CreateHtmlFromTemplate(data interface{}, templatePath, o
 // GeneratePDFFromTemplate is a convenience method that generates HTML from template and then converts to PDF
 func (pg *PDFGenerator) GeneratePDFFromTemplate(data interface{}, templateFile, outputFileName string) (string, error) {
 
-	templatesDir := utils.GetEnv("PDF_TEMPLATES_DIR", "./statics/templates/pdf")
+	templatesDir := utils.GetEnv("TEMPLATES_DIR", "./statics/templates")
 	templatePath := filepath.Join(templatesDir, templateFile)
 	// Check if file exists
 	if _, err := os.Stat(templatePath); os.IsNotExist(err) {

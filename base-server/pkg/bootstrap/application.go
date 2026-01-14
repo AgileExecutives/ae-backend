@@ -3,6 +3,7 @@ package bootstrap
 import (
 	"context"
 	"fmt"
+	"log"
 	"net/http"
 	"os"
 	"os/signal"
@@ -13,10 +14,14 @@ import (
 	internalHandlers "github.com/ae-base-server/internal/handlers"
 	"github.com/ae-base-server/internal/middleware"
 	internalMiddleware "github.com/ae-base-server/internal/middleware"
+	internalServices "github.com/ae-base-server/internal/services"
+	"github.com/ae-base-server/modules/templates/services/storage"
 	"github.com/ae-base-server/pkg/auth"
 	"github.com/ae-base-server/pkg/config"
 	"github.com/ae-base-server/pkg/core"
 	"github.com/ae-base-server/pkg/database"
+	pkgServices "github.com/ae-base-server/pkg/services"
+	"github.com/ae-base-server/pkg/startup"
 	"github.com/ae-base-server/services"
 	"github.com/gin-gonic/gin"
 	swaggerFiles "github.com/swaggo/files"
@@ -68,6 +73,13 @@ func (app *Application) Initialize() error {
 	app.logger.Info("Running database migrations...")
 	if err := app.runMigrations(); err != nil {
 		return fmt.Errorf("failed to run migrations: %w", err)
+	}
+
+	// 3.5. Register contracts BEFORE seeding so contracts exist when templates are seeded
+	app.logger.Info("Registering template contracts...")
+	if err := app.registerContracts(); err != nil {
+		app.logger.Warn("Failed to register contracts:", err)
+		// Don't fail startup, contracts can be registered later
 	}
 
 	// 4. Seed database
@@ -156,6 +168,11 @@ func (app *Application) GetServiceRegistry() core.ServiceRegistry {
 	return app.context.Services
 }
 
+// DB returns the database connection
+func (app *Application) DB() *gorm.DB {
+	return app.context.DB
+}
+
 // initializeCoreServices initializes core application services
 func (app *Application) initializeCoreServices() error {
 	// Set Gin mode
@@ -225,8 +242,26 @@ func (app *Application) setupInternalAuthRoutes(router *gin.Engine, db *gorm.DB,
 	// Import needed for internal handlers - these imports will need to be added at the top
 	// For now, we'll add the most critical auth routes manually
 
-	// Initialize internal auth handler
-	authHandler := internalHandlers.NewAuthHandler(db)
+	// Initialize MinIO storage for tenant buckets
+	minioConfig := storage.MinIOConfig{
+		Endpoint:        "localhost:9000",
+		AccessKeyID:     "minioadmin",
+		SecretAccessKey: "minioadmin123",
+		UseSSL:          false,
+		Region:          "us-east-1",
+	}
+	minioStorage, err := storage.NewMinIOStorage(minioConfig)
+	if err != nil {
+		// Log error but don't fail entirely - some features may not work
+		log.Printf("⚠️ Warning: Failed to initialize MinIO storage: %v", err)
+	}
+
+	// Initialize services for tenant bucket management
+	tenantBucketService := pkgServices.NewTenantBucketService(minioStorage)
+	tenantService := internalServices.NewTenantService(db, tenantBucketService)
+
+	// Initialize internal auth handler with tenant service
+	authHandler := internalHandlers.NewAuthHandler(db, tenantService)
 
 	// Public routes group
 	public := router.Group("/api/v1")
@@ -347,10 +382,39 @@ func (app *Application) runMigrations() error {
 	return nil
 }
 
+// registerContracts registers all template contracts from modules
+func (app *Application) registerContracts() error {
+	app.logger.Info("Registering template contracts...")
+	err := startup.RegisterAllContracts(app.context.DB)
+	if err != nil {
+		app.logger.Error("Failed to register contracts", "error", err)
+		return err
+	}
+	app.logger.Info("Template contracts registered successfully")
+	return nil
+}
+
 // seedDatabase seeds the database with initial data
 func (app *Application) seedDatabase() error {
-	// Use the existing seed function for now
-	return internalDB.Seed(app.context.DB)
+	// Initialize MinIO storage for tenant buckets
+	minioConfig := storage.MinIOConfig{
+		Endpoint:        "localhost:9000",
+		AccessKeyID:     "minioadmin",
+		SecretAccessKey: "minioadmin123",
+		UseSSL:          false,
+		Region:          "us-east-1",
+	}
+	minioStorage, err := storage.NewMinIOStorage(minioConfig)
+	if err != nil {
+		log.Printf("⚠️ Warning: Failed to initialize MinIO storage for seeding: %v", err)
+	}
+
+	// Create services for tenant bucket management
+	tenantBucketService := pkgServices.NewTenantBucketService(minioStorage)
+	tenantService := internalServices.NewTenantService(app.context.DB, tenantBucketService)
+	
+	// Use the enhanced seed function that creates MinIO buckets
+	return internalDB.Seed(app.context.DB, tenantService)
 }
 
 // corsMiddleware adds CORS headers

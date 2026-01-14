@@ -1,0 +1,46 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "title": "Booking Confirmation Template Contract",
+  "description": "Data contract for booking confirmation email template rendering",
+  "required": [
+    "AppName",
+    "Date",
+    "TimeFrom",
+    "TimeTo",
+    "CompanyName",
+    "SupportEmail",
+    "CompanyAddress"
+  ],
+  "properties": {
+    "AppName": {
+      "type": "string",
+      "description": "Application name"
+    },
+    "Date": {
+      "type": "string",
+      "description": "Booking date in German format"
+    },
+    "TimeFrom": {
+      "type": "string",
+      "description": "Start time of the appointment"
+    },
+    "TimeTo": {
+      "type": "string", 
+      "description": "End time of the appointment"
+    },
+    "CompanyName": {
+      "type": "string",
+      "description": "Company name"
+    },
+    "SupportEmail": {
+      "type": "string",
+      "format": "email",
+      "description": "Support email address"
+    },
+    "CompanyAddress": {
+      "type": "string",
+      "description": "Company address"
+    }
+  }
+}
