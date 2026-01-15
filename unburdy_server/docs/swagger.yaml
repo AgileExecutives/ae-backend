@@ -16,69 +16,6 @@ definitions:
       pagination:
         $ref: '#/definitions/github_com_ae-base-server_internal_models.PaginationResponse'
     type: object
-  api.OrganizationResponse:
-    properties:
-      additional_payment_methods:
-        type: object
-      amount_format:
-        type: string
-      bankaccount_bank:
-        type: string
-      bankaccount_bic:
-        type: string
-      bankaccount_iban:
-        type: string
-      bankaccount_owner:
-        type: string
-      city:
-        type: string
-      created_at:
-        type: string
-      date_format:
-        type: string
-      email:
-        type: string
-      extra_efforts_billing_mode:
-        type: string
-      extra_efforts_config:
-        type: object
-      id:
-        type: integer
-      invoice_content:
-        type: object
-      line_item_double_unit_text:
-        type: string
-      line_item_single_unit_text:
-        type: string
-      locale:
-        type: string
-      name:
-        type: string
-      owner_name:
-        type: string
-      owner_title:
-        type: string
-      phone:
-        type: string
-      street_address:
-        type: string
-      tax_id:
-        type: string
-      tax_rate:
-        type: number
-      tax_ustid:
-        type: string
-      tenant_id:
-        type: integer
-      time_format:
-        type: string
-      unit_price:
-        type: number
-      updated_at:
-        type: string
-      zip:
-        type: string
-    type: object
   entities.AuditAction:
     enum:
     - invoice_draft_created
@@ -1710,51 +1647,46 @@ definitions:
     type: object
   entities.SettingRequest:
     properties:
+      data:
+        additionalProperties: true
+        type: object
       domain:
-        example: company
+        example: organization
         type: string
       key:
-        example: company_name
+        example: locale
         type: string
-      type:
-        example: string
-        type: string
-      value: {}
     required:
+    - data
     - domain
     - key
-    - type
-    - value
     type: object
   entities.SettingResponse:
     properties:
       created_at:
         example: "2025-01-09T10:00:00Z"
         type: string
+      data:
+        additionalProperties: true
+        type: object
       domain:
-        example: company
+        example: organization
         type: string
       id:
         example: 123
         type: integer
       key:
-        example: company_name
-        type: string
-      organization_id:
-        example: org-123
+        example: locale
         type: string
       tenant_id:
         example: 1
         type: integer
-      type:
-        example: string
-        type: string
       updated_at:
         example: "2025-01-09T10:00:00Z"
         type: string
-      value:
-        example: My Company
-        type: string
+      version:
+        example: 1
+        type: integer
     type: object
   entities.SettingsResponse:
     properties:
@@ -2834,6 +2766,7 @@ definitions:
   github_com_unburdy_invoice-module_entities.InvoiceStatus:
     enum:
     - draft
+    - finalized
     - sent
     - paid
     - overdue
@@ -2841,6 +2774,7 @@ definitions:
     type: string
     x-enum-varnames:
     - InvoiceStatusDraft
+    - InvoiceStatusFinalized
     - InvoiceStatusSent
     - InvoiceStatusPaid
     - InvoiceStatusOverdue
@@ -2981,7 +2915,7 @@ definitions:
       number_units:
         type: integer
       organization:
-        $ref: '#/definitions/api.OrganizationResponse'
+        type: object
       organization_id:
         type: integer
       payed_date:
@@ -3006,6 +2940,7 @@ definitions:
   github_com_unburdy_unburdy-server-api_modules_client_management_entities.InvoiceStatus:
     enum:
     - draft
+    - finalized
     - sent
     - paid
     - overdue
@@ -3013,6 +2948,7 @@ definitions:
     type: string
     x-enum-varnames:
     - InvoiceStatusDraft
+    - InvoiceStatusFinalized
     - InvoiceStatusSent
     - InvoiceStatusPaid
     - InvoiceStatusOverdue
@@ -3478,9 +3414,6 @@ definitions:
     properties:
       additional_payment_methods:
         type: object
-      amount_format:
-        example: de
-        type: string
       bankaccount_bank:
         example: Deutsche Bank
         type: string
@@ -3496,43 +3429,11 @@ definitions:
       city:
         example: New York
         type: string
-      date_format:
-        example: 02.01.2006
-        type: string
-      default_vat_exempt:
-        example: false
-        type: boolean
-      default_vat_rate:
-        example: 19
-        type: number
       email:
         example: info@acme.com
         type: string
-      extra_efforts_billing_mode:
-        example: ignore
-        type: string
-      extra_efforts_config:
-        type: object
-      first_reminder_days:
-        example: 7
-        type: integer
       invoice_content:
         type: object
-      invoice_number_format:
-        example: sequential
-        type: string
-      invoice_number_prefix:
-        example: INV-
-        type: string
-      line_item_double_unit_text:
-        example: Doppelstunde
-        type: string
-      line_item_single_unit_text:
-        example: Einzelstunde
-        type: string
-      locale:
-        example: de-DE
-        type: string
       name:
         example: Acme Corporation
         type: string
@@ -3542,15 +3443,9 @@ definitions:
       owner_title:
         example: CEO
         type: string
-      payment_due_days:
-        example: 14
-        type: integer
       phone:
         example: +1-555-0123
         type: string
-      second_reminder_days:
-        example: 14
-        type: integer
       street_address:
         example: 123 Business St
         type: string
@@ -3562,9 +3457,6 @@ definitions:
         type: number
       tax_ustid:
         example: DE123456789
-        type: string
-      time_format:
-        example: "15:04"
         type: string
       unit_price:
         example: 150
@@ -3744,20 +3636,6 @@ definitions:
       slug:
         type: string
     type: object
-  models.UpdateBillingConfigRequest:
-    properties:
-      extra_efforts_billing_mode:
-        example: bundle_double_units
-        type: string
-      extra_efforts_config:
-        type: object
-      line_item_double_unit_text:
-        example: Therapie Doppelstunde
-        type: string
-      line_item_single_unit_text:
-        example: Therapiestunde
-        type: string
-    type: object
   models.UpdateClientRequest:
     properties:
       admission_date:
@@ -3870,9 +3748,6 @@ definitions:
     properties:
       additional_payment_methods:
         type: object
-      amount_format:
-        example: de
-        type: string
       bankaccount_bank:
         example: Deutsche Bank
         type: string
@@ -3888,43 +3763,11 @@ definitions:
       city:
         example: New York
         type: string
-      date_format:
-        example: 02.01.2006
-        type: string
-      default_vat_exempt:
-        example: false
-        type: boolean
-      default_vat_rate:
-        example: 19
-        type: number
       email:
         example: info@acme.com
         type: string
-      extra_efforts_billing_mode:
-        example: bundle_double_units
-        type: string
-      extra_efforts_config:
-        type: object
-      first_reminder_days:
-        example: 7
-        type: integer
       invoice_content:
         type: object
-      invoice_number_format:
-        example: sequential
-        type: string
-      invoice_number_prefix:
-        example: INV-
-        type: string
-      line_item_double_unit_text:
-        example: Therapie Doppelstunde
-        type: string
-      line_item_single_unit_text:
-        example: Therapiestunde
-        type: string
-      locale:
-        example: de-DE
-        type: string
       name:
         example: Acme Corporation
         type: string
@@ -3934,15 +3777,9 @@ definitions:
       owner_title:
         example: CEO
         type: string
-      payment_due_days:
-        example: 14
-        type: integer
       phone:
         example: +1-555-0123
         type: string
-      second_reminder_days:
-        example: 14
-        type: integer
       street_address:
         example: 123 Business St
         type: string
@@ -3954,9 +3791,6 @@ definitions:
         type: number
       tax_ustid:
         example: DE123456789
-        type: string
-      time_format:
-        example: "15:04"
         type: string
       unit_price:
         example: 150
@@ -6107,7 +5941,7 @@ paths:
   /client-invoices/{id}/finalize:
     post:
       description: Finalize a draft invoice by generating invoice number and changing
-        status to 'sent'
+        status to 'finalized'
       operationId: finalizeInvoice
       parameters:
       - description: Invoice ID
@@ -6246,6 +6080,49 @@ paths:
       summary: Mark an invoice as paid
       tags:
       - invoices
+  /client-invoices/{id}/mark-sent:
+    post:
+      description: Mark a finalized invoice as sent (changes status from finalized
+        to sent)
+      operationId: markInvoiceAsSent
+      parameters:
+      - description: Invoice ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/entities.InvoiceAPIResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Mark invoice as sent
+      tags:
+      - client-invoices
   /client-invoices/{id}/pdf:
     get:
       description: Download the PDF document for a finalized invoice
@@ -9178,52 +9055,6 @@ paths:
       security:
       - BearerAuth: []
       summary: Update an organization
-      tags:
-      - organizations
-  /organizations/{id}/billing-config:
-    put:
-      consumes:
-      - application/json
-      description: Update billing mode and configuration for extra efforts tracking
-      operationId: updateOrganizationBillingConfig
-      parameters:
-      - description: Organization ID
-        in: path
-        name: id
-        required: true
-        type: integer
-      - description: Billing configuration
-        in: body
-        name: config
-        required: true
-        schema:
-          $ref: '#/definitions/models.UpdateBillingConfigRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/models.OrganizationAPIResponse'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/github_com_ae-base-server_internal_models.ErrorResponse'
-        "401":
-          description: Unauthorized
-          schema:
-            $ref: '#/definitions/github_com_ae-base-server_internal_models.ErrorResponse'
-        "404":
-          description: Not Found
-          schema:
-            $ref: '#/definitions/github_com_ae-base-server_internal_models.ErrorResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/github_com_ae-base-server_internal_models.ErrorResponse'
-      security:
-      - BearerAuth: []
-      summary: Update organization billing configuration
       tags:
       - organizations
   /organizations/supported-formats:

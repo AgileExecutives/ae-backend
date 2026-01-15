@@ -3261,7 +3261,7 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "Finalize a draft invoice by generating invoice number and changing status to 'sent'",
+                "description": "Finalize a draft invoice by generating invoice number and changing status to 'finalized'",
                 "produces": [
                     "application/json"
                 ],
@@ -3430,6 +3430,71 @@ const docTemplate = `{
                         "schema": {
                             "$ref": "#/definitions/entities.MarkInvoiceAsPaidRequest"
                         }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/entities.InvoiceAPIResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/client-invoices/{id}/mark-sent": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Mark a finalized invoice as sent (changes status from finalized to sent)",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "client-invoices"
+                ],
+                "summary": "Mark invoice as sent",
+                "operationId": "markInvoiceAsSent",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Invoice ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
                     }
                 ],
                 "responses": {
@@ -7926,77 +7991,6 @@ const docTemplate = `{
                 }
             }
         },
-        "/organizations/{id}/billing-config": {
-            "put": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "Update billing mode and configuration for extra efforts tracking",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "organizations"
-                ],
-                "summary": "Update organization billing configuration",
-                "operationId": "updateOrganizationBillingConfig",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "Organization ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "Billing configuration",
-                        "name": "config",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/models.UpdateBillingConfigRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/models.OrganizationAPIResponse"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
-                        }
-                    }
-                }
-            }
-        },
         "/pdf/create": {
             "post": {
                 "security": [
@@ -11455,101 +11449,6 @@ const docTemplate = `{
                 }
             }
         },
-        "api.OrganizationResponse": {
-            "type": "object",
-            "properties": {
-                "additional_payment_methods": {
-                    "type": "object"
-                },
-                "amount_format": {
-                    "type": "string"
-                },
-                "bankaccount_bank": {
-                    "type": "string"
-                },
-                "bankaccount_bic": {
-                    "type": "string"
-                },
-                "bankaccount_iban": {
-                    "type": "string"
-                },
-                "bankaccount_owner": {
-                    "type": "string"
-                },
-                "city": {
-                    "type": "string"
-                },
-                "created_at": {
-                    "type": "string"
-                },
-                "date_format": {
-                    "type": "string"
-                },
-                "email": {
-                    "type": "string"
-                },
-                "extra_efforts_billing_mode": {
-                    "type": "string"
-                },
-                "extra_efforts_config": {
-                    "type": "object"
-                },
-                "id": {
-                    "type": "integer"
-                },
-                "invoice_content": {
-                    "type": "object"
-                },
-                "line_item_double_unit_text": {
-                    "type": "string"
-                },
-                "line_item_single_unit_text": {
-                    "type": "string"
-                },
-                "locale": {
-                    "type": "string"
-                },
-                "name": {
-                    "type": "string"
-                },
-                "owner_name": {
-                    "type": "string"
-                },
-                "owner_title": {
-                    "type": "string"
-                },
-                "phone": {
-                    "type": "string"
-                },
-                "street_address": {
-                    "type": "string"
-                },
-                "tax_id": {
-                    "type": "string"
-                },
-                "tax_rate": {
-                    "type": "number"
-                },
-                "tax_ustid": {
-                    "type": "string"
-                },
-                "tenant_id": {
-                    "type": "integer"
-                },
-                "time_format": {
-                    "type": "string"
-                },
-                "unit_price": {
-                    "type": "number"
-                },
-                "updated_at": {
-                    "type": "string"
-                },
-                "zip": {
-                    "type": "string"
-                }
-            }
-        },
         "entities.AuditAction": {
             "type": "string",
             "enum": [
@@ -13859,25 +13758,23 @@ const docTemplate = `{
         "entities.SettingRequest": {
             "type": "object",
             "required": [
+                "data",
                 "domain",
-                "key",
-                "type",
-                "value"
+                "key"
             ],
             "properties": {
+                "data": {
+                    "type": "object",
+                    "additionalProperties": true
+                },
                 "domain": {
                     "type": "string",
-                    "example": "company"
+                    "example": "organization"
                 },
                 "key": {
                     "type": "string",
-                    "example": "company_name"
-                },
-                "type": {
-                    "type": "string",
-                    "example": "string"
-                },
-                "value": {}
+                    "example": "locale"
+                }
             }
         },
         "entities.SettingResponse": {
@@ -13887,9 +13784,13 @@ const docTemplate = `{
                     "type": "string",
                     "example": "2025-01-09T10:00:00Z"
                 },
+                "data": {
+                    "type": "object",
+                    "additionalProperties": true
+                },
                 "domain": {
                     "type": "string",
-                    "example": "company"
+                    "example": "organization"
                 },
                 "id": {
                     "type": "integer",
@@ -13897,27 +13798,19 @@ const docTemplate = `{
                 },
                 "key": {
                     "type": "string",
-                    "example": "company_name"
-                },
-                "organization_id": {
-                    "type": "string",
-                    "example": "org-123"
+                    "example": "locale"
                 },
                 "tenant_id": {
                     "type": "integer",
                     "example": 1
                 },
-                "type": {
-                    "type": "string",
-                    "example": "string"
-                },
                 "updated_at": {
                     "type": "string",
                     "example": "2025-01-09T10:00:00Z"
                 },
-                "value": {
-                    "type": "string",
-                    "example": "My Company"
+                "version": {
+                    "type": "integer",
+                    "example": 1
                 }
             }
         },
@@ -15475,6 +15368,7 @@ const docTemplate = `{
             "type": "string",
             "enum": [
                 "draft",
+                "finalized",
                 "sent",
                 "paid",
                 "overdue",
@@ -15482,6 +15376,7 @@ const docTemplate = `{
             ],
             "x-enum-varnames": [
                 "InvoiceStatusDraft",
+                "InvoiceStatusFinalized",
                 "InvoiceStatusSent",
                 "InvoiceStatusPaid",
                 "InvoiceStatusOverdue",
@@ -15692,7 +15587,7 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "organization": {
-                    "$ref": "#/definitions/api.OrganizationResponse"
+                    "type": "object"
                 },
                 "organization_id": {
                     "type": "integer"
@@ -15730,6 +15625,7 @@ const docTemplate = `{
             "type": "string",
             "enum": [
                 "draft",
+                "finalized",
                 "sent",
                 "paid",
                 "overdue",
@@ -15737,6 +15633,7 @@ const docTemplate = `{
             ],
             "x-enum-varnames": [
                 "InvoiceStatusDraft",
+                "InvoiceStatusFinalized",
                 "InvoiceStatusSent",
                 "InvoiceStatusPaid",
                 "InvoiceStatusOverdue",
@@ -16407,10 +16304,6 @@ const docTemplate = `{
                 "additional_payment_methods": {
                     "type": "object"
                 },
-                "amount_format": {
-                    "type": "string",
-                    "example": "de"
-                },
                 "bankaccount_bank": {
                     "type": "string",
                     "example": "Deutsche Bank"
@@ -16431,55 +16324,12 @@ const docTemplate = `{
                     "type": "string",
                     "example": "New York"
                 },
-                "date_format": {
-                    "type": "string",
-                    "example": "02.01.2006"
-                },
-                "default_vat_exempt": {
-                    "type": "boolean",
-                    "example": false
-                },
-                "default_vat_rate": {
-                    "type": "number",
-                    "example": 19
-                },
                 "email": {
                     "type": "string",
                     "example": "info@acme.com"
                 },
-                "extra_efforts_billing_mode": {
-                    "type": "string",
-                    "example": "ignore"
-                },
-                "extra_efforts_config": {
-                    "type": "object"
-                },
-                "first_reminder_days": {
-                    "type": "integer",
-                    "example": 7
-                },
                 "invoice_content": {
                     "type": "object"
-                },
-                "invoice_number_format": {
-                    "type": "string",
-                    "example": "sequential"
-                },
-                "invoice_number_prefix": {
-                    "type": "string",
-                    "example": "INV-"
-                },
-                "line_item_double_unit_text": {
-                    "type": "string",
-                    "example": "Doppelstunde"
-                },
-                "line_item_single_unit_text": {
-                    "type": "string",
-                    "example": "Einzelstunde"
-                },
-                "locale": {
-                    "type": "string",
-                    "example": "de-DE"
                 },
                 "name": {
                     "type": "string",
@@ -16493,17 +16343,9 @@ const docTemplate = `{
                     "type": "string",
                     "example": "CEO"
                 },
-                "payment_due_days": {
-                    "type": "integer",
-                    "example": 14
-                },
                 "phone": {
                     "type": "string",
                     "example": "+1-555-0123"
-                },
-                "second_reminder_days": {
-                    "type": "integer",
-                    "example": 14
                 },
                 "street_address": {
                     "type": "string",
@@ -16520,10 +16362,6 @@ const docTemplate = `{
                 "tax_ustid": {
                     "type": "string",
                     "example": "DE123456789"
-                },
-                "time_format": {
-                    "type": "string",
-                    "example": "15:04"
                 },
                 "unit_price": {
                     "type": "number",
@@ -16782,26 +16620,6 @@ const docTemplate = `{
                 }
             }
         },
-        "models.UpdateBillingConfigRequest": {
-            "type": "object",
-            "properties": {
-                "extra_efforts_billing_mode": {
-                    "type": "string",
-                    "example": "bundle_double_units"
-                },
-                "extra_efforts_config": {
-                    "type": "object"
-                },
-                "line_item_double_unit_text": {
-                    "type": "string",
-                    "example": "Therapie Doppelstunde"
-                },
-                "line_item_single_unit_text": {
-                    "type": "string",
-                    "example": "Therapiestunde"
-                }
-            }
-        },
         "models.UpdateClientRequest": {
             "type": "object",
             "properties": {
@@ -16954,10 +16772,6 @@ const docTemplate = `{
                 "additional_payment_methods": {
                     "type": "object"
                 },
-                "amount_format": {
-                    "type": "string",
-                    "example": "de"
-                },
                 "bankaccount_bank": {
                     "type": "string",
                     "example": "Deutsche Bank"
@@ -16978,55 +16792,12 @@ const docTemplate = `{
                     "type": "string",
                     "example": "New York"
                 },
-                "date_format": {
-                    "type": "string",
-                    "example": "02.01.2006"
-                },
-                "default_vat_exempt": {
-                    "type": "boolean",
-                    "example": false
-                },
-                "default_vat_rate": {
-                    "type": "number",
-                    "example": 19
-                },
                 "email": {
                     "type": "string",
                     "example": "info@acme.com"
                 },
-                "extra_efforts_billing_mode": {
-                    "type": "string",
-                    "example": "bundle_double_units"
-                },
-                "extra_efforts_config": {
-                    "type": "object"
-                },
-                "first_reminder_days": {
-                    "type": "integer",
-                    "example": 7
-                },
                 "invoice_content": {
                     "type": "object"
-                },
-                "invoice_number_format": {
-                    "type": "string",
-                    "example": "sequential"
-                },
-                "invoice_number_prefix": {
-                    "type": "string",
-                    "example": "INV-"
-                },
-                "line_item_double_unit_text": {
-                    "type": "string",
-                    "example": "Therapie Doppelstunde"
-                },
-                "line_item_single_unit_text": {
-                    "type": "string",
-                    "example": "Therapiestunde"
-                },
-                "locale": {
-                    "type": "string",
-                    "example": "de-DE"
                 },
                 "name": {
                     "type": "string",
@@ -17040,17 +16811,9 @@ const docTemplate = `{
                     "type": "string",
                     "example": "CEO"
                 },
-                "payment_due_days": {
-                    "type": "integer",
-                    "example": 14
-                },
                 "phone": {
                     "type": "string",
                     "example": "+1-555-0123"
-                },
-                "second_reminder_days": {
-                    "type": "integer",
-                    "example": 14
                 },
                 "street_address": {
                     "type": "string",
@@ -17067,10 +16830,6 @@ const docTemplate = `{
                 "tax_ustid": {
                     "type": "string",
                     "example": "DE123456789"
-                },
-                "time_format": {
-                    "type": "string",
-                    "example": "15:04"
                 },
                 "unit_price": {
                     "type": "number",

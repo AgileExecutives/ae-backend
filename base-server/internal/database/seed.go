@@ -68,8 +68,23 @@ type SeedTenant struct {
 
 // SeedOrganization represents organization seed data
 type SeedOrganization struct {
-	TenantID uint   `json:"tenant_id"`
-	Name     string `json:"name"`
+	TenantID         uint     `json:"tenant_id"`
+	Name             string   `json:"name"`
+	OwnerName        string   `json:"owner_name"`
+	OwnerTitle       string   `json:"owner_title"`
+	StreetAddress    string   `json:"street_address"`
+	Zip              string   `json:"zip"`
+	City             string   `json:"city"`
+	Email            string   `json:"email"`
+	Phone            string   `json:"phone"`
+	TaxID            string   `json:"tax_id"`
+	TaxRate          *float64 `json:"tax_rate"`
+	TaxUstID         string   `json:"tax_ustid"`
+	UnitPrice        *float64 `json:"unit_price"`
+	BankAccountOwner string   `json:"bank_account_owner"`
+	BankAccountBank  string   `json:"bank_account_bank"`
+	BankAccountBIC   string   `json:"bank_account_bic"`
+	BankAccountIBAN  string   `json:"bank_account_iban"`
 }
 
 // SeedPlan represents plan seed data
@@ -194,8 +209,23 @@ func Seed(db *gorm.DB, tenantService *services.TenantService) error {
 	if organizationCount == 0 {
 		for _, orgData := range seedData.Organizations {
 			organization := models.Organization{
-				TenantID: orgData.TenantID,
-				Name:     orgData.Name,
+				TenantID:         orgData.TenantID,
+				Name:             orgData.Name,
+				OwnerName:        orgData.OwnerName,
+				OwnerTitle:       orgData.OwnerTitle,
+				StreetAddress:    orgData.StreetAddress,
+				Zip:              orgData.Zip,
+				City:             orgData.City,
+				Email:            orgData.Email,
+				Phone:            orgData.Phone,
+				TaxID:            orgData.TaxID,
+				TaxRate:          orgData.TaxRate,
+				TaxUstID:         orgData.TaxUstID,
+				UnitPrice:        orgData.UnitPrice,
+				BankAccountOwner: orgData.BankAccountOwner,
+				BankAccountBank:  orgData.BankAccountBank,
+				BankAccountBIC:   orgData.BankAccountBIC,
+				BankAccountIBAN:  orgData.BankAccountIBAN,
 			}
 			if err := db.Create(&organization).Error; err != nil {
 				return fmt.Errorf("failed to create organization %s: %w", orgData.Name, err)

@@ -39,7 +39,7 @@ type Invoice struct {
 	DocumentID     *uint                 `gorm:"index:idx_invoice_document" json:"document_id,omitempty"`
 
 	// Workflow timestamps
-	EmailSentAt    *time.Time `json:"email_sent_at,omitempty"`
+	SentAt         *time.Time `json:"sent_at,omitempty"`
 	ReminderSentAt *time.Time `json:"reminder_sent_at,omitempty"`
 	FinalizedAt    *time.Time `json:"finalized_at,omitempty"`
 	CancelledAt    *time.Time `json:"cancelled_at,omitempty"`
@@ -98,7 +98,7 @@ type ClientInvoice struct {
 	Client         *Client        `gorm:"foreignKey:ClientID" json:"client,omitempty"`
 	CostProviderID uint           `gorm:"not null;index:idx_client_invoice_cost_provider" json:"cost_provider_id"`
 	CostProvider   *CostProvider  `gorm:"foreignKey:CostProviderID" json:"cost_provider,omitempty"`
-	SessionID      uint           `gorm:"not null;uniqueIndex:idx_client_invoice_session" json:"session_id"`
+	SessionID      *uint          `gorm:"uniqueIndex:idx_client_invoice_session" json:"session_id,omitempty"`
 	Session        *Session       `gorm:"foreignKey:SessionID" json:"session,omitempty"`
 	InvoiceItemID  uint           `gorm:"not null;index:idx_client_invoice_item" json:"invoice_item_id"`
 	InvoiceItem    *InvoiceItem   `gorm:"foreignKey:InvoiceItemID" json:"invoice_item,omitempty"`
@@ -193,7 +193,7 @@ type InvoiceResponse struct {
 	TenantID       uint                          `json:"tenant_id"`
 	UserID         uint                          `json:"user_id"`
 	OrganizationID uint                          `json:"organization_id"`
-	Organization   *baseAPI.OrganizationResponse `json:"organization,omitempty"`
+	Organization   *baseAPI.OrganizationResponse `json:"organization,omitempty" swaggertype:"object"`
 	InvoiceDate    time.Time                     `json:"invoice_date"`
 	InvoiceNumber  string                        `json:"invoice_number"`
 	NumberUnits    int                           `json:"number_units"`

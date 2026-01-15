@@ -88,10 +88,26 @@ func (s *InvoiceNumberService) GenerateInvoiceNumber(organizationID uint, tenant
 		} else {
 			query = query.Where("invoice_number LIKE ?", yearMonthStr+"%")
 		}
+	} else if format == InvoiceNumberFormatSequential {
+		// For sequential format, only consider invoices that match the expected pattern
+		// This prevents mixing different formats (e.g., "1", "2" vs "2026-0001")
+		if prefix != "" {
+			// With prefix: PREFIX-1, PREFIX-2, PREFIX-0001, etc.
+			query = query.Where("invoice_number LIKE ?", prefix+"-%")
+		} else {
+			// Without prefix: just numbers like "1", "2", "3"
+			// Exclude year-based formats by checking the pattern
+			query = query.Where("invoice_number !~ ?", "^[0-9]{4}-")
+		}
 	}
 
 	// Get the last invoice number (no need for FOR UPDATE since we have advisory lock)
-	if err := query.Order("invoice_number DESC").First(&lastInvoice).Error; err != nil {
+	// For sequential format, order by ID to get the most recent, not string-sorted invoice_number
+	orderClause := "invoice_number DESC"
+	if format == InvoiceNumberFormatSequential {
+		orderClause = "id DESC"
+	}
+	if err := query.Order(orderClause).First(&lastInvoice).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
 			lastNumber = ""
 			fmt.Printf("🔍 DEBUG InvoiceNumber: No existing invoice found\n")

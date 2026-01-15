@@ -330,21 +330,42 @@ func (s *InvoiceService) CreateDraftInvoice(req entities.CreateDraftInvoiceReque
 		}
 	}
 
-	// Create client_invoices relationship
+	// Create client_invoices relationships for all sessions
 	// This is required for PDF generation to load client and cost_provider data
-	// We need at least one session and one invoice item for the relationship
-	if len(sessions) > 0 && len(invoiceItems) > 0 {
+	for idx, session := range sessions {
+		sessionID := session.ID
 		clientInvoice := entities.ClientInvoice{
 			InvoiceID:      invoice.ID,
 			ClientID:       req.ClientID,
 			CostProviderID: *client.CostProviderID,
-			SessionID:      sessions[0].ID,
-			InvoiceItemID:  invoiceItems[0].ID,
+			SessionID:      &sessionID,
+			InvoiceItemID:  invoiceItems[idx].ID, // Match session to its invoice item
 		}
 
 		if err := tx.Create(&clientInvoice).Error; err != nil {
 			tx.Rollback()
 			return nil, fmt.Errorf("failed to create client_invoices relationship: %w", err)
+		}
+	}
+
+	// If there are extra efforts, create client_invoice records for them too
+	for i, effort := range extraEfforts {
+		// Find the corresponding invoice item (after sessions)
+		itemIdx := len(sessions) + i
+		if itemIdx < len(invoiceItems) {
+			clientInvoice := entities.ClientInvoice{
+				InvoiceID:      invoice.ID,
+				ClientID:       req.ClientID,
+				CostProviderID: *client.CostProviderID,
+				SessionID:      nil, // NULL for extra efforts
+				InvoiceItemID:  invoiceItems[itemIdx].ID,
+				ExtraEffortID:  &effort.ID,
+			}
+
+			if err := tx.Create(&clientInvoice).Error; err != nil {
+				tx.Rollback()
+				return nil, fmt.Errorf("failed to create client_invoices relationship for extra effort: %w", err)
+			}
 		}
 	}
 
@@ -373,8 +394,13 @@ func (s *InvoiceService) CreateDraftInvoice(req entities.CreateDraftInvoiceReque
 		return nil, fmt.Errorf("failed to commit transaction: %w", err)
 	}
 
-	// Reload invoice with items and client relationship
-	if err := s.db.Preload("InvoiceItems").Preload("Organization").Preload("ClientInvoices").First(&invoice, invoice.ID).Error; err != nil {
+	// Reload invoice with items, organization, and client relationships
+	if err := s.db.Preload("InvoiceItems").
+		Preload("Organization").
+		Preload("ClientInvoices.Client").
+		Preload("ClientInvoices.CostProvider").
+		Preload("ClientInvoices.Session").
+		First(&invoice, invoice.ID).Error; err != nil {
 		return nil, fmt.Errorf("failed to reload invoice: %w", err)
 	}
 
@@ -911,11 +937,11 @@ func (s *InvoiceService) MarkAsSent(invoiceID, tenantID uint) (*entities.Invoice
 		return nil, errors.New("can only mark finalized invoices as sent")
 	}
 
-	// Update invoice status to sent and set email_sent_at timestamp
+	// Update invoice status to sent and set sent_at timestamp
 	now := time.Now()
 	if err := s.db.Model(&invoice).Updates(map[string]interface{}{
-		"status":        entities.InvoiceStatusSent,
-		"email_sent_at": &now,
+		"status":  entities.InvoiceStatusSent,
+		"sent_at": &now,
 	}).Error; err != nil {
 		return nil, fmt.Errorf("failed to mark invoice as sent: %w", err)
 	}
@@ -951,17 +977,17 @@ func (s *InvoiceService) SendInvoiceEmail(invoiceID, tenantID, userID uint) erro
 	}
 
 	// TODO: Generate PDF and send email
-	// For now, we'll just set the email_sent_at timestamp
+	// For now, we'll just set the sent_at timestamp
 	// In a future phase, this will:
 	// 1. Generate PDF using template service
 	// 2. Render email template with invoice data
 	// 3. Attach PDF to email
 	// 4. Send via email service
 
-	// Update email_sent_at timestamp
+	// Update sent_at timestamp
 	now := time.Now()
-	if err := s.db.Model(&invoice).Update("email_sent_at", &now).Error; err != nil {
-		return fmt.Errorf("failed to update email_sent_at: %w", err)
+	if err := s.db.Model(&invoice).Update("sent_at", &now).Error; err != nil {
+		return fmt.Errorf("failed to update sent_at: %w", err)
 	}
 
 	return nil
@@ -1353,11 +1379,12 @@ func (s *InvoiceService) CreateInvoice(req entities.CreateInvoiceRequest, tenant
 		}
 
 		// Create client_invoice entry
+		sessionIDPtr := sessionID
 		clientInvoice := entities.ClientInvoice{
 			InvoiceID:      invoice.ID,
 			ClientID:       req.ClientID,
 			CostProviderID: *client.CostProviderID,
-			SessionID:      sessionID,
+			SessionID:      &sessionIDPtr,
 			InvoiceItemID:  invoiceItem.ID,
 		}
 		if err := tx.Create(&clientInvoice).Error; err != nil {
@@ -1561,11 +1588,12 @@ func (s *InvoiceService) CreateInvoiceDirect(req entities.CreateInvoiceDirectReq
 				extraEffortID = &lineItem.ExtraEffortIDs[0]
 			}
 
+			sessionIDPtr := sessionID
 			clientInvoice := entities.ClientInvoice{
 				InvoiceID:      invoice.ID,
 				ClientID:       client.ID,
 				CostProviderID: costProviderID,
-				SessionID:      sessionID,
+				SessionID:      &sessionIDPtr,
 				InvoiceItemID:  invoiceItem.ID,
 				ExtraEffortID:  extraEffortID,
 			}
@@ -1755,11 +1783,12 @@ func (s *InvoiceService) UpdateInvoice(id, tenantID, userID uint, req entities.U
 			}
 
 			// Create client_invoice entry
+			sessionIDPtr := sessionID
 			clientInvoice := entities.ClientInvoice{
 				InvoiceID:      id,
 				ClientID:       firstClientInvoice.ClientID,
 				CostProviderID: firstClientInvoice.CostProviderID,
-				SessionID:      sessionID,
+				SessionID:      &sessionIDPtr,
 				InvoiceItemID:  invoiceItem.ID,
 			}
 			if err := tx.Create(&clientInvoice).Error; err != nil {
@@ -1852,8 +1881,8 @@ func (s *InvoiceService) DeleteInvoice(id, tenantID, userID uint) error {
 	extraEffortIDs := make([]uint, 0)
 
 	for _, ci := range clientInvoices {
-		if ci.SessionID > 0 {
-			sessionIDs = append(sessionIDs, ci.SessionID)
+		if ci.SessionID != nil && *ci.SessionID > 0 {
+			sessionIDs = append(sessionIDs, *ci.SessionID)
 		}
 		if ci.ExtraEffortID != nil {
 			extraEffortIDs = append(extraEffortIDs, *ci.ExtraEffortID)
@@ -1945,8 +1974,8 @@ func (s *InvoiceService) CancelInvoice(id, tenantID, userID uint) error {
 	extraEffortIDs := make([]uint, 0)
 
 	for _, ci := range clientInvoices {
-		if ci.SessionID > 0 {
-			sessionIDs = append(sessionIDs, ci.SessionID)
+		if ci.SessionID != nil && *ci.SessionID > 0 {
+			sessionIDs = append(sessionIDs, *ci.SessionID)
 		}
 		if ci.ExtraEffortID != nil {
 			extraEffortIDs = append(extraEffortIDs, *ci.ExtraEffortID)

@@ -237,23 +237,23 @@ func seedOrganizations(db *gorm.DB) error {
 
 	var seedData struct {
 		Organizations []struct {
-			TenantID                 uint     `json:"tenant_id"`
-			Name                     string   `json:"name"`
-			OwnerName                string   `json:"owner_name"`
-			OwnerTitle               string   `json:"owner_title"`
-			StreetAddress            string   `json:"street_address"`
-			Zip                      string   `json:"zip"`
-			City                     string   `json:"city"`
-			Email                    string   `json:"email"`
-			Phone                    string   `json:"phone"`
-			TaxID                    string   `json:"tax_id"`
-			TaxRate                  *float64 `json:"tax_rate"`
-			TaxUstID                 string   `json:"tax_ustid"`
-			UnitPrice                *float64 `json:"unit_price"`
-			BankAccountOwner         string   `json:"bank_account_owner"`
-			BankAccountBank          string   `json:"bank_account_bank"`
-			BankAccountBIC           string   `json:"bank_account_bic"`
-			BankAccountIBAN          string   `json:"bank_account_iban"`
+			TenantID         uint     `json:"tenant_id"`
+			Name             string   `json:"name"`
+			OwnerName        string   `json:"owner_name"`
+			OwnerTitle       string   `json:"owner_title"`
+			StreetAddress    string   `json:"street_address"`
+			Zip              string   `json:"zip"`
+			City             string   `json:"city"`
+			Email            string   `json:"email"`
+			Phone            string   `json:"phone"`
+			TaxID            string   `json:"tax_id"`
+			TaxRate          *float64 `json:"tax_rate"`
+			TaxUstID         string   `json:"tax_ustid"`
+			UnitPrice        *float64 `json:"unit_price"`
+			BankAccountOwner string   `json:"bank_account_owner"`
+			BankAccountBank  string   `json:"bank_account_bank"`
+			BankAccountBIC   string   `json:"bank_account_bic"`
+			BankAccountIBAN  string   `json:"bank_account_iban"`
 		} `json:"organizations"`
 	}
 
@@ -264,24 +264,24 @@ func seedOrganizations(db *gorm.DB) error {
 	// Import the organization module entities
 	// We need to use a type assertion here since it's a different module
 	type Organization struct {
-		ID                       uint
-		TenantID                 uint
-		Name                     string
-		OwnerName                string
-		OwnerTitle               string
-		StreetAddress            string
-		Zip                      string
-		City                     string
-		Email                    string
-		Phone                    string
-		TaxID                    string
-		TaxRate                  *float64
-		TaxUstID                 string
-		UnitPrice                *float64
-		BankAccountOwner         string
-		BankAccountBank          string
-		BankAccountBIC           string
-		BankAccountIBAN          string
+		ID               uint
+		TenantID         uint
+		Name             string
+		OwnerName        string
+		OwnerTitle       string
+		StreetAddress    string
+		Zip              string
+		City             string
+		Email            string
+		Phone            string
+		TaxID            string
+		TaxRate          *float64
+		TaxUstID         string
+		UnitPrice        *float64
+		BankAccountOwner string
+		BankAccountBank  string
+		BankAccountBIC   string
+		BankAccountIBAN  string
 	}
 
 	// Create organizations only if table is empty (fresh installation)
@@ -315,6 +315,7 @@ func seedOrganizations(db *gorm.DB) error {
 		}
 	} else {
 		log.Println("⏭️  Organizations already exist, skipping...")
+	}
 
 	return nil
 }
@@ -1660,7 +1661,7 @@ func seedInvoices(db *gorm.DB) error {
 			NumReminders:   config.numReminders,
 			PayedDate:      config.paymentDate,
 			LatestReminder: config.latestReminder,
-			EmailSentAt:    config.sentAt,
+			SentAt:         config.sentAt,
 			FinalizedAt:    config.finalizedAt,
 			IsCreditNote:   false,
 		}
@@ -1686,11 +1687,12 @@ func seedInvoices(db *gorm.DB) error {
 			}
 
 			// Create client invoice linking
+			sessionIDPtr := session.ID
 			clientInvoice := entities.ClientInvoice{
 				InvoiceID:      invoice.ID,
 				ClientID:       client.ID,
 				CostProviderID: ptrUint(client.CostProviderID),
-				SessionID:      ptrUint(&session.ID),
+				SessionID:      &sessionIDPtr,
 				InvoiceItemID:  ptrUint(&item.ID),
 			}
 			if err := db.Create(&clientInvoice).Error; err != nil {
