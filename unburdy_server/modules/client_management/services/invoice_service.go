@@ -83,16 +83,21 @@ func (s *InvoiceService) CreateDraftInvoice(req entities.CreateDraftInvoiceReque
 
 	// Get the first organization for this tenant
 	var organization struct {
-		ID               uint
-		TaxRate          *float64
-		DefaultVATRate   *float64
-		DefaultVATExempt bool
+		ID      uint
+		TaxRate *float64
 	}
 	if err := s.db.Table("organizations").
-		Select("id, tax_rate, default_vat_rate, default_vat_exempt").
+		Select("id, tax_rate").
 		Where("tenant_id = ?", tenantID).
 		First(&organization).Error; err != nil {
 		return nil, fmt.Errorf("no organization found for tenant: %w", err)
+	}
+
+	// Get billing settings
+	settingsHelper := NewSettingsHelper(s.db)
+	taxSettings, err := settingsHelper.GetBillingTax(tenantID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get tax settings: %w", err)
 	}
 
 	// Validate at least one billable item
@@ -195,12 +200,15 @@ func (s *InvoiceService) CreateDraftInvoice(req entities.CreateDraftInvoiceReque
 			TotalAmount:     totalItemAmount,
 			UnitDurationMin: &session.DurationMin,
 			IsEditable:      false, // Session-based items not editable
-			VATRate:         getVATRate(organization.DefaultVATRate),
-			VATExempt:       organization.DefaultVATExempt,
+			VATExempt:       taxSettings.VATExempt,
 		}
 
+		// Set VAT rate: 0 if exempt, otherwise use settings rate
 		if item.VATExempt {
+			item.VATRate = 0
 			item.VATExemptionText = "Umsatzsteuerfrei gemäß §4 Nr. 14 UStG"
+		} else {
+			item.VATRate = taxSettings.VATRate
 		}
 
 		invoiceItems = append(invoiceItems, item)
@@ -223,12 +231,15 @@ func (s *InvoiceService) CreateDraftInvoice(req entities.CreateDraftInvoiceReque
 			TotalAmount:     totalItemAmount,
 			UnitDurationMin: &effort.DurationMin,
 			IsEditable:      false,
-			VATRate:         getVATRate(organization.DefaultVATRate),
-			VATExempt:       organization.DefaultVATExempt,
+			VATExempt:       taxSettings.VATExempt,
 		}
 
+		// Set VAT rate: 0 if exempt, otherwise use settings rate
 		if item.VATExempt {
+			item.VATRate = 0
 			item.VATExemptionText = "Umsatzsteuerfrei gemäß §4 Nr. 14 UStG"
+		} else {
+			item.VATRate = taxSettings.VATRate
 		}
 
 		invoiceItems = append(invoiceItems, item)
@@ -263,7 +274,7 @@ func (s *InvoiceService) CreateDraftInvoice(req entities.CreateDraftInvoiceReque
 			// Manual VAT settings
 			vat_rate := customItem.VATRate
 			if vat_rate == 0 && !customItem.VATExempt {
-				vat_rate = getVATRate(organization.DefaultVATRate)
+				vat_rate = taxSettings.VATRate
 			}
 			item.VATRate = vat_rate
 			item.VATExempt = customItem.VATExempt
@@ -383,17 +394,22 @@ func (s *InvoiceService) UpdateDraftInvoice(invoiceID, tenantID, userID uint, re
 		return nil, errors.New("can only edit invoices in draft status")
 	}
 
-	// Get organization settings for VAT
+	// Get organization ID
 	var organization struct {
-		ID               uint
-		DefaultVATRate   *float64
-		DefaultVATExempt bool
+		ID uint
 	}
 	if err := s.db.Table("organizations").
-		Select("id, default_vat_rate, default_vat_exempt").
+		Select("id").
 		Where("id = ?", invoice.OrganizationID).
 		First(&organization).Error; err != nil {
 		return nil, fmt.Errorf("failed to fetch organization: %w", err)
+	}
+
+	// Get billing settings
+	settingsHelper := NewSettingsHelper(s.db)
+	taxSettings, err := settingsHelper.GetBillingTax(tenantID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get tax settings: %w", err)
 	}
 
 	tx := s.db.Begin()
@@ -476,12 +492,15 @@ func (s *InvoiceService) UpdateDraftInvoice(invoiceID, tenantID, userID uint, re
 				TotalAmount:     totalItemAmount,
 				UnitDurationMin: &session.DurationMin,
 				IsEditable:      false,
-				VATRate:         getVATRate(organization.DefaultVATRate),
-				VATExempt:       organization.DefaultVATExempt,
+				VATExempt:       taxSettings.VATExempt,
 			}
 
+			// Set VAT rate: 0 if exempt, otherwise use settings rate
 			if item.VATExempt {
+				item.VATRate = 0
 				item.VATExemptionText = "Umsatzsteuerfrei gemäß §4 Nr. 14 UStG"
+			} else {
+				item.VATRate = taxSettings.VATRate
 			}
 
 			if err := tx.Create(&item).Error; err != nil {
@@ -527,12 +546,15 @@ func (s *InvoiceService) UpdateDraftInvoice(invoiceID, tenantID, userID uint, re
 				TotalAmount:     totalItemAmount,
 				UnitDurationMin: &effort.DurationMin,
 				IsEditable:      false,
-				VATRate:         getVATRate(organization.DefaultVATRate),
-				VATExempt:       organization.DefaultVATExempt,
+				VATExempt:       taxSettings.VATExempt,
 			}
 
+			// Set VAT rate: 0 if exempt, otherwise use settings rate
 			if item.VATExempt {
+				item.VATRate = 0
 				item.VATExemptionText = "Umsatzsteuerfrei gemäß §4 Nr. 14 UStG"
+			} else {
+				item.VATRate = taxSettings.VATRate
 			}
 
 			if err := tx.Create(&item).Error; err != nil {
@@ -590,7 +612,15 @@ func (s *InvoiceService) UpdateDraftInvoice(invoiceID, tenantID, userID uint, re
 
 			// Apply default VAT rate if none specified
 			if !item.VATExempt && item.VATRate == 0 {
-				item.VATRate = getVATRate(organization.DefaultVATRate)
+				item.VATRate = taxSettings.VATRate
+			}
+
+			// Ensure exempt items have 0% rate and exemption text
+			if item.VATExempt {
+				item.VATRate = 0
+				if item.VATExemptionText == "" {
+					item.VATExemptionText = "Umsatzsteuerfrei gemäß §4 Nr. 14 UStG"
+				}
 			}
 
 			if err := tx.Create(&item).Error; err != nil {
@@ -699,6 +729,12 @@ func (s *InvoiceService) CancelDraftInvoice(invoiceID, tenantID, userID uint) er
 		}
 	}
 
+	// Delete client_invoices (hard delete so sessions can be re-invoiced)
+	if err := tx.Unscoped().Where("invoice_id = ?", invoiceID).Delete(&entities.ClientInvoice{}).Error; err != nil {
+		tx.Rollback()
+		return fmt.Errorf("failed to delete client invoices: %w", err)
+	}
+
 	// Delete all invoice items
 	if err := tx.Where("invoice_id = ?", invoiceID).Delete(&entities.InvoiceItem{}).Error; err != nil {
 		tx.Rollback()
@@ -771,19 +807,20 @@ func (s *InvoiceService) FinalizeInvoice(invoiceID, tenantID, userID uint) (*ent
 		}
 	}
 
-	// Generate invoice number
-	invoiceNumberService := NewInvoiceNumberService(s.db)
-	invoiceNumber, err := invoiceNumberService.GenerateInvoiceNumber(invoice.OrganizationID, invoice.InvoiceDate)
-	if err != nil {
-		return nil, fmt.Errorf("failed to generate invoice number: %w", err)
-	}
-
 	tx := s.db.Begin()
 	defer func() {
 		if r := recover(); r != nil {
 			tx.Rollback()
 		}
 	}()
+
+	// Generate invoice number WITHIN the transaction to ensure atomicity
+	invoiceNumberService := NewInvoiceNumberService(tx)
+	invoiceNumber, err := invoiceNumberService.GenerateInvoiceNumber(invoice.OrganizationID, tenantID, invoice.InvoiceDate)
+	if err != nil {
+		tx.Rollback()
+		return nil, fmt.Errorf("failed to generate invoice number: %w", err)
+	}
 
 	// Collect all session IDs and extra effort IDs to update statuses
 	var sessionIDs []uint
@@ -822,7 +859,7 @@ func (s *InvoiceService) FinalizeInvoice(invoiceID, tenantID, userID uint) (*ent
 	now := time.Now()
 	if err := tx.Model(&invoice).Updates(map[string]interface{}{
 		"invoice_number": invoiceNumber,
-		"status":         entities.InvoiceStatusSent,
+		"status":         entities.InvoiceStatusFinalized,
 		"finalized_at":   &now,
 	}).Error; err != nil {
 		tx.Rollback()
@@ -856,6 +893,40 @@ func (s *InvoiceService) FinalizeInvoice(invoiceID, tenantID, userID uint) (*ent
 			// For now, we'll just log it
 			fmt.Printf("Final PDF stored in MinIO: %s\n", storageKey)
 		}
+	}
+
+	return &invoice, nil
+}
+
+// MarkAsSent marks a finalized invoice as sent
+func (s *InvoiceService) MarkAsSent(invoiceID, tenantID uint) (*entities.Invoice, error) {
+	// Load existing invoice
+	var invoice entities.Invoice
+	if err := s.db.Where("id = ? AND tenant_id = ?", invoiceID, tenantID).First(&invoice).Error; err != nil {
+		return nil, fmt.Errorf("invoice not found: %w", err)
+	}
+
+	// Validate status - can only mark finalized invoices as sent
+	if invoice.Status != entities.InvoiceStatusFinalized {
+		return nil, errors.New("can only mark finalized invoices as sent")
+	}
+
+	// Update invoice status to sent and set email_sent_at timestamp
+	now := time.Now()
+	if err := s.db.Model(&invoice).Updates(map[string]interface{}{
+		"status":        entities.InvoiceStatusSent,
+		"email_sent_at": &now,
+	}).Error; err != nil {
+		return nil, fmt.Errorf("failed to mark invoice as sent: %w", err)
+	}
+
+	// Reload invoice with all associations
+	if err := s.db.Preload("InvoiceItems").
+		Preload("Organization").
+		Preload("ClientInvoices.Client").
+		Preload("ClientInvoices.CostProvider").
+		First(&invoice, invoiceID).Error; err != nil {
+		return nil, fmt.Errorf("failed to reload invoice: %w", err)
 	}
 
 	return &invoice, nil
@@ -1062,7 +1133,7 @@ func (s *InvoiceService) CreateCreditNote(originalInvoiceID, tenantID, userID ui
 
 	// Generate invoice number for the credit note
 	invoiceNumberService := NewInvoiceNumberService(s.db)
-	invoiceNumber, err := invoiceNumberService.GenerateInvoiceNumber(originalInvoice.OrganizationID, creditDate)
+	invoiceNumber, err := invoiceNumberService.GenerateInvoiceNumber(originalInvoice.OrganizationID, tenantID, creditDate)
 	if err != nil {
 		return nil, fmt.Errorf("failed to generate credit note number: %w", err)
 	}
@@ -1812,8 +1883,8 @@ func (s *InvoiceService) DeleteInvoice(id, tenantID, userID uint) error {
 		}
 	}
 
-	// Delete client_invoices (so sessions/efforts can be re-invoiced)
-	if err := tx.Where("invoice_id = ?", id).Delete(&entities.ClientInvoice{}).Error; err != nil {
+	// Delete client_invoices (hard delete so sessions can be re-invoiced)
+	if err := tx.Unscoped().Where("invoice_id = ?", id).Delete(&entities.ClientInvoice{}).Error; err != nil {
 		tx.Rollback()
 		return fmt.Errorf("failed to delete client invoices: %w", err)
 	}
@@ -1905,8 +1976,8 @@ func (s *InvoiceService) CancelInvoice(id, tenantID, userID uint) error {
 		}
 	}
 
-	// Delete client_invoices (so sessions/efforts can be re-invoiced)
-	if err := tx.Where("invoice_id = ?", id).Delete(&entities.ClientInvoice{}).Error; err != nil {
+	// Delete client_invoices (hard delete so sessions can be re-invoiced)
+	if err := tx.Unscoped().Where("invoice_id = ?", id).Delete(&entities.ClientInvoice{}).Error; err != nil {
 		tx.Rollback()
 		return fmt.Errorf("failed to delete client invoices: %w", err)
 	}

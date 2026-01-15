@@ -30,23 +30,6 @@ type Organization struct {
 	BankAccountIBAN          string         `gorm:"size:100" json:"bankaccount_iban"`
 	AdditionalPaymentMethods datatypes.JSON `gorm:"type:jsonb" json:"additional_payment_methods"`
 	InvoiceContent           datatypes.JSON `gorm:"type:jsonb" json:"invoice_content"`
-	Locale                   string         `gorm:"size:10;default:'de-DE'" json:"locale"`
-	DateFormat               string         `gorm:"size:50;default:'02.01.2006'" json:"date_format"`
-	TimeFormat               string         `gorm:"size:50;default:'15:04'" json:"time_format"`
-	AmountFormat             string         `gorm:"size:50;default:'de'" json:"amount_format"`
-	ExtraEffortsBillingMode  string         `gorm:"size:50;default:'ignore'" json:"extra_efforts_billing_mode"` // ignore, bundle_double_units, separate_items, preparation_allowance
-	ExtraEffortsConfig       datatypes.JSON `gorm:"type:jsonb;default:'{}'" json:"extra_efforts_config" swaggertype:"object"`
-	LineItemSingleUnitText   string         `gorm:"size:100;default:'Einzelstunde'" json:"line_item_single_unit_text"`
-	LineItemDoubleUnitText   string         `gorm:"size:100;default:'Doppelstunde'" json:"line_item_double_unit_text"`
-
-	// Invoice settings
-	InvoiceNumberFormat string   `gorm:"size:50;default:'sequential'" json:"invoice_number_format"` // sequential, year_prefix, year_month_prefix
-	InvoiceNumberPrefix string   `gorm:"size:20" json:"invoice_number_prefix"`
-	PaymentDueDays      int      `gorm:"not null;default:14" json:"payment_due_days"`
-	FirstReminderDays   int      `gorm:"not null;default:7" json:"first_reminder_days"`
-	SecondReminderDays  int      `gorm:"not null;default:14" json:"second_reminder_days"`
-	DefaultVATRate      *float64 `gorm:"type:decimal(5,2);default:19.00" json:"default_vat_rate"`
-	DefaultVATExempt    bool     `gorm:"not null;default:false" json:"default_vat_exempt"`
 
 	CreatedAt time.Time      `json:"created_at"`
 	UpdatedAt time.Time      `json:"updated_at"`
@@ -78,21 +61,6 @@ type CreateOrganizationRequest struct {
 	BankAccountIBAN          string         `json:"bankaccount_iban,omitempty" example:"DE89370400440532013000"`
 	AdditionalPaymentMethods datatypes.JSON `json:"additional_payment_methods,omitempty" swaggertype:"object"`
 	InvoiceContent           datatypes.JSON `json:"invoice_content,omitempty" swaggertype:"object"`
-	Locale                   string         `json:"locale,omitempty" example:"de-DE"`
-	DateFormat               string         `json:"date_format,omitempty" example:"02.01.2006"`
-	TimeFormat               string         `json:"time_format,omitempty" example:"15:04"`
-	AmountFormat             string         `json:"amount_format,omitempty" example:"de"`
-	ExtraEffortsBillingMode  string         `json:"extra_efforts_billing_mode,omitempty" example:"ignore"`
-	ExtraEffortsConfig       datatypes.JSON `json:"extra_efforts_config,omitempty" swaggertype:"object"`
-	LineItemSingleUnitText   string         `json:"line_item_single_unit_text,omitempty" example:"Einzelstunde"`
-	LineItemDoubleUnitText   string         `json:"line_item_double_unit_text,omitempty" example:"Doppelstunde"`
-	InvoiceNumberFormat      string         `json:"invoice_number_format,omitempty" example:"sequential"`
-	InvoiceNumberPrefix      string         `json:"invoice_number_prefix,omitempty" example:"INV-"`
-	PaymentDueDays           int            `json:"payment_due_days,omitempty" example:"14"`
-	FirstReminderDays        int            `json:"first_reminder_days,omitempty" example:"7"`
-	SecondReminderDays       int            `json:"second_reminder_days,omitempty" example:"14"`
-	DefaultVATRate           *float64       `json:"default_vat_rate,omitempty" example:"19.00"`
-	DefaultVATExempt         bool           `json:"default_vat_exempt,omitempty" example:"false"`
 }
 
 // UpdateOrganizationRequest represents the request payload for updating an organization
@@ -115,29 +83,6 @@ type UpdateOrganizationRequest struct {
 	BankAccountIBAN          *string        `json:"bankaccount_iban,omitempty" example:"DE89370400440532013000"`
 	AdditionalPaymentMethods datatypes.JSON `json:"additional_payment_methods,omitempty" swaggertype:"object"`
 	InvoiceContent           datatypes.JSON `json:"invoice_content,omitempty" swaggertype:"object"`
-	Locale                   *string        `json:"locale,omitempty" example:"de-DE"`
-	DateFormat               *string        `json:"date_format,omitempty" example:"02.01.2006"`
-	TimeFormat               *string        `json:"time_format,omitempty" example:"15:04"`
-	AmountFormat             *string        `json:"amount_format,omitempty" example:"de"`
-	ExtraEffortsBillingMode  *string        `json:"extra_efforts_billing_mode,omitempty" example:"bundle_double_units"`
-	ExtraEffortsConfig       datatypes.JSON `json:"extra_efforts_config,omitempty" swaggertype:"object"`
-	LineItemSingleUnitText   *string        `json:"line_item_single_unit_text,omitempty" example:"Therapiestunde"`
-	LineItemDoubleUnitText   *string        `json:"line_item_double_unit_text,omitempty" example:"Therapie Doppelstunde"`
-	InvoiceNumberFormat      *string        `json:"invoice_number_format,omitempty" example:"sequential"`
-	InvoiceNumberPrefix      *string        `json:"invoice_number_prefix,omitempty" example:"INV-"`
-	PaymentDueDays           *int           `json:"payment_due_days,omitempty" example:"14"`
-	FirstReminderDays        *int           `json:"first_reminder_days,omitempty" example:"7"`
-	SecondReminderDays       *int           `json:"second_reminder_days,omitempty" example:"14"`
-	DefaultVATRate           *float64       `json:"default_vat_rate,omitempty" example:"19.00"`
-	DefaultVATExempt         *bool          `json:"default_vat_exempt,omitempty" example:"false"`
-}
-
-// UpdateBillingConfigRequest represents the request payload for updating billing configuration
-type UpdateBillingConfigRequest struct {
-	ExtraEffortsBillingMode *string        `json:"extra_efforts_billing_mode,omitempty" example:"bundle_double_units"`
-	ExtraEffortsConfig      datatypes.JSON `json:"extra_efforts_config,omitempty" swaggertype:"object"`
-	LineItemSingleUnitText  *string        `json:"line_item_single_unit_text,omitempty" example:"Therapiestunde"`
-	LineItemDoubleUnitText  *string        `json:"line_item_double_unit_text,omitempty" example:"Therapie Doppelstunde"`
 }
 
 // OrganizationResponse represents the response format for organization data
@@ -220,14 +165,6 @@ func (o *Organization) ToResponse() OrganizationResponse {
 		BankAccountIBAN:          o.BankAccountIBAN,
 		AdditionalPaymentMethods: o.AdditionalPaymentMethods,
 		InvoiceContent:           o.InvoiceContent,
-		Locale:                   o.Locale,
-		DateFormat:               o.DateFormat,
-		TimeFormat:               o.TimeFormat,
-		AmountFormat:             o.AmountFormat,
-		ExtraEffortsBillingMode:  o.ExtraEffortsBillingMode,
-		ExtraEffortsConfig:       o.ExtraEffortsConfig,
-		LineItemSingleUnitText:   o.LineItemSingleUnitText,
-		LineItemDoubleUnitText:   o.LineItemDoubleUnitText,
 		CreatedAt:                o.CreatedAt,
 		UpdatedAt:                o.UpdatedAt,
 	}

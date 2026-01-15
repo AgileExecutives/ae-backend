@@ -35,7 +35,7 @@ func NewModule(db *gorm.DB) baseAPI.ModuleRouteProvider {
 	sessionService := clientServices.NewSessionService(db, nil)
 	invoiceService := clientServices.NewInvoiceService(db)
 	extraEffortService := clientServices.NewExtraEffortService(db)
-	xrechnungService := services.NewXRechnungService()
+	xrechnungService := services.NewXRechnungService(db)
 
 	// Initialize handlers
 	clientHandler := handlers.NewClientHandler(clientService)
@@ -206,7 +206,7 @@ func (m *CoreModule) Initialize(ctx core.ModuleContext) error {
 	m.clientHandlers = handlers.NewClientHandler(clientService)
 	m.costProviderHandler = handlers.NewCostProviderHandler(costProviderService)
 	m.sessionHandler = handlers.NewSessionHandler(sessionService)
-	xrechnungService := services.NewXRechnungService()
+	xrechnungService := services.NewXRechnungService(ctx.DB)
 	m.invoiceHandler = handlers.NewInvoiceHandler(invoiceService, xrechnungService, auditService)
 	extraEffortHandler := handlers.NewExtraEffortHandler(extraEffortService)
 
@@ -216,6 +216,19 @@ func (m *CoreModule) Initialize(ctx core.ModuleContext) error {
 
 	// Initialize route provider with database for auth middleware
 	m.routeProvider = routes.NewRouteProvider(m.clientHandlers, m.costProviderHandler, m.sessionHandler, m.invoiceHandler, m.invoiceAdapterHandler, extraEffortHandler, ctx.DB)
+
+	// Seed billing settings definitions
+	fmt.Println("\n🌱🌱🌱 STARTING BILLING SETTINGS SEED 🌱🌱🌱")
+	ctx.Logger.Info("📦 Seeding billing settings definitions...")
+	settingsSeedService := clientServices.NewSettingsSeedService(ctx.DB)
+	if err := settingsSeedService.SeedBillingSettings(); err != nil {
+		fmt.Printf("\n❌❌❌ BILLING SETTINGS SEED FAILED: %v ❌❌❌\n", err)
+		ctx.Logger.Error("⚠️ Failed to seed billing settings: %v", err)
+		// Don't fatal - settings will use defaults if not seeded
+	} else {
+		fmt.Println("\n✅✅✅ BILLING SETTINGS SEEDED SUCCESSFULLY ✅✅✅")
+		ctx.Logger.Info("✅ Billing settings definitions seeded successfully")
+	}
 
 	ctx.Logger.Info("Client management module initialized successfully")
 	return nil

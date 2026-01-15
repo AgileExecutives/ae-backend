@@ -20,11 +20,41 @@
   "organizations": [
     {
       "tenant_id": 1,
-      "name": "Unburdy Verwaltung"
+      "name": "Unburdy Verwaltung",
+      "owner_name": "Alexander",
+      "owner_title": "CEO",
+      "street_address": "Musterstrasse 1",
+      "zip": "12345",
+      "city": "Musterstadt",
+      "email": "info@unburdy.de",
+      "phone": "+49 123 1234567",
+      "tax_id": "DE123456789",
+      "tax_rate": 19.0,
+      "tax_ustid": "DE123456789",
+      "unit_price": 150.0,
+      "bank_account_owner": "Unburdy Verwaltung",
+      "bank_account_bank": "Commerzbank",
+      "bank_account_bic": "COBADEFFXXX",
+      "bank_account_iban": "DE89370400440532013000"
     },
     {
       "tenant_id": 2,
-      "name": "Standard Organisation"
+      "name": "Standard Organisation",
+      "owner_name": "Test",
+      "owner_title": "Manager",
+      "street_address": "Beispielweg 2",
+      "zip": "54321",
+      "city": "Beispielstadt",
+      "email": "testuser@unburdy.de",
+      "phone": "+49 321 7654321",
+      "tax_id": "DE987654321",
+      "tax_rate": 19.0,
+      "tax_ustid": "DE987654321",
+      "unit_price": 120.0,
+      "bank_account_owner": "Standard Organisation",
+      "bank_account_bank": "Commerzbank",
+      "bank_account_bic": "COBADEFFXXX",
+      "bank_account_iban": "DE89370400440532013000"
     }
   ],
   "plans": [

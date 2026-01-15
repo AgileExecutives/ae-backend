@@ -21,6 +21,12 @@ import (
 	"github.com/ae-base-server/pkg/settings/registry"
 	"github.com/ae-base-server/pkg/settings/repository"
 
+	// Module settings providers
+	companySettings "github.com/ae-base-server/modules/company/settings"
+	invoiceSettings "github.com/ae-base-server/modules/invoice/settings"
+	billingSettings "github.com/ae-base-server/modules/billing/settings"
+)
+
 
 
 

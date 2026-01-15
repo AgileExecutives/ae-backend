@@ -494,3 +494,13 @@ func (a *authServiceAdapter) RequireAuth() gin.HandlerFunc {
 func (a *authServiceAdapter) RequireRole(roles ...string) gin.HandlerFunc {
 	return middleware.RequireRole(roles...)
 }
+
+// GetDB returns the database instance
+func (app *Application) GetDB() *gorm.DB {
+	return app.context.DB
+}
+
+// GetRouter returns the Gin router instance
+func (app *Application) GetRouter() *gin.Engine {
+	return app.server
+}

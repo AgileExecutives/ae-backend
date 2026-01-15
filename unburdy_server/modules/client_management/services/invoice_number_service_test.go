@@ -45,7 +45,7 @@ func TestInvoiceNumberService_Sequential(t *testing.T) {
 	invoiceDate := time.Now()
 
 	// First invoice
-	number1, err := service.GenerateInvoiceNumber(orgID, invoiceDate)
+	number1, err := service.GenerateInvoiceNumber(orgID, 1, invoiceDate)
 	require.NoError(t, err)
 	assert.Equal(t, "INV-0001", number1)
 
@@ -59,7 +59,7 @@ func TestInvoiceNumberService_Sequential(t *testing.T) {
 	require.NoError(t, db.Create(invoice1).Error)
 
 	// Second invoice
-	number2, err := service.GenerateInvoiceNumber(orgID, invoiceDate)
+	number2, err := service.GenerateInvoiceNumber(orgID, 1, invoiceDate)
 	require.NoError(t, err)
 	assert.Equal(t, "INV-0002", number2)
 
@@ -72,7 +72,7 @@ func TestInvoiceNumberService_Sequential(t *testing.T) {
 	}
 	require.NoError(t, db.Create(invoice2).Error)
 
-	number3, err := service.GenerateInvoiceNumber(orgID, invoiceDate)
+	number3, err := service.GenerateInvoiceNumber(orgID, 1, invoiceDate)
 	require.NoError(t, err)
 	assert.Equal(t, "INV-0003", number3)
 }
@@ -84,7 +84,7 @@ func TestInvoiceNumberService_YearPrefix(t *testing.T) {
 
 	// Current year invoice
 	now := time.Now()
-	number1, err := service.GenerateInvoiceNumber(orgID, now)
+	number1, err := service.GenerateInvoiceNumber(orgID, 1, now)
 	require.NoError(t, err)
 	expectedNumber := now.Format("2006") + "-0001"
 	assert.Equal(t, expectedNumber, number1)
@@ -99,7 +99,7 @@ func TestInvoiceNumberService_YearPrefix(t *testing.T) {
 	require.NoError(t, db.Create(invoice1).Error)
 
 	// Second invoice same year
-	number2, err := service.GenerateInvoiceNumber(orgID, now)
+	number2, err := service.GenerateInvoiceNumber(orgID, 1, now)
 	require.NoError(t, err)
 	expectedNumber2 := now.Format("2006") + "-0002"
 	assert.Equal(t, expectedNumber2, number2)
@@ -116,7 +116,7 @@ func TestInvoiceNumberService_YearPrefix(t *testing.T) {
 	require.NoError(t, db.Create(lastYearInvoice).Error)
 
 	// Next invoice should still be 0002 (year filters prevent cross-year counting)
-	number3, err := service.GenerateInvoiceNumber(orgID, now)
+	number3, err := service.GenerateInvoiceNumber(orgID, 1, now)
 	require.NoError(t, err)
 	expectedNumber3 := now.Format("2006") + "-0002"
 	assert.Equal(t, expectedNumber3, number3)
@@ -130,7 +130,7 @@ func TestInvoiceNumberService_YearMonth(t *testing.T) {
 	now := time.Now()
 
 	// First invoice this month
-	number1, err := service.GenerateInvoiceNumber(orgID, now)
+	number1, err := service.GenerateInvoiceNumber(orgID, 1, now)
 	require.NoError(t, err)
 	expectedNumber := "INV-" + now.Format("2006-01") + "-0001"
 	assert.Equal(t, expectedNumber, number1)
@@ -145,7 +145,7 @@ func TestInvoiceNumberService_YearMonth(t *testing.T) {
 	require.NoError(t, db.Create(invoice1).Error)
 
 	// Second invoice this month
-	number2, err := service.GenerateInvoiceNumber(orgID, now)
+	number2, err := service.GenerateInvoiceNumber(orgID, 1, now)
 	require.NoError(t, err)
 	expectedNumber2 := "INV-" + now.Format("2006-01") + "-0002"
 	assert.Equal(t, expectedNumber2, number2)
@@ -157,7 +157,7 @@ func TestInvoiceNumberService_NoPrefix(t *testing.T) {
 	orgID := createTestOrg(t, db, 1, "sequential", "")
 
 	invoiceDate := time.Now()
-	number, err := service.GenerateInvoiceNumber(orgID, invoiceDate)
+	number, err := service.GenerateInvoiceNumber(orgID, 1, invoiceDate)
 	require.NoError(t, err)
 	assert.Equal(t, "1", number) // No prefix = unpadded number
 }
@@ -168,7 +168,7 @@ func TestInvoiceNumberService_CustomPrefix(t *testing.T) {
 	orgID := createTestOrg(t, db, 1, "sequential", "THERAPY")
 
 	invoiceDate := time.Now()
-	number, err := service.GenerateInvoiceNumber(orgID, invoiceDate)
+	number, err := service.GenerateInvoiceNumber(orgID, 1, invoiceDate)
 	require.NoError(t, err)
 	assert.Equal(t, "THERAPY-0001", number)
 }
@@ -189,7 +189,7 @@ func TestInvoiceNumberService_DraftInvoicesIgnored(t *testing.T) {
 	require.NoError(t, db.Create(draftInvoice).Error)
 
 	// Next number should be 0001, ignoring draft
-	number, err := service.GenerateInvoiceNumber(orgID, invoiceDate)
+	number, err := service.GenerateInvoiceNumber(orgID, 1, invoiceDate)
 	require.NoError(t, err)
 	assert.Equal(t, "INV-0001", number)
 }
@@ -199,7 +199,7 @@ func TestInvoiceNumberService_OrganizationNotFound(t *testing.T) {
 	_, service := setupInvoiceNumberTestDB(t)
 	invoiceDate := time.Now()
 
-	_, err := service.GenerateInvoiceNumber(999, invoiceDate)
+	_, err := service.GenerateInvoiceNumber(999, 1, invoiceDate)
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "organization")
 }
@@ -218,7 +218,7 @@ func TestInvoiceNumberService_DefaultFormat(t *testing.T) {
 	require.NoError(t, db.Create(org).Error)
 
 	invoiceDate := time.Now()
-	number, err := service.GenerateInvoiceNumber(org.ID, invoiceDate)
+	number, err := service.GenerateInvoiceNumber(org.ID, 1, invoiceDate)
 	require.NoError(t, err)
 	assert.Equal(t, "INV-0001", number) // Should default to sequential
 }
@@ -234,7 +234,7 @@ func TestInvoiceNumberService_Concurrent(t *testing.T) {
 	generatedNumbers := make([]string, 0, numInvoices)
 
 	for i := 0; i < numInvoices; i++ {
-		number, err := service.GenerateInvoiceNumber(orgID, invoiceDate)
+		number, err := service.GenerateInvoiceNumber(orgID, 1, invoiceDate)
 		require.NoError(t, err)
 
 		// Store the invoice to increment counter

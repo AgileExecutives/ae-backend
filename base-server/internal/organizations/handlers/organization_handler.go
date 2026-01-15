@@ -176,49 +176,6 @@ func (h *OrganizationHandler) UpdateOrganization(c *gin.Context) {
 	c.JSON(http.StatusOK, baseAPI.SuccessResponse("Organization updated successfully", organization.ToResponse()))
 }
 
-// UpdateBillingConfig handles updating an organization's billing configuration for extra efforts
-// @Summary Update organization billing configuration
-// @Description Update billing mode and configuration for extra efforts tracking
-// @Tags organizations
-// @ID updateOrganizationBillingConfig
-// @Accept json
-// @Produce json
-// @Param id path int true "Organization ID"
-// @Param config body models.UpdateBillingConfigRequest true "Billing configuration"
-// @Success 200 {object} models.OrganizationAPIResponse
-// @Failure 400 {object} models.ErrorResponse
-// @Failure 401 {object} models.ErrorResponse
-// @Failure 404 {object} models.ErrorResponse
-// @Failure 500 {object} models.ErrorResponse
-// @Security BearerAuth
-// @Router /organizations/{id}/billing-config [put]
-func (h *OrganizationHandler) UpdateBillingConfig(c *gin.Context) {
-	id, err := strconv.ParseUint(c.Param("id"), 10, 32)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, baseAPI.ErrorResponseFunc("Invalid request", "Invalid organization ID"))
-		return
-	}
-
-	var req models.UpdateBillingConfigRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, baseAPI.ErrorResponseFunc("Invalid request", err.Error()))
-		return
-	}
-
-	tenantID, err := baseAPI.GetTenantID(c)
-	if err != nil {
-		c.JSON(http.StatusUnauthorized, baseAPI.ErrorResponseFunc("Unauthorized", "Unable to get tenant ID: "+err.Error()))
-		return
-	}
-
-	organization, err := h.service.UpdateBillingConfig(uint(id), tenantID, req)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, baseAPI.ErrorResponseFunc("Failed to update billing config", err.Error()))
-		return
-	}
-
-	c.JSON(http.StatusOK, baseAPI.SuccessResponse("Billing configuration updated successfully", organization.ToResponse()))
-}
 
 // DeleteOrganization handles deleting an organization
 // @Summary Delete an organization

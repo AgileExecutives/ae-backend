@@ -1,15 +1,14 @@
 package services
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
 	"math"
 	"time"
 
-	baseAPI "github.com/ae-base-server/api"
 	"github.com/unburdy/unburdy-server-api/modules/client_management/entities"
 	"github.com/unburdy/unburdy-server-api/modules/client_management/repositories"
+	"github.com/unburdy/unburdy-server-api/modules/client_management/settings"
 	"gorm.io/gorm"
 )
 
@@ -137,9 +136,8 @@ func (s *ExtraEffortService) GetUnbilledEffortsByClient(clientID, tenantID uint)
 
 // BillingCalculator calculates invoice units based on organization billing mode
 type BillingCalculator struct {
-	mode   string
-	config map[string]interface{}
-	org    *baseAPI.Organization
+	modeSettings  *settings.BillingModeSettings
+	itemsSettings *settings.InvoiceItemsSettings
 }
 
 // BillingResult contains the result of billing calculation
@@ -150,24 +148,16 @@ type BillingResult struct {
 }
 
 // NewBillingCalculator creates a new billing calculator
-func NewBillingCalculator(org *baseAPI.Organization) (*BillingCalculator, error) {
-	var config map[string]interface{}
-	if org.ExtraEffortsConfig != nil {
-		if err := json.Unmarshal(org.ExtraEffortsConfig, &config); err != nil {
-			return nil, fmt.Errorf("failed to parse extra efforts config: %w", err)
-		}
-	}
-
+func NewBillingCalculator(modeSettings *settings.BillingModeSettings, itemsSettings *settings.InvoiceItemsSettings) (*BillingCalculator, error) {
 	return &BillingCalculator{
-		mode:   org.ExtraEffortsBillingMode,
-		config: config,
-		org:    org,
+		modeSettings:  modeSettings,
+		itemsSettings: itemsSettings,
 	}, nil
 }
 
 // CalculateSessionUnits calculates billing units for a session including its extra efforts
 func (c *BillingCalculator) CalculateSessionUnits(session *entities.Session, sessionEfforts []entities.ExtraEffort) *BillingResult {
-	switch c.mode {
+	switch c.modeSettings.ExtraEffortsBillingMode {
 	case "ignore":
 		// Track but don't bill extra efforts
 		return &BillingResult{
@@ -204,14 +194,11 @@ func (c *BillingCalculator) CalculateSessionUnits(session *entities.Session, ses
 // calculateBundleDoubleUnits implements mode B: bundle into double units
 func (c *BillingCalculator) calculateBundleDoubleUnits(session *entities.Session, sessionEfforts []entities.ExtraEffort) *BillingResult {
 	unitDurationMin := 45 // default
-	if val, ok := c.config["unit_duration_min"].(float64); ok {
-		unitDurationMin = int(val)
+	if c.modeSettings != nil && c.modeSettings.ExtraEffortsConfig.ModeBThresholdMinutes > 0 {
+		unitDurationMin = c.modeSettings.ExtraEffortsConfig.ModeBThresholdMinutes
 	}
 
 	thresholdPercentage := 90.0 // default
-	if val, ok := c.config["threshold_percentage"].(float64); ok {
-		thresholdPercentage = val
-	}
 
 	// Calculate total duration
 	totalMin := session.DurationMin
@@ -237,19 +224,13 @@ func (c *BillingCalculator) calculateBundleDoubleUnits(session *entities.Session
 
 // CalculateSeparateEffortUnits calculates units for standalone extra effort (mode C)
 func (c *BillingCalculator) CalculateSeparateEffortUnits(effort *entities.ExtraEffort) *BillingResult {
-	if c.mode != "separate_items" {
+	if c.modeSettings == nil || c.modeSettings.ExtraEffortsBillingMode != "separate_items" {
 		return nil
 	}
 
 	roundToMin := 15 // default
-	if val, ok := c.config["round_to_min"].(float64); ok {
-		roundToMin = int(val)
-	}
 
 	minimumDurationMin := 10 // default
-	if val, ok := c.config["minimum_duration_min"].(float64); ok {
-		minimumDurationMin = int(val)
-	}
 
 	// Round duration
 	roundedMin := roundDuration(effort.DurationMin, roundToMin)
@@ -275,26 +256,18 @@ func (c *BillingCalculator) CalculateSeparateEffortUnits(effort *entities.ExtraE
 
 // CalculatePreparationAllowance calculates automatic preparation time (mode D)
 func (c *BillingCalculator) CalculatePreparationAllowance(sessionUnits int) *BillingResult {
-	if c.mode != "preparation_allowance" {
+	if c.modeSettings == nil || c.modeSettings.ExtraEffortsBillingMode != "preparation_allowance" {
 		return nil
 	}
 
-	minutesPerUnit := 15 // default
-	if val, ok := c.config["minutes_per_unit"].(float64); ok {
-		minutesPerUnit = int(val)
+	// Use preparation ratio from settings
+	prepRatio := 0.3333333333333333 // default (1/3)
+	if c.modeSettings.ExtraEffortsConfig.ModeDPreparationRatio > 0 {
+		prepRatio = c.modeSettings.ExtraEffortsConfig.ModeDPreparationRatio
 	}
 
-	billingMode := "automatic" // default
-	if val, ok := c.config["billing_mode"].(string); ok {
-		billingMode = val
-	}
-
-	if billingMode != "automatic" {
-		return nil // track_actual mode requires actual effort data
-	}
-
-	// Calculate preparation time
-	prepMin := sessionUnits * minutesPerUnit
+	// Calculate preparation time based on session units
+	prepMin := int(float64(sessionUnits) * 45.0 * prepRatio)
 	prepUnits := float64(prepMin) / 45.0
 
 	return &BillingResult{
@@ -306,13 +279,13 @@ func (c *BillingCalculator) CalculatePreparationAllowance(sessionUnits int) *Bil
 // getDescriptionForUnits returns the configured description for number of units
 func (c *BillingCalculator) getDescriptionForUnits(units int) string {
 	if units == 1 {
-		if c.org.LineItemSingleUnitText != "" {
-			return c.org.LineItemSingleUnitText
+		if c.itemsSettings.SingleUnitText != "" {
+			return c.itemsSettings.SingleUnitText
 		}
 		return "Einzelstunde"
 	} else if units == 2 {
-		if c.org.LineItemDoubleUnitText != "" {
-			return c.org.LineItemDoubleUnitText
+		if c.itemsSettings.DoubleUnitText != "" {
+			return c.itemsSettings.DoubleUnitText
 		}
 		return "Doppelstunde"
 	}

@@ -12,6 +12,7 @@ type InvoiceStatus string
 
 const (
 	InvoiceStatusDraft     InvoiceStatus = "draft"
+	InvoiceStatusFinalized InvoiceStatus = "finalized"
 	InvoiceStatusSent      InvoiceStatus = "sent"
 	InvoiceStatusPaid      InvoiceStatus = "paid"
 	InvoiceStatusOverdue   InvoiceStatus = "overdue"

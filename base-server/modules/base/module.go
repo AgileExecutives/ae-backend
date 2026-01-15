@@ -9,6 +9,7 @@ import (
 	"github.com/ae-base-server/modules/base/middleware"
 	"github.com/ae-base-server/modules/base/services"
 	"github.com/ae-base-server/pkg/core"
+	settingsentities "github.com/ae-base-server/pkg/settings/entities"
 )
 
 // BaseModule provides core authentication, user management, and contact functionality
@@ -90,6 +91,8 @@ func (m *BaseModule) Entities() []core.Entity {
 		entities.NewNewsletterEntity(),
 		entities.NewTokenBlacklistEntity(),
 		entities.NewUserSettingsEntity(),
+		settingsentities.NewSettingDefinitionEntity(),
+		settingsentities.NewSettingEntity(),
 	}
 }
 

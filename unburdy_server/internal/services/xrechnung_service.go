@@ -7,14 +7,18 @@ import (
 	baseAPI "github.com/ae-base-server/api"
 	"github.com/unburdy/unburdy-server-api/internal/models"
 	"github.com/unburdy/unburdy-server-api/modules/client_management/entities"
+	clientServices "github.com/unburdy/unburdy-server-api/modules/client_management/services"
+	"gorm.io/gorm"
 )
 
 // XRechnungService handles generation of XRechnung XML for German government invoicing
-type XRechnungService struct{}
+type XRechnungService struct {
+	db *gorm.DB
+}
 
 // NewXRechnungService creates a new XRechnung service instance
-func NewXRechnungService() *XRechnungService {
-	return &XRechnungService{}
+func NewXRechnungService(db *gorm.DB) *XRechnungService {
+	return &XRechnungService{db: db}
 }
 
 // XRechnung UBL XML Structures
@@ -204,7 +208,13 @@ func (s *XRechnungService) GenerateXRechnungXML(
 
 	// Due date (if payment not yet received)
 	if invoice.PayedDate == nil {
-		dueDate := invoice.InvoiceDate.AddDate(0, 0, organization.PaymentDueDays)
+		// Get payment terms from settings
+		settingsHelper := clientServices.NewSettingsHelper(s.db)
+		paymentTerms, err := settingsHelper.GetPaymentTerms(organization.TenantID)
+		if err != nil {
+			return nil, fmt.Errorf("failed to get payment terms: %w", err)
+		}
+		dueDate := invoice.InvoiceDate.AddDate(0, 0, paymentTerms.PaymentDueDays)
 		ublInvoice.DueDate = dueDate.Format("2006-01-02")
 	}
 

@@ -237,8 +237,23 @@ func seedOrganizations(db *gorm.DB) error {
 
 	var seedData struct {
 		Organizations []struct {
-			TenantID uint   `json:"tenant_id"`
-			Name     string `json:"name"`
+			TenantID                 uint     `json:"tenant_id"`
+			Name                     string   `json:"name"`
+			OwnerName                string   `json:"owner_name"`
+			OwnerTitle               string   `json:"owner_title"`
+			StreetAddress            string   `json:"street_address"`
+			Zip                      string   `json:"zip"`
+			City                     string   `json:"city"`
+			Email                    string   `json:"email"`
+			Phone                    string   `json:"phone"`
+			TaxID                    string   `json:"tax_id"`
+			TaxRate                  *float64 `json:"tax_rate"`
+			TaxUstID                 string   `json:"tax_ustid"`
+			UnitPrice                *float64 `json:"unit_price"`
+			BankAccountOwner         string   `json:"bank_account_owner"`
+			BankAccountBank          string   `json:"bank_account_bank"`
+			BankAccountBIC           string   `json:"bank_account_bic"`
+			BankAccountIBAN          string   `json:"bank_account_iban"`
 		} `json:"organizations"`
 	}
 
@@ -249,19 +264,49 @@ func seedOrganizations(db *gorm.DB) error {
 	// Import the organization module entities
 	// We need to use a type assertion here since it's a different module
 	type Organization struct {
-		ID       uint
-		TenantID uint
-		Name     string
+		ID                       uint
+		TenantID                 uint
+		Name                     string
+		OwnerName                string
+		OwnerTitle               string
+		StreetAddress            string
+		Zip                      string
+		City                     string
+		Email                    string
+		Phone                    string
+		TaxID                    string
+		TaxRate                  *float64
+		TaxUstID                 string
+		UnitPrice                *float64
+		BankAccountOwner         string
+		BankAccountBank          string
+		BankAccountBIC           string
+		BankAccountIBAN          string
 	}
 
-	// Create organizations
+	// Create organizations only if table is empty (fresh installation)
 	var orgCount int64
 	db.Table("organizations").Count(&orgCount)
 	if orgCount == 0 {
 		for _, orgData := range seedData.Organizations {
 			org := Organization{
-				TenantID: orgData.TenantID,
-				Name:     orgData.Name,
+				TenantID:         orgData.TenantID,
+				Name:             orgData.Name,
+				OwnerName:        orgData.OwnerName,
+				OwnerTitle:       orgData.OwnerTitle,
+				StreetAddress:    orgData.StreetAddress,
+				Zip:              orgData.Zip,
+				City:             orgData.City,
+				Email:            orgData.Email,
+				Phone:            orgData.Phone,
+				TaxID:            orgData.TaxID,
+				TaxRate:          orgData.TaxRate,
+				TaxUstID:         orgData.TaxUstID,
+				UnitPrice:        orgData.UnitPrice,
+				BankAccountOwner: orgData.BankAccountOwner,
+				BankAccountBank:  orgData.BankAccountBank,
+				BankAccountBIC:   orgData.BankAccountBIC,
+				BankAccountIBAN:  orgData.BankAccountIBAN,
 			}
 			if err := db.Table("organizations").Create(&org).Error; err != nil {
 				return fmt.Errorf("failed to create organization %s: %w", orgData.Name, err)
@@ -270,7 +315,6 @@ func seedOrganizations(db *gorm.DB) error {
 		}
 	} else {
 		log.Println("⏭️  Organizations already exist, skipping...")
-	}
 
 	return nil
 }

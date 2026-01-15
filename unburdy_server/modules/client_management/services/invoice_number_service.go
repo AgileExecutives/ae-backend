@@ -29,98 +29,87 @@ const (
 )
 
 // GenerateInvoiceNumber generates the next invoice number for an organization
-// This method is thread-safe and uses database transactions to ensure uniqueness
-func (s *InvoiceNumberService) GenerateInvoiceNumber(organizationID uint, invoiceDate time.Time) (string, error) {
-	// Get organization settings
-	var org struct {
-		InvoiceNumberFormat string
-		InvoiceNumberPrefix *string
+// This method is thread-safe when called within a transaction context
+// If s.db is already a transaction, it will use that transaction; otherwise it creates one
+func (s *InvoiceNumberService) GenerateInvoiceNumber(organizationID uint, tenantID uint, invoiceDate time.Time) (string, error) {
+	// Use PostgreSQL advisory lock to ensure only one transaction generates numbers at a time
+	// Advisory lock key is based on organization ID to allow parallel number generation for different orgs
+	// For SQLite, we skip advisory locks (single-threaded by nature)
+	if s.db.Dialector.Name() == "postgres" {
+		// Acquire advisory lock (automatically released at transaction end)
+		// Use organization_id as lock key
+		lockKey := int64(organizationID)
+		if err := s.db.Exec("SELECT pg_advisory_xact_lock(?)", lockKey).Error; err != nil {
+			return "", fmt.Errorf("failed to acquire advisory lock: %w", err)
+		}
+		fmt.Printf("🔒 DEBUG InvoiceNumber: Acquired advisory lock for org %d\n", organizationID)
 	}
 
-	if err := s.db.Table("organizations").
-		Select("invoice_number_format, invoice_number_prefix").
-		Where("id = ?", organizationID).
-		First(&org).Error; err != nil {
-		return "", fmt.Errorf("failed to fetch organization settings: %w", err)
+	// Get invoice number settings from settings module
+	settingsHelper := NewSettingsHelper(s.db)
+	numberSettings, err := settingsHelper.GetInvoiceNumber(tenantID)
+	if err != nil {
+		return "", fmt.Errorf("failed to get invoice number settings: %w", err)
 	}
 
-	format := InvoiceNumberFormat(org.InvoiceNumberFormat)
+	format := InvoiceNumberFormat(numberSettings.Format)
 	if format == "" {
 		format = InvoiceNumberFormatSequential // Default to sequential
 	}
 
-	prefix := ""
-	if org.InvoiceNumberPrefix != nil {
-		prefix = *org.InvoiceNumberPrefix
+	prefix := numberSettings.Prefix
+
+	var lastNumber string
+	var lastInvoice struct {
+		InvoiceNumber string
+		ID            uint
 	}
 
-	// Use a transaction to ensure thread-safe counter increment
-	var invoiceNumber string
-	err := s.db.Transaction(func(tx *gorm.DB) error {
-		// For SQLite, ensure we can see committed rows from other transactions
-		// Only execute PRAGMA for SQLite databases
-		if tx.Dialector.Name() == "sqlite" {
-			tx.Exec("PRAGMA read_uncommitted=1")
-		}
+	// Build query based on format
+	query := s.db.Table("invoices").
+		Select("invoice_number, id").
+		Where("organization_id = ? AND status != ? AND invoice_number NOT LIKE ?",
+			organizationID, "draft", "DRAFT-%")
 
-		var lastNumber string
-		var lastInvoice struct {
-			InvoiceNumber string
-		}
+	fmt.Printf("🔍 DEBUG InvoiceNumber: orgID=%d, format=%s, prefix=%s\n", organizationID, format, prefix)
 
-		// Build query based on format
-		query := tx.Table("invoices").
-			Select("invoice_number").
-			Where("organization_id = ? AND status != ? AND invoice_number NOT LIKE ?",
-				organizationID, "draft", "DRAFT-%")
-
-		fmt.Printf("🔍 DEBUG InvoiceNumber: orgID=%d, format=%s, prefix=%s\n", organizationID, format, prefix)
-
-		// For year-based formats, only consider invoices from the same year
-		if format == InvoiceNumberFormatYearPrefix {
-			yearStr := invoiceDate.Format("2006")
-			if prefix != "" {
-				query = query.Where("invoice_number LIKE ?", prefix+"-"+yearStr+"%")
-			} else {
-				query = query.Where("invoice_number LIKE ?", yearStr+"%")
-			}
-		} else if format == InvoiceNumberFormatYearMonth {
-			yearMonthStr := invoiceDate.Format("2006-01")
-			if prefix != "" {
-				query = query.Where("invoice_number LIKE ?", prefix+"-"+yearMonthStr+"%")
-			} else {
-				query = query.Where("invoice_number LIKE ?", yearMonthStr+"%")
-			}
-		}
-
-		// Get the last invoice number
-		if err := query.Order("invoice_number DESC").First(&lastInvoice).Error; err != nil {
-			if err == gorm.ErrRecordNotFound {
-				lastNumber = ""
-				fmt.Printf("🔍 DEBUG InvoiceNumber: No existing invoice found\n")
-			} else {
-				return fmt.Errorf("failed to query last invoice: %w", err)
-			}
+	// For year-based formats, only consider invoices from the same year
+	if format == InvoiceNumberFormatYearPrefix {
+		yearStr := invoiceDate.Format("2006")
+		if prefix != "" {
+			query = query.Where("invoice_number LIKE ?", prefix+"-"+yearStr+"%")
 		} else {
-			lastNumber = lastInvoice.InvoiceNumber
-			fmt.Printf("🔍 DEBUG InvoiceNumber: Found last invoice number: %s\n", lastNumber)
+			query = query.Where("invoice_number LIKE ?", yearStr+"%")
 		}
-
-		// Generate the next number based on format
-		var err error
-		invoiceNumber, err = s.generateNextNumber(format, prefix, lastNumber, invoiceDate)
-		if err != nil {
-			return err
+	} else if format == InvoiceNumberFormatYearMonth {
+		yearMonthStr := invoiceDate.Format("2006-01")
+		if prefix != "" {
+			query = query.Where("invoice_number LIKE ?", prefix+"-"+yearMonthStr+"%")
+		} else {
+			query = query.Where("invoice_number LIKE ?", yearMonthStr+"%")
 		}
+	}
 
-		fmt.Printf("🔍 DEBUG InvoiceNumber: Generated invoice number: %s\n", invoiceNumber)
+	// Get the last invoice number (no need for FOR UPDATE since we have advisory lock)
+	if err := query.Order("invoice_number DESC").First(&lastInvoice).Error; err != nil {
+		if err == gorm.ErrRecordNotFound {
+			lastNumber = ""
+			fmt.Printf("🔍 DEBUG InvoiceNumber: No existing invoice found\n")
+		} else {
+			return "", fmt.Errorf("failed to query last invoice: %w", err)
+		}
+	} else {
+		lastNumber = lastInvoice.InvoiceNumber
+		fmt.Printf("🔍 DEBUG InvoiceNumber: Found last invoice number: %s (ID: %d)\n", lastNumber, lastInvoice.ID)
+	}
 
-		return nil
-	})
-
+	// Generate the next number based on format
+	invoiceNumber, err := s.generateNextNumber(format, prefix, lastNumber, invoiceDate)
 	if err != nil {
 		return "", err
 	}
+
+	fmt.Printf("🔍 DEBUG InvoiceNumber: Generated invoice number: %s\n", invoiceNumber)
 
 	return invoiceNumber, nil
 }

@@ -1,39 +1,73 @@
 package entities
 
-import "time"
+import (
+	"time"
 
-// Setting represents a single configuration setting
-type Setting struct {
-	ID             uint      `json:"id" gorm:"primarykey"`
-	TenantID       uint      `json:"tenant_id" gorm:"not null;index"`
-	OrganizationID string    `json:"organization_id" gorm:"not null;index"`
-	Domain         string    `json:"domain" gorm:"not null;index"`
-	Key            string    `json:"key" gorm:"not null;index"`
-	Value          string    `json:"value" gorm:"type:text"`
-	Type           string    `json:"type" gorm:"not null"` // string, int, bool, float, json
-	CreatedAt      time.Time `json:"created_at"`
-	UpdatedAt      time.Time `json:"updated_at"`
+	"gorm.io/datatypes"
+)
+
+// SettingDefinition represents a schema definition for a setting
+type SettingDefinition struct {
+	ID        uint           `json:"id" gorm:"primarykey"`
+	Domain    string         `json:"domain" gorm:"not null;uniqueIndex:idx_setting_def_domain_key"`
+	Key       string         `json:"key" gorm:"not null;uniqueIndex:idx_setting_def_domain_key"`
+	Version   int            `json:"version" gorm:"not null;default:1"`
+	Schema    datatypes.JSON `json:"schema" gorm:"type:jsonb"`
+	Data      datatypes.JSON `json:"data" gorm:"type:jsonb"` // Default/sample values
+	CreatedAt time.Time      `json:"created_at"`
+	UpdatedAt time.Time      `json:"updated_at"`
 }
 
-// SettingRequest represents a request to create/update a setting
+// TableName specifies the table name for SettingDefinition
+func (SettingDefinition) TableName() string {
+	return "setting_definitions"
+}
+
+// Setting represents a tenant-specific configuration value
+type Setting struct {
+	ID                  uint               `json:"id" gorm:"primarykey"`
+	TenantID            uint               `json:"tenant_id" gorm:"not null;uniqueIndex:idx_setting_tenant_domain_key"`
+	Domain              string             `json:"domain" gorm:"not null;uniqueIndex:idx_setting_tenant_domain_key"`
+	Key                 string             `json:"key" gorm:"not null;uniqueIndex:idx_setting_tenant_domain_key"`
+	Version             int                `json:"version" gorm:"not null;default:1"`
+	Data                datatypes.JSON     `json:"data" gorm:"type:jsonb"`
+	SettingDefinitionID uint               `json:"setting_definition_id" gorm:"index"`
+	SettingDefinition   *SettingDefinition `json:"setting_definition,omitempty" gorm:"foreignKey:SettingDefinitionID"`
+	CreatedAt           time.Time          `json:"created_at"`
+	UpdatedAt           time.Time          `json:"updated_at"`
+}
+
+// TableName specifies the table name for Setting
+func (Setting) TableName() string {
+	return "settings"
+}
+
+// SettingRegistration represents a request to register a setting definition
+type SettingRegistration struct {
+	Domain  string                 `json:"domain" binding:"required"`
+	Key     string                 `json:"key" binding:"required"`
+	Version int                    `json:"version"`
+	Schema  map[string]interface{} `json:"schema" binding:"required"`
+	Data    map[string]interface{} `json:"data,omitempty"`
+}
+
+// SettingRequest represents a request to create/update a setting value
 type SettingRequest struct {
-	Domain string      `json:"domain" binding:"required" example:"company"`
-	Key    string      `json:"key" binding:"required" example:"company_name"`
-	Type   string      `json:"type" binding:"required" example:"string"`
-	Value  interface{} `json:"value" binding:"required"`
+	Domain string                 `json:"domain" binding:"required" example:"organization"`
+	Key    string                 `json:"key" binding:"required" example:"locale"`
+	Data   map[string]interface{} `json:"data" binding:"required"`
 }
 
 // SettingResponse represents a setting response
 type SettingResponse struct {
-	ID             uint      `json:"id" example:"123"`
-	TenantID       uint      `json:"tenant_id" example:"1"`
-	OrganizationID string    `json:"organization_id" example:"org-123"`
-	Domain         string    `json:"domain" example:"company"`
-	Key            string    `json:"key" example:"company_name"`
-	Value          string    `json:"value" example:"My Company"`
-	Type           string    `json:"type" example:"string"`
-	CreatedAt      time.Time `json:"created_at" example:"2025-01-09T10:00:00Z"`
-	UpdatedAt      time.Time `json:"updated_at" example:"2025-01-09T10:00:00Z"`
+	ID        uint                   `json:"id" example:"123"`
+	TenantID  uint                   `json:"tenant_id" example:"1"`
+	Domain    string                 `json:"domain" example:"organization"`
+	Key       string                 `json:"key" example:"locale"`
+	Version   int                    `json:"version" example:"1"`
+	Data      map[string]interface{} `json:"data"`
+	CreatedAt time.Time              `json:"created_at" example:"2025-01-09T10:00:00Z"`
+	UpdatedAt time.Time              `json:"updated_at" example:"2025-01-09T10:00:00Z"`
 }
 
 // BulkSettingRequest represents a request to set multiple settings

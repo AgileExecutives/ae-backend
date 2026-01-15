@@ -24,6 +24,7 @@ import (
 	_ "github.com/unburdy/unburdy-server-api/docs" // swagger docs
 	"github.com/unburdy/unburdy-server-api/modules/audit"
 	"github.com/unburdy/unburdy-server-api/modules/client_management"
+	settings_api "github.com/unburdy/unburdy-server-api/modules/settings_api"
 )
 
 // @title Unburdy Server API
@@ -148,6 +149,11 @@ func main() {
 	if err := app.Initialize(); err != nil {
 		log.Fatal("Failed to initialize application:", err)
 	}
+
+	// Register settings API routes
+	log.Println("🔧 Registering settings API routes...")
+	settings_api.RegisterRoutes(app.GetRouter(), app.GetDB())
+	log.Println("✅ Settings API routes registered")
 
 	// Start application
 	ctx := context.Background()

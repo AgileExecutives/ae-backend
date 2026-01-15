@@ -34,7 +34,6 @@ func (rp *RouteProvider) RegisterRoutes(router *gin.RouterGroup, ctx core.Module
 		organizations.GET("", rp.handler.GetAllOrganizations)
 		organizations.GET("/:id", rp.handler.GetOrganization)
 		organizations.PUT("/:id", rp.handler.UpdateOrganization)
-		organizations.PUT("/:id/billing-config", rp.handler.UpdateBillingConfig)
 		organizations.DELETE("/:id", rp.handler.DeleteOrganization)
 	}
 }

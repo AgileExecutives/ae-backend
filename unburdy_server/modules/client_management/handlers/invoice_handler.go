@@ -283,7 +283,7 @@ func (h *InvoiceHandler) CancelDraftInvoice(c *gin.Context) {
 
 // FinalizeInvoice handles finalizing a draft invoice
 // @Summary Finalize a draft invoice
-// @Description Finalize a draft invoice by generating invoice number and changing status to 'sent'
+// @Description Finalize a draft invoice by generating invoice number and changing status to 'finalized'
 // @Tags invoices
 // @ID finalizeInvoice
 // @Produce json
@@ -347,6 +347,60 @@ func (h *InvoiceHandler) FinalizeInvoice(c *gin.Context) {
 	})
 
 	c.JSON(http.StatusOK, models.SuccessResponse("Invoice finalized successfully", invoice.ToResponse()))
+}
+
+// MarkInvoiceAsSent marks a finalized invoice as sent
+// @Summary Mark invoice as sent
+// @Description Mark a finalized invoice as sent (changes status from finalized to sent)
+// @Tags client-invoices
+// @ID markInvoiceAsSent
+// @Produce json
+// @Param id path int true "Invoice ID"
+// @Success 200 {object} entities.InvoiceAPIResponse
+// @Failure 400 {object} models.ErrorResponse
+// @Failure 401 {object} models.ErrorResponse
+// @Failure 403 {object} models.ErrorResponse
+// @Failure 404 {object} models.ErrorResponse
+// @Failure 500 {object} models.ErrorResponse
+// @Security BearerAuth
+// @Router /client-invoices/{id}/mark-sent [post]
+func (h *InvoiceHandler) MarkInvoiceAsSent(c *gin.Context) {
+	id, err := strconv.ParseUint(c.Param("id"), 10, 32)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, models.ErrorResponseFunc("Invalid request", "Invalid invoice ID"))
+		return
+	}
+
+	tenantID, err := baseAPI.GetTenantID(c)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, models.ErrorResponseFunc("Unauthorized", "Failed to get tenant ID: "+err.Error()))
+		return
+	}
+
+	invoice, err := h.service.MarkAsSent(uint(id), tenantID)
+	if err != nil {
+		if err.Error() == "can only mark finalized invoices as sent" {
+			c.JSON(http.StatusForbidden, models.ErrorResponseFunc("Forbidden", err.Error()))
+			return
+		}
+		if strings.Contains(err.Error(), "invoice not found") {
+			c.JSON(http.StatusNotFound, models.ErrorResponseFunc("Not found", "Invoice not found"))
+			return
+		}
+		c.JSON(http.StatusInternalServerError, models.ErrorResponseFunc("Internal server error", err.Error()))
+		return
+	}
+
+	// Log audit event
+	h.logAudit(c, auditEntities.AuditActionInvoiceSent, uint(id), &auditEntities.AuditLogMetadata{
+		TotalAmount: invoice.TotalAmount,
+		AdditionalInfo: map[string]interface{}{
+			"invoice_number": invoice.InvoiceNumber,
+			"status":         invoice.Status,
+		},
+	})
+
+	c.JSON(http.StatusOK, models.SuccessResponse("Invoice marked as sent successfully", invoice.ToResponse()))
 }
 
 // SendInvoiceEmail handles sending an invoice via email
