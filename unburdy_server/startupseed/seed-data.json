@@ -102,5 +102,39 @@
       "organization_id": 2,
       "email_verified": true
     }
+  ],
+  "booking_templates": [
+    {
+      "name": "Therapy Einzelsitzung",
+      "description": "",
+      "slot_duration": 55,
+      "buffer_before": 5,
+      "buffer_after": 10,
+      "recurrence_rules": ["none"],
+      "max_participants": 1,
+      "settings": {},
+      "advance_booking_days": 90,
+      "cancel_hours": 24,
+      "timezone": "Europe/Berlin",
+      "is_active": false,
+      "resources": [],
+      "allowed_start_minutes": [0, 30]
+    },
+    {
+      "name": "Therapy Series",
+      "description": "",
+      "slot_duration": 55,
+      "buffer_before": 5,
+      "buffer_after": 10,
+      "recurrence_rules": ["weekly"],
+      "max_participants": 1,
+      "settings": {},
+      "advance_booking_days": 90,
+      "cancel_hours": 24,
+      "timezone": "Europe/Berlin",
+      "is_active": false,
+      "resources": [],
+      "allowed_start_minutes": [0, 30]
+    }
   ]
 }

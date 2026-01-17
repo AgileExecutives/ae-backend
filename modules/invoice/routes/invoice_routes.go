@@ -20,12 +20,22 @@ func NewInvoiceRoutes(handler *handlers.InvoiceHandler) *InvoiceRoutes {
 func (r *InvoiceRoutes) RegisterRoutes(router *gin.RouterGroup, ctx core.ModuleContext) {
 	invoices := router.Group("/invoices")
 	{
+		// CRUD operations
 		invoices.POST("", r.handler.CreateInvoice)
 		invoices.GET("", r.handler.ListInvoices)
 		invoices.GET("/:id", r.handler.GetInvoice)
 		invoices.PUT("/:id", r.handler.UpdateInvoice)
 		invoices.DELETE("/:id", r.handler.DeleteInvoice)
-		invoices.POST("/:id/mark-paid", r.handler.MarkAsPaid)
+
+		// Workflow operations
+		invoices.POST("/:id/finalize", r.handler.FinalizeInvoice)
+		invoices.POST("/:id/send", r.handler.MarkInvoiceAsSent)
+		invoices.POST("/:id/pay", r.handler.MarkInvoiceAsPaid)
+		invoices.POST("/:id/remind", r.handler.SendInvoiceReminder)
+		invoices.POST("/:id/cancel", r.handler.CancelInvoice)
+
+		// PDF generation
+		invoices.POST("/:id/generate-pdf", r.handler.GenerateInvoicePDF)
 	}
 }
 

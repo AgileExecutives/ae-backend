@@ -38,6 +38,17 @@ type Invoice struct {
 	LatestReminder *time.Time            `gorm:"column:latest_reminder" json:"latest_reminder,omitempty"`
 	DocumentID     *uint                 `gorm:"index:idx_invoice_document" json:"document_id,omitempty"`
 
+	// Customer information
+	CustomerName          string `gorm:"column:customer_name;size:255" json:"customer_name,omitempty"`
+	CustomerAddress       string `gorm:"column:customer_address;size:500" json:"customer_address,omitempty"`
+	CustomerAddressExt    string `gorm:"column:customer_address_ext;size:255" json:"customer_address_ext,omitempty"`
+	CustomerZip           string `gorm:"column:customer_zip;size:20" json:"customer_zip,omitempty"`
+	CustomerCity          string `gorm:"column:customer_city;size:100" json:"customer_city,omitempty"`
+	CustomerCountry       string `gorm:"column:customer_country;size:100" json:"customer_country,omitempty"`
+	CustomerContactPerson string `gorm:"column:customer_contact_person;size:255" json:"customer_contact_person,omitempty"`
+	CustomerDepartment    string `gorm:"column:customer_department;size:255" json:"customer_department,omitempty"`
+	CustomerEmail         string `gorm:"column:customer_email;size:255" json:"customer_email,omitempty"`
+
 	// Workflow timestamps
 	SentAt         *time.Time `json:"sent_at,omitempty"`
 	ReminderSentAt *time.Time `json:"reminder_sent_at,omitempty"`
@@ -148,10 +159,19 @@ type UpdateInvoiceRequest struct {
 
 // CreateDraftInvoiceRequest represents the request for creating a draft invoice
 type CreateDraftInvoiceRequest struct {
-	ClientID        uint                    `json:"client_id" binding:"required" example:"1"`
-	SessionIDs      []uint                  `json:"session_ids,omitempty" example:"1,2,3"`
-	ExtraEffortIDs  []uint                  `json:"extra_effort_ids,omitempty" example:"5,6"`
-	CustomLineItems []CustomLineItemRequest `json:"custom_line_items,omitempty"`
+	ClientID              uint                    `json:"client_id" binding:"required" example:"1"`
+	SessionIDs            []uint                  `json:"session_ids,omitempty" example:"1,2,3"`
+	ExtraEffortIDs        []uint                  `json:"extra_effort_ids,omitempty" example:"5,6"`
+	CustomLineItems       []CustomLineItemRequest `json:"custom_line_items,omitempty"`
+	CustomerName          string                  `json:"customer_name,omitempty" example:"Health Insurance Corp"`
+	CustomerAddress       string                  `json:"customer_address,omitempty" example:"456 Insurance Blvd"`
+	CustomerAddressExt    string                  `json:"customer_address_ext,omitempty" example:"Suite 200"`
+	CustomerZip           string                  `json:"customer_zip,omitempty" example:"12345"`
+	CustomerCity          string                  `json:"customer_city,omitempty" example:"New York"`
+	CustomerCountry       string                  `json:"customer_country,omitempty" example:"USA"`
+	CustomerContactPerson string                  `json:"customer_contact_person,omitempty" example:"Jane Smith"`
+	CustomerDepartment    string                  `json:"customer_department,omitempty" example:"Mental Health Division"`
+	CustomerEmail         string                  `json:"customer_email,omitempty" example:"jane.smith@insurance.com"`
 }
 
 // CustomLineItemRequest represents a custom line item for an invoice
@@ -180,6 +200,19 @@ type MarkInvoiceAsPaidRequest struct {
 	PaymentReference string     `json:"payment_reference,omitempty" example:"TRANSFER-123456"`
 }
 
+// FinalizeInvoiceRequest represents the optional request body for finalizing an invoice
+type FinalizeInvoiceRequest struct {
+	CustomerName          string `json:"customer_name,omitempty" example:"Health Insurance Corp"`
+	CustomerAddress       string `json:"customer_address,omitempty" example:"456 Insurance Blvd"`
+	CustomerAddressExt    string `json:"customer_address_ext,omitempty" example:"Suite 200"`
+	CustomerZip           string `json:"customer_zip,omitempty" example:"12345"`
+	CustomerCity          string `json:"customer_city,omitempty" example:"New York"`
+	CustomerCountry       string `json:"customer_country,omitempty" example:"USA"`
+	CustomerContactPerson string `json:"customer_contact_person,omitempty" example:"Jane Smith"`
+	CustomerDepartment    string `json:"customer_department,omitempty" example:"Mental Health Division"`
+	CustomerEmail         string `json:"customer_email,omitempty" example:"jane.smith@insurance.com"`
+}
+
 // CreateCreditNoteRequest represents the request for creating a credit note
 type CreateCreditNoteRequest struct {
 	LineItemIDs []uint     `json:"line_item_ids" binding:"required" example:"1,2,3"`
@@ -189,28 +222,37 @@ type CreateCreditNoteRequest struct {
 
 // InvoiceResponse represents the response format for invoice data
 type InvoiceResponse struct {
-	ID             uint                          `json:"id"`
-	TenantID       uint                          `json:"tenant_id"`
-	UserID         uint                          `json:"user_id"`
-	OrganizationID uint                          `json:"organization_id"`
-	Organization   *baseAPI.OrganizationResponse `json:"organization,omitempty" swaggertype:"object"`
-	InvoiceDate    time.Time                     `json:"invoice_date"`
-	InvoiceNumber  string                        `json:"invoice_number"`
-	NumberUnits    int                           `json:"number_units"`
-	SumAmount      float64                       `json:"sum_amount"`
-	TaxAmount      float64                       `json:"tax_amount"`
-	TotalAmount    float64                       `json:"total_amount"`
-	PayedDate      *time.Time                    `json:"payed_date,omitempty"`
-	Status         InvoiceStatus                 `json:"status"`
-	NumReminders   int                           `json:"num_reminders"`
-	LatestReminder *time.Time                    `json:"latest_reminder,omitempty"`
-	DocumentID     *uint                         `json:"document_id,omitempty"`
-	DocumentURL    string                        `json:"document_url,omitempty"`
-	InvoiceItems   []InvoiceItemResponse         `json:"invoice_items,omitempty"`
-	Clients        []ClientInvoiceResponse       `json:"clients,omitempty"`
-	VATBreakdown   *VATBreakdownResponse         `json:"vat_breakdown,omitempty"`
-	CreatedAt      time.Time                     `json:"created_at"`
-	UpdatedAt      time.Time                     `json:"updated_at"`
+	ID                    uint                          `json:"id"`
+	TenantID              uint                          `json:"tenant_id"`
+	UserID                uint                          `json:"user_id"`
+	OrganizationID        uint                          `json:"organization_id"`
+	Organization          *baseAPI.OrganizationResponse `json:"organization,omitempty" swaggertype:"object"`
+	InvoiceDate           time.Time                     `json:"invoice_date"`
+	InvoiceNumber         string                        `json:"invoice_number"`
+	NumberUnits           int                           `json:"number_units"`
+	SumAmount             float64                       `json:"sum_amount"`
+	TaxAmount             float64                       `json:"tax_amount"`
+	TotalAmount           float64                       `json:"total_amount"`
+	PayedDate             *time.Time                    `json:"payed_date,omitempty"`
+	Status                InvoiceStatus                 `json:"status"`
+	NumReminders          int                           `json:"num_reminders"`
+	LatestReminder        *time.Time                    `json:"latest_reminder,omitempty"`
+	DocumentID            *uint                         `json:"document_id,omitempty"`
+	DocumentURL           string                        `json:"document_url,omitempty"`
+	CustomerName          string                        `json:"customer_name,omitempty"`
+	CustomerAddress       string                        `json:"customer_address,omitempty"`
+	CustomerAddressExt    string                        `json:"customer_address_ext,omitempty"`
+	CustomerZip           string                        `json:"customer_zip,omitempty"`
+	CustomerCity          string                        `json:"customer_city,omitempty"`
+	CustomerCountry       string                        `json:"customer_country,omitempty"`
+	CustomerContactPerson string                        `json:"customer_contact_person,omitempty"`
+	CustomerDepartment    string                        `json:"customer_department,omitempty"`
+	CustomerEmail         string                        `json:"customer_email,omitempty"`
+	InvoiceItems          []InvoiceItemResponse         `json:"invoice_items,omitempty"`
+	Clients               []ClientInvoiceResponse       `json:"clients,omitempty"`
+	VATBreakdown          *VATBreakdownResponse         `json:"vat_breakdown,omitempty"`
+	CreatedAt             time.Time                     `json:"created_at"`
+	UpdatedAt             time.Time                     `json:"updated_at"`
 }
 
 // VATBreakdownResponse represents the VAT breakdown for an invoice
@@ -295,23 +337,32 @@ type InvoiceDeleteResponse struct {
 // ToResponse converts an Invoice to InvoiceResponse
 func (i *Invoice) ToResponse() InvoiceResponse {
 	response := InvoiceResponse{
-		ID:             i.ID,
-		TenantID:       i.TenantID,
-		UserID:         i.UserID,
-		OrganizationID: i.OrganizationID,
-		InvoiceDate:    i.InvoiceDate,
-		InvoiceNumber:  i.InvoiceNumber,
-		NumberUnits:    i.NumberUnits,
-		SumAmount:      i.SumAmount,
-		TaxAmount:      i.TaxAmount,
-		TotalAmount:    i.TotalAmount,
-		PayedDate:      i.PayedDate,
-		Status:         i.Status,
-		NumReminders:   i.NumReminders,
-		LatestReminder: i.LatestReminder,
-		DocumentID:     i.DocumentID,
-		CreatedAt:      i.CreatedAt,
-		UpdatedAt:      i.UpdatedAt,
+		ID:                    i.ID,
+		TenantID:              i.TenantID,
+		UserID:                i.UserID,
+		OrganizationID:        i.OrganizationID,
+		InvoiceDate:           i.InvoiceDate,
+		InvoiceNumber:         i.InvoiceNumber,
+		NumberUnits:           i.NumberUnits,
+		SumAmount:             i.SumAmount,
+		TaxAmount:             i.TaxAmount,
+		TotalAmount:           i.TotalAmount,
+		PayedDate:             i.PayedDate,
+		Status:                i.Status,
+		NumReminders:          i.NumReminders,
+		LatestReminder:        i.LatestReminder,
+		DocumentID:            i.DocumentID,
+		CustomerName:          i.CustomerName,
+		CustomerAddress:       i.CustomerAddress,
+		CustomerAddressExt:    i.CustomerAddressExt,
+		CustomerZip:           i.CustomerZip,
+		CustomerCity:          i.CustomerCity,
+		CustomerCountry:       i.CustomerCountry,
+		CustomerContactPerson: i.CustomerContactPerson,
+		CustomerDepartment:    i.CustomerDepartment,
+		CustomerEmail:         i.CustomerEmail,
+		CreatedAt:             i.CreatedAt,
+		UpdatedAt:             i.UpdatedAt,
 	}
 
 	// DocumentURL will be populated by handler using document service

@@ -14,6 +14,7 @@ import (
 type InvoiceService struct {
 	db              *gorm.DB
 	settingsManager *manager.SettingsManager
+	pdfService      PDFService
 }
 
 // NewInvoiceService creates a new invoice service
@@ -48,27 +49,39 @@ func (s *InvoiceService) CreateInvoice(ctx context.Context, tenantID, userID uin
 	}
 
 	invoice := &entities.Invoice{
-		TenantID:        tenantID,
-		OrganizationID:  req.OrganizationID,
-		UserID:          userID,
-		InvoiceNumber:   req.InvoiceNumber,
-		InvoiceDate:     req.InvoiceDate,
-		DueDate:         req.DueDate,
-		Status:          entities.InvoiceStatusDraft,
-		CustomerName:    req.CustomerName,
-		CustomerAddress: req.CustomerAddress,
-		CustomerEmail:   req.CustomerEmail,
-		CustomerTaxID:   req.CustomerTaxID,
-		SubtotalAmount:  subtotal,
-		TaxRate:         req.TaxRate,
-		TaxAmount:       totalTax,
-		TotalAmount:     subtotal + totalTax,
-		Currency:        req.Currency,
-		PaymentTerms:    req.PaymentTerms,
-		PaymentMethod:   req.PaymentMethod,
-		Notes:           req.Notes,
-		InternalNote:    req.InternalNote,
-		Items:           items,
+		TenantID:               tenantID,
+		OrganizationID:         req.OrganizationID,
+		UserID:                 userID,
+		InvoiceNumber:          req.InvoiceNumber,
+		InvoiceDate:            req.InvoiceDate,
+		DueDate:                req.DueDate,
+		Status:                 entities.InvoiceStatusDraft,
+		CustomerName:           req.CustomerName,
+		CustomerAddress:        req.CustomerAddress,
+		CustomerEmail:          req.CustomerEmail,
+		CustomerTaxID:          req.CustomerTaxID,
+		CustomerContactPerson:  req.CustomerContactPerson,
+		CustomerDepartment:     req.CustomerDepartment,
+		Subject:                req.Subject,
+		OurReference:           req.OurReference,
+		YourReference:          req.YourReference,
+		PONumber:               req.PONumber,
+		DeliveryDate:           req.DeliveryDate,
+		PerformancePeriodStart: req.PerformancePeriodStart,
+		PerformancePeriodEnd:   req.PerformancePeriodEnd,
+		SubtotalAmount:         subtotal,
+		TaxRate:                req.TaxRate,
+		TaxAmount:              totalTax,
+		TotalAmount:            subtotal + totalTax,
+		Currency:               req.Currency,
+		PaymentTerms:           req.PaymentTerms,
+		NetTerms:               req.NetTerms,
+		PaymentMethod:          req.PaymentMethod,
+		DiscountRate:           req.DiscountRate,
+		DiscountTerms:          req.DiscountTerms,
+		Notes:                  req.Notes,
+		InternalNote:           req.InternalNote,
+		Items:                  items,
 	}
 
 	if invoice.Currency == "" {

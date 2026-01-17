@@ -286,8 +286,10 @@ func (h *InvoiceHandler) CancelDraftInvoice(c *gin.Context) {
 // @Description Finalize a draft invoice by generating invoice number and changing status to 'finalized'
 // @Tags invoices
 // @ID finalizeInvoice
+// @Accept json
 // @Produce json
 // @Param id path int true "Invoice ID"
+// @Param request body entities.FinalizeInvoiceRequest false "Optional customer data to update"
 // @Success 200 {object} entities.InvoiceAPIResponse
 // @Failure 400 {object} models.ErrorResponse
 // @Failure 401 {object} models.ErrorResponse
@@ -316,7 +318,14 @@ func (h *InvoiceHandler) FinalizeInvoice(c *gin.Context) {
 		return
 	}
 
-	invoice, err := h.service.FinalizeInvoice(uint(id), tenantID, userID)
+	// Parse optional request body for customer data
+	var req entities.FinalizeInvoiceRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		// If no body or invalid JSON, that's okay - use nil
+		req = entities.FinalizeInvoiceRequest{}
+	}
+
+	invoice, err := h.service.FinalizeInvoice(uint(id), tenantID, userID, &req)
 	if err != nil {
 		if err.Error() == "can only finalize invoices in draft status" {
 			c.JSON(http.StatusForbidden, models.ErrorResponseFunc("Forbidden", err.Error()))

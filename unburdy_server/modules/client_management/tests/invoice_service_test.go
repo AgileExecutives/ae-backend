@@ -359,7 +359,7 @@ func TestGetClientsWithUnbilledSessions(t *testing.T) {
 	assert.Len(t, clients[0].Sessions, 1) // Only 1 conducted session remains
 
 	// Finalize the invoice - marks sessions as 'invoiced'
-	_, err = service.FinalizeInvoice(invoice1.ID, tenantID, userID)
+	_, err = service.FinalizeInvoice(invoice1.ID, tenantID, userID, nil)
 	require.NoError(t, err)
 
 	// Should still have 1 unbilled session
@@ -376,7 +376,7 @@ func TestGetClientsWithUnbilledSessions(t *testing.T) {
 	invoice2, err := service.CreateDraftInvoice(draftReq2, tenantID, userID)
 	require.NoError(t, err)
 
-	_, err = service.FinalizeInvoice(invoice2.ID, tenantID, userID)
+	_, err = service.FinalizeInvoice(invoice2.ID, tenantID, userID, nil)
 	require.NoError(t, err)
 
 	// All sessions are now invoiced, should return no clients

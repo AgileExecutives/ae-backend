@@ -34,8 +34,9 @@ import (
 
 // SeedData represents the structure of our seed data JSON
 type SeedData struct {
-	CostProviders []CostProviderSeedData `json:"cost_providers"`
-	Clients       []ClientSeedData       `json:"clients"`
+	CostProviders    []CostProviderSeedData    `json:"cost_providers"`
+	Clients          []ClientSeedData          `json:"clients"`
+	BookingTemplates []BookingTemplateSeedData `json:"booking_templates"`
 }
 
 // CostProviderSeedData represents a cost provider from the seed data
@@ -87,6 +88,24 @@ type ClientSeedData struct {
 	Notes                string `json:"notes"`
 	ProviderApprovalCode string `json:"provider_approval_code"`
 	ProviderApprovalDate string `json:"provider_approval_date"`
+}
+
+// BookingTemplateSeedData represents a booking template from the seed data
+type BookingTemplateSeedData struct {
+	Name                string                 `json:"name"`
+	Description         string                 `json:"description"`
+	SlotDuration        int                    `json:"slot_duration"`
+	BufferBefore        int                    `json:"buffer_before"`
+	BufferAfter         int                    `json:"buffer_after"`
+	RecurrenceRules     []string               `json:"recurrence_rules"`
+	MaxParticipants     int                    `json:"max_participants"`
+	Settings            map[string]interface{} `json:"settings"`
+	AdvanceBookingDays  int                    `json:"advance_booking_days"`
+	CancelHours         int                    `json:"cancel_hours"`
+	Timezone            string                 `json:"timezone"`
+	IsActive            bool                   `json:"is_active"`
+	Resources           []interface{}          `json:"resources"`
+	AllowedStartMinutes []int                  `json:"allowed_start_minutes"`
 }
 
 func main() {
@@ -143,6 +162,11 @@ func main() {
 		} else {
 			log.Printf("⚠️  Warning: Calendar seeding failed (may be optional): %v", err)
 		}
+	}
+
+	// Step 5.5: Seed booking templates
+	if err := seedBookingTemplates(db); err != nil {
+		log.Printf("⚠️  Warning: Booking template seeding failed: %v", err)
 	}
 
 	// Step 6: Seed sessions linked to calendar entries (only in full seeding mode)
@@ -2096,6 +2120,129 @@ func showCalendarStatistics(db *gorm.DB) {
 			log.Printf("   🏫 School holidays: %d entries", hc.Count)
 		}
 	}
+}
+
+// seedBookingTemplates seeds booking templates for users with calendars
+func seedBookingTemplates(db *gorm.DB) error {
+	log.Println("\n📋 Seeding Booking Templates")
+	log.Println("=============================")
+
+	// Import booking template entity - matching actual schema
+	type BookingTemplate struct {
+		ID                  uint `gorm:"primarykey"`
+		CreatedAt           time.Time
+		UpdatedAt           time.Time
+		TenantID            uint
+		UserID              uint
+		CalendarID          uint
+		Name                string
+		Description         string
+		SlotDuration        int
+		BufferTime          int
+		MaxSeriesBookings   int
+		AllowedIntervals    string `gorm:"type:jsonb"`
+		NumberOfIntervals   int
+		WeeklyAvailability  string `gorm:"type:jsonb"`
+		AdvanceBookingDays  int
+		MinNoticeHours      int
+		Timezone            string
+		MaxBookingsPerDay   *int
+		AllowBackToBack     *bool
+		BlockDates          string `gorm:"type:jsonb"`
+		AllowedStartMinutes string `gorm:"type:jsonb"`
+	}
+
+	// Check if templates already exist
+	var existingCount int64
+	db.Model(&BookingTemplate{}).Count(&existingCount)
+	if existingCount > 0 {
+		log.Printf("⏭️  Booking templates already exist (%d found), skipping...", existingCount)
+		return nil
+	}
+
+	// Read seed data
+	seedFile := filepath.Join(".", "seed_app_data.json")
+	data, err := os.ReadFile(seedFile)
+	if err != nil {
+		return fmt.Errorf("failed to read seed_app_data.json: %w", err)
+	}
+
+	var seedData SeedData
+	if err := json.Unmarshal(data, &seedData); err != nil {
+		return fmt.Errorf("failed to parse seed_app_data.json: %w", err)
+	}
+
+	if len(seedData.BookingTemplates) == 0 {
+		log.Println("⚠️  No booking templates defined in seed data")
+		return nil
+	}
+
+	// Get first user and calendar
+	var user struct {
+		ID       uint
+		TenantID uint
+	}
+
+	if err := db.Table("users").Select("id, tenant_id").First(&user).Error; err != nil {
+		log.Printf("⚠️  No users found for booking template seeding: %v", err)
+		return nil
+	}
+
+	// Get first calendar for this user
+	var calendar struct {
+		ID uint
+	}
+	if err := db.Table("calendars").Select("id").Where("user_id = ?", user.ID).First(&calendar).Error; err != nil {
+		log.Printf("⚠️  No calendars found for user %d: %v", user.ID, err)
+		return nil
+	}
+
+	// Create templates from seed data
+	for _, templateData := range seedData.BookingTemplates {
+		// Marshal JSON fields
+		allowedIntervalsJSON, _ := json.Marshal(templateData.RecurrenceRules)
+		allowedStartMinutesJSON, _ := json.Marshal(templateData.AllowedStartMinutes)
+
+		// Create empty weekly availability (required field)
+		weeklyAvailability := map[string]interface{}{
+			"monday":    []interface{}{},
+			"tuesday":   []interface{}{},
+			"wednesday": []interface{}{},
+			"thursday":  []interface{}{},
+			"friday":    []interface{}{},
+			"saturday":  []interface{}{},
+			"sunday":    []interface{}{},
+		}
+		weeklyAvailabilityJSON, _ := json.Marshal(weeklyAvailability)
+		blockDatesJSON, _ := json.Marshal([]interface{}{})
+
+		template := BookingTemplate{
+			TenantID:            user.TenantID,
+			UserID:              user.ID,
+			CalendarID:          calendar.ID,
+			Name:                templateData.Name,
+			Description:         templateData.Description,
+			SlotDuration:        templateData.SlotDuration,
+			BufferTime:          templateData.BufferBefore + templateData.BufferAfter, // Combined buffer
+			MaxSeriesBookings:   templateData.MaxParticipants,
+			AllowedIntervals:    string(allowedIntervalsJSON),
+			NumberOfIntervals:   1,
+			WeeklyAvailability:  string(weeklyAvailabilityJSON),
+			AdvanceBookingDays:  templateData.AdvanceBookingDays,
+			MinNoticeHours:      templateData.CancelHours,
+			Timezone:            templateData.Timezone,
+			BlockDates:          string(blockDatesJSON),
+			AllowedStartMinutes: string(allowedStartMinutesJSON),
+		}
+
+		if err := db.Create(&template).Error; err != nil {
+			return fmt.Errorf("failed to create booking template '%s': %w", templateData.Name, err)
+		}
+		log.Printf("✅ Created booking template: %s (ID: %d)", template.Name, template.ID)
+	}
+
+	log.Printf("🎉 Successfully seeded %d booking templates", len(seedData.BookingTemplates))
+	return nil
 }
 
 // getEnv gets an environment variable with a default value

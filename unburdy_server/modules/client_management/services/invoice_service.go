@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strings"
 	"time"
 
 	baseAPI "github.com/ae-base-server/api"
@@ -292,19 +293,76 @@ func (s *InvoiceService) CreateDraftInvoice(req entities.CreateDraftInvoiceReque
 	taxAmount = vatSummary.TaxAmount
 	totalAmount := vatSummary.TotalAmount
 
+	// Populate customer fields from request or cost provider or client
+	var customerName, customerAddress, customerAddressExt, customerZip, customerCity, customerCountry, customerContactPerson, customerDepartment, customerEmail string
+
+	// Priority 1: Use values from request if provided
+	if req.CustomerName != "" {
+		customerName = req.CustomerName
+		customerAddress = req.CustomerAddress
+		customerAddressExt = req.CustomerAddressExt
+		customerZip = req.CustomerZip
+		customerCity = req.CustomerCity
+		customerCountry = req.CustomerCountry
+		customerContactPerson = req.CustomerContactPerson
+		customerDepartment = req.CustomerDepartment
+		customerEmail = req.CustomerEmail
+	} else {
+		// Priority 2: Use cost provider if available and has data
+		if client.CostProvider != nil {
+			if client.CostProvider.Organization != "" {
+				customerName = client.CostProvider.Organization
+				customerAddress = client.CostProvider.StreetAddress
+				customerZip = client.CostProvider.Zip
+				customerCity = client.CostProvider.City
+				customerContactPerson = client.CostProvider.ContactName
+				customerDepartment = client.CostProvider.Department
+				// Cost provider doesn't have email or country, leave empty
+			}
+		}
+
+		// Priority 3: Fall back to client contact if cost provider didn't provide data
+		if customerName == "" {
+			// Use client name as customer
+			customerName = client.FirstName + " " + client.LastName
+			customerAddress = client.StreetAddress
+			customerZip = client.Zip
+			customerCity = client.City
+
+			// Use client contact person if available
+			if client.ContactFirstName != "" || client.ContactLastName != "" {
+				customerContactPerson = strings.TrimSpace(client.ContactFirstName + " " + client.ContactLastName)
+			}
+
+			customerEmail = client.ContactEmail
+			if customerEmail == "" {
+				customerEmail = client.Email // Fall back to client's own email
+			}
+		}
+	}
+
 	// Create invoice (without invoice number - assigned on finalization)
 	invoice := entities.Invoice{
-		TenantID:       tenantID,
-		UserID:         userID,
-		OrganizationID: organization.ID,
-		InvoiceDate:    time.Now(),
-		InvoiceNumber:  fmt.Sprintf("DRAFT-%d-%d", tenantID, time.Now().UnixNano()), // Unique temporary number
-		NumberUnits:    numberUnits,
-		SumAmount:      subtotal,
-		TaxAmount:      taxAmount,
-		TotalAmount:    totalAmount,
-		Status:         entities.InvoiceStatusDraft,
-		NumReminders:   0,
+		TenantID:              tenantID,
+		UserID:                userID,
+		OrganizationID:        organization.ID,
+		InvoiceDate:           time.Now(),
+		InvoiceNumber:         fmt.Sprintf("DRAFT-%d-%d", tenantID, time.Now().UnixNano()), // Unique temporary number
+		NumberUnits:           numberUnits,
+		SumAmount:             subtotal,
+		TaxAmount:             taxAmount,
+		TotalAmount:           totalAmount,
+		Status:                entities.InvoiceStatusDraft,
+		NumReminders:          0,
+		CustomerName:          customerName,
+		CustomerAddress:       customerAddress,
+		CustomerAddressExt:    customerAddressExt,
+		CustomerZip:           customerZip,
+		CustomerCity:          customerCity,
+		CustomerCountry:       customerCountry,
+		CustomerContactPerson: customerContactPerson,
+		CustomerDepartment:    customerDepartment,
+		CustomerEmail:         customerEmail,
 	}
 
 	// Start transaction
@@ -794,8 +852,8 @@ func getVATRate(rate *float64) float64 {
 	return 19.00
 }
 
-// FinalizeInvoice finalizes a draft invoice by generating an invoice number and changing status to 'sent'
-func (s *InvoiceService) FinalizeInvoice(invoiceID, tenantID, userID uint) (*entities.Invoice, error) {
+// FinalizeInvoice finalizes a draft invoice by generating an invoice number and changing status to 'finalized'
+func (s *InvoiceService) FinalizeInvoice(invoiceID, tenantID, userID uint, req *entities.FinalizeInvoiceRequest) (*entities.Invoice, error) {
 	// Load existing invoice with items and client invoices
 	var invoice entities.Invoice
 	if err := s.db.Preload("InvoiceItems").
@@ -881,13 +939,46 @@ func (s *InvoiceService) FinalizeInvoice(invoiceID, tenantID, userID uint) (*ent
 		}
 	}
 
-	// Update invoice: set number, status, and finalized_at timestamp
+	// Update invoice: set number, status, finalized_at timestamp, and customer fields if provided
 	now := time.Now()
-	if err := tx.Model(&invoice).Updates(map[string]interface{}{
+	updateFields := map[string]interface{}{
 		"invoice_number": invoiceNumber,
 		"status":         entities.InvoiceStatusFinalized,
 		"finalized_at":   &now,
-	}).Error; err != nil {
+	}
+
+	// Update customer fields if provided in request
+	if req != nil {
+		if req.CustomerName != "" {
+			updateFields["customer_name"] = req.CustomerName
+		}
+		if req.CustomerAddress != "" {
+			updateFields["customer_address"] = req.CustomerAddress
+		}
+		if req.CustomerAddressExt != "" {
+			updateFields["customer_address_ext"] = req.CustomerAddressExt
+		}
+		if req.CustomerZip != "" {
+			updateFields["customer_zip"] = req.CustomerZip
+		}
+		if req.CustomerCity != "" {
+			updateFields["customer_city"] = req.CustomerCity
+		}
+		if req.CustomerCountry != "" {
+			updateFields["customer_country"] = req.CustomerCountry
+		}
+		if req.CustomerContactPerson != "" {
+			updateFields["customer_contact_person"] = req.CustomerContactPerson
+		}
+		if req.CustomerDepartment != "" {
+			updateFields["customer_department"] = req.CustomerDepartment
+		}
+		if req.CustomerEmail != "" {
+			updateFields["customer_email"] = req.CustomerEmail
+		}
+	}
+
+	if err := tx.Model(&invoice).Updates(updateFields).Error; err != nil {
 		tx.Rollback()
 		return nil, fmt.Errorf("failed to finalize invoice: %w", err)
 	}
