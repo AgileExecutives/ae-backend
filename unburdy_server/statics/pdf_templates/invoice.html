@@ -287,10 +287,13 @@
         <div class="address-section">
             <div class="address-invoice-flex">
                 <div class="address-block">
-                    {{.CostProvider.Organization}}<br>
-                    {{if .CostProvider.Department}}{{.CostProvider.Department}}<br>{{end}}
-                    {{.CostProvider.StreetAddress}}<br>
-                    {{.CostProvider.Zip}} {{.CostProvider.City}}
+                    {{if .Invoice.CustomerName}}{{.Invoice.CustomerName}}{{else}}{{.CostProvider.Organization}}{{end}}<br>
+                    {{if .Invoice.CustomerDepartment}}{{.Invoice.CustomerDepartment}}<br>{{else if .CostProvider.Department}}{{.CostProvider.Department}}<br>{{end}}
+                    {{if .Invoice.CustomerContactPerson}}{{.Invoice.CustomerContactPerson}}<br>{{end}}
+                    {{if .Invoice.CustomerAddress}}{{.Invoice.CustomerAddress}}{{else}}{{.CostProvider.StreetAddress}}{{end}}<br>
+                    {{if .Invoice.CustomerAddressExt}}{{.Invoice.CustomerAddressExt}}<br>{{end}}
+                    {{if .Invoice.CustomerZip}}{{.Invoice.CustomerZip}} {{.Invoice.CustomerCity}}{{else}}{{.CostProvider.Zip}} {{.CostProvider.City}}{{end}}
+                    {{if .Invoice.CustomerCountry}}<br>{{.Invoice.CustomerCountry}}{{end}}
                 </div>
                 <div class="invoice-details.flex-row">
                     <h1 style="text-align: right; font-size: 12pt; margin-top: 1cm;">RECHNUNG</h1>

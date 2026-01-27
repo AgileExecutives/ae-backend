@@ -231,14 +231,7 @@
             {{.organization.name}} · {{.organization.street_address}} · {{.organization.zip}} {{.organization.city}}
         </div>
 
-        <div class="address-section">
-            <div class="address-invoice-flex">
-                <div class="address-block">
-                    {{.cost_provider.organization}}<br>
-                    {{.cost_provider.contact_person}}<br>
-                    {{.cost_provider.street_address}}<br>
-                    {{.cost_provider.zip}} {{.cost_provider.city}}
-                </div>
+        <div class="address-section\">\n            <div class=\"address-invoice-flex\">\n                <div class=\"address-block\">\n                    {{if .customer.name}}{{.customer.name}}{{else}}{{.cost_provider.organization}}{{end}}<br>\n                    {{if .customer.department}}{{.customer.department}}<br>{{else if .cost_provider.department}}{{.cost_provider.department}}<br>{{end}}\n                    {{if .customer.contact_person}}{{.customer.contact_person}}<br>{{end}}\n                    {{if .customer.address}}{{.customer.address}}{{else}}{{.cost_provider.street_address}}{{end}}<br>\n                    {{if .customer.address_ext}}{{.customer.address_ext}}<br>{{end}}\n                    {{if .customer.zip}}{{.customer.zip}} {{.customer.city}}{{else}}{{.cost_provider.zip}} {{.cost_provider.city}}{{end}}\n                    {{if .customer.country}}<br>{{.customer.country}}{{end}}\n                </div>
                 <div class="invoice-details.flex-row">
                     <h1 style="text-align: right; font-size: 12pt; margin-top: 1cm;">RECHNUNG</h1>
                     <table class="invoice-details-table">

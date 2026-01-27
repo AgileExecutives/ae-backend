@@ -371,6 +371,30 @@ func (s *InvoicePDFService) convertToContractFormat(data *InvoicePDFData) map[st
 		costProviderData["city"] = costProvider.City
 	}
 
+	// Build customer address data from invoice (can be overridden at finalization)
+	// Priority: Invoice customer fields (if provided at finalization) > CostProvider data
+	customerData := map[string]interface{}{
+		"name":           data.Invoice.CustomerName,
+		"address":        data.Invoice.CustomerAddress,
+		"address_ext":    data.Invoice.CustomerAddressExt,
+		"zip":            data.Invoice.CustomerZip,
+		"city":           data.Invoice.CustomerCity,
+		"country":        data.Invoice.CustomerCountry,
+		"contact_person": data.Invoice.CustomerContactPerson,
+		"department":     data.Invoice.CustomerDepartment,
+		"email":          data.Invoice.CustomerEmail,
+	}
+
+	// If invoice doesn't have customer data, fall back to cost provider
+	if data.Invoice.CustomerName == "" && costProvider != nil {
+		customerData["name"] = costProvider.Organization
+		customerData["address"] = costProvider.StreetAddress
+		customerData["zip"] = costProvider.Zip
+		customerData["city"] = costProvider.City
+		customerData["contact_person"] = costProvider.ContactName
+		customerData["department"] = costProvider.Department
+	}
+
 	// Build invoice items
 	items := make([]map[string]interface{}, 0, len(data.InvoiceItems))
 	for _, item := range data.InvoiceItems {
@@ -398,6 +422,7 @@ func (s *InvoicePDFService) convertToContractFormat(data *InvoicePDFData) map[st
 		"organization":   orgData,
 		"client":         clientData,
 		"cost_provider":  costProviderData,
+		"customer":       customerData,
 		"invoice_items":  items,
 		"totals":         totalsData,
 	}
