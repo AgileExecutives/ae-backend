@@ -95,12 +95,19 @@ func (rp *RouteProvider) RegisterRoutes(router *gin.RouterGroup, ctx *core.Modul
 		clientInvoices.PUT("/:id", rp.invoiceHandler.UpdateDraftInvoice)
 		clientInvoices.DELETE("/:id", rp.invoiceHandler.CancelDraftInvoice)
 		clientInvoices.POST("/:id/finalize", rp.invoiceHandler.FinalizeInvoice)
+		clientInvoices.POST("/:id/cancel", rp.invoiceHandler.CancelClientInvoice)
 		clientInvoices.POST("/:id/mark-sent", rp.invoiceHandler.MarkInvoiceAsSent)
 		clientInvoices.POST("/:id/send-email", rp.invoiceHandler.SendInvoiceEmail)
 		clientInvoices.POST("/:id/mark-paid", rp.invoiceHandler.MarkInvoiceAsPaid)
 		clientInvoices.POST("/:id/mark-overdue", rp.invoiceHandler.MarkInvoiceAsOverdue)
 		clientInvoices.POST("/:id/reminder", rp.invoiceHandler.SendReminder)
 		clientInvoices.POST("/:id/credit-note", rp.invoiceHandler.CreateCreditNote)
+	}
+
+	// Basic invoice endpoints (authenticated) - for invoices without client-specific data
+	invoices := router.Group("/invoices")
+	{
+		invoices.POST("/:id/cancel", rp.invoiceHandler.CancelInvoice)
 	}
 
 	// Extra efforts management endpoints (authenticated)

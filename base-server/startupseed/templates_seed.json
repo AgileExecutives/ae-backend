@@ -153,6 +153,46 @@
       "tenant_id": 2
     },
     {
+      "module": "client-management",
+      "template_key": "client-invoice",
+      "channel": "DOCUMENT",
+      "name": "Client Invoice Template",
+      "description": "PDF template for therapy session invoices with client and cost provider details",
+      "file_path": "pdf_templates/client_invoice.html",
+      "organization_id": 1,
+      "tenant_id": 1
+    },
+    {
+      "module": "client-management",
+      "template_key": "client-invoice",
+      "channel": "DOCUMENT",
+      "name": "Client Invoice Template",
+      "description": "PDF template for therapy session invoices with client and cost provider details",
+      "file_path": "pdf_templates/client_invoice.html",
+      "organization_id": 2,
+      "tenant_id": 2
+    },
+    {
+      "module": "invoice",
+      "template_key": "std_invoice",
+      "channel": "DOCUMENT",
+      "name": "Standard Invoice Template",
+      "description": "PDF template for standard business invoices",
+      "file_path": "pdf_templates/std_invoice.html",
+      "organization_id": 1,
+      "tenant_id": 1
+    },
+    {
+      "module": "invoice",
+      "template_key": "std_invoice",
+      "channel": "DOCUMENT",
+      "name": "Standard Invoice Template",
+      "description": "PDF template for standard business invoices",
+      "file_path": "pdf_templates/std_invoice.html",
+      "organization_id": 2,
+      "tenant_id": 2
+    },
+    {
       "module": "reporting",
       "template_key": "report",
       "channel": "DOCUMENT",

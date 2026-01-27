@@ -7,7 +7,6 @@ import (
 	"github.com/ae-base-server/modules/base"
 	"github.com/ae-base-server/modules/customer"
 	"github.com/ae-base-server/modules/email"
-	invoicenumber "github.com/ae-base-server/modules/invoice_number"
 	"github.com/ae-base-server/modules/organization"
 	"github.com/ae-base-server/modules/pdf"
 	"github.com/ae-base-server/modules/static"
@@ -18,6 +17,7 @@ import (
 	booking "github.com/unburdy/booking-module"
 	calendar "github.com/unburdy/calendar-module"
 	documents "github.com/unburdy/documents-module"
+	invoicenumber "github.com/unburdy/invoice-number-module"
 
 	// invoice "github.com/unburdy/invoice-module" // DEPRECATED: Replaced by client_management module
 	templates "github.com/ae-base-server/modules/templates"

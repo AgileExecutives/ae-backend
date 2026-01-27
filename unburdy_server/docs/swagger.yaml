@@ -426,6 +426,14 @@ definitions:
       series:
         $ref: '#/definitions/entities.CalendarSeriesResponse'
     type: object
+  entities.CancelInvoiceRequest:
+    properties:
+      reason:
+        example: Fehlerhafte Positionen – Rechnung nicht versendet
+        type: string
+    required:
+    - reason
+    type: object
   entities.ClientInvoiceResponse:
     properties:
       client:
@@ -480,6 +488,8 @@ definitions:
       id:
         type: integer
       invoiced_individually:
+        type: boolean
+      is_self_payer:
         type: boolean
       last_name:
         type: string
@@ -568,6 +578,8 @@ definitions:
       id:
         type: integer
       invoiced_individually:
+        type: boolean
+      is_self_payer:
         type: boolean
       last_name:
         type: string
@@ -909,6 +921,9 @@ definitions:
       invoiced_individually:
         example: false
         type: boolean
+      is_self_payer:
+        example: false
+        type: boolean
       last_name:
         example: Doe
         type: string
@@ -1029,6 +1044,9 @@ definitions:
         type: string
       customer_country:
         example: USA
+        type: string
+      customer_department:
+        example: Mental Health Division
         type: string
       customer_email:
         example: jane.smith@insurance.com
@@ -1403,6 +1421,9 @@ definitions:
       customer_country:
         example: USA
         type: string
+      customer_department:
+        example: Mental Health Division
+        type: string
       customer_email:
         example: jane.smith@insurance.com
         type: string
@@ -1560,6 +1581,18 @@ definitions:
       payment_reference:
         example: TRANSFER-123456
         type: string
+    type: object
+  entities.MarkInvoiceAsSentRequest:
+    properties:
+      send_method:
+        enum:
+        - email
+        - manual
+        - xrechnung
+        example: email
+        type: string
+    required:
+    - send_method
     type: object
   entities.ModuleListResponse:
     properties:
@@ -2075,6 +2108,9 @@ definitions:
         example: male
         type: string
       invoiced_individually:
+        example: false
+        type: boolean
+      is_self_payer:
         example: false
         type: boolean
       last_name:
@@ -2655,6 +2691,69 @@ definitions:
       version:
         type: string
     type: object
+  github_com_ae-base-server_modules_invoice_number_OLD_handlers.GenerateInvoiceNumberRequest:
+    properties:
+      month:
+        example: 12
+        type: integer
+      month_format:
+        description: '"MM", "M", or ""'
+        example: MM
+        type: string
+      organization_id:
+        description: Optional - will use authenticated user's organization if not
+          provided
+        example: 10
+        type: integer
+      padding:
+        description: e.g., 4 for "0001"
+        example: 4
+        type: integer
+      prefix:
+        example: INV
+        type: string
+      reset_monthly:
+        description: pointer to distinguish false from not set
+        example: false
+        type: boolean
+      separator:
+        description: e.g., "-"
+        example: '-'
+        type: string
+      year:
+        example: 2025
+        type: integer
+      year_format:
+        description: '"YYYY" or "YY"'
+        example: YYYY
+        type: string
+    type: object
+  github_com_ae-base-server_modules_invoice_number_OLD_handlers.GenerateNextInvoiceNumberRequest:
+    properties:
+      organization_id:
+        description: Optional - will use authenticated user's organization if not
+          provided
+        example: 10
+        type: integer
+    type: object
+  github_com_ae-base-server_modules_invoice_number_OLD_handlers.InvoiceNumberResponse:
+    properties:
+      invoice_number:
+        example: INV-2025-0001
+        type: string
+      month:
+        example: 12
+        type: integer
+      sequence:
+        example: 1
+        type: integer
+      success:
+        example: true
+        type: boolean
+      year:
+        example: 2025
+        type: integer
+    type: object
   github_com_ae-base-server_modules_pdf_handlers.ErrorResponse:
     properties:
       details:
@@ -2955,6 +3054,69 @@ definitions:
       your_reference:
         type: string
     type: object
+  github_com_unburdy_invoice-number-module_handlers.GenerateInvoiceNumberRequest:
+    properties:
+      month:
+        example: 12
+        type: integer
+      month_format:
+        description: '"MM", "M", or ""'
+        example: MM
+        type: string
+      organization_id:
+        description: Optional - will use authenticated user's organization if not
+          provided
+        example: 10
+        type: integer
+      padding:
+        description: e.g., 4 for "0001"
+        example: 4
+        type: integer
+      prefix:
+        example: INV
+        type: string
+      reset_monthly:
+        description: pointer to distinguish false from not set
+        example: false
+        type: boolean
+      separator:
+        description: e.g., "-"
+        example: '-'
+        type: string
+      year:
+        example: 2025
+        type: integer
+      year_format:
+        description: '"YYYY" or "YY"'
+        example: YYYY
+        type: string
+    type: object
+  github_com_unburdy_invoice-number-module_handlers.GenerateNextInvoiceNumberRequest:
+    properties:
+      organization_id:
+        description: Optional - will use authenticated user's organization if not
+          provided
+        example: 10
+        type: integer
+    type: object
+  github_com_unburdy_invoice-number-module_handlers.InvoiceNumberResponse:
+    properties:
+      invoice_number:
+        example: INV-2025-0001
+        type: string
+      month:
+        example: 12
+        type: integer
+      sequence:
+        example: 1
+        type: integer
+      success:
+        example: true
+        type: boolean
+      year:
+        example: 2025
+        type: integer
+    type: object
   github_com_unburdy_unburdy-server-api_internal_models.APIResponse:
     properties:
       data: {}
@@ -3037,6 +3199,10 @@ definitions:
     type: object
   github_com_unburdy_unburdy-server-api_modules_client_management_entities.InvoiceResponse:
     properties:
+      cancellation_reason:
+        type: string
+      cancelled_at:
+        type: string
       clients:
         items:
           $ref: '#/definitions/entities.ClientInvoiceResponse'
@@ -3053,6 +3219,8 @@ definitions:
         type: string
       customer_country:
         type: string
+      customer_department:
+        type: string
       customer_email:
         type: string
       customer_name:
@@ -3062,6 +3230,8 @@ definitions:
       document_id:
         type: integer
       document_url:
+        type: string
+      finalized_at:
         type: string
       id:
         type: integer
@@ -3084,6 +3254,10 @@ definitions:
       organization_id:
         type: integer
       payed_date:
+        type: string
+      send_method:
+        type: string
+      sent_at:
         type: string
       status:
         $ref: '#/definitions/github_com_unburdy_unburdy-server-api_modules_client_management_entities.InvoiceStatus'
@@ -3175,69 +3349,6 @@ definitions:
       success:
         example: true
         type: boolean
-    type: object
-  handlers.GenerateInvoiceNumberRequest:
-    properties:
-      month:
-        example: 12
-        type: integer
-      month_format:
-        description: '"MM", "M", or ""'
-        example: MM
-        type: string
-      organization_id:
-        description: Optional - will use authenticated user's organization if not
-          provided
-        example: 10
-        type: integer
-      padding:
-        description: e.g., 4 for "0001"
-        example: 4
-        type: integer
-      prefix:
-        example: INV
-        type: string
-      reset_monthly:
-        description: pointer to distinguish false from not set
-        example: false
-        type: boolean
-      separator:
-        description: e.g., "-"
-        example: '-'
-        type: string
-      year:
-        example: 2025
-        type: integer
-      year_format:
-        description: '"YYYY" or "YY"'
-        example: YYYY
-        type: string
-    type: object
-  handlers.GenerateNextInvoiceNumberRequest:
-    properties:
-      organization_id:
-        description: Optional - will use authenticated user's organization if not
-          provided
-        example: 10
-        type: integer
-    type: object
-  handlers.InvoiceNumberResponse:
-    properties:
-      invoice_number:
-        example: INV-2025-0001
-        type: string
-      month:
-        example: 12
-        type: integer
-      sequence:
-        example: 1
-        type: integer
-      success:
-        example: true
-        type: boolean
-      year:
-        example: 2025
-        type: integer
     type: object
   handlers.SuccessResponse:
     properties:
@@ -6048,6 +6159,53 @@ paths:
       summary: Update an invoice
       tags:
       - client-invoices
+  /client-invoices/{id}/cancel:
+    post:
+      consumes:
+      - application/json
+      description: Cancel a client invoice that has not been sent and revert all sessions
+        to 'conducted' and extra efforts to 'unbilled' status
+      operationId: cancelClientInvoice
+      parameters:
+      - description: Invoice ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Cancellation reason
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/entities.CancelInvoiceRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.APIResponse'
+        "400":
+          description: Invoice already sent or invalid request
+          schema:
+            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Cancel a client invoice (extended)
+      tags:
+      - client-invoices
   /client-invoices/{id}/credit-note:
     post:
       consumes:
@@ -6254,8 +6412,10 @@ paths:
       - invoices
   /client-invoices/{id}/mark-sent:
     post:
+      consumes:
+      - application/json
       description: Mark a finalized invoice as sent (changes status from finalized
-        to sent)
+        to sent). Requires send_method to be specified.
       operationId: markInvoiceAsSent
       parameters:
       - description: Invoice ID
@@ -6263,6 +6423,12 @@ paths:
         name: id
         required: true
         type: integer
+      - description: Send method (email, manual, xrechnung)
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/entities.MarkInvoiceAsSentRequest'
       produces:
       - application/json
       responses:
@@ -8586,14 +8752,14 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/handlers.GenerateInvoiceNumberRequest'
+          $ref: '#/definitions/github_com_unburdy_invoice-number-module_handlers.GenerateInvoiceNumberRequest'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/handlers.InvoiceNumberResponse'
+            $ref: '#/definitions/github_com_unburdy_invoice-number-module_handlers.InvoiceNumberResponse'
         "400":
           description: Bad Request
           schema:
@@ -8630,14 +8796,14 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/handlers.GenerateNextInvoiceNumberRequest'
+          $ref: '#/definitions/github_com_unburdy_invoice-number-module_handlers.GenerateNextInvoiceNumberRequest'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/handlers.InvoiceNumberResponse'
+            $ref: '#/definitions/github_com_unburdy_invoice-number-module_handlers.InvoiceNumberResponse'
         "400":
           description: Bad Request
           schema:
@@ -8992,7 +9158,9 @@ paths:
     post:
       consumes:
       - application/json
-      description: Cancel an invoice with optional reason
+      description: Cancel an invoice that has not been sent (sent_at IS NULL). Does
+        not revert sessions/extra efforts.
+      operationId: cancelInvoice
       parameters:
       - description: Invoice ID
         in: path
@@ -9001,49 +9169,38 @@ paths:
         type: integer
       - description: Cancellation reason
         in: body
-        name: cancellation
+        name: request
+        required: true
         schema:
-          properties:
-            reason:
-              type: string
-          type: object
+          $ref: '#/definitions/entities.CancelInvoiceRequest'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.APIResponse'
         "400":
-          description: Bad Request
+          description: Invoice already sent or invalid request
           schema:
-            additionalProperties:
-              type: string
-            type: object
+            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse'
         "401":
           description: Unauthorized
           schema:
-            additionalProperties:
-              type: string
-            type: object
-        "403":
-          description: Forbidden
+            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse'
+        "404":
+          description: Not Found
           schema:
-            additionalProperties:
-              type: string
-            type: object
+            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            additionalProperties:
-              type: string
-            type: object
+            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse'
       security:
       - BearerAuth: []
-      summary: Cancel invoice
+      summary: Cancel an invoice (basic)
       tags:
-      - Invoices
+      - invoices
   /invoices/{id}/finalize:
     post:
       description: Finalize a draft invoice by generating invoice number and changing

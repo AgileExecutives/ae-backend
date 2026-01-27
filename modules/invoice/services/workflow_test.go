@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	invoiceNumberService "github.com/ae-base-server/modules/invoice_number/services"
+	invoiceNumberService "github.com/unburdy/invoice-number-module/services"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/unburdy/invoice-module/entities"

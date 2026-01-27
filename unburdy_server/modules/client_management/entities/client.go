@@ -75,6 +75,7 @@ type Client struct {
 	Email                string         `gorm:"size:255" json:"email,omitempty" example:"john.doe@example.com"`
 	Phone                string         `gorm:"size:50" json:"phone,omitempty" example:"+1234567890"`
 	InvoicedIndividually bool           `gorm:"default:false" json:"invoiced_individually" example:"false"`
+	IsSelfPayer          bool           `gorm:"default:false" json:"is_self_payer" example:"false"`
 	TherapyTitle         string         `gorm:"size:255" json:"therapy_title,omitempty" example:"Cognitive Behavioral Therapy"`
 	ProviderApprovalCode string         `gorm:"size:100" json:"provider_approval_code,omitempty" example:"PROV123456"`
 	ProviderApprovalDate *time.Time     `gorm:"type:date" json:"provider_approval_date,omitempty" example:"2025-01-15"`
@@ -111,6 +112,7 @@ type CreateClientRequest struct {
 	Email                string       `json:"email,omitempty" example:"john.doe@example.com"`
 	Phone                string       `json:"phone,omitempty" example:"+1234567890"`
 	InvoicedIndividually *bool        `json:"invoiced_individually,omitempty" example:"false"`
+	IsSelfPayer          *bool        `json:"is_self_payer,omitempty" example:"false"`
 	TherapyTitle         string       `json:"therapy_title,omitempty" example:"Cognitive Behavioral Therapy"`
 	ProviderApprovalCode string       `json:"provider_approval_code,omitempty" example:"PROV123456"`
 	ProviderApprovalDate NullableDate `json:"provider_approval_date,omitempty"`
@@ -144,6 +146,7 @@ type UpdateClientRequest struct {
 	Email                *string       `json:"email,omitempty" example:"john.doe@example.com"`
 	Phone                *string       `json:"phone,omitempty" example:"+1234567890"`
 	InvoicedIndividually *bool         `json:"invoiced_individually,omitempty" example:"false"`
+	IsSelfPayer          *bool         `json:"is_self_payer,omitempty" example:"false"`
 	TherapyTitle         *string       `json:"therapy_title,omitempty" example:"Cognitive Behavioral Therapy"`
 	ProviderApprovalCode *string       `json:"provider_approval_code,omitempty" example:"PROV123456"`
 	ProviderApprovalDate *NullableDate `json:"provider_approval_date,omitempty"`
@@ -180,6 +183,7 @@ type ClientResponse struct {
 	Email                string                `json:"email,omitempty"`
 	Phone                string                `json:"phone,omitempty"`
 	InvoicedIndividually bool                  `json:"invoiced_individually"`
+	IsSelfPayer          bool                  `json:"is_self_payer"`
 	TherapyTitle         string                `json:"therapy_title,omitempty"`
 	ProviderApprovalCode string                `json:"provider_approval_code,omitempty"`
 	ProviderApprovalDate *time.Time            `json:"provider_approval_date,omitempty"`
@@ -225,6 +229,7 @@ func (c *Client) ToResponse() ClientResponse {
 		Email:                c.Email,
 		Phone:                c.Phone,
 		InvoicedIndividually: c.InvoicedIndividually,
+		IsSelfPayer:          c.IsSelfPayer,
 		TherapyTitle:         c.TherapyTitle,
 		ProviderApprovalCode: c.ProviderApprovalCode,
 		ProviderApprovalDate: c.ProviderApprovalDate,

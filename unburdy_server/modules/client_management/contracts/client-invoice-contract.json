@@ -1,12 +1,13 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
-  "title": "Invoice Template Contract",
-  "description": "Data contract for invoice template rendering",
+  "title": "Client Invoice Template Contract",
+  "description": "Data contract for client-specific invoice template rendering (therapy sessions)",
   "required": [
     "invoice_number", 
     "invoice_date", 
     "organization", 
+    "customer",
     "client", 
     "cost_provider",
     "invoice_items",
@@ -43,6 +44,22 @@
             "bic": { "type": "string" }
           }
         }
+      }
+    },
+    "customer": {
+      "type": "object",
+      "required": ["name"],
+      "properties": {
+        "name": { "type": "string", "description": "Customer name or company" },
+        "address": { "type": "string", "description": "Street address" },
+        "address_ext": { "type": "string", "description": "Additional address line" },
+        "zip": { "type": "string" },
+        "city": { "type": "string" },
+        "country": { "type": "string" },
+        "email": { "type": "string", "format": "email" },
+        "tax_id": { "type": "string" },
+        "contact_person": { "type": "string" },
+        "department": { "type": "string" }
       }
     },
     "client": {

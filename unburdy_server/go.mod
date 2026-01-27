@@ -109,3 +109,7 @@ replace github.com/unburdy/calendar-module => ../modules/calendar
 replace github.com/unburdy/documents-module => ../modules/documents
 
 replace github.com/unburdy/invoice-module => ../modules/invoice
+
+require github.com/unburdy/invoice-number-module v0.0.0
+
+replace github.com/unburdy/invoice-number-module => ../modules/invoice_number

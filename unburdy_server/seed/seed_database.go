@@ -26,7 +26,7 @@ import (
 	calendarSeeding "github.com/unburdy/calendar-module/seeding"
 
 	// Invoice numbers module
-	invoiceNumberServices "github.com/ae-base-server/modules/invoice_number/services"
+	invoiceNumberServices "github.com/unburdy/invoice-number-module/services"
 
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -507,6 +507,7 @@ func seedClients(db *gorm.DB, clientData []ClientSeedData, providers []entities.
 			Notes:                clientData.Notes,
 			CostProviderID:       costProviderID,
 			InvoicedIndividually: false,
+			IsSelfPayer:          false,
 		}
 
 		if err := db.Create(&client).Error; err != nil {

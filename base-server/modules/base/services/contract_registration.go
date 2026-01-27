@@ -13,7 +13,10 @@ func RegisterBaseContracts(contractRegistrar *templateServices.ContractRegistrar
 
 	// Register all contract files
 	contracts := []string{
-		"invoice-contract.json",
+		// No contracts currently in base module
+		// Invoice contracts moved to respective modules:
+		// - client-invoice-contract.json -> client_management module
+		// - std_invoice-contract.json -> invoice module
 	}
 
 	for _, contractFile := range contracts {

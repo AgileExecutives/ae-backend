@@ -50,10 +50,12 @@ type Invoice struct {
 	CustomerEmail         string `gorm:"column:customer_email;size:255" json:"customer_email,omitempty"`
 
 	// Workflow timestamps
-	SentAt         *time.Time `json:"sent_at,omitempty"`
-	ReminderSentAt *time.Time `json:"reminder_sent_at,omitempty"`
-	FinalizedAt    *time.Time `json:"finalized_at,omitempty"`
-	CancelledAt    *time.Time `json:"cancelled_at,omitempty"`
+	SentAt             *time.Time `json:"sent_at,omitempty"`
+	SendMethod         string     `gorm:"size:50" json:"send_method,omitempty"` // email, manual, xrechnung
+	ReminderSentAt     *time.Time `json:"reminder_sent_at,omitempty"`
+	FinalizedAt        *time.Time `json:"finalized_at,omitempty"`
+	CancelledAt        *time.Time `json:"cancelled_at,omitempty"`
+	CancellationReason string     `gorm:"type:text" json:"cancellation_reason,omitempty"`
 
 	// Credit note support
 	IsCreditNote          bool  `gorm:"not null;default:false" json:"is_credit_note"`
@@ -220,6 +222,16 @@ type CreateCreditNoteRequest struct {
 	CreditDate  *time.Time `json:"credit_date,omitempty" example:"2026-01-08T00:00:00Z"`
 }
 
+// MarkInvoiceAsSentRequest represents the request for marking an invoice as sent
+type MarkInvoiceAsSentRequest struct {
+	SendMethod string `json:"send_method" binding:"required,oneof=email manual xrechnung" example:"email"`
+}
+
+// CancelInvoiceRequest represents the request for cancelling a never-sent invoice
+type CancelInvoiceRequest struct {
+	Reason string `json:"reason" binding:"required" example:"Fehlerhafte Positionen – Rechnung nicht versendet"`
+}
+
 // InvoiceResponse represents the response format for invoice data
 type InvoiceResponse struct {
 	ID                    uint                          `json:"id"`
@@ -248,6 +260,11 @@ type InvoiceResponse struct {
 	CustomerContactPerson string                        `json:"customer_contact_person,omitempty"`
 	CustomerDepartment    string                        `json:"customer_department,omitempty"`
 	CustomerEmail         string                        `json:"customer_email,omitempty"`
+	SentAt                *time.Time                    `json:"sent_at,omitempty"`
+	SendMethod            string                        `json:"send_method,omitempty"`
+	FinalizedAt           *time.Time                    `json:"finalized_at,omitempty"`
+	CancelledAt           *time.Time                    `json:"cancelled_at,omitempty"`
+	CancellationReason    string                        `json:"cancellation_reason,omitempty"`
 	InvoiceItems          []InvoiceItemResponse         `json:"invoice_items,omitempty"`
 	Clients               []ClientInvoiceResponse       `json:"clients,omitempty"`
 	VATBreakdown          *VATBreakdownResponse         `json:"vat_breakdown,omitempty"`
@@ -361,6 +378,11 @@ func (i *Invoice) ToResponse() InvoiceResponse {
 		CustomerContactPerson: i.CustomerContactPerson,
 		CustomerDepartment:    i.CustomerDepartment,
 		CustomerEmail:         i.CustomerEmail,
+		SentAt:                i.SentAt,
+		SendMethod:            i.SendMethod,
+		FinalizedAt:           i.FinalizedAt,
+		CancelledAt:           i.CancelledAt,
+		CancellationReason:    i.CancellationReason,
 		CreatedAt:             i.CreatedAt,
 		UpdatedAt:             i.UpdatedAt,
 	}

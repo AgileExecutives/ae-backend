@@ -1016,7 +1016,7 @@ func (s *InvoiceService) FinalizeInvoice(invoiceID, tenantID, userID uint, req *
 }
 
 // MarkAsSent marks a finalized invoice as sent
-func (s *InvoiceService) MarkAsSent(invoiceID, tenantID uint) (*entities.Invoice, error) {
+func (s *InvoiceService) MarkAsSent(invoiceID, tenantID uint, sendMethod string) (*entities.Invoice, error) {
 	// Load existing invoice
 	var invoice entities.Invoice
 	if err := s.db.Where("id = ? AND tenant_id = ?", invoiceID, tenantID).First(&invoice).Error; err != nil {
@@ -1028,11 +1028,12 @@ func (s *InvoiceService) MarkAsSent(invoiceID, tenantID uint) (*entities.Invoice
 		return nil, errors.New("can only mark finalized invoices as sent")
 	}
 
-	// Update invoice status to sent and set sent_at timestamp
+	// Update invoice status to sent and set sent_at timestamp + send method
 	now := time.Now()
 	if err := s.db.Model(&invoice).Updates(map[string]interface{}{
-		"status":  entities.InvoiceStatusSent,
-		"sent_at": &now,
+		"status":      entities.InvoiceStatusSent,
+		"sent_at":     &now,
+		"send_method": sendMethod,
 	}).Error; err != nil {
 		return nil, fmt.Errorf("failed to mark invoice as sent: %w", err)
 	}
@@ -1068,16 +1069,19 @@ func (s *InvoiceService) SendInvoiceEmail(invoiceID, tenantID, userID uint) erro
 	}
 
 	// TODO: Generate PDF and send email
-	// For now, we'll just set the sent_at timestamp
+	// For now, we'll just set the sent_at timestamp and send_method
 	// In a future phase, this will:
 	// 1. Generate PDF using template service
 	// 2. Render email template with invoice data
 	// 3. Attach PDF to email
 	// 4. Send via email service
 
-	// Update sent_at timestamp
+	// Update sent_at timestamp and send_method
 	now := time.Now()
-	if err := s.db.Model(&invoice).Update("sent_at", &now).Error; err != nil {
+	if err := s.db.Model(&invoice).Updates(map[string]interface{}{
+		"sent_at":     &now,
+		"send_method": "email",
+	}).Error; err != nil {
 		return fmt.Errorf("failed to update sent_at: %w", err)
 	}
 
@@ -2029,8 +2033,12 @@ func (s *InvoiceService) DeleteInvoice(id, tenantID, userID uint) error {
 	return nil
 }
 
-// CancelInvoice cancels a draft invoice and reverts session/effort states
-func (s *InvoiceService) CancelInvoice(id, tenantID, userID uint) error {
+// CancelInvoice cancels an invoice according to German GoBD requirements
+// Can only cancel invoices that have NOT been sent (sent_at IS NULL)
+// For sent invoices, use CreateCreditNote instead
+// CancelClientInvoice cancels a client invoice and reverts sessions/extra efforts
+// This is an extended version that calls the base CancelInvoice and then handles client-specific cleanup
+func (s *InvoiceService) CancelClientInvoice(id, tenantID, userID uint, reason string) error {
 	// Verify invoice exists and belongs to user/tenant
 	var invoice entities.Invoice
 	if err := s.db.Where("id = ? AND tenant_id = ? AND user_id = ?", id, tenantID, userID).First(&invoice).Error; err != nil {
@@ -2040,9 +2048,19 @@ func (s *InvoiceService) CancelInvoice(id, tenantID, userID uint) error {
 		return fmt.Errorf("failed to fetch invoice: %w", err)
 	}
 
-	// Only allow canceling draft invoices
-	if invoice.Status != entities.InvoiceStatusDraft {
-		return fmt.Errorf("only draft invoices can be cancelled, current status: %s", invoice.Status)
+	// GoBD Requirement: Can only cancel invoices that were never sent
+	if invoice.SentAt != nil {
+		return errors.New("cannot cancel invoice that has been sent - create a credit note (Stornorechnung/Gutschrift) instead")
+	}
+
+	// Must have an invoice number to be cancellable (draft invoices without numbers should be deleted instead)
+	if invoice.InvoiceNumber == "" {
+		return errors.New("invoice has no number - use DeleteInvoice for draft invoices without numbers")
+	}
+
+	// Already cancelled
+	if invoice.Status == entities.InvoiceStatusCancelled {
+		return errors.New("invoice is already cancelled")
 	}
 
 	// Start transaction
@@ -2083,7 +2101,7 @@ func (s *InvoiceService) CancelInvoice(id, tenantID, userID uint) error {
 		}
 	}
 
-	// Revert extra efforts back to unbilled status
+	// Revert extra efforts back to unbilled/delivered status
 	if len(extraEffortIDs) > 0 {
 		if err := tx.Model(&entities.ExtraEffort{}).
 			Where("id IN ?", extraEffortIDs).
@@ -2102,8 +2120,14 @@ func (s *InvoiceService) CancelInvoice(id, tenantID, userID uint) error {
 		return fmt.Errorf("failed to delete client invoices: %w", err)
 	}
 
-	// Set invoice status to cancelled instead of deleting
-	if err := tx.Model(&invoice).Update("status", entities.InvoiceStatusCancelled).Error; err != nil {
+	// GoBD Requirement: Set status to cancelled with timestamp and reason
+	// Invoice number MUST be kept permanently for audit trail
+	now := time.Now()
+	if err := tx.Model(&invoice).Updates(map[string]interface{}{
+		"status":              entities.InvoiceStatusCancelled,
+		"cancelled_at":        &now,
+		"cancellation_reason": reason,
+	}).Error; err != nil {
 		tx.Rollback()
 		return fmt.Errorf("failed to update invoice status: %w", err)
 	}
@@ -2111,6 +2135,46 @@ func (s *InvoiceService) CancelInvoice(id, tenantID, userID uint) error {
 	// Commit transaction
 	if err := tx.Commit().Error; err != nil {
 		return fmt.Errorf("failed to commit transaction: %w", err)
+	}
+
+	return nil
+}
+
+// CancelInvoice cancels an invoice (basic cancellation without session/extra effort handling)
+func (s *InvoiceService) CancelInvoice(id, tenantID, userID uint, reason string) error {
+	// Verify invoice exists and belongs to user/tenant
+	var invoice entities.Invoice
+	if err := s.db.Where("id = ? AND tenant_id = ? AND user_id = ?", id, tenantID, userID).First(&invoice).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return errors.New("invoice not found")
+		}
+		return fmt.Errorf("failed to fetch invoice: %w", err)
+	}
+
+	// GoBD Requirement: Can only cancel invoices that were never sent
+	if invoice.SentAt != nil {
+		return errors.New("cannot cancel invoice that has been sent - create a credit note (Stornorechnung/Gutschrift) instead")
+	}
+
+	// Must have an invoice number to be cancellable (draft invoices without numbers should be deleted instead)
+	if invoice.InvoiceNumber == "" {
+		return errors.New("invoice has no number - use DeleteInvoice for draft invoices without numbers")
+	}
+
+	// Already cancelled
+	if invoice.Status == entities.InvoiceStatusCancelled {
+		return errors.New("invoice is already cancelled")
+	}
+
+	// GoBD Requirement: Set status to cancelled with timestamp and reason
+	// Invoice number MUST be kept permanently for audit trail
+	now := time.Now()
+	if err := s.db.Model(&invoice).Updates(map[string]interface{}{
+		"status":              entities.InvoiceStatusCancelled,
+		"cancelled_at":        &now,
+		"cancellation_reason": reason,
+	}).Error; err != nil {
+		return fmt.Errorf("failed to update invoice status: %w", err)
 	}
 
 	return nil

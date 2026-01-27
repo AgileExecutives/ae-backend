@@ -1,0 +1,155 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "title": "Standard Invoice Template Contract",
+  "description": "Data contract for generic standard invoice template rendering",
+  "required": [
+    "invoice_number",
+    "invoice_date",
+    "organization",
+    "customer",
+    "invoice_items",
+    "totals"
+  ],
+  "properties": {
+    "invoice_number": {
+      "type": "string",
+      "description": "Unique invoice identifier"
+    },
+    "invoice_date": {
+      "type": "string",
+      "description": "Invoice creation date (DD.MM.YYYY)"
+    },
+    "due_date": {
+      "type": "string",
+      "description": "Payment due date (DD.MM.YYYY)"
+    },
+    "organization": {
+      "type": "object",
+      "required": ["name", "street_address", "zip", "city", "email"],
+      "properties": {
+        "name": { "type": "string" },
+        "owner_name": { "type": "string" },
+        "owner_title": { "type": "string" },
+        "street_address": { "type": "string" },
+        "zip": { "type": "string" },
+        "city": { "type": "string" },
+        "country": { "type": "string" },
+        "email": { "type": "string", "format": "email" },
+        "phone": { "type": "string" },
+        "tax_id": { "type": "string" },
+        "bank_account": {
+          "type": "object",
+          "properties": {
+            "owner": { "type": "string" },
+            "bank": { "type": "string" },
+            "iban": { "type": "string" },
+            "bic": { "type": "string" }
+          }
+        }
+      }
+    },
+    "customer": {
+      "type": "object",
+      "required": ["name"],
+      "properties": {
+        "name": { "type": "string", "description": "Customer name or company" },
+        "address": { "type": "string", "description": "Street address" },
+        "address_ext": { "type": "string", "description": "Additional address line" },
+        "zip": { "type": "string" },
+        "city": { "type": "string" },
+        "country": { "type": "string" },
+        "email": { "type": "string", "format": "email" },
+        "tax_id": { "type": "string" },
+        "contact_person": { "type": "string" },
+        "department": { "type": "string" }
+      }
+    },
+    "subject": {
+      "type": "string",
+      "description": "Invoice subject line"
+    },
+    "our_reference": {
+      "type": "string",
+      "description": "Our internal reference"
+    },
+    "your_reference": {
+      "type": "string",
+      "description": "Customer's reference"
+    },
+    "po_number": {
+      "type": "string",
+      "description": "Purchase order number"
+    },
+    "delivery_date": {
+      "type": "string",
+      "description": "Delivery date (DD.MM.YYYY)"
+    },
+    "performance_period_start": {
+      "type": "string",
+      "description": "Performance period start (DD.MM.YYYY)"
+    },
+    "performance_period_end": {
+      "type": "string",
+      "description": "Performance period end (DD.MM.YYYY)"
+    },
+    "invoice_items": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["description", "quantity", "unit_price"],
+        "properties": {
+          "position": { "type": "integer", "description": "Line item position" },
+          "description": { "type": "string", "description": "Item description" },
+          "quantity": { "type": "number", "description": "Quantity" },
+          "unit_price": { "type": "number", "description": "Price per unit" },
+          "tax_rate": { "type": "number", "description": "Tax rate percentage" },
+          "amount": { "type": "number", "description": "Line total amount" },
+          "vat_rate": { "type": "number", "description": "VAT rate percentage" },
+          "vat_exempt": { "type": "boolean", "description": "Whether VAT exempt" },
+          "vat_exemption_text": { "type": "string", "description": "VAT exemption reason" }
+        }
+      }
+    },
+    "totals": {
+      "type": "object",
+      "required": ["subtotal", "total"],
+      "properties": {
+        "subtotal": { "type": "number", "description": "Subtotal before tax" },
+        "tax_amount": { "type": "number", "description": "Total tax amount" },
+        "tax_rate": { "type": "number", "description": "Average tax rate percentage" },
+        "discount": { "type": "number", "description": "Discount amount" },
+        "total": { "type": "number", "description": "Total amount including tax" },
+        "currency": { "type": "string", "description": "Currency code", "default": "EUR" }
+      }
+    },
+    "payment": {
+      "type": "object",
+      "properties": {
+        "terms": { "type": "string", "description": "Payment terms text" },
+        "net_terms": { "type": "integer", "description": "Payment due in days" },
+        "method": { "type": "string", "description": "Payment method" },
+        "discount_rate": { "type": "number", "description": "Early payment discount %" },
+        "discount_terms": { "type": "string", "description": "Discount terms description" }
+      }
+    },
+    "notes": {
+      "type": "string",
+      "description": "Customer-visible notes"
+    },
+    "is_draft": {
+      "type": "boolean",
+      "description": "Whether this is a draft invoice",
+      "default": false
+    },
+    "is_credit_note": {
+      "type": "boolean",
+      "description": "Whether this is a credit note",
+      "default": false
+    },
+    "credit_note_reference": {
+      "type": "string",
+      "description": "Original invoice number if credit note"
+    }
+  }
+}

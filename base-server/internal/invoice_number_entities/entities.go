@@ -1,8 +1,8 @@
 package invoice_number_entities
 
 import (
-	"github.com/ae-base-server/modules/invoice_number/entities"
 	"github.com/ae-base-server/pkg/core"
+	"github.com/unburdy/invoice-number-module/entities"
 )
 
 // InvoiceNumberEntity represents the invoice number entity

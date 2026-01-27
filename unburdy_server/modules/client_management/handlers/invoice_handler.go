@@ -360,11 +360,13 @@ func (h *InvoiceHandler) FinalizeInvoice(c *gin.Context) {
 
 // MarkInvoiceAsSent marks a finalized invoice as sent
 // @Summary Mark invoice as sent
-// @Description Mark a finalized invoice as sent (changes status from finalized to sent)
+// @Description Mark a finalized invoice as sent (changes status from finalized to sent). Requires send_method to be specified.
 // @Tags client-invoices
 // @ID markInvoiceAsSent
+// @Accept json
 // @Produce json
 // @Param id path int true "Invoice ID"
+// @Param request body entities.MarkInvoiceAsSentRequest true "Send method (email, manual, xrechnung)"
 // @Success 200 {object} entities.InvoiceAPIResponse
 // @Failure 400 {object} models.ErrorResponse
 // @Failure 401 {object} models.ErrorResponse
@@ -380,13 +382,19 @@ func (h *InvoiceHandler) MarkInvoiceAsSent(c *gin.Context) {
 		return
 	}
 
+	var req entities.MarkInvoiceAsSentRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, models.ErrorResponseFunc("Invalid request", err.Error()))
+		return
+	}
+
 	tenantID, err := baseAPI.GetTenantID(c)
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, models.ErrorResponseFunc("Unauthorized", "Failed to get tenant ID: "+err.Error()))
 		return
 	}
 
-	invoice, err := h.service.MarkAsSent(uint(id), tenantID)
+	invoice, err := h.service.MarkAsSent(uint(id), tenantID, req.SendMethod)
 	if err != nil {
 		if err.Error() == "can only mark finalized invoices as sent" {
 			c.JSON(http.StatusForbidden, models.ErrorResponseFunc("Forbidden", err.Error()))
@@ -936,6 +944,118 @@ func (h *InvoiceHandler) DeleteInvoice(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, models.SuccessMessageResponse("Invoice deleted successfully"))
+}
+
+// CancelInvoice handles basic invoice cancellation according to GoBD requirements
+// @Summary Cancel an invoice (basic)
+// @Description Cancel an invoice that has not been sent (sent_at IS NULL). Does not revert sessions/extra efforts.
+// @Tags invoices
+// @ID cancelInvoice
+// @Accept json
+// @Produce json
+// @Param id path int true "Invoice ID"
+// @Param request body entities.CancelInvoiceRequest true "Cancellation reason"
+// @Success 200 {object} models.APIResponse
+// @Failure 400 {object} models.ErrorResponse "Invoice already sent or invalid request"
+// @Failure 401 {object} models.ErrorResponse
+// @Failure 404 {object} models.ErrorResponse
+// @Failure 500 {object} models.ErrorResponse
+// @Security BearerAuth
+// @Router /invoices/{id}/cancel [post]
+func (h *InvoiceHandler) CancelInvoice(c *gin.Context) {
+	id, err := strconv.ParseUint(c.Param("id"), 10, 32)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, models.ErrorResponseFunc("Invalid request", "Invalid invoice ID"))
+		return
+	}
+
+	var req entities.CancelInvoiceRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, models.ErrorResponseFunc("Invalid request", err.Error()))
+		return
+	}
+
+	tenantID, err := baseAPI.GetTenantID(c)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, models.ErrorResponseFunc("Unauthorized", "Failed to get tenant ID: "+err.Error()))
+		return
+	}
+
+	userID, err := baseAPI.GetUserID(c)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, models.ErrorResponseFunc("Unauthorized", "Failed to get user ID: "+err.Error()))
+		return
+	}
+
+	if err := h.service.CancelInvoice(uint(id), tenantID, userID, req.Reason); err != nil {
+		errMsg := err.Error()
+		if strings.Contains(errMsg, "not found") {
+			c.JSON(http.StatusNotFound, models.ErrorResponseFunc("Invoice not found", err.Error()))
+		} else if strings.Contains(errMsg, "been sent") || strings.Contains(errMsg, "no number") || strings.Contains(errMsg, "already cancelled") {
+			c.JSON(http.StatusBadRequest, models.ErrorResponseFunc("Cannot cancel invoice", err.Error()))
+		} else {
+			c.JSON(http.StatusInternalServerError, models.ErrorResponseFunc("Failed to cancel invoice", err.Error()))
+		}
+		return
+	}
+
+	c.JSON(http.StatusOK, models.SuccessMessageResponse("Invoice cancelled successfully."))
+}
+
+// CancelClientInvoice handles canceling a client invoice with session/extra effort reversion
+// @Summary Cancel a client invoice (extended)
+// @Description Cancel a client invoice that has not been sent and revert all sessions to 'conducted' and extra efforts to 'unbilled' status
+// @Tags client-invoices
+// @ID cancelClientInvoice
+// @Accept json
+// @Produce json
+// @Param id path int true "Invoice ID"
+// @Param request body entities.CancelInvoiceRequest true "Cancellation reason"
+// @Success 200 {object} models.APIResponse
+// @Failure 400 {object} models.ErrorResponse "Invoice already sent or invalid request"
+// @Failure 401 {object} models.ErrorResponse
+// @Failure 404 {object} models.ErrorResponse
+// @Failure 500 {object} models.ErrorResponse
+// @Security BearerAuth
+// @Router /client-invoices/{id}/cancel [post]
+func (h *InvoiceHandler) CancelClientInvoice(c *gin.Context) {
+	id, err := strconv.ParseUint(c.Param("id"), 10, 32)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, models.ErrorResponseFunc("Invalid request", "Invalid invoice ID"))
+		return
+	}
+
+	var req entities.CancelInvoiceRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, models.ErrorResponseFunc("Invalid request", err.Error()))
+		return
+	}
+
+	tenantID, err := baseAPI.GetTenantID(c)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, models.ErrorResponseFunc("Unauthorized", "Failed to get tenant ID: "+err.Error()))
+		return
+	}
+
+	userID, err := baseAPI.GetUserID(c)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, models.ErrorResponseFunc("Unauthorized", "Failed to get user ID: "+err.Error()))
+		return
+	}
+
+	if err := h.service.CancelClientInvoice(uint(id), tenantID, userID, req.Reason); err != nil {
+		errMsg := err.Error()
+		if strings.Contains(errMsg, "not found") {
+			c.JSON(http.StatusNotFound, models.ErrorResponseFunc("Invoice not found", err.Error()))
+		} else if strings.Contains(errMsg, "been sent") || strings.Contains(errMsg, "no number") || strings.Contains(errMsg, "already cancelled") {
+			c.JSON(http.StatusBadRequest, models.ErrorResponseFunc("Cannot cancel invoice", err.Error()))
+		} else {
+			c.JSON(http.StatusInternalServerError, models.ErrorResponseFunc("Failed to cancel invoice", err.Error()))
+		}
+		return
+	}
+
+	c.JSON(http.StatusOK, models.SuccessMessageResponse("Client invoice cancelled successfully. Sessions and extra efforts reverted to unbilled status."))
 }
 
 // GetClientsWithUnbilledSessions handles retrieving clients with unbilled sessions

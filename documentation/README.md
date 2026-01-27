@@ -1,15 +1,45 @@
-# Documents Module
+# Backend Documentation
+
+Multi-tenant SaaS platform with document management, invoice management, and client management modules.
+
+## 📚 Documentation Index
+
+### Core Documentation
+- [Architecture Overview](Architecture.md) - System architecture and design principles
+- [Development Principles](DevPrinciples.md) - Coding standards and best practices
+- [Module Development Guide](MODULE_DEVELOPMENT_GUIDE.md) - How to create new modules
+- [Implementation Status](IMPLEMENTATION_STATUS.md) - Current development status
+
+### Invoice System
+- **[Invoice Cancellation (Storno)](INVOICE_CANCELLATION.md)** - Developer guide for cancellation feature
+- **[GoBD Compliance (English)](INVOICE_CANCELLATION_GOBD_EN.md)** - Legal compliance documentation
+- **[GoBD Konformität (Deutsch)](INVOICE_CANCELLATION_GOBD_DE.md)** - Rechtliche Konformitätsdokumentation
+- **[Invoice Cancellation Swagger](INVOICE_CANCELLATION_SWAGGER.md)** - API documentation
+- [Invoicing Overview](INVOICING.md) - Complete invoice workflow
+- [Invoice PDF Generation](INVOICE_PDF_GENERATION.md) - PDF generation system
+- [Invoice VAT Handling](INVOICE_VAT_HANDLING.md) - VAT/tax calculation
+- [XRechnung Support](XRECHNUNG_README.md) - German e-invoice standard
+
+### Features & Systems
+- [Audit Trail](AUDIT_TRAIL_README.md) - Audit logging system
+- [Settings System](ADVANCED_SETTINGS_SYSTEM.md) - Advanced configuration
+- [Template System](TEMPLATE_SYSTEM_ARCHITECTURE.md) - Document templates
+- [Extra Efforts](EXTRA_EFFORTS_DESIGN.md) - Billing for extra services
+- [Unified Token System](UNIFIED_TOKEN_SYSTEM.md) - Authentication tokens
+
+### API Documentation
+- [Swagger Documentation](SWAGGER_DOCUMENTATION.md) - OpenAPI/Swagger specs
+- [Frontend Integration Guide](FRONTEND_INTEGRATION_GUIDE.md) - Frontend API usage
+
+## 🚀 Quick Start
+
+### Documents Module
 
 Multi-tenant document management system with MinIO storage, Redis caching, and organization-based template management.
 
-## Status: ✅ Priority 1-2 Complete
+**Status**: ✅ Priority 1-2 Complete
 
-**Completed:** Foundation, storage layer, entities, CRUD services, API endpoints  
-**Next:** Priority 3 - Invoice Number Service
-
-See [IMPLEMENTATION_STATUS.md](./IMPLEMENTATION_STATUS.md) for detailed progress.
-
-## Features
+#### Features
 
 ### Document Management
 - ✅ Multi-tenant document storage with isolation

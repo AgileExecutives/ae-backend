@@ -420,3 +420,169 @@ func TestMultiTenantIsolation(t *testing.T) {
 	_, err = service.GetInvoiceByID(invoice2.ID, 1, 1)
 	assert.Error(t, err)
 }
+
+// TestCancelInvoice_Success tests successfully cancelling a finalized but never-sent invoice
+func TestCancelInvoice_Success(t *testing.T) {
+	db := setupInvoiceTestDB(t)
+	service := services.NewInvoiceService(db)
+
+	// Create test data
+	clientID, _, sessionIDs := createTestData(t, db, 1, 1)
+
+	// Create invoice
+	req := entities.CreateInvoiceRequest{
+		ClientID:   clientID,
+		SessionIDs: sessionIDs,
+	}
+	invoice, err := service.CreateInvoice(req, 1, 1)
+	require.NoError(t, err)
+
+	// Manually set to finalized status with invoice number (simulating finalization)
+	invoiceNumber := "INV-TEST-001"
+	err = db.Model(&invoice).Updates(map[string]interface{}{
+		"status":         entities.InvoiceStatusFinalized,
+		"invoice_number": invoiceNumber,
+	}).Error
+	require.NoError(t, err)
+
+	// Also set sessions to "billed" status (as would happen in finalization)
+	err = db.Model(&entities.Session{}).Where("id IN ?", sessionIDs).Update("status", "billed").Error
+	require.NoError(t, err)
+
+	// Verify invoice is finalized and has number
+	invoice, err = service.GetInvoiceByID(invoice.ID, 1, 1)
+	require.NoError(t, err)
+	assert.Equal(t, entities.InvoiceStatusFinalized, invoice.Status)
+	assert.Equal(t, invoiceNumber, invoice.InvoiceNumber)
+	assert.Nil(t, invoice.SentAt) // Never sent
+
+	// Get sessions before cancellation - they should be in "billed" status
+	var sessions []entities.Session
+	err = db.Where("id IN ?", sessionIDs).Find(&sessions).Error
+	require.NoError(t, err)
+	for _, session := range sessions {
+		assert.Equal(t, "billed", session.Status)
+	}
+
+	// Cancel the invoice
+	reason := "Fehlerhafte Positionen - Rechnung wird neu erstellt"
+	err = service.CancelInvoice(invoice.ID, 1, 1, reason)
+	assert.NoError(t, err)
+
+	// Verify invoice is cancelled
+	invoice, err = service.GetInvoiceByID(invoice.ID, 1, 1)
+	require.NoError(t, err)
+	assert.Equal(t, entities.InvoiceStatusCancelled, invoice.Status)
+	assert.NotNil(t, invoice.CancelledAt)
+	assert.Equal(t, reason, invoice.CancellationReason)
+	assert.Equal(t, invoiceNumber, invoice.InvoiceNumber) // Number must remain!
+
+	// Verify sessions are reverted to conducted
+	err = db.Where("id IN ?", sessionIDs).Find(&sessions).Error
+	require.NoError(t, err)
+	for _, session := range sessions {
+		assert.Equal(t, "conducted", session.Status)
+	}
+}
+
+// TestCancelInvoice_AlreadySent tests that sent invoices cannot be cancelled
+func TestCancelInvoice_AlreadySent(t *testing.T) {
+	db := setupInvoiceTestDB(t)
+	service := services.NewInvoiceService(db)
+
+	// Create test data
+	clientID, _, sessionIDs := createTestData(t, db, 1, 1)
+
+	// Create invoice
+	req := entities.CreateInvoiceRequest{
+		ClientID:   clientID,
+		SessionIDs: sessionIDs,
+	}
+	invoice, err := service.CreateInvoice(req, 1, 1)
+	require.NoError(t, err)
+
+	// Manually set to finalized and sent status
+	sentAt := time.Now()
+	err = db.Model(&invoice).Updates(map[string]interface{}{
+		"status":         entities.InvoiceStatusSent,
+		"invoice_number": "INV-TEST-002",
+		"sent_at":        &sentAt,
+		"send_method":    "email",
+	}).Error
+	require.NoError(t, err)
+
+	// Verify it was marked as sent
+	invoice, err = service.GetInvoiceByID(invoice.ID, 1, 1)
+	require.NoError(t, err)
+	assert.NotNil(t, invoice.SentAt)
+
+	// Try to cancel - should fail
+	err = service.CancelInvoice(invoice.ID, 1, 1, "Should not work")
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "been sent")
+	assert.Contains(t, err.Error(), "credit note")
+}
+
+// TestCancelInvoice_NoNumber tests that invoices without numbers cannot be cancelled
+func TestCancelInvoice_NoNumber(t *testing.T) {
+	db := setupInvoiceTestDB(t)
+	service := services.NewInvoiceService(db)
+
+	// Create test data
+	clientID, _, sessionIDs := createTestData(t, db, 1, 1)
+
+	// Create draft invoice
+	req := entities.CreateInvoiceRequest{
+		ClientID:   clientID,
+		SessionIDs: sessionIDs,
+	}
+	invoice, err := service.CreateInvoice(req, 1, 1)
+	require.NoError(t, err)
+
+	// Manually clear the invoice number to simulate a draft without number
+	err = db.Model(&invoice).Update("invoice_number", "").Error
+	require.NoError(t, err)
+
+	invoice, err = service.GetInvoiceByID(invoice.ID, 1, 1)
+	require.NoError(t, err)
+	assert.Empty(t, invoice.InvoiceNumber)
+
+	// Try to cancel - should fail
+	err = service.CancelInvoice(invoice.ID, 1, 1, "Draft without number")
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "no number")
+	assert.Contains(t, err.Error(), "DeleteInvoice")
+}
+
+// TestCancelInvoice_AlreadyCancelled tests that already cancelled invoices cannot be cancelled again
+func TestCancelInvoice_AlreadyCancelled(t *testing.T) {
+	db := setupInvoiceTestDB(t)
+	service := services.NewInvoiceService(db)
+
+	// Create test data
+	clientID, _, sessionIDs := createTestData(t, db, 1, 1)
+
+	// Create invoice
+	req := entities.CreateInvoiceRequest{
+		ClientID:   clientID,
+		SessionIDs: sessionIDs,
+	}
+	invoice, err := service.CreateInvoice(req, 1, 1)
+	require.NoError(t, err)
+
+	// Manually set to finalized with invoice number
+	err = db.Model(&invoice).Updates(map[string]interface{}{
+		"status":         entities.InvoiceStatusFinalized,
+		"invoice_number": "INV-TEST-003",
+	}).Error
+	require.NoError(t, err)
+
+	// Cancel once
+	err = service.CancelInvoice(invoice.ID, 1, 1, "First cancellation")
+	require.NoError(t, err)
+
+	// Try to cancel again - should fail
+	err = service.CancelInvoice(invoice.ID, 1, 1, "Second cancellation")
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "already cancelled")
+}

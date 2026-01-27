@@ -1,7 +1,7 @@
 package api
 
 import (
-	"github.com/ae-base-server/modules/invoice_number/services"
+	"github.com/unburdy/invoice-number-module/services"
 )
 
 // InvoiceNumberService exports the invoice number service for use by external modules

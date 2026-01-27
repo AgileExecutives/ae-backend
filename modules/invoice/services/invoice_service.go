@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/ae-base-server/pkg/settings/manager"
 	"github.com/unburdy/invoice-module/entities"
 	"gorm.io/gorm"
 )

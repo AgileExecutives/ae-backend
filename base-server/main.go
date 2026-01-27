@@ -8,7 +8,6 @@ import (
 	"github.com/ae-base-server/modules/base"
 	"github.com/ae-base-server/modules/customer"
 	"github.com/ae-base-server/modules/email"
-	invoicenumber "github.com/ae-base-server/modules/invoice_number"
 	"github.com/ae-base-server/modules/organization"
 	"github.com/ae-base-server/modules/pdf"
 	"github.com/ae-base-server/modules/static"
@@ -17,6 +16,7 @@ import (
 	"github.com/ae-base-server/pkg/config"
 	"github.com/ae-base-server/pkg/core"
 	"github.com/joho/godotenv"
+	invoicenumber "github.com/unburdy/invoice-number-module"
 )
 
 // @title AE Base Server - Modular API

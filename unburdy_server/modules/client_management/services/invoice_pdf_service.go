@@ -267,10 +267,10 @@ func (s *InvoicePDFService) renderTemplate(data *InvoicePDFData) (string, error)
 
 		fmt.Printf("🔍 DEBUG: Contract data: %+v\n", contractData)
 
-		// Get the invoice template by template_key
-		templates, count, err := s.templateService.ListTemplates(ctx, data.Invoice.TenantID, nil, "DOCUMENT", "invoice", nil, 1, 1)
+		// Get the client invoice template by template_key (use "client-invoice" for client management module)
+		templates, count, err := s.templateService.ListTemplates(ctx, data.Invoice.TenantID, nil, "DOCUMENT", "client-invoice", nil, 1, 1)
 		if err == nil && count > 0 {
-			fmt.Printf("✅ Found invoice template: ID=%d, Module=%s, TemplateKey=%s\n", templates[0].ID, templates[0].Module, templates[0].TemplateKey)
+			fmt.Printf("✅ Found client invoice template: ID=%d, Module=%s, TemplateKey=%s\n", templates[0].ID, templates[0].Module, templates[0].TemplateKey)
 
 			// Render using template service
 			html, err := s.templateService.RenderTemplate(ctx, data.Invoice.TenantID, templates[0].ID, contractData)
@@ -354,6 +354,7 @@ func (s *InvoicePDFService) convertToContractFormat(data *InvoicePDFData) map[st
 	costProvider := data.CostProvider
 	costProviderData := map[string]interface{}{
 		"organization":   "",
+		"department":     "",
 		"contact_person": "",
 		"street_address": "",
 		"zip":            "",
@@ -363,6 +364,7 @@ func (s *InvoicePDFService) convertToContractFormat(data *InvoicePDFData) map[st
 
 	if costProvider != nil {
 		costProviderData["organization"] = costProvider.Organization
+		costProviderData["department"] = costProvider.Department
 		costProviderData["contact_person"] = costProvider.ContactName
 		costProviderData["street_address"] = costProvider.StreetAddress
 		costProviderData["zip"] = costProvider.Zip

@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"time"
 
-	invoiceNumberService "github.com/ae-base-server/modules/invoice_number/services"
 	"github.com/unburdy/invoice-module/entities"
+	invoiceNumberService "github.com/unburdy/invoice-number-module/services"
 )
 
 // FinalizeInvoice finalizes a draft invoice by generating an invoice number and changing status to finalized

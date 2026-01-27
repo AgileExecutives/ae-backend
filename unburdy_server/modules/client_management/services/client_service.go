@@ -64,6 +64,9 @@ func (s *ClientService) CreateClient(req entities.CreateClientRequest, tenantID 
 	if req.InvoicedIndividually != nil {
 		client.InvoicedIndividually = *req.InvoicedIndividually
 	}
+	if req.IsSelfPayer != nil {
+		client.IsSelfPayer = *req.IsSelfPayer
+	}
 
 	if err := s.db.Create(&client).Error; err != nil {
 		return nil, fmt.Errorf("failed to create client: %w", err)
@@ -187,6 +190,9 @@ func (s *ClientService) UpdateClient(id, tenantID uint, req entities.UpdateClien
 	}
 	if req.InvoicedIndividually != nil {
 		client.InvoicedIndividually = *req.InvoicedIndividually
+	}
+	if req.IsSelfPayer != nil {
+		client.IsSelfPayer = *req.IsSelfPayer
 	}
 	if req.TherapyTitle != nil {
 		client.TherapyTitle = *req.TherapyTitle

@@ -1,0 +1,102 @@
+{
+  "invoice_number": "INV-2026-001",
+  "invoice_date": "24.01.2026",
+  "due_date": "23.02.2026",
+  "organization": {
+    "name": "AE Solutions GmbH",
+    "owner_name": "Alexander Schmidt",
+    "owner_title": "Geschäftsführer",
+    "street_address": "Hauptstraße 123",
+    "zip": "10115",
+    "city": "Berlin",
+    "country": "Deutschland",
+    "email": "rechnungen@ae-solutions.de",
+    "phone": "+49 30 12345678",
+    "tax_id": "DE987654321",
+    "bank_account": {
+      "owner": "AE Solutions GmbH",
+      "bank": "Berliner Sparkasse",
+      "iban": "DE89370400440532013000",
+      "bic": "BELADEBEXXX"
+    }
+  },
+  "customer": {
+    "name": "TechCorp AG",
+    "address": "Innovationsweg 45",
+    "address_ext": "Gebäude B, 3. Etage",
+    "zip": "80331",
+    "city": "München",
+    "country": "Deutschland",
+    "email": "buchhaltung@techcorp.de",
+    "tax_id": "DE123456789",
+    "contact_person": "Frau Dr. Müller",
+    "department": "Einkauf"
+  },
+  "subject": "Softwareentwicklung - Projekt Alpha",
+  "our_reference": "PRJ-2026-001",
+  "your_reference": "PO-12345",
+  "po_number": "PO-12345",
+  "delivery_date": "20.01.2026",
+  "performance_period_start": "01.01.2026",
+  "performance_period_end": "31.01.2026",
+  "invoice_items": [
+    {
+      "position": 1,
+      "description": "Backend-Entwicklung - API-Integration",
+      "quantity": 40,
+      "unit_price": 125.00,
+      "tax_rate": 19.0,
+      "amount": 5000.00,
+      "vat_rate": 19.0,
+      "vat_exempt": false
+    },
+    {
+      "position": 2,
+      "description": "Frontend-Entwicklung - React Components",
+      "quantity": 30,
+      "unit_price": 115.00,
+      "tax_rate": 19.0,
+      "amount": 3450.00,
+      "vat_rate": 19.0,
+      "vat_exempt": false
+    },
+    {
+      "position": 3,
+      "description": "Code Review und Testing",
+      "quantity": 10,
+      "unit_price": 95.00,
+      "tax_rate": 19.0,
+      "amount": 950.00,
+      "vat_rate": 19.0,
+      "vat_exempt": false
+    },
+    {
+      "position": 4,
+      "description": "Projektmanagement und Dokumentation",
+      "quantity": 15,
+      "unit_price": 105.00,
+      "tax_rate": 19.0,
+      "amount": 1575.00,
+      "vat_rate": 19.0,
+      "vat_exempt": false
+    }
+  ],
+  "totals": {
+    "subtotal": 10975.00,
+    "tax_amount": 2085.25,
+    "tax_rate": 19.0,
+    "discount": 0,
+    "total": 13060.25,
+    "currency": "EUR"
+  },
+  "payment": {
+    "terms": "Zahlbar innerhalb von 30 Tagen netto. Bei Zahlung innerhalb von 10 Tagen 2% Skonto.",
+    "net_terms": 30,
+    "method": "Überweisung",
+    "discount_rate": 2.0,
+    "discount_terms": "2% bei Zahlung innerhalb von 10 Tagen"
+  },
+  "notes": "Vielen Dank für Ihren Auftrag. Wir freuen uns auf die weitere Zusammenarbeit.",
+  "is_draft": false,
+  "is_credit_note": false
+}

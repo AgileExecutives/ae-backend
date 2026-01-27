@@ -3171,6 +3171,77 @@ const docTemplate = `{
                 }
             }
         },
+        "/client-invoices/{id}/cancel": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Cancel a client invoice that has not been sent and revert all sessions to 'conducted' and extra efforts to 'unbilled' status",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "client-invoices"
+                ],
+                "summary": "Cancel a client invoice (extended)",
+                "operationId": "cancelClientInvoice",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Invoice ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Cancellation reason",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/entities.CancelInvoiceRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.APIResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invoice already sent or invalid request",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/client-invoices/{id}/credit-note": {
             "post": {
                 "security": [
@@ -3490,7 +3561,10 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "Mark a finalized invoice as sent (changes status from finalized to sent)",
+                "description": "Mark a finalized invoice as sent (changes status from finalized to sent). Requires send_method to be specified.",
+                "consumes": [
+                    "application/json"
+                ],
                 "produces": [
                     "application/json"
                 ],
@@ -3506,6 +3580,15 @@ const docTemplate = `{
                         "name": "id",
                         "in": "path",
                         "required": true
+                    },
+                    {
+                        "description": "Send method (email, manual, xrechnung)",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/entities.MarkInvoiceAsSentRequest"
+                        }
                     }
                 ],
                 "responses": {
@@ -6998,7 +7081,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/handlers.GenerateInvoiceNumberRequest"
+                            "$ref": "#/definitions/github_com_unburdy_invoice-number-module_handlers.GenerateInvoiceNumberRequest"
                         }
                     }
                 ],
@@ -7006,7 +7089,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/handlers.InvoiceNumberResponse"
+                            "$ref": "#/definitions/github_com_unburdy_invoice-number-module_handlers.InvoiceNumberResponse"
                         }
                     },
                     "400": {
@@ -7065,7 +7148,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/handlers.GenerateNextInvoiceNumberRequest"
+                            "$ref": "#/definitions/github_com_unburdy_invoice-number-module_handlers.GenerateNextInvoiceNumberRequest"
                         }
                     }
                 ],
@@ -7073,7 +7156,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/handlers.InvoiceNumberResponse"
+                            "$ref": "#/definitions/github_com_unburdy_invoice-number-module_handlers.InvoiceNumberResponse"
                         }
                     },
                     "400": {
@@ -7615,7 +7698,7 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "Cancel an invoice with optional reason",
+                "description": "Cancel an invoice that has not been sent (sent_at IS NULL). Does not revert sessions/extra efforts.",
                 "consumes": [
                     "application/json"
                 ],
@@ -7623,9 +7706,10 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Invoices"
+                    "invoices"
                 ],
-                "summary": "Cancel invoice",
+                "summary": "Cancel an invoice (basic)",
+                "operationId": "cancelInvoice",
                 "parameters": [
                     {
                         "type": "integer",
@@ -7636,15 +7720,11 @@ const docTemplate = `{
                     },
                     {
                         "description": "Cancellation reason",
-                        "name": "cancellation",
+                        "name": "request",
                         "in": "body",
+                        "required": true,
                         "schema": {
-                            "type": "object",
-                            "properties": {
-                                "reason": {
-                                    "type": "string"
-                                }
-                            }
+                            "$ref": "#/definitions/entities.CancelInvoiceRequest"
                         }
                     }
                 ],
@@ -7652,44 +7732,31 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": true
+                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.APIResponse"
                         }
                     },
                     "400": {
-                        "description": "Bad Request",
+                        "description": "Invoice already sent or invalid request",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
+                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
+                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse"
                         }
                     },
-                    "403": {
-                        "description": "Forbidden",
+                    "404": {
+                        "description": "Not Found",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
+                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
+                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse"
                         }
                     }
                 }
@@ -12507,6 +12574,18 @@ const docTemplate = `{
                 }
             }
         },
+        "entities.CancelInvoiceRequest": {
+            "type": "object",
+            "required": [
+                "reason"
+            ],
+            "properties": {
+                "reason": {
+                    "type": "string",
+                    "example": "Fehlerhafte Positionen – Rechnung nicht versendet"
+                }
+            }
+        },
         "entities.ClientInvoiceResponse": {
             "type": "object",
             "properties": {
@@ -12588,6 +12667,9 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "invoiced_individually": {
+                    "type": "boolean"
+                },
+                "is_self_payer": {
                     "type": "boolean"
                 },
                 "last_name": {
@@ -12720,6 +12802,9 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "invoiced_individually": {
+                    "type": "boolean"
+                },
+                "is_self_payer": {
                     "type": "boolean"
                 },
                 "last_name": {
@@ -13200,6 +13285,10 @@ const docTemplate = `{
                     "type": "boolean",
                     "example": false
                 },
+                "is_self_payer": {
+                    "type": "boolean",
+                    "example": false
+                },
                 "last_name": {
                     "type": "string",
                     "example": "Doe"
@@ -13364,6 +13453,10 @@ const docTemplate = `{
                 "customer_country": {
                     "type": "string",
                     "example": "USA"
+                },
+                "customer_department": {
+                    "type": "string",
+                    "example": "Mental Health Division"
                 },
                 "customer_email": {
                     "type": "string",
@@ -13884,6 +13977,10 @@ const docTemplate = `{
                     "type": "string",
                     "example": "USA"
                 },
+                "customer_department": {
+                    "type": "string",
+                    "example": "Mental Health Division"
+                },
                 "customer_email": {
                     "type": "string",
                     "example": "jane.smith@insurance.com"
@@ -14104,6 +14201,23 @@ const docTemplate = `{
                 "payment_reference": {
                     "type": "string",
                     "example": "TRANSFER-123456"
+                }
+            }
+        },
+        "entities.MarkInvoiceAsSentRequest": {
+            "type": "object",
+            "required": [
+                "send_method"
+            ],
+            "properties": {
+                "send_method": {
+                    "type": "string",
+                    "enum": [
+                        "email",
+                        "manual",
+                        "xrechnung"
+                    ],
+                    "example": "email"
                 }
             }
         },
@@ -14837,6 +14951,10 @@ const docTemplate = `{
                     "example": "male"
                 },
                 "invoiced_individually": {
+                    "type": "boolean",
+                    "example": false
+                },
+                "is_self_payer": {
                     "type": "boolean",
                     "example": false
                 },
@@ -15679,6 +15797,88 @@ const docTemplate = `{
                 }
             }
         },
+        "github_com_ae-base-server_modules_invoice_number_OLD_handlers.GenerateInvoiceNumberRequest": {
+            "type": "object",
+            "properties": {
+                "month": {
+                    "type": "integer",
+                    "example": 12
+                },
+                "month_format": {
+                    "description": "\"MM\", \"M\", or \"\"",
+                    "type": "string",
+                    "example": "MM"
+                },
+                "organization_id": {
+                    "description": "Optional - will use authenticated user's organization if not provided",
+                    "type": "integer",
+                    "example": 10
+                },
+                "padding": {
+                    "description": "e.g., 4 for \"0001\"",
+                    "type": "integer",
+                    "example": 4
+                },
+                "prefix": {
+                    "type": "string",
+                    "example": "INV"
+                },
+                "reset_monthly": {
+                    "description": "pointer to distinguish false from not set",
+                    "type": "boolean",
+                    "example": false
+                },
+                "separator": {
+                    "description": "e.g., \"-\"",
+                    "type": "string",
+                    "example": "-"
+                },
+                "year": {
+                    "type": "integer",
+                    "example": 2025
+                },
+                "year_format": {
+                    "description": "\"YYYY\" or \"YY\"",
+                    "type": "string",
+                    "example": "YYYY"
+                }
+            }
+        },
+        "github_com_ae-base-server_modules_invoice_number_OLD_handlers.GenerateNextInvoiceNumberRequest": {
+            "type": "object",
+            "properties": {
+                "organization_id": {
+                    "description": "Optional - will use authenticated user's organization if not provided",
+                    "type": "integer",
+                    "example": 10
+                }
+            }
+        },
+        "github_com_ae-base-server_modules_invoice_number_OLD_handlers.InvoiceNumberResponse": {
+            "type": "object",
+            "properties": {
+                "invoice_number": {
+                    "type": "string",
+                    "example": "INV-2025-0001"
+                },
+                "month": {
+                    "type": "integer",
+                    "example": 12
+                },
+                "sequence": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "success": {
+                    "type": "boolean",
+                    "example": true
+                },
+                "year": {
+                    "type": "integer",
+                    "example": 2025
+                }
+            }
+        },
         "github_com_ae-base-server_modules_pdf_handlers.ErrorResponse": {
             "type": "object",
             "properties": {
@@ -16120,6 +16320,88 @@ const docTemplate = `{
                 }
             }
         },
+        "github_com_unburdy_invoice-number-module_handlers.GenerateInvoiceNumberRequest": {
+            "type": "object",
+            "properties": {
+                "month": {
+                    "type": "integer",
+                    "example": 12
+                },
+                "month_format": {
+                    "description": "\"MM\", \"M\", or \"\"",
+                    "type": "string",
+                    "example": "MM"
+                },
+                "organization_id": {
+                    "description": "Optional - will use authenticated user's organization if not provided",
+                    "type": "integer",
+                    "example": 10
+                },
+                "padding": {
+                    "description": "e.g., 4 for \"0001\"",
+                    "type": "integer",
+                    "example": 4
+                },
+                "prefix": {
+                    "type": "string",
+                    "example": "INV"
+                },
+                "reset_monthly": {
+                    "description": "pointer to distinguish false from not set",
+                    "type": "boolean",
+                    "example": false
+                },
+                "separator": {
+                    "description": "e.g., \"-\"",
+                    "type": "string",
+                    "example": "-"
+                },
+                "year": {
+                    "type": "integer",
+                    "example": 2025
+                },
+                "year_format": {
+                    "description": "\"YYYY\" or \"YY\"",
+                    "type": "string",
+                    "example": "YYYY"
+                }
+            }
+        },
+        "github_com_unburdy_invoice-number-module_handlers.GenerateNextInvoiceNumberRequest": {
+            "type": "object",
+            "properties": {
+                "organization_id": {
+                    "description": "Optional - will use authenticated user's organization if not provided",
+                    "type": "integer",
+                    "example": 10
+                }
+            }
+        },
+        "github_com_unburdy_invoice-number-module_handlers.InvoiceNumberResponse": {
+            "type": "object",
+            "properties": {
+                "invoice_number": {
+                    "type": "string",
+                    "example": "INV-2025-0001"
+                },
+                "month": {
+                    "type": "integer",
+                    "example": 12
+                },
+                "sequence": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "success": {
+                    "type": "boolean",
+                    "example": true
+                },
+                "year": {
+                    "type": "integer",
+                    "example": 2025
+                }
+            }
+        },
         "github_com_unburdy_unburdy-server-api_internal_models.APIResponse": {
             "type": "object",
             "properties": {
@@ -16243,6 +16525,12 @@ const docTemplate = `{
         "github_com_unburdy_unburdy-server-api_modules_client_management_entities.InvoiceResponse": {
             "type": "object",
             "properties": {
+                "cancellation_reason": {
+                    "type": "string"
+                },
+                "cancelled_at": {
+                    "type": "string"
+                },
                 "clients": {
                     "type": "array",
                     "items": {
@@ -16267,6 +16555,9 @@ const docTemplate = `{
                 "customer_country": {
                     "type": "string"
                 },
+                "customer_department": {
+                    "type": "string"
+                },
                 "customer_email": {
                     "type": "string"
                 },
@@ -16280,6 +16571,9 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "document_url": {
+                    "type": "string"
+                },
+                "finalized_at": {
                     "type": "string"
                 },
                 "id": {
@@ -16313,6 +16607,12 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "payed_date": {
+                    "type": "string"
+                },
+                "send_method": {
+                    "type": "string"
+                },
+                "sent_at": {
                     "type": "string"
                 },
                 "status": {
@@ -16441,88 +16741,6 @@ const docTemplate = `{
                 "success": {
                     "type": "boolean",
                     "example": true
-                }
-            }
-        },
-        "handlers.GenerateInvoiceNumberRequest": {
-            "type": "object",
-            "properties": {
-                "month": {
-                    "type": "integer",
-                    "example": 12
-                },
-                "month_format": {
-                    "description": "\"MM\", \"M\", or \"\"",
-                    "type": "string",
-                    "example": "MM"
-                },
-                "organization_id": {
-                    "description": "Optional - will use authenticated user's organization if not provided",
-                    "type": "integer",
-                    "example": 10
-                },
-                "padding": {
-                    "description": "e.g., 4 for \"0001\"",
-                    "type": "integer",
-                    "example": 4
-                },
-                "prefix": {
-                    "type": "string",
-                    "example": "INV"
-                },
-                "reset_monthly": {
-                    "description": "pointer to distinguish false from not set",
-                    "type": "boolean",
-                    "example": false
-                },
-                "separator": {
-                    "description": "e.g., \"-\"",
-                    "type": "string",
-                    "example": "-"
-                },
-                "year": {
-                    "type": "integer",
-                    "example": 2025
-                },
-                "year_format": {
-                    "description": "\"YYYY\" or \"YY\"",
-                    "type": "string",
-                    "example": "YYYY"
-                }
-            }
-        },
-        "handlers.GenerateNextInvoiceNumberRequest": {
-            "type": "object",
-            "properties": {
-                "organization_id": {
-                    "description": "Optional - will use authenticated user's organization if not provided",
-                    "type": "integer",
-                    "example": 10
-                }
-            }
-        },
-        "handlers.InvoiceNumberResponse": {
-            "type": "object",
-            "properties": {
-                "invoice_number": {
-                    "type": "string",
-                    "example": "INV-2025-0001"
-                },
-                "month": {
-                    "type": "integer",
-                    "example": 12
-                },
-                "sequence": {
-                    "type": "integer",
-                    "example": 1
-                },
-                "success": {
-                    "type": "boolean",
-                    "example": true
-                },
-                "year": {
-                    "type": "integer",
-                    "example": 2025
                 }
             }
         },
