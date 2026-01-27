@@ -8,16 +8,20 @@ import (
 
 // CostProvider represents a cost provider entity for clients
 type CostProvider struct {
-	ID            uint   `gorm:"primarykey" json:"id"`
-	TenantID      uint   `gorm:"not null;index" json:"tenant_id"`
-	Organization  string `gorm:"size:255;not null" json:"organization" binding:"required" example:"Health Insurance Corp"`
-	Department    string `gorm:"size:255" json:"department,omitempty" example:"Mental Health Division"`
-	ContactName   string `gorm:"size:255" json:"contact_name,omitempty" example:"Jane Smith"`
-	StreetAddress string `gorm:"size:500" json:"street_address,omitempty" example:"456 Insurance Blvd"`
-	Zip           string `gorm:"size:20" json:"zip,omitempty" example:"12345"`
-	City          string `gorm:"size:100" json:"city,omitempty" example:"New York"`
+	ID                 uint   `gorm:"primarykey" json:"id"`
+	TenantID           uint   `gorm:"not null;index" json:"tenant_id"`
+	Organization       string `gorm:"size:255;not null" json:"organization" binding:"required" example:"Health Insurance Corp"`
+	Department         string `gorm:"size:255" json:"department,omitempty" example:"Mental Health Division"`
+	ContactName        string `gorm:"size:255" json:"contact_name,omitempty" example:"Jane Smith"`
+	ContactEmail       string `gorm:"size:255" json:"contact_email,omitempty" example:"contact@healthinsurance.com"`
+	ContactPhoneNumber string `gorm:"size:50" json:"contact_phone_number,omitempty" example:"+49 30 12345678"`
+	ContactFaxNumber   string `gorm:"size:50" json:"contact_fax_number,omitempty" example:"+49 30 12345679"`
+	StreetAddress      string `gorm:"size:500" json:"street_address,omitempty" example:"456 Insurance Blvd"`
+	Zip                string `gorm:"size:20" json:"zip,omitempty" example:"12345"`
+	City               string `gorm:"size:100" json:"city,omitempty" example:"New York"`
 
 	// Government customer fields (for XRechnung/E-Rechnung)
+	InvoiceEmail         string `gorm:"size:255" json:"invoice_email,omitempty" example:"invoices@healthinsurance.com"`
 	IsGovernmentCustomer bool   `gorm:"not null;default:false" json:"is_government_customer"`
 	LeitwegID            string `gorm:"size:100" json:"leitweg_id,omitempty"` // German government routing ID
 	AuthorityName        string `gorm:"size:255" json:"authority_name,omitempty"`
@@ -33,6 +37,10 @@ type CreateCostProviderRequest struct {
 	Organization         string `json:"organization" binding:"required" example:"Health Insurance Corp"`
 	Department           string `json:"department,omitempty" example:"Mental Health Division"`
 	ContactName          string `json:"contact_name,omitempty" example:"Jane Smith"`
+	ContactEmail         string `json:"contact_email,omitempty" example:"contact@healthinsurance.com"`
+	ContactPhoneNumber   string `json:"contact_phone_number,omitempty" example:"+49 30 12345678"`
+	ContactFaxNumber     string `json:"contact_fax_number,omitempty" example:"+49 30 12345679"`
+	InvoiceEmail         string `json:"invoice_email,omitempty" example:"invoices@healthinsurance.com"`
 	StreetAddress        string `json:"street_address,omitempty" example:"456 Insurance Blvd"`
 	Zip                  string `json:"zip,omitempty" example:"12345"`
 	City                 string `json:"city,omitempty" example:"New York"`
@@ -47,6 +55,10 @@ type UpdateCostProviderRequest struct {
 	Organization         *string `json:"organization,omitempty" example:"Health Insurance Corp"`
 	Department           *string `json:"department,omitempty" example:"Mental Health Division"`
 	ContactName          *string `json:"contact_name,omitempty" example:"Jane Smith"`
+	ContactEmail         *string `json:"contact_email,omitempty" example:"contact@healthinsurance.com"`
+	ContactPhoneNumber   *string `json:"contact_phone_number,omitempty" example:"+49 30 12345678"`
+	ContactFaxNumber     *string `json:"contact_fax_number,omitempty" example:"+49 30 12345679"`
+	InvoiceEmail         *string `json:"invoice_email,omitempty" example:"invoices@healthinsurance.com"`
 	StreetAddress        *string `json:"street_address,omitempty" example:"456 Insurance Blvd"`
 	Zip                  *string `json:"zip,omitempty" example:"12345"`
 	City                 *string `json:"city,omitempty" example:"New York"`
@@ -63,6 +75,10 @@ type CostProviderResponse struct {
 	Organization         string    `json:"organization"`
 	Department           string    `json:"department,omitempty"`
 	ContactName          string    `json:"contact_name,omitempty"`
+	ContactEmail         string    `json:"contact_email,omitempty"`
+	ContactPhoneNumber   string    `json:"contact_phone_number,omitempty"`
+	ContactFaxNumber     string    `json:"contact_fax_number,omitempty"`
+	InvoiceEmail         string    `json:"invoice_email,omitempty"`
 	StreetAddress        string    `json:"street_address,omitempty"`
 	Zip                  string    `json:"zip,omitempty"`
 	City                 string    `json:"city,omitempty"`
@@ -82,6 +98,10 @@ func (cp *CostProvider) ToResponse() CostProviderResponse {
 		Organization:         cp.Organization,
 		Department:           cp.Department,
 		ContactName:          cp.ContactName,
+		ContactEmail:         cp.ContactEmail,
+		ContactPhoneNumber:   cp.ContactPhoneNumber,
+		ContactFaxNumber:     cp.ContactFaxNumber,
+		InvoiceEmail:         cp.InvoiceEmail,
 		StreetAddress:        cp.StreetAddress,
 		Zip:                  cp.Zip,
 		City:                 cp.City,
