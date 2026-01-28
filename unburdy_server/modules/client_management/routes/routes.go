@@ -17,11 +17,12 @@ type RouteProvider struct {
 	invoiceHandler        *handlers.InvoiceHandler
 	invoiceAdapterHandler *handlers.InvoiceAdapterHandler
 	extraEffortHandler    *handlers.ExtraEffortHandler
+	staticHandler         *handlers.StaticHandler
 	db                    *gorm.DB
 }
 
 // NewRouteProvider creates a new route provider
-func NewRouteProvider(clientHandler *handlers.ClientHandler, costProviderHandler *handlers.CostProviderHandler, sessionHandler *handlers.SessionHandler, invoiceHandler *handlers.InvoiceHandler, invoiceAdapterHandler *handlers.InvoiceAdapterHandler, extraEffortHandler *handlers.ExtraEffortHandler, db *gorm.DB) *RouteProvider {
+func NewRouteProvider(clientHandler *handlers.ClientHandler, costProviderHandler *handlers.CostProviderHandler, sessionHandler *handlers.SessionHandler, invoiceHandler *handlers.InvoiceHandler, invoiceAdapterHandler *handlers.InvoiceAdapterHandler, extraEffortHandler *handlers.ExtraEffortHandler, staticHandler *handlers.StaticHandler, db *gorm.DB) *RouteProvider {
 	return &RouteProvider{
 		clientHandler:         clientHandler,
 		costProviderHandler:   costProviderHandler,
@@ -29,6 +30,7 @@ func NewRouteProvider(clientHandler *handlers.ClientHandler, costProviderHandler
 		invoiceHandler:        invoiceHandler,
 		invoiceAdapterHandler: invoiceAdapterHandler,
 		extraEffortHandler:    extraEffortHandler,
+		staticHandler:         staticHandler,
 		db:                    db,
 	}
 }
@@ -37,15 +39,27 @@ func NewRouteProvider(clientHandler *handlers.ClientHandler, costProviderHandler
 func (rp *RouteProvider) RegisterRoutes(router *gin.RouterGroup, ctx *core.ModuleContext) {
 	// Note: Auth middleware is already applied at the router group level
 
-	// Register public token booking route on base router (bypass auth middleware)
-	// The token itself is the authorization - no JWT authentication required
+	// Register public registration and verification routes on base router (bypass auth middleware)
 	if ctx != nil && ctx.Router != nil {
+		// Public client registration endpoint (no auth required - protected by token)
+		ctx.Router.POST("/api/v1/clients/registration/:token", rp.clientHandler.RegisterClient)
+		// Public email verification endpoint (no auth required - protected by verification token)
+		ctx.Router.POST("/api/v1/clients/emailverification/:token", rp.clientHandler.VerifyClientEmail)
+		// Public token booking route (no auth required - protected by booking token)
 		ctx.Router.POST("/api/v1/sessions/book/:token", rp.sessionHandler.BookSessionsWithToken)
+		// Public static file serving with registration token authentication (JSON files only from statics/json)
+		ctx.Router.GET("/api/v1/clients/static/:token", rp.staticHandler.ListStaticJSON)
+		ctx.Router.GET("/api/v1/clients/static/:token/:filename", rp.staticHandler.ServeStaticJSON)
+		// Public cost providers endpoint with registration token authentication
+		ctx.Router.GET("/api/v1/clients/cost-providers/:token", rp.costProviderHandler.GetCostProvidersWithToken)
 	}
 
 	// Client management endpoints (authenticated)
 	clients := router.Group("/clients")
 	{
+		// Admin-only registration token generation (requires authentication)
+		clients.GET("/registrationtoken", rp.clientHandler.GenerateRegistrationToken)
+
 		clients.POST("", rp.clientHandler.CreateClient)
 		clients.GET("", rp.clientHandler.GetAllClients)
 		clients.GET("/search", rp.clientHandler.SearchClients)

@@ -16,12 +16,14 @@ import (
 // CostProviderHandler handles cost provider-related HTTP requests
 type CostProviderHandler struct {
 	costProviderService *services.CostProviderService
+	clientService       *services.ClientService
 }
 
 // NewCostProviderHandler creates a new cost provider handler
-func NewCostProviderHandler(costProviderService *services.CostProviderService) *CostProviderHandler {
+func NewCostProviderHandler(costProviderService *services.CostProviderService, clientService *services.ClientService) *CostProviderHandler {
 	return &CostProviderHandler{
 		costProviderService: costProviderService,
+		clientService:       clientService,
 	}
 }
 
@@ -255,4 +257,40 @@ func (h *CostProviderHandler) SearchCostProviders(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, models.SuccessListResponse(responses, page, limit, int(total)))
+}
+
+// GetCostProvidersWithToken handles retrieving cost providers with registration token authentication
+// @Summary Get cost providers with registration token (public endpoint)
+// @ID getCostProvidersWithToken
+// @Description Retrieve all cost providers for the organization associated with the registration token. No Bearer auth required.
+// @Tags clients
+// @Produce json
+// @Param token path string true "Registration token"
+// @Success 200 {object} models.APIResponse{data=[]entities.CostProviderResponse} "Cost providers retrieved successfully"
+// @Failure 400 {object} models.APIResponse "Invalid token"
+// @Failure 500 {object} models.APIResponse "Internal server error"
+// @Router /clients/cost-providers/{token} [get]
+func (h *CostProviderHandler) GetCostProvidersWithToken(c *gin.Context) {
+	token := c.Param("token")
+
+	// Validate registration token and get organization info
+	regToken, err := h.clientService.ValidateRegistrationToken(token)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, models.ErrorResponseFunc("Access denied", err.Error()))
+		return
+	}
+
+	// Get all cost providers for the organization's tenant
+	costProviders, err := h.costProviderService.GetAllCostProvidersForTenant(regToken.TenantID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, models.ErrorResponseFunc("Internal server error", err.Error()))
+		return
+	}
+
+	responses := make([]entities.CostProviderResponse, len(costProviders))
+	for i, costProvider := range costProviders {
+		responses[i] = costProvider.ToResponse()
+	}
+
+	c.JSON(http.StatusOK, models.SuccessResponse("Cost providers retrieved successfully", responses))
 }

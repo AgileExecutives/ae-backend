@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"fmt"
 	"net/http"
 	"strconv"
 
@@ -303,4 +304,148 @@ func (h *ClientHandler) GetClientByToken(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, models.SuccessResponse("Client information retrieved successfully", client.ToResponse()))
+}
+
+// GenerateRegistrationToken generates a registration token for client self-registration
+// @Summary Generate registration token
+// @Description Generate a permanent token for client waiting list registration (admin only). Blacklists any existing tokens for the organization.
+// @Tags clients
+// @ID generateRegistrationToken
+// @Accept json
+// @Produce json
+// @Param email query string false "Optional email to associate with token"
+// @Param organization_id query int true "Organization ID for the token"
+// @Success 200 {object} models.APIResponse{data=entities.RegistrationTokenResponse}
+// @Failure 401 {object} models.ErrorResponse
+// @Failure 400 {object} models.ErrorResponse
+// @Failure 500 {object} models.ErrorResponse
+// @Security BearerAuth
+// @Router /clients/registrationtoken [get]
+func (h *ClientHandler) GenerateRegistrationToken(c *gin.Context) {
+	tenantID, err := baseAPI.GetTenantID(c)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, models.ErrorResponseFunc("Unauthorized", "Failed to get tenant ID: "+err.Error()))
+		return
+	}
+
+	userID, err := baseAPI.GetUserID(c)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, models.ErrorResponseFunc("Unauthorized", "Failed to get user ID: "+err.Error()))
+		return
+	}
+
+	// Get organization ID from query (required)
+	orgIDStr := c.Query("organization_id")
+	if orgIDStr == "" {
+		c.JSON(http.StatusBadRequest, models.ErrorResponseFunc("Bad request", "organization_id is required"))
+		return
+	}
+	organizationID, err := strconv.ParseUint(orgIDStr, 10, 32)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, models.ErrorResponseFunc("Bad request", "Invalid organization_id"))
+		return
+	}
+
+	// Get optional email from query
+	email := c.Query("email")
+
+	// Generate token (blacklists old tokens automatically)
+	regToken, err := h.clientService.GenerateRegistrationToken(tenantID, userID, uint(organizationID), email)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, models.ErrorResponseFunc("Internal server error", err.Error()))
+		return
+	}
+
+	response := entities.RegistrationTokenResponse{
+		Token:          regToken.Token,
+		Email:          regToken.Email,
+		OrganizationID: regToken.OrganizationID,
+	}
+
+	c.JSON(http.StatusOK, models.SuccessResponse("Registration token generated successfully. Previous tokens have been revoked.", response))
+}
+
+// RegisterClient registers a new client via registration token
+// @Summary Register new client
+// @Description Register a new client on the waiting list using a valid registration token
+// @Tags clients
+// @ID registerClient
+// @Accept json
+// @Produce json
+// @Param token path string true "Registration token"
+// @Param client body entities.ClientRegistrationRequest true "Client registration data"
+// @Success 201 {object} models.APIResponse{data=entities.ClientResponse} "Client registered successfully"
+// @Failure 400 {object} models.ErrorResponse
+// @Failure 500 {object} models.ErrorResponse
+// @Router /clients/registration/{token} [post]
+func (h *ClientHandler) RegisterClient(c *gin.Context) {
+	token := c.Param("token")
+	if token == "" {
+		c.JSON(http.StatusBadRequest, models.ErrorResponseFunc("Bad request", "Registration token is required"))
+		return
+	}
+
+	var req entities.ClientRegistrationRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, models.ErrorResponseFunc("Invalid request", err.Error()))
+		return
+	}
+
+	// Register client via token
+	client, err := h.clientService.RegisterClientViaToken(token, req)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, models.ErrorResponseFunc("Registration failed", err.Error()))
+		return
+	}
+
+	// Generate email verification token
+	verificationToken, err := h.clientService.GenerateEmailVerificationToken(client.ID)
+	if err != nil {
+		// Log error but don't fail registration
+		fmt.Printf("❌ Warning: failed to generate email verification token: %v\n", err)
+	} else {
+		fmt.Printf("✅ Email verification token generated successfully for client ID %d\n", client.ID)
+		// Send verification email
+		err = h.clientService.SendVerificationEmail(client.ID, verificationToken)
+		if err != nil {
+			// Log error but don't fail registration - user can request another verification email later
+			fmt.Printf("❌ Warning: failed to send verification email: %v\n", err)
+		} else {
+			fmt.Printf("✅ Verification email sent successfully to %s\n", client.Email)
+		}
+	}
+
+	c.JSON(http.StatusCreated, models.SuccessResponse("Client registered successfully. Please check your email to verify your address.", client.ToResponse()))
+}
+
+// VerifyClientEmail verifies a client's email address
+// @Summary Verify client email
+// @Description Verify a client's email address using the verification token sent via email
+// @Tags clients
+// @ID verifyClientEmail
+// @Produce json
+// @Param token path string true "Email verification token"
+// @Success 200 {object} models.APIResponse{data=entities.ClientResponse}
+// @Failure 400 {object} models.ErrorResponse
+// @Failure 404 {object} models.ErrorResponse
+// @Router /clients/emailverification/{token} [post]
+func (h *ClientHandler) VerifyClientEmail(c *gin.Context) {
+	token := c.Param("token")
+	if token == "" {
+		c.JSON(http.StatusBadRequest, models.ErrorResponseFunc("Bad request", "Verification token is required"))
+		return
+	}
+
+	// Verify email
+	client, err := h.clientService.VerifyClientEmail(token)
+	if err != nil {
+		if err.Error() == "client not found" {
+			c.JSON(http.StatusNotFound, models.ErrorResponseFunc("Not found", "Client not found"))
+			return
+		}
+		c.JSON(http.StatusBadRequest, models.ErrorResponseFunc("Verification failed", err.Error()))
+		return
+	}
+
+	c.JSON(http.StatusOK, models.SuccessResponse("Email verified successfully", client.ToResponse()))
 }

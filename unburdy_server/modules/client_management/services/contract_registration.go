@@ -14,6 +14,7 @@ func RegisterClientManagementContracts(contractRegistrar *templateServices.Contr
 	// Register all contract files
 	contracts := []string{
 		"client-invoice-contract.json",
+		"client_email_verification-contract.json",
 	}
 
 	for _, contractFile := range contracts {

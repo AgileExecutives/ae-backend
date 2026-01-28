@@ -449,6 +449,57 @@ definitions:
           $ref: '#/definitions/entities.SessionResponse'
         type: array
     type: object
+  entities.ClientRegistrationRequest:
+    properties:
+      city:
+        example: New York
+        type: string
+      contact_email:
+        example: jane.smith@example.com
+        type: string
+      contact_first_name:
+        example: Jane
+        type: string
+      contact_last_name:
+        example: Smith
+        type: string
+      contact_phone:
+        example: "+1234567890"
+        type: string
+      date_of_birth:
+        $ref: '#/definitions/entities.NullableDate'
+      email:
+        example: john.doe@example.com
+        type: string
+      first_name:
+        example: John
+        type: string
+      gender:
+        example: male
+        type: string
+      last_name:
+        example: Doe
+        type: string
+      notes:
+        example: Referred by Dr. Smith
+        type: string
+      phone:
+        example: "+1234567890"
+        type: string
+      street_address:
+        example: 123 Main Street
+        type: string
+      timezone:
+        example: Europe/Berlin
+        type: string
+      zip:
+        example: "12345"
+        type: string
+    required:
+    - email
+    - first_name
+    - last_name
+    type: object
   entities.ClientResponse:
     properties:
       admission_date:
@@ -481,6 +532,8 @@ definitions:
         type: string
       email:
         type: string
+      email_verified:
+        type: boolean
       first_name:
         type: string
       gender:
@@ -567,6 +620,8 @@ definitions:
         type: string
       email:
         type: string
+      email_verified:
+        type: boolean
       extra_efforts:
         items:
           $ref: '#/definitions/entities.ExtraEffortResponse'
@@ -1787,6 +1842,15 @@ definitions:
     - module
     - supported_channels
     - template_key
+    type: object
+  entities.RegistrationTokenResponse:
+    properties:
+      email:
+        type: string
+      organization_id:
+        type: integer
+      token:
+        type: string
     type: object
   entities.RenderTemplateRequest:
     properties:
@@ -6853,7 +6917,7 @@ paths:
           description: OK
           schema:
             allOf:
-            - $ref: '#/definitions/api.ListResponse'
+            - $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ListResponse'
             - properties:
                 data:
                   items:
@@ -6863,20 +6927,178 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/api.APIResponse'
+            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.APIResponse'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/api.APIResponse'
+            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.APIResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/api.APIResponse'
+            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.APIResponse'
       security:
       - BearerAuth: []
       summary: Get sessions by client ID
       tags:
       - sessions
+  /clients/cost-providers/{token}:
+    get:
+      description: Retrieve all cost providers for the organization associated with
+        the registration token. No Bearer auth required.
+      operationId: getCostProvidersWithToken
+      parameters:
+      - description: Registration token
+        in: path
+        name: token
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Cost providers retrieved successfully
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.APIResponse'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/entities.CostProviderResponse'
+                  type: array
+              type: object
+        "400":
+          description: Invalid token
+          schema:
+            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.APIResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.APIResponse'
+      summary: Get cost providers with registration token (public endpoint)
+      tags:
+      - clients
+  /clients/emailverification/{token}:
+    post:
+      description: Verify a client's email address using the verification token sent
+        via email
+      operationId: verifyClientEmail
+      parameters:
+      - description: Email verification token
+        in: path
+        name: token
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.APIResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/entities.ClientResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse'
+      summary: Verify client email
+      tags:
+      - clients
+  /clients/registration/{token}:
+    post:
+      consumes:
+      - application/json
+      description: Register a new client on the waiting list using a valid registration
+        token
+      operationId: registerClient
+      parameters:
+      - description: Registration token
+        in: path
+        name: token
+        required: true
+        type: string
+      - description: Client registration data
+        in: body
+        name: client
+        required: true
+        schema:
+          $ref: '#/definitions/entities.ClientRegistrationRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Client registered successfully
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.APIResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/entities.ClientResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse'
+      summary: Register new client
+      tags:
+      - clients
+  /clients/registrationtoken:
+    get:
+      consumes:
+      - application/json
+      description: Generate a permanent token for client waiting list registration
+        (admin only). Blacklists any existing tokens for the organization.
+      operationId: generateRegistrationToken
+      parameters:
+      - description: Optional email to associate with token
+        in: query
+        name: email
+        type: string
+      - description: Organization ID for the token
+        in: query
+        name: organization_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.APIResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/entities.RegistrationTokenResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Generate registration token
+      tags:
+      - clients
   /clients/search:
     get:
       description: Search clients by first name or last name
@@ -6925,6 +7147,83 @@ paths:
       security:
       - BearerAuth: []
       summary: Search clients
+      tags:
+      - clients
+  /clients/static/{token}:
+    get:
+      description: Get a list of all JSON files available in the statics/json directory,
+        authenticated by registration token
+      operationId: listStaticFilesWithToken
+      parameters:
+      - description: Registration token
+        in: path
+        name: token
+        required: true
+        type: string
+      responses:
+        "200":
+          description: List of available JSON files
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Invalid token
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Failed to read directory
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: List available static JSON files (registration token auth)
+      tags:
+      - clients
+  /clients/static/{token}/{filename}:
+    get:
+      description: Securely serve JSON data files from statics/json directory only.
+        Authenticated by registration token. Prevents access to other directories
+        or file types.
+      operationId: getStaticFileWithToken
+      parameters:
+      - description: Registration token
+        in: path
+        name: token
+        required: true
+        type: string
+      - description: JSON filename (without .json extension)
+        example: '"bundeslaender"'
+        in: path
+        name: filename
+        required: true
+        type: string
+      responses:
+        "200":
+          description: JSON file content
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Invalid file name or token
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: File not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Failed to read file
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Serve static JSON files with registration token authentication
       tags:
       - clients
   /contacts:
@@ -9291,7 +9590,7 @@ paths:
           description: OK
           schema:
             allOf:
-            - $ref: '#/definitions/api.ListResponse'
+            - $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ListResponse'
             - properties:
                 data:
                   items:
@@ -9301,15 +9600,15 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/api.APIResponse'
+            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.APIResponse'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/api.APIResponse'
+            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.APIResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/api.APIResponse'
+            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.APIResponse'
       security:
       - BearerAuth: []
       summary: Get all sessions
@@ -9334,7 +9633,7 @@ paths:
           description: Created
           schema:
             allOf:
-            - $ref: '#/definitions/api.APIResponse'
+            - $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.APIResponse'
             - properties:
                 data:
                   $ref: '#/definitions/entities.SessionResponse'
@@ -9342,15 +9641,15 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/api.APIResponse'
+            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.APIResponse'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/api.APIResponse'
+            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.APIResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/api.APIResponse'
+            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.APIResponse'
       security:
       - BearerAuth: []
       summary: Create a new session
@@ -9372,23 +9671,23 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/api.APIResponse'
+            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.APIResponse'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/api.APIResponse'
+            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.APIResponse'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/api.APIResponse'
+            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.APIResponse'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/api.APIResponse'
+            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.APIResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/api.APIResponse'
+            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.APIResponse'
       security:
       - BearerAuth: []
       summary: Delete session
@@ -9410,7 +9709,7 @@ paths:
           description: OK
           schema:
             allOf:
-            - $ref: '#/definitions/api.APIResponse'
+            - $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.APIResponse'
             - properties:
                 data:
                   $ref: '#/definitions/entities.SessionResponse'
@@ -9418,15 +9717,15 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/api.APIResponse'
+            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.APIResponse'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/api.APIResponse'
+            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.APIResponse'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/api.APIResponse'
+            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.APIResponse'
       security:
       - BearerAuth: []
       summary: Get session by ID
@@ -9456,7 +9755,7 @@ paths:
           description: OK
           schema:
             allOf:
-            - $ref: '#/definitions/api.APIResponse'
+            - $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.APIResponse'
             - properties:
                 data:
                   $ref: '#/definitions/entities.SessionResponse'
@@ -9464,19 +9763,19 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/api.APIResponse'
+            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.APIResponse'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/api.APIResponse'
+            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.APIResponse'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/api.APIResponse'
+            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.APIResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/api.APIResponse'
+            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.APIResponse'
       security:
       - BearerAuth: []
       summary: Update session
@@ -9506,7 +9805,7 @@ paths:
           description: Created
           schema:
             allOf:
-            - $ref: '#/definitions/api.APIResponse'
+            - $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.APIResponse'
             - properties:
                 data:
                   $ref: '#/definitions/entities.BookSessionsResponse'
@@ -9514,15 +9813,15 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/api.APIResponse'
+            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.APIResponse'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/api.APIResponse'
+            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.APIResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/api.APIResponse'
+            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.APIResponse'
       security:
       - BearerAuth: []
       summary: Book sessions for a client
@@ -9555,7 +9854,7 @@ paths:
           description: Created
           schema:
             allOf:
-            - $ref: '#/definitions/api.APIResponse'
+            - $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.APIResponse'
             - properties:
                 data:
                   $ref: '#/definitions/entities.BookSessionsResponse'
@@ -9563,15 +9862,15 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/api.APIResponse'
+            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.APIResponse'
         "404":
           description: Invalid or expired token
           schema:
-            $ref: '#/definitions/api.APIResponse'
+            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.APIResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/api.APIResponse'
+            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.APIResponse'
       summary: Book sessions with token (public endpoint)
       tags:
       - sessions
@@ -9592,7 +9891,7 @@ paths:
           description: OK
           schema:
             allOf:
-            - $ref: '#/definitions/api.APIResponse'
+            - $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.APIResponse'
             - properties:
                 data:
                   $ref: '#/definitions/entities.SessionResponse'
@@ -9600,19 +9899,19 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/api.APIResponse'
+            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.APIResponse'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/api.APIResponse'
+            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.APIResponse'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/api.APIResponse'
+            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.APIResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/api.APIResponse'
+            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.APIResponse'
       security:
       - BearerAuth: []
       summary: Get session by calendar entry ID
@@ -9637,7 +9936,7 @@ paths:
           description: OK
           schema:
             allOf:
-            - $ref: '#/definitions/api.APIResponse'
+            - $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.APIResponse'
             - properties:
                 data:
                   items:
@@ -9647,15 +9946,15 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/api.APIResponse'
+            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.APIResponse'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/api.APIResponse'
+            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.APIResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/api.APIResponse'
+            $ref: '#/definitions/github_com_unburdy_unburdy-server-api_internal_models.APIResponse'
       security:
       - BearerAuth: []
       summary: Get detailed sessions for upcoming 7 days

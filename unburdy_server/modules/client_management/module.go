@@ -10,6 +10,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 
+	templateEntities "github.com/ae-base-server/modules/templates/entities"
 	templateServices "github.com/ae-base-server/modules/templates/services"
 	bookingServices "github.com/unburdy/booking-module/services"
 	documentServices "github.com/unburdy/documents-module/services/storage"
@@ -39,14 +40,17 @@ func NewModule(db *gorm.DB) baseAPI.ModuleRouteProvider {
 
 	// Initialize handlers
 	clientHandler := handlers.NewClientHandler(clientService)
-	costProviderHandler := handlers.NewCostProviderHandler(costProviderService)
+	costProviderHandler := handlers.NewCostProviderHandler(costProviderService, clientService)
 	sessionHandler := handlers.NewSessionHandler(sessionService)
 	invoiceHandler := handlers.NewInvoiceHandler(invoiceService, xrechnungService, nil) // nil audit service for legacy module
 	invoiceAdapterHandler := handlers.NewInvoiceAdapterHandler(db, "")
 	extraEffortHandler := handlers.NewExtraEffortHandler(extraEffortService)
 
+	// Initialize static file handler
+	staticHandler := handlers.NewStaticHandler(clientService)
+
 	// Initialize route provider with database for auth middleware
-	routeProvider := routes.NewRouteProvider(clientHandler, costProviderHandler, sessionHandler, invoiceHandler, invoiceAdapterHandler, extraEffortHandler, db)
+	routeProvider := routes.NewRouteProvider(clientHandler, costProviderHandler, sessionHandler, invoiceHandler, invoiceAdapterHandler, extraEffortHandler, staticHandler, db)
 
 	return &Module{
 		routeProvider: routeProvider,
@@ -75,6 +79,7 @@ func (m *Module) GetEntitiesForMigration() []interface{} {
 		&entities.InvoiceItem{},
 		&entities.ClientInvoice{},
 		&entities.ExtraEffort{},
+		&entities.RegistrationToken{},
 	}
 }
 
@@ -130,6 +135,11 @@ func (m *CoreModule) Initialize(ctx core.ModuleContext) error {
 			fmt.Printf("✅ CLIENT MANAGEMENT: After assignment, emailService ptr=%p\n", emailService)
 			fmt.Println("✅ CLIENT MANAGEMENT: Email service type assertion SUCCESS!")
 			ctx.Logger.Info("✅ Client Management: Email service successfully type-asserted")
+
+			// Inject email service into client service for verification emails
+			clientService.SetEmailService(emailService)
+			fmt.Println("✅ CLIENT MANAGEMENT: Email service injected into client service")
+			ctx.Logger.Info("✅ Client Management: Email service injected into client service")
 		} else {
 			fmt.Println("❌ CLIENT MANAGEMENT: Email service type assertion FAILED!")
 			ctx.Logger.Warn("❌ Client Management: Email service found but type assertion failed")
@@ -137,6 +147,19 @@ func (m *CoreModule) Initialize(ctx core.ModuleContext) error {
 	} else {
 		fmt.Println("❌ CLIENT MANAGEMENT: Email service NOT found in registry!")
 		ctx.Logger.Warn("❌ Client Management: Email service NOT found in registry")
+	}
+
+	// Get template service from registry
+	fmt.Println("🔍 CLIENT MANAGEMENT: Looking for template_service in registry...")
+	if templateSvcRaw, ok := ctx.Services.Get("template_service"); ok {
+		fmt.Println("✅ CLIENT MANAGEMENT: Template service found in registry!")
+		// Inject template service into client service for email rendering
+		clientService.SetTemplateService(templateSvcRaw)
+		fmt.Println("✅ CLIENT MANAGEMENT: Template service injected into client service")
+		ctx.Logger.Info("✅ Client Management: Template service injected into client service")
+	} else {
+		fmt.Println("❌ CLIENT MANAGEMENT: Template service NOT found in registry!")
+		ctx.Logger.Warn("❌ Client Management: Template service NOT found in registry")
 	}
 
 	fmt.Printf("🔧 About to create SessionService with emailService ptr=%p\n", emailService)
@@ -204,7 +227,7 @@ func (m *CoreModule) Initialize(ctx core.ModuleContext) error {
 
 	// Initialize handlers
 	m.clientHandlers = handlers.NewClientHandler(clientService)
-	m.costProviderHandler = handlers.NewCostProviderHandler(costProviderService)
+	m.costProviderHandler = handlers.NewCostProviderHandler(costProviderService, clientService)
 	m.sessionHandler = handlers.NewSessionHandler(sessionService)
 	xrechnungService := services.NewXRechnungService(ctx.DB)
 	m.invoiceHandler = handlers.NewInvoiceHandler(invoiceService, xrechnungService, auditService)
@@ -214,8 +237,11 @@ func (m *CoreModule) Initialize(ctx core.ModuleContext) error {
 	// TODO: Get invoice module URL from config
 	m.invoiceAdapterHandler = handlers.NewInvoiceAdapterHandler(ctx.DB, "")
 
+	// Initialize static file handler with registration token auth
+	staticHandler := handlers.NewStaticHandler(clientService)
+
 	// Initialize route provider with database for auth middleware
-	m.routeProvider = routes.NewRouteProvider(m.clientHandlers, m.costProviderHandler, m.sessionHandler, m.invoiceHandler, m.invoiceAdapterHandler, extraEffortHandler, ctx.DB)
+	m.routeProvider = routes.NewRouteProvider(m.clientHandlers, m.costProviderHandler, m.sessionHandler, m.invoiceHandler, m.invoiceAdapterHandler, extraEffortHandler, staticHandler, ctx.DB)
 
 	// Seed billing settings definitions
 	fmt.Println("\n🌱🌱🌱 STARTING BILLING SETTINGS SEED 🌱🌱🌱")
@@ -228,6 +254,35 @@ func (m *CoreModule) Initialize(ctx core.ModuleContext) error {
 	} else {
 		fmt.Println("\n✅✅✅ BILLING SETTINGS SEEDED SUCCESSFULLY ✅✅✅")
 		ctx.Logger.Info("✅ Billing settings definitions seeded successfully")
+	}
+
+	// Register client management template contracts
+	fmt.Println("\n📋 Registering client management template contracts...")
+	ctx.Logger.Info("📋 Registering client management template contracts...")
+	if contractRegistrarRaw, ok := ctx.Services.Get("contract-registrar"); ok {
+		if contractRegistrar, ok := contractRegistrarRaw.(*templateServices.ContractRegistrar); ok {
+			// Register for both tenants
+			for _, tenantID := range []uint{1, 2} {
+				if err := clientServices.RegisterClientManagementContracts(contractRegistrar, tenantID); err != nil {
+					ctx.Logger.Warn(fmt.Sprintf("Failed to register client management contracts for tenant %d: %v", tenantID, err))
+				} else {
+					ctx.Logger.Info(fmt.Sprintf("✅ Registered client management contracts for tenant %d", tenantID))
+				}
+			}
+		} else {
+			ctx.Logger.Warn("Contract registrar type assertion failed")
+		}
+	} else {
+		ctx.Logger.Warn("Contract registrar not found in registry")
+	}
+
+	// Seed client email verification template
+	fmt.Println("\n🌱 Seeding client email verification template...")
+	ctx.Logger.Info("🌱 Seeding client email verification template...")
+	if err := m.seedClientEmailVerificationTemplate(ctx); err != nil {
+		ctx.Logger.Warn(fmt.Sprintf("Failed to seed client email verification template: %v", err))
+	} else {
+		ctx.Logger.Info("✅ Client email verification template seeded successfully")
 	}
 
 	ctx.Logger.Info("Client management module initialized successfully")
@@ -244,6 +299,85 @@ func (m *CoreModule) Stop(ctx context.Context) error {
 	return nil
 }
 
+// seedClientEmailVerificationTemplate seeds the client email verification template for both tenants
+func (m *CoreModule) seedClientEmailVerificationTemplate(ctx core.ModuleContext) error {
+	// Get template service from registry
+	templateSvcRaw, ok := ctx.Services.Get("template_service")
+	if !ok {
+		return fmt.Errorf("template service not found in registry")
+	}
+
+	templateSvc, ok := templateSvcRaw.(*templateServices.TemplateService)
+	if !ok {
+		return fmt.Errorf("template service type assertion failed")
+	}
+
+	// Seed for both tenants
+	for _, tenantID := range []uint{1, 2} {
+		var orgID uint
+		if tenantID == 1 {
+			orgID = 1 // Unburdy Verwaltung
+		} else {
+			orgID = 2 // Standard Organisation
+		}
+
+		// Check if template already exists
+		var count int64
+		if err := ctx.DB.Model(&templateEntities.Template{}).
+			Where("tenant_id = ? AND organization_id = ? AND module = ? AND template_key = ?",
+				tenantID, orgID, "client_management", "client_email_verification").
+			Count(&count).Error; err != nil {
+			ctx.Logger.Warn(fmt.Sprintf("Failed to check existing template for tenant %d: %v", tenantID, err))
+			continue
+		}
+
+		if count > 0 {
+			ctx.Logger.Info(fmt.Sprintf("Client email verification template already exists for tenant %d, skipping", tenantID))
+			continue
+		}
+
+		// Load template content from file
+		content := `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Client Email Verification</title>
+</head>
+<body>
+    <h1>Welcome {{.FirstName}}!</h1>
+    <p>Please verify your email: <a href="{{.VerificationURL}}">Verify Email</a></p>
+</body>
+</html>`
+
+		subject := "Verify Your Email - Client Portal Access"
+		// Create template instance
+		template := &templateServices.CreateTemplateRequest{
+			TenantID:       tenantID,
+			OrganizationID: &orgID,
+			Module:         "client_management",
+			TemplateKey:    "client_email_verification",
+			Channel:        "EMAIL",
+			TemplateType:   "client_email_verification",
+			Name:           "Client Email Verification",
+			Description:    "Email verification template for client portal registration",
+			Subject:        &subject,
+			Content:        content,
+			IsActive:       true,
+			IsDefault:      true,
+		}
+
+		// Create template in database
+		if _, err := templateSvc.CreateTemplate(context.Background(), template); err != nil {
+			ctx.Logger.Warn(fmt.Sprintf("Failed to create client email verification template for tenant %d: %v", tenantID, err))
+			continue
+		}
+
+		ctx.Logger.Info(fmt.Sprintf("✅ Created client email verification template for tenant %d", tenantID))
+	}
+
+	return nil
+}
+
 func (m *CoreModule) Entities() []core.Entity {
 	return []core.Entity{
 		entities.NewClientEntity(),
@@ -253,6 +387,7 @@ func (m *CoreModule) Entities() []core.Entity {
 		entities.NewInvoiceItemEntity(),
 		entities.NewClientInvoiceEntity(),
 		entities.NewExtraEffortEntity(),
+		entities.NewRegistrationTokenEntity(),
 	}
 }
 

@@ -148,3 +148,12 @@ func (s *CostProviderService) SearchCostProviders(query string, page, limit int,
 
 	return costProviders, total, nil
 }
+
+// GetAllCostProvidersForTenant returns all cost providers for a tenant without pagination
+func (s *CostProviderService) GetAllCostProvidersForTenant(tenantID uint) ([]entities.CostProvider, error) {
+	var costProviders []entities.CostProvider
+	if err := s.db.Where("tenant_id = ?", tenantID).Find(&costProviders).Error; err != nil {
+		return nil, fmt.Errorf("failed to fetch cost providers: %w", err)
+	}
+	return costProviders, nil
+}

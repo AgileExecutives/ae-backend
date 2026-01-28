@@ -73,6 +73,7 @@ type Client struct {
 	Zip                  string         `gorm:"size:20" json:"zip,omitempty" example:"12345"`
 	City                 string         `gorm:"size:100" json:"city,omitempty" example:"New York"`
 	Email                string         `gorm:"size:255" json:"email,omitempty" example:"john.doe@example.com"`
+	EmailVerified        bool           `gorm:"default:false" json:"email_verified" example:"false"`
 	Phone                string         `gorm:"size:50" json:"phone,omitempty" example:"+1234567890"`
 	InvoicedIndividually bool           `gorm:"default:false" json:"invoiced_individually" example:"false"`
 	IsSelfPayer          bool           `gorm:"default:false" json:"is_self_payer" example:"false"`
@@ -181,6 +182,7 @@ type ClientResponse struct {
 	Zip                  string                `json:"zip,omitempty"`
 	City                 string                `json:"city,omitempty"`
 	Email                string                `json:"email,omitempty"`
+	EmailVerified        bool                  `json:"email_verified"`
 	Phone                string                `json:"phone,omitempty"`
 	InvoicedIndividually bool                  `json:"invoiced_individually"`
 	IsSelfPayer          bool                  `json:"is_self_payer"`
@@ -227,6 +229,7 @@ func (c *Client) ToResponse() ClientResponse {
 		Zip:                  c.Zip,
 		City:                 c.City,
 		Email:                c.Email,
+		EmailVerified:        c.EmailVerified,
 		Phone:                c.Phone,
 		InvoicedIndividually: c.InvoicedIndividually,
 		IsSelfPayer:          c.IsSelfPayer,

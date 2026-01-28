@@ -33,10 +33,10 @@ func NewSessionHandler(sessionService *services.SessionService) *SessionHandler 
 // @Produce json
 // @Security BearerAuth
 // @Param session body entities.CreateSessionRequest true "Session information"
-// @Success 201 {object} baseAPI.APIResponse{data=entities.SessionResponse}
-// @Failure 400 {object} baseAPI.APIResponse
-// @Failure 401 {object} baseAPI.APIResponse
-// @Failure 500 {object} baseAPI.APIResponse
+// @Success 201 {object} github_com_unburdy_unburdy-server-api_internal_models.APIResponse{data=entities.SessionResponse}
+// @Failure 400 {object} github_com_unburdy_unburdy-server-api_internal_models.APIResponse
+// @Failure 401 {object} github_com_unburdy_unburdy-server-api_internal_models.APIResponse
+// @Failure 500 {object} github_com_unburdy_unburdy-server-api_internal_models.APIResponse
 // @Router /sessions [post]
 func (h *SessionHandler) CreateSession(c *gin.Context) {
 	var req entities.CreateSessionRequest
@@ -68,10 +68,10 @@ func (h *SessionHandler) CreateSession(c *gin.Context) {
 // @Produce json
 // @Security BearerAuth
 // @Param id path int true "Session ID"
-// @Success 200 {object} baseAPI.APIResponse{data=entities.SessionResponse}
-// @Failure 400 {object} baseAPI.APIResponse
-// @Failure 401 {object} baseAPI.APIResponse
-// @Failure 404 {object} baseAPI.APIResponse
+// @Success 200 {object} github_com_unburdy_unburdy-server-api_internal_models.APIResponse{data=entities.SessionResponse}
+// @Failure 400 {object} github_com_unburdy_unburdy-server-api_internal_models.APIResponse
+// @Failure 401 {object} github_com_unburdy_unburdy-server-api_internal_models.APIResponse
+// @Failure 404 {object} github_com_unburdy_unburdy-server-api_internal_models.APIResponse
 // @Router /sessions/{id} [get]
 func (h *SessionHandler) GetSession(c *gin.Context) {
 	idStr := c.Param("id")
@@ -104,11 +104,11 @@ func (h *SessionHandler) GetSession(c *gin.Context) {
 // @Produce json
 // @Security BearerAuth
 // @Param id path int true "Calendar Entry ID"
-// @Success 200 {object} baseAPI.APIResponse{data=entities.SessionResponse}
-// @Failure 400 {object} baseAPI.APIResponse
-// @Failure 401 {object} baseAPI.APIResponse
-// @Failure 404 {object} baseAPI.APIResponse
-// @Failure 500 {object} baseAPI.APIResponse
+// @Success 200 {object} github_com_unburdy_unburdy-server-api_internal_models.APIResponse{data=entities.SessionResponse}
+// @Failure 400 {object} github_com_unburdy_unburdy-server-api_internal_models.APIResponse
+// @Failure 401 {object} github_com_unburdy_unburdy-server-api_internal_models.APIResponse
+// @Failure 404 {object} github_com_unburdy_unburdy-server-api_internal_models.APIResponse
+// @Failure 500 {object} github_com_unburdy_unburdy-server-api_internal_models.APIResponse
 // @Router /sessions/by_entry/{id} [get]
 func (h *SessionHandler) GetSessionByCalendarEntry(c *gin.Context) {
 	idStr := c.Param("id")
@@ -142,10 +142,10 @@ func (h *SessionHandler) GetSessionByCalendarEntry(c *gin.Context) {
 // @Security BearerAuth
 // @Param page query int false "Page number" default(1)
 // @Param limit query int false "Items per page" default(10)
-// @Success 200 {object} baseAPI.ListResponse{data=[]entities.SessionResponse}
-// @Failure 400 {object} baseAPI.APIResponse
-// @Failure 401 {object} baseAPI.APIResponse
-// @Failure 500 {object} baseAPI.APIResponse
+// @Success 200 {object} github_com_unburdy_unburdy-server-api_internal_models.ListResponse{data=[]entities.SessionResponse}
+// @Failure 400 {object} github_com_unburdy_unburdy-server-api_internal_models.APIResponse
+// @Failure 401 {object} github_com_unburdy_unburdy-server-api_internal_models.APIResponse
+// @Failure 500 {object} github_com_unburdy_unburdy-server-api_internal_models.APIResponse
 // @Router /sessions [get]
 func (h *SessionHandler) GetAllSessions(c *gin.Context) {
 	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
@@ -188,10 +188,10 @@ func (h *SessionHandler) GetAllSessions(c *gin.Context) {
 // @Param id path int true "Client ID"
 // @Param page query int false "Page number" default(1)
 // @Param limit query int false "Items per page" default(10)
-// @Success 200 {object} baseAPI.ListResponse{data=[]entities.SessionResponse}
-// @Failure 400 {object} baseAPI.APIResponse
-// @Failure 401 {object} baseAPI.APIResponse
-// @Failure 500 {object} baseAPI.APIResponse
+// @Success 200 {object} github_com_unburdy_unburdy-server-api_internal_models.ListResponse{data=[]entities.SessionResponse}
+// @Failure 400 {object} github_com_unburdy_unburdy-server-api_internal_models.APIResponse
+// @Failure 401 {object} github_com_unburdy_unburdy-server-api_internal_models.APIResponse
+// @Failure 500 {object} github_com_unburdy_unburdy-server-api_internal_models.APIResponse
 // @Router /clients/{id}/sessions [get]
 func (h *SessionHandler) GetSessionsByClient(c *gin.Context) {
 	clientIDStr := c.Param("id")
@@ -241,11 +241,11 @@ func (h *SessionHandler) GetSessionsByClient(c *gin.Context) {
 // @Security BearerAuth
 // @Param id path int true "Session ID"
 // @Param session body entities.UpdateSessionRequest true "Session information"
-// @Success 200 {object} baseAPI.APIResponse{data=entities.SessionResponse}
-// @Failure 400 {object} baseAPI.APIResponse
-// @Failure 401 {object} baseAPI.APIResponse
-// @Failure 404 {object} baseAPI.APIResponse
-// @Failure 500 {object} baseAPI.APIResponse
+// @Success 200 {object} github_com_unburdy_unburdy-server-api_internal_models.APIResponse{data=entities.SessionResponse}
+// @Failure 400 {object} github_com_unburdy_unburdy-server-api_internal_models.APIResponse
+// @Failure 401 {object} github_com_unburdy_unburdy-server-api_internal_models.APIResponse
+// @Failure 404 {object} github_com_unburdy_unburdy-server-api_internal_models.APIResponse
+// @Failure 500 {object} github_com_unburdy_unburdy-server-api_internal_models.APIResponse
 // @Router /sessions/{id} [put]
 func (h *SessionHandler) UpdateSession(c *gin.Context) {
 	idStr := c.Param("id")
@@ -284,11 +284,11 @@ func (h *SessionHandler) UpdateSession(c *gin.Context) {
 // @Produce json
 // @Security BearerAuth
 // @Param id path int true "Session ID"
-// @Success 200 {object} baseAPI.APIResponse
-// @Failure 400 {object} baseAPI.APIResponse
-// @Failure 401 {object} baseAPI.APIResponse
-// @Failure 404 {object} baseAPI.APIResponse
-// @Failure 500 {object} baseAPI.APIResponse
+// @Success 200 {object} github_com_unburdy_unburdy-server-api_internal_models.APIResponse
+// @Failure 400 {object} github_com_unburdy_unburdy-server-api_internal_models.APIResponse
+// @Failure 401 {object} github_com_unburdy_unburdy-server-api_internal_models.APIResponse
+// @Failure 404 {object} github_com_unburdy_unburdy-server-api_internal_models.APIResponse
+// @Failure 500 {object} github_com_unburdy_unburdy-server-api_internal_models.APIResponse
 // @Router /sessions/{id} [delete]
 func (h *SessionHandler) DeleteSession(c *gin.Context) {
 	idStr := c.Param("id")
@@ -321,10 +321,10 @@ func (h *SessionHandler) DeleteSession(c *gin.Context) {
 // @Produce json
 // @Security BearerAuth
 // @Param date query string false "Start date (YYYY-MM-DD format, e.g., 2025-12-23). Defaults to current date if not provided."
-// @Success 200 {object} baseAPI.APIResponse{data=[]entities.SessionDetailResponse}
-// @Failure 400 {object} baseAPI.APIResponse
-// @Failure 401 {object} baseAPI.APIResponse
-// @Failure 500 {object} baseAPI.APIResponse
+// @Success 200 {object} github_com_unburdy_unburdy-server-api_internal_models.APIResponse{data=[]entities.SessionDetailResponse}
+// @Failure 400 {object} github_com_unburdy_unburdy-server-api_internal_models.APIResponse
+// @Failure 401 {object} github_com_unburdy_unburdy-server-api_internal_models.APIResponse
+// @Failure 500 {object} github_com_unburdy_unburdy-server-api_internal_models.APIResponse
 // @Router /sessions/detail [get]
 func (h *SessionHandler) GetDetailedSessionsUpcoming(c *gin.Context) {
 	tenantID, err := baseAPI.GetTenantID(c)
@@ -362,10 +362,10 @@ func (h *SessionHandler) GetDetailedSessionsUpcoming(c *gin.Context) {
 // @Produce json
 // @Security BearerAuth
 // @Param booking body entities.BookSessionsRequest true "Booking information"
-// @Success 201 {object} baseAPI.APIResponse{data=entities.BookSessionsResponse}
-// @Failure 400 {object} baseAPI.APIResponse
-// @Failure 401 {object} baseAPI.APIResponse
-// @Failure 500 {object} baseAPI.APIResponse
+// @Success 201 {object} github_com_unburdy_unburdy-server-api_internal_models.APIResponse{data=entities.BookSessionsResponse}
+// @Failure 400 {object} github_com_unburdy_unburdy-server-api_internal_models.APIResponse
+// @Failure 401 {object} github_com_unburdy_unburdy-server-api_internal_models.APIResponse
+// @Failure 500 {object} github_com_unburdy_unburdy-server-api_internal_models.APIResponse
 // @Router /sessions/book [post]
 func (h *SessionHandler) BookSessions(c *gin.Context) {
 	var req entities.BookSessionsRequest
@@ -414,10 +414,10 @@ func (h *SessionHandler) BookSessions(c *gin.Context) {
 // @Produce json
 // @Param token path string true "Booking token (acts as authorization)"
 // @Param booking body entities.BookSessionsWithTokenRequest true "Booking information (without client_id and calendar_id)"
-// @Success 201 {object} baseAPI.APIResponse{data=entities.BookSessionsResponse}
-// @Failure 400 {object} baseAPI.APIResponse
-// @Failure 404 {object} baseAPI.APIResponse "Invalid or expired token"
-// @Failure 500 {object} baseAPI.APIResponse
+// @Success 201 {object} github_com_unburdy_unburdy-server-api_internal_models.APIResponse{data=entities.BookSessionsResponse}
+// @Failure 400 {object} github_com_unburdy_unburdy-server-api_internal_models.APIResponse
+// @Failure 404 {object} github_com_unburdy_unburdy-server-api_internal_models.APIResponse "Invalid or expired token"
+// @Failure 500 {object} github_com_unburdy_unburdy-server-api_internal_models.APIResponse
 // @Router /sessions/book/{token} [post]
 func (h *SessionHandler) BookSessionsWithToken(c *gin.Context) {
 	token := c.Param("token")

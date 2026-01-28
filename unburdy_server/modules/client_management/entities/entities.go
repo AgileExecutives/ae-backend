@@ -136,3 +136,22 @@ func (e *ExtraEffortEntity) GetModel() interface{} {
 func (e *ExtraEffortEntity) GetMigrations() []baseCore.Migration {
 	return []baseCore.Migration{}
 }
+
+// RegistrationTokenEntity implements baseCore.Entity for RegistrationToken model
+type RegistrationTokenEntity struct{}
+
+func NewRegistrationTokenEntity() baseCore.Entity {
+	return &RegistrationTokenEntity{}
+}
+
+func (e *RegistrationTokenEntity) TableName() string {
+	return "registration_tokens"
+}
+
+func (e *RegistrationTokenEntity) GetModel() interface{} {
+	return &RegistrationToken{}
+}
+
+func (e *RegistrationTokenEntity) GetMigrations() []baseCore.Migration {
+	return []baseCore.Migration{}
+}

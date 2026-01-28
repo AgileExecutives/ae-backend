@@ -4152,6 +4152,257 @@ const docTemplate = `{
                 }
             }
         },
+        "/clients/cost-providers/{token}": {
+            "get": {
+                "description": "Retrieve all cost providers for the organization associated with the registration token. No Bearer auth required.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "clients"
+                ],
+                "summary": "Get cost providers with registration token (public endpoint)",
+                "operationId": "getCostProvidersWithToken",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Registration token",
+                        "name": "token",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Cost providers retrieved successfully",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.APIResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/entities.CostProviderResponse"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid token",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.APIResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.APIResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/clients/emailverification/{token}": {
+            "post": {
+                "description": "Verify a client's email address using the verification token sent via email",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "clients"
+                ],
+                "summary": "Verify client email",
+                "operationId": "verifyClientEmail",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Email verification token",
+                        "name": "token",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.APIResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/entities.ClientResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/clients/registration/{token}": {
+            "post": {
+                "description": "Register a new client on the waiting list using a valid registration token",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "clients"
+                ],
+                "summary": "Register new client",
+                "operationId": "registerClient",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Registration token",
+                        "name": "token",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Client registration data",
+                        "name": "client",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/entities.ClientRegistrationRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Client registered successfully",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.APIResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/entities.ClientResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/clients/registrationtoken": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Generate a permanent token for client waiting list registration (admin only). Blacklists any existing tokens for the organization.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "clients"
+                ],
+                "summary": "Generate registration token",
+                "operationId": "generateRegistrationToken",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Optional email to associate with token",
+                        "name": "email",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Organization ID for the token",
+                        "name": "organization_id",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.APIResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/entities.RegistrationTokenResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/clients/search": {
             "get": {
                 "security": [
@@ -4226,6 +4477,115 @@ const docTemplate = `{
                         "description": "Internal server error",
                         "schema": {
                             "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.APIResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/clients/static/{token}": {
+            "get": {
+                "description": "Get a list of all JSON files available in the statics/json directory, authenticated by registration token",
+                "tags": [
+                    "clients"
+                ],
+                "summary": "List available static JSON files (registration token auth)",
+                "operationId": "listStaticFilesWithToken",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Registration token",
+                        "name": "token",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "List of available JSON files",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid token",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to read directory",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/clients/static/{token}/{filename}": {
+            "get": {
+                "description": "Securely serve JSON data files from statics/json directory only. Authenticated by registration token. Prevents access to other directories or file types.",
+                "tags": [
+                    "clients"
+                ],
+                "summary": "Serve static JSON files with registration token authentication",
+                "operationId": "getStaticFileWithToken",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Registration token",
+                        "name": "token",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "example": "\"bundeslaender\"",
+                        "description": "JSON filename (without .json extension)",
+                        "name": "filename",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "JSON file content",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid file name or token",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "File not found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to read file",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
                         }
                     }
                 }
@@ -4509,7 +4869,7 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/api.ListResponse"
+                                    "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ListResponse"
                                 },
                                 {
                                     "type": "object",
@@ -4528,19 +4888,19 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/api.APIResponse"
+                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.APIResponse"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/api.APIResponse"
+                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.APIResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/api.APIResponse"
+                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.APIResponse"
                         }
                     }
                 }
@@ -8281,7 +8641,7 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/api.ListResponse"
+                                    "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.ListResponse"
                                 },
                                 {
                                     "type": "object",
@@ -8300,19 +8660,19 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/api.APIResponse"
+                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.APIResponse"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/api.APIResponse"
+                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.APIResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/api.APIResponse"
+                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.APIResponse"
                         }
                     }
                 }
@@ -8352,7 +8712,7 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/api.APIResponse"
+                                    "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.APIResponse"
                                 },
                                 {
                                     "type": "object",
@@ -8368,19 +8728,19 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/api.APIResponse"
+                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.APIResponse"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/api.APIResponse"
+                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.APIResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/api.APIResponse"
+                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.APIResponse"
                         }
                     }
                 }
@@ -8422,7 +8782,7 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/api.APIResponse"
+                                    "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.APIResponse"
                                 },
                                 {
                                     "type": "object",
@@ -8438,19 +8798,19 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/api.APIResponse"
+                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.APIResponse"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/api.APIResponse"
+                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.APIResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/api.APIResponse"
+                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.APIResponse"
                         }
                     }
                 }
@@ -8494,7 +8854,7 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/api.APIResponse"
+                                    "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.APIResponse"
                                 },
                                 {
                                     "type": "object",
@@ -8510,19 +8870,19 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/api.APIResponse"
+                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.APIResponse"
                         }
                     },
                     "404": {
                         "description": "Invalid or expired token",
                         "schema": {
-                            "$ref": "#/definitions/api.APIResponse"
+                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.APIResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/api.APIResponse"
+                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.APIResponse"
                         }
                     }
                 }
@@ -8559,7 +8919,7 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/api.APIResponse"
+                                    "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.APIResponse"
                                 },
                                 {
                                     "type": "object",
@@ -8575,25 +8935,25 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/api.APIResponse"
+                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.APIResponse"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/api.APIResponse"
+                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.APIResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/api.APIResponse"
+                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.APIResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/api.APIResponse"
+                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.APIResponse"
                         }
                     }
                 }
@@ -8629,7 +8989,7 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/api.APIResponse"
+                                    "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.APIResponse"
                                 },
                                 {
                                     "type": "object",
@@ -8648,19 +9008,19 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/api.APIResponse"
+                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.APIResponse"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/api.APIResponse"
+                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.APIResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/api.APIResponse"
+                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.APIResponse"
                         }
                     }
                 }
@@ -8697,7 +9057,7 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/api.APIResponse"
+                                    "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.APIResponse"
                                 },
                                 {
                                     "type": "object",
@@ -8713,19 +9073,19 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/api.APIResponse"
+                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.APIResponse"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/api.APIResponse"
+                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.APIResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/api.APIResponse"
+                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.APIResponse"
                         }
                     }
                 }
@@ -8772,7 +9132,7 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/api.APIResponse"
+                                    "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.APIResponse"
                                 },
                                 {
                                     "type": "object",
@@ -8788,25 +9148,25 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/api.APIResponse"
+                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.APIResponse"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/api.APIResponse"
+                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.APIResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/api.APIResponse"
+                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.APIResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/api.APIResponse"
+                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.APIResponse"
                         }
                     }
                 }
@@ -8839,31 +9199,31 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/api.APIResponse"
+                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.APIResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/api.APIResponse"
+                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.APIResponse"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/api.APIResponse"
+                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.APIResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/api.APIResponse"
+                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.APIResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/api.APIResponse"
+                            "$ref": "#/definitions/github_com_unburdy_unburdy-server-api_internal_models.APIResponse"
                         }
                     }
                 }
@@ -11806,6 +12166,75 @@ const docTemplate = `{
                 }
             }
         },
+        "entities.ClientRegistrationRequest": {
+            "type": "object",
+            "required": [
+                "email",
+                "first_name",
+                "last_name"
+            ],
+            "properties": {
+                "city": {
+                    "type": "string",
+                    "example": "New York"
+                },
+                "contact_email": {
+                    "type": "string",
+                    "example": "jane.smith@example.com"
+                },
+                "contact_first_name": {
+                    "type": "string",
+                    "example": "Jane"
+                },
+                "contact_last_name": {
+                    "type": "string",
+                    "example": "Smith"
+                },
+                "contact_phone": {
+                    "type": "string",
+                    "example": "+1234567890"
+                },
+                "date_of_birth": {
+                    "$ref": "#/definitions/entities.NullableDate"
+                },
+                "email": {
+                    "type": "string",
+                    "example": "john.doe@example.com"
+                },
+                "first_name": {
+                    "type": "string",
+                    "example": "John"
+                },
+                "gender": {
+                    "type": "string",
+                    "example": "male"
+                },
+                "last_name": {
+                    "type": "string",
+                    "example": "Doe"
+                },
+                "notes": {
+                    "type": "string",
+                    "example": "Referred by Dr. Smith"
+                },
+                "phone": {
+                    "type": "string",
+                    "example": "+1234567890"
+                },
+                "street_address": {
+                    "type": "string",
+                    "example": "123 Main Street"
+                },
+                "timezone": {
+                    "type": "string",
+                    "example": "Europe/Berlin"
+                },
+                "zip": {
+                    "type": "string",
+                    "example": "12345"
+                }
+            }
+        },
         "entities.ClientResponse": {
             "type": "object",
             "properties": {
@@ -11853,6 +12282,9 @@ const docTemplate = `{
                 },
                 "email": {
                     "type": "string"
+                },
+                "email_verified": {
+                    "type": "boolean"
                 },
                 "first_name": {
                     "type": "string"
@@ -11982,6 +12414,9 @@ const docTemplate = `{
                 },
                 "email": {
                     "type": "string"
+                },
+                "email_verified": {
+                    "type": "boolean"
                 },
                 "extra_efforts": {
                     "type": "array",
@@ -13697,6 +14132,20 @@ const docTemplate = `{
                 "variable_schema": {
                     "type": "object",
                     "additionalProperties": true
+                }
+            }
+        },
+        "entities.RegistrationTokenResponse": {
+            "type": "object",
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "organization_id": {
+                    "type": "integer"
+                },
+                "token": {
+                    "type": "string"
                 }
             }
         },

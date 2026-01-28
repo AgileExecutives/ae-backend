@@ -1,0 +1,7 @@
+{
+  "FirstName": "John",
+  "LastName": "Doe",
+  "Email": "john.doe@example.com",
+  "VerificationURL": "http://localhost:3000/client-email-verification/abc123xyz789",
+  "PortalName": "Client Portal"
+}

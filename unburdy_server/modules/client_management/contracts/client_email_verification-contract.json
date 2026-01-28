@@ -1,0 +1,35 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "title": "Client Email Verification Template Contract",
+  "description": "Data contract for client email verification template rendering",
+  "required": [
+    "FirstName",
+    "Email",
+    "VerificationURL"
+  ],
+  "properties": {
+    "FirstName": {
+      "type": "string",
+      "description": "Client's first name"
+    },
+    "LastName": {
+      "type": "string",
+      "description": "Client's last name"
+    },
+    "Email": {
+      "type": "string",
+      "format": "email",
+      "description": "Client's email address"
+    },
+    "VerificationURL": {
+      "type": "string",
+      "format": "uri",
+      "description": "Client email verification URL (frontend)"
+    },
+    "PortalName": {
+      "type": "string",
+      "description": "Name of the client portal"
+    }
+  }
+}
