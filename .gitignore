@@ -7,3 +7,8 @@ minimal-server/minimal-server
 tmp/**
 
 startup.log
+
+# Auto-generated Swagger documentation (regenerate on build)
+**/docs/swagger.yaml
+**/docs/swagger.json
+**/docs/docs.go
