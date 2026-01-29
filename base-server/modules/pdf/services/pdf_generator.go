@@ -153,8 +153,76 @@ func (pg *PDFGenerator) GeneratePDFFromTemplate(data interface{}, templateFile, 
 		return "", fmt.Errorf("PDF conversion failed: %v", err)
 	}
 
-	log.Println("PDF generated successfully:", pdfFile)
+	log.Println("PDF successfully generated:", pdfFile)
 	return pdfFile, nil
+}
+
+// ConvertHtmlStringToPDF converts HTML string content directly to PDF bytes
+func (pg *PDFGenerator) ConvertHtmlStringToPDF(ctx context.Context, htmlContent string) ([]byte, error) {
+	// Create Chrome context with custom allocator for better environment compatibility
+	opts := append(chromedp.DefaultExecAllocatorOptions[:],
+		chromedp.Flag("headless", true),
+		chromedp.Flag("disable-gpu", true),
+		chromedp.Flag("disable-dev-shm-usage", true),
+		chromedp.Flag("disable-extensions", true),
+		chromedp.Flag("no-sandbox", true),
+		chromedp.Flag("disable-web-security", true),
+	)
+
+	// Check for custom Chrome path from environment
+	if chromePath := os.Getenv("CHROME_BIN"); chromePath != "" {
+		opts = append(chromedp.DefaultExecAllocatorOptions[:],
+			chromedp.ExecPath(chromePath),
+			chromedp.Flag("headless", true),
+			chromedp.Flag("disable-gpu", true),
+			chromedp.Flag("disable-dev-shm-usage", true),
+			chromedp.Flag("disable-extensions", true),
+			chromedp.Flag("no-sandbox", true),
+			chromedp.Flag("disable-web-security", true),
+		)
+		log.Printf("Using custom Chrome path: %s", chromePath)
+	}
+
+	allocCtx, cancel := chromedp.NewExecAllocator(ctx, opts...)
+	defer cancel()
+
+	chromeCtx, cancel := chromedp.NewContext(allocCtx)
+	defer cancel()
+
+	// Add timeout to context
+	ctx, cancel = context.WithTimeout(chromeCtx, 30*time.Second)
+	defer cancel()
+
+	var pdfBuf []byte
+
+	// Use data URL to avoid file system operations
+	dataURL := "data:text/html," + htmlContent
+
+	err := chromedp.Run(ctx,
+		chromedp.Navigate(dataURL),
+		chromedp.WaitReady("body", chromedp.ByQuery),
+		chromedp.Sleep(500*time.Millisecond),
+		chromedp.ActionFunc(func(ctx context.Context) error {
+			var err error
+			pdfBuf, _, err = page.PrintToPDF().
+				WithPrintBackground(true).
+				WithMarginTop(0).
+				WithMarginBottom(0).
+				WithMarginLeft(0).
+				WithMarginRight(0).
+				WithPaperWidth(210 / 25.4).  // A4 width: 210mm in inches
+				WithPaperHeight(297 / 25.4). // A4 height: 297mm in inches
+				WithPreferCSSPageSize(false).
+				Do(ctx)
+			return err
+		}),
+	)
+
+	if err != nil {
+		return nil, fmt.Errorf("failed to generate PDF from HTML: %w", err)
+	}
+
+	return pdfBuf, nil
 }
 
 // GeneratePDF generates a PDF with the given data, template name, and output filename

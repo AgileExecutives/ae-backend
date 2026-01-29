@@ -2,7 +2,7 @@ package routes
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/unburdy/unburdy-server-api/modules/audit/handlers"
+	"github.com/unburdy/audit-module/handlers"
 )
 
 type RouteProvider struct {

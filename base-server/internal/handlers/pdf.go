@@ -3,17 +3,17 @@ package handlers
 import (
 	"net/http"
 
-	"github.com/ae-base-server/services"
+	pdfServices "github.com/ae-base-server/services"
 	"github.com/gin-gonic/gin"
 )
 
 // PdfHandler handles PDF generation requests
 type PdfHandler struct {
-	pdfService *services.PDFGenerator
+	pdfService *pdfServices.PDFGenerator
 }
 
 // NewPDFHandler creates a new PDF handler
-func NewPDFHandler(pdfService *services.PDFGenerator) *PdfHandler {
+func NewPDFHandler(pdfService *pdfServices.PDFGenerator) *PdfHandler {
 	return &PdfHandler{pdfService: pdfService}
 }
 

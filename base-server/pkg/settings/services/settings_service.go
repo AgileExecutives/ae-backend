@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"strconv"
 	"time"
 
 	"github.com/ae-base-server/pkg/settings/entities"
@@ -23,32 +22,35 @@ func NewSettingsService(repo *repository.SettingsRepository) *SettingsService {
 
 // GetSetting retrieves and parses a setting value
 func (s *SettingsService) GetSetting(tenantID uint, organizationID, domain, key string) (interface{}, error) {
-	setting, err := s.repo.GetSetting(tenantID, organizationID, domain, key)
+	// Note: organizationID is kept in signature for backward compatibility but not used in current schema
+	setting, err := s.repo.GetSetting(tenantID, domain, key)
 	if err != nil {
 		return nil, err
 	}
-	return s.parseSettingValue(setting.Value, setting.Type)
+	if setting == nil {
+		return nil, nil
+	}
+	return s.parseSettingData(setting.Data)
 }
 
 // SetSetting creates or updates a setting
 func (s *SettingsService) SetSetting(tenantID uint, organizationID, domain, key string, value interface{}, valueType string) error {
-	serializedValue, err := s.serializeValue(value, valueType)
+	// Note: organizationID and valueType are kept in signature for backward compatibility but not used in current schema
+	serializedData, err := s.serializeData(value)
 	if err != nil {
 		return fmt.Errorf("failed to serialize value: %w", err)
 	}
 
 	setting := &entities.Setting{
-		TenantID:       tenantID,
-		OrganizationID: organizationID,
-		Domain:         domain,
-		Key:            key,
-		Value:          serializedValue,
-		Type:           valueType,
-		UpdatedAt:      time.Now(),
+		TenantID:  tenantID,
+		Domain:    domain,
+		Key:       key,
+		Data:      serializedData,
+		UpdatedAt: time.Now(),
 	}
 
 	// Check if setting exists to set created time
-	existingSetting, err := s.repo.GetSetting(tenantID, organizationID, domain, key)
+	existingSetting, err := s.repo.GetSetting(tenantID, domain, key)
 	if err != nil && !errors.Is(err, errors.New("record not found")) {
 		return err
 	}
@@ -65,14 +67,15 @@ func (s *SettingsService) SetSetting(tenantID uint, organizationID, domain, key 
 
 // GetDomainSettings retrieves all settings for a domain
 func (s *SettingsService) GetDomainSettings(tenantID uint, organizationID, domain string) (map[string]interface{}, error) {
-	settings, err := s.repo.GetDomainSettings(tenantID, organizationID, domain)
+	// Note: organizationID is kept in signature for backward compatibility but not used in current schema
+	settings, err := s.repo.GetDomainSettings(tenantID, domain)
 	if err != nil {
 		return nil, err
 	}
 
 	result := make(map[string]interface{})
 	for _, setting := range settings {
-		value, err := s.parseSettingValue(setting.Value, setting.Type)
+		value, err := s.parseSettingData(setting.Data)
 		if err != nil {
 			// Skip invalid settings
 			continue
@@ -85,7 +88,8 @@ func (s *SettingsService) GetDomainSettings(tenantID uint, organizationID, domai
 
 // GetAllSettings retrieves all settings grouped by domain
 func (s *SettingsService) GetAllSettings(tenantID uint, organizationID string) (map[string]map[string]interface{}, error) {
-	settings, err := s.repo.GetAllSettings(tenantID, organizationID)
+	// Note: organizationID is kept in signature for backward compatibility but not used in current schema
+	settings, err := s.repo.GetAllSettings(tenantID)
 	if err != nil {
 		return nil, err
 	}
@@ -96,7 +100,7 @@ func (s *SettingsService) GetAllSettings(tenantID uint, organizationID string) (
 			result[setting.Domain] = make(map[string]interface{})
 		}
 
-		value, err := s.parseSettingValue(setting.Value, setting.Type)
+		value, err := s.parseSettingData(setting.Data)
 		if err != nil {
 			// Skip invalid settings
 			continue
@@ -109,17 +113,30 @@ func (s *SettingsService) GetAllSettings(tenantID uint, organizationID string) (
 
 // DeleteSetting removes a specific setting
 func (s *SettingsService) DeleteSetting(tenantID uint, organizationID, domain, key string) error {
-	return s.repo.DeleteSetting(tenantID, organizationID, domain, key)
+	// Note: organizationID is kept in signature for backward compatibility but not used in current schema
+	return s.repo.DeleteSetting(tenantID, domain, key)
 }
 
 // DeleteDomainSettings removes all settings for a domain
 func (s *SettingsService) DeleteDomainSettings(tenantID uint, organizationID, domain string) error {
-	return s.repo.DeleteDomainSettings(tenantID, organizationID, domain)
+	// Note: organizationID is kept in signature for backward compatibility but not used in current schema
+	// DeleteDomainSettings doesn't exist in repo - need to delete individually
+	settings, err := s.repo.GetDomainSettings(tenantID, domain)
+	if err != nil {
+		return err
+	}
+	for _, setting := range settings {
+		if err := s.repo.DeleteSetting(tenantID, setting.Domain, setting.Key); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 // GetDomains returns available domains for an organization
 func (s *SettingsService) GetDomains(tenantID uint, organizationID string) ([]string, error) {
-	return s.repo.GetDomains(tenantID, organizationID)
+	// Note: organizationID is kept in signature for backward compatibility but not used in current schema
+	return s.repo.GetDomains(tenantID)
 }
 
 // ValidateSettings validates settings against basic rules
@@ -181,49 +198,19 @@ func (s *SettingsService) HealthCheck() (*entities.HealthResponse, error) {
 	}, nil
 }
 
-// parseSettingValue converts stored string value back to appropriate type
-func (s *SettingsService) parseSettingValue(value, valueType string) (interface{}, error) {
-	switch valueType {
-	case "string":
-		return value, nil
-	case "int":
-		return strconv.Atoi(value)
-	case "bool":
-		return strconv.ParseBool(value)
-	case "float":
-		return strconv.ParseFloat(value, 64)
-	case "json":
-		var result interface{}
-		err := json.Unmarshal([]byte(value), &result)
-		return result, err
-	default:
-		return value, nil
+// parseSettingData parses JSONB data field to interface{}
+func (s *SettingsService) parseSettingData(data []byte) (interface{}, error) {
+	if len(data) == 0 {
+		return nil, nil
 	}
+	var result interface{}
+	err := json.Unmarshal(data, &result)
+	return result, err
 }
 
-// serializeValue converts value to string for storage
-func (s *SettingsService) serializeValue(value interface{}, valueType string) (string, error) {
-	switch valueType {
-	case "string":
-		if str, ok := value.(string); ok {
-			return str, nil
-		}
-		return fmt.Sprintf("%v", value), nil
-	case "int":
-		return fmt.Sprintf("%v", value), nil
-	case "bool":
-		return fmt.Sprintf("%v", value), nil
-	case "float":
-		return fmt.Sprintf("%v", value), nil
-	case "json":
-		bytes, err := json.Marshal(value)
-		if err != nil {
-			return "", err
-		}
-		return string(bytes), nil
-	default:
-		return fmt.Sprintf("%v", value), nil
-	}
+// serializeData converts value to JSONB for storage
+func (s *SettingsService) serializeData(value interface{}) ([]byte, error) {
+	return json.Marshal(value)
 }
 
 // isValidEmail performs basic email validation

@@ -3,32 +3,32 @@ package services
 import (
 	"bytes"
 	"context"
-	"encoding/base64"
 	"fmt"
 	"html/template"
 	"time"
 
 	baseAPI "github.com/ae-base-server/api"
+	pdfServices "github.com/ae-base-server/modules/pdf/services"
 	templateServices "github.com/ae-base-server/modules/templates/services"
-	"github.com/chromedp/cdproto/page"
-	"github.com/chromedp/chromedp"
 	"github.com/unburdy/invoice-module/entities"
 	"gorm.io/gorm"
 )
 
-// DefaultPDFService implements PDFService using template service and chromedp
+// DefaultPDFService implements PDFService using template service and PDF generator
 type DefaultPDFService struct {
 	db               *gorm.DB
 	templateService  *templateServices.TemplateService
+	pdfGenerator     *pdfServices.PDFGenerator
 	documentService  interface{} // Document storage service
 	fallbackTemplate string
 }
 
 // NewDefaultPDFService creates a new default PDF service
-func NewDefaultPDFService(db *gorm.DB, templateService *templateServices.TemplateService) *DefaultPDFService {
+func NewDefaultPDFService(db *gorm.DB, templateService *templateServices.TemplateService, pdfGenerator *pdfServices.PDFGenerator) *DefaultPDFService {
 	return &DefaultPDFService{
 		db:               db,
 		templateService:  templateService,
+		pdfGenerator:     pdfGenerator,
 		fallbackTemplate: "statics/pdf_templates/std_invoice.html",
 	}
 }
@@ -68,8 +68,8 @@ func (s *DefaultPDFService) GeneratePDF(ctx context.Context, invoice *entities.I
 		}
 	}
 
-	// Convert HTML to PDF
-	pdfData, err := s.convertHTMLToPDF(ctx, html)
+	// Convert HTML to PDF using PDF generator service
+	pdfData, err := s.pdfGenerator.ConvertHtmlStringToPDF(ctx, html)
 	if err != nil {
 		return 0, fmt.Errorf("failed to convert HTML to PDF: %w", err)
 	}
@@ -240,48 +240,4 @@ func (s *DefaultPDFService) renderFallbackTemplate(data map[string]interface{}) 
 	}
 
 	return buf.String(), nil
-}
-
-// convertHTMLToPDF converts HTML content to PDF using chromedp
-func (s *DefaultPDFService) convertHTMLToPDF(ctx context.Context, html string) ([]byte, error) {
-	// Create a context with timeout
-	ctx, cancel := context.WithTimeout(ctx, 30*time.Second)
-	defer cancel()
-
-	// Create chromedp context
-	allocCtx, cancel := chromedp.NewContext(ctx)
-	defer cancel()
-
-	var pdfData []byte
-
-	// Encode HTML as base64 data URL
-	encodedHTML := base64.StdEncoding.EncodeToString([]byte(html))
-	dataURL := "data:text/html;base64," + encodedHTML
-
-	// Navigate to data URL and print to PDF
-	err := chromedp.Run(allocCtx,
-		chromedp.Navigate(dataURL),
-		chromedp.WaitReady("body", chromedp.ByQuery),
-		chromedp.Sleep(500*time.Millisecond),
-		chromedp.ActionFunc(func(ctx context.Context) error {
-			var err error
-			pdfData, _, err = page.PrintToPDF().
-				WithPrintBackground(true).
-				WithMarginTop(0).
-				WithMarginBottom(0).
-				WithMarginLeft(0).
-				WithMarginRight(0).
-				WithPaperWidth(8.27).
-				WithPaperHeight(11.69).
-				WithPreferCSSPageSize(false).
-				Do(ctx)
-			return err
-		}),
-	)
-
-	if err != nil {
-		return nil, fmt.Errorf("failed to generate PDF: %w", err)
-	}
-
-	return pdfData, nil
 }

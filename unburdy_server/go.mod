@@ -45,6 +45,7 @@ require (
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/redis/go-redis/v9 v9.7.0 // indirect
 	github.com/rs/xid v1.6.0 // indirect
+	github.com/santhosh-tekuri/jsonschema/v5 v5.3.1 // indirect
 	github.com/swaggo/files v1.0.1 // indirect
 	github.com/swaggo/gin-swagger v1.6.1 // indirect
 	github.com/tinylib/msgp v1.3.0 // indirect
@@ -110,6 +111,11 @@ replace github.com/unburdy/documents-module => ../modules/documents
 
 replace github.com/unburdy/invoice-module => ../modules/invoice
 
-require github.com/unburdy/invoice-number-module v0.0.0
+require (
+	github.com/unburdy/audit-module v0.0.0
+	github.com/unburdy/invoice-number-module v0.0.0
+)
 
 replace github.com/unburdy/invoice-number-module => ../modules/invoice_number
+
+replace github.com/unburdy/audit-module => ../modules/audit

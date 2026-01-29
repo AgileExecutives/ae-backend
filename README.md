@@ -1,103 +1,227 @@
 # AE Backend
 
+**Last Updated:** January 29, 2026
+
 ## Overview
 
 **AE Backend** is a modular Go monorepo that powers scalable SaaS applications.  
-It provides a solid foundation for authentication, multi-tenancy, and reusable business logic modules like Calendar, Billing, or Notifications.
+It provides a solid foundation for authentication, multi-tenancy, and reusable business logic modules like Calendar, Billing, Invoicing, and Audit Logging.
 
-This project aims to make backend development **faster, cleaner, and more maintainable** — ideal for building multiple related services that share common functionality.
-
----
-
-## Purpose
-
-- Provide a **base-server** with shared functionality (auth, org management, user handling)
-- Enable fast development through **plug-and-play modules**
-- Ensure **tenant isolation** and consistent **authentication patterns**
-- Support a **monorepo** setup for easy dependency management and unified CI/CD
-
-You can think of AE Backend as a **Go-based application framework for SaaS backends**, with modular extensibility and simple integration.
+> 📖 **Complete Documentation:** See [DOCUMENTATION.md](DOCUMENTATION.md)
 
 ---
 
-## Why This Approach Works
-
-### ✅ Modular by Design
-Each feature (e.g., calendar, billing) lives in its own module:
-- Fully testable and independent
-- Easy to integrate into new services
-- Promotes reusability and clean boundaries
-
-### ✅ Single Source of Truth
-- Core auth, user, and tenant logic live in **base-server**
-- Shared models and utilities are consistent across modules
-
-### ✅ Multi-Tenant Ready
-- Built-in tenant isolation
-- Every query automatically filters by `organization_id`
-- Simplifies building B2B or multi-organization platforms
-
-### ✅ Monorepo Benefits
-- One place for all modules and services
-- Atomic commits and version alignment
-- Easier testing and deployment across projects
-
----
-
-## Development Environment Setup
+## Quick Start
 
 ### Prerequisites
-- Go 1.22+
-- PostgreSQL (local or Docker)
-- `make` or simple bash scripts for setup
-- Optional: Docker & Docker Compose
+- Go 1.24.5+
+- PostgreSQL 14+
+- Redis 7+
+- MinIO (for document storage)
+- Docker & Docker Compose
 
-### Clone & Configure
+### 1. Clone & Setup
+
 ```bash
-git clone https://github.com/your-org/ae-backend.git
+git clone <repository-url>
 cd ae-backend
-```
 
-### Initialize Go Workspace
-```bash
+# Initialize Go workspace
 go work init
 go work use base-server modules/* unburdy_server
-go mod tidy
 ```
 
-### Database Setup
+### 2. Start Services
+
 ```bash
-createdb ae_backend_dev
+cd environments/dev
+docker-compose up -d
 ```
 
-### Run the Base Server
+### 3. Run Application
+
 ```bash
-cd base-server
-go run main.go
+# Base server (port 8081)
+cd base-server && go run main.go
+
+# Unburdy server (port 8080)
+cd unburdy_server && go run main.go
 ```
 
-### Run the Example Service
-```bash
-cd unburdy_server
-go run main.go
+### 4. Access
+
+- API: http://localhost:8080/api/v1
+- Swagger: http://localhost:8080/swagger/index.html
+
+---
+
+## Project Structure
+
+```
+ae-backend/
+├── base-server/           # Core SaaS foundation
+│   ├── modules/           # Built-in modules (base, customer, email, pdf)
+│   ├── pkg/               # Shared packages (core, settings, utils)
+│   └── api/               # Public API exports
+├── modules/               # Shared business modules
+│   ├── audit/             # Audit trail logging
+│   ├── booking/           # Appointment scheduling
+│   ├── calendar/          # Calendar management
+│   ├── documents/         # Document storage (MinIO)
+│   ├── invoice/           # Invoice generation
+│   └── invoice_number/    # Sequential numbering
+├── unburdy_server/        # Production application
+│   └── modules/           # App-specific modules
+├── documentation/         # Detailed docs
+└── environments/          # Docker configs
 ```
 
 ---
 
-## Adding a Module
+## Key Features
 
-1. Create a new folder under `modules/`
-2. Initialize Go module:
-   ```bash
-   go mod init github.com/ae-backend/your-module
-   ```
-3. Implement `models.go`, `handlers.go`, `routes.go`
-4. Integrate into your service with:
-   ```go
-   import "github.com/ae-backend/your-module"
+### ✅ Modular Architecture
+- Plug-and-play modules with clean boundaries
+- Independent testing and development
+- Easy integration into new services
 
-   yourmodule.Migrate(db)
-   yourmodule.RegisterRoutes(protectedGroup, db)
+### ✅ Multi-Tenant Ready
+- Built-in tenant isolation at database and application layers
+- Automatic tenant scoping via middleware
+- Ideal for B2B/multi-organization platforms
+
+### ✅ Production Ready
+- JWT authentication
+- Comprehensive API documentation (Swagger)
+- Audit logging
+- Document management (MinIO)
+- PDF generation (ChromeDP)
+- Email services (SMTP)
+
+### ✅ Monorepo Benefits
+- Unified dependency management
+- Atomic commits across modules
+- Consistent testing and deployment
+
+---
+
+## Core Modules
+
+**Base Server Modules:**
+- **base** - Authentication, users, tenants
+- **customer** - Customer & subscription management
+- **email** - Email delivery (SMTP)
+- **pdf** - PDF generation (ChromeDP)
+- **templates** - Document templates
+
+**Shared Modules** (in `/modules`):
+- **audit** - Audit trail logging
+- **booking** - Appointment scheduling
+- **calendar** - Calendar & events
+- **documents** - Document storage
+- **invoice** - Invoice generation & management
+- **invoice_number** - Sequential numbering
+
+---
+
+## Documentation
+
+- **[DOCUMENTATION.md](DOCUMENTATION.md)** - Complete system documentation
+- **[documentation/](documentation/)** - Detailed feature docs
+  - [Architecture.md](documentation/Architecture.md)
+  - [MODULE_DEVELOPMENT_GUIDE.md](documentation/MODULE_DEVELOPMENT_GUIDE.md)
+  - [INVOICE_CANCELLATION.md](documentation/INVOICE_CANCELLATION.md)
+  - [AUDIT_TRAIL_README.md](documentation/AUDIT_TRAIL_README.md)
+  - And many more...
+
+---
+
+## Recent Changes
+
+### January 29, 2026
+- ✅ **Audit Module** - Moved to shared modules
+- ✅ **Invoice Module** - Refactored to use PDF module
+- ✅ **Settings System** - Fixed API mismatches
+- ✅ **Documentation** - Consolidated and validated
+- ✅ **Email Module** - Simplified architecture
+
+### January 26, 2026
+- ✅ **Invoice Cancellation** - GoBD-compliant storno feature
+
+---
+
+## Development
+
+### Adding a Module
+
+See [DOCUMENTATION.md#module-system](DOCUMENTATION.md#module-system) for complete guide.
+
+Quick example:
+
+```bash
+# 1. Create module
+mkdir modules/your-module
+cd modules/your-module
+go mod init github.com/unburdy/your-module
+
+# 2. Implement Module interface
+# See documentation/MODULE_DEVELOPMENT_GUIDE.md
+
+# 3. Add to application
+# Import and register in main.go
+```
+
+---
+
+## API Documentation
+
+Generate Swagger docs:
+
+```bash
+cd unburdy_server
+make swag
+```
+
+Access at: http://localhost:8080/swagger/index.html
+
+---
+
+## Testing
+
+```bash
+# Run all tests
+go test ./...
+
+# Run specific module tests
+cd modules/booking && go test ./...
+
+# Generate coverage
+go test -cover ./...
+```
+
+---
+
+## Deployment
+
+See [DOCUMENTATION.md#deployment](DOCUMENTATION.md#deployment) for production checklist.
+
+Docker build:
+```bash
+cd unburdy_server
+docker build -t unburdy-server:latest .
+```
+
+---
+
+## Support
+
+- **Documentation:** [DOCUMENTATION.md](DOCUMENTATION.md)
+- **Module Guides:** [documentation/](documentation/)
+- **Issues:** GitHub Issues
+
+---
+
+**Built with ❤️ using Go, Gin, GORM, PostgreSQL, Redis, and MinIO**
    ```
 
 ---

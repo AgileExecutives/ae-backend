@@ -1,5 +1,4 @@
 package renderer
-package renderer
 
 import (
 	"encoding/json"

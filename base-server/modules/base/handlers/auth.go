@@ -11,11 +11,11 @@ import (
 	"github.com/ae-base-server/internal/eventbus"
 	"github.com/ae-base-server/internal/models"
 	_ "github.com/ae-base-server/modules/base/models" // Import models for swagger
+	emailServices "github.com/ae-base-server/modules/email/services"
 	"github.com/ae-base-server/pkg/auth"
 	"github.com/ae-base-server/pkg/config"
 	"github.com/ae-base-server/pkg/core"
 	"github.com/ae-base-server/pkg/utils"
-	"github.com/ae-base-server/services"
 	"github.com/gin-gonic/gin"
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
@@ -295,33 +295,9 @@ func (h *AuthHandlers) Register(c *gin.Context) {
 		}
 		verificationURL := frontendURL + "/verify-email?token=" + verificationToken
 
-		// Get tenant info for email
-		var tenant models.Tenant
-		orgName := req.CompanyName // Default to company name from request
-		if err := h.db.First(&tenant, user.TenantID).Error; err == nil {
-			orgName = tenant.Name
-		}
-
-		// Get template service for email templates
-		var templateGetter services.TemplateGetter
-		if h.moduleRegistry != nil {
-			if moduleInterface, exists := h.moduleRegistry.Get("templates"); exists {
-				if tg, ok := moduleInterface.(services.TemplateGetter); ok {
-					templateGetter = tg
-				}
-			}
-		}
-
-		emailService := services.NewEmailServiceWithDB(h.db, templateGetter)
-		err = emailService.SendVerificationEmailWithTenant(
-			user.Email,
-			user.FirstName,
-			user.LastName,
-			user.Username,
-			orgName,
-			verificationURL,
-			user.TenantID,
-		)
+		// Send verification email
+		emailService := emailServices.NewEmailService()
+		err = emailService.SendVerificationEmail(user.Email, user.FirstName, verificationURL)
 		if err != nil {
 			log.Printf("⚠️ Register: Failed to send verification email: %v (continuing anyway)", err)
 		} else {
@@ -644,39 +620,14 @@ func (h *AuthHandlers) ForgotPassword(c *gin.Context) {
 
 	resetURL := frontendURL + resetRouteSlug + token
 
-	// Get tenant info for email
-	var tenant models.Tenant
-	orgName := "Unburdy" // Default
-	if err := h.db.First(&tenant, user.TenantID).Error; err == nil {
-		orgName = tenant.Name
-	}
-
-	// Get template service for email templates
-	var templateGetter services.TemplateGetter
-	if h.moduleRegistry != nil {
-		if moduleInterface, exists := h.moduleRegistry.Get("templates"); exists {
-			if tg, ok := moduleInterface.(services.TemplateGetter); ok {
-				templateGetter = tg
-			}
-		}
-	}
-
-	// Send email with database templates
-	emailService := services.NewEmailServiceWithDB(h.db, templateGetter)
+	// Send email
+	emailService := emailServices.NewEmailService()
 	userName := user.FirstName
 	if userName == "" {
 		userName = user.Username
 	}
 
-	if err := emailService.SendPasswordResetEmailWithTenant(
-		user.Email,
-		user.FirstName,
-		user.LastName,
-		user.Username,
-		orgName,
-		resetURL,
-		user.TenantID,
-	); err != nil {
+	if err := emailService.SendPasswordResetEmail(user.Email, userName, resetURL); err != nil {
 		c.JSON(http.StatusInternalServerError, models.ErrorResponseFunc("Failed to send reset email", err.Error()))
 		return
 	}

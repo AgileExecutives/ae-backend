@@ -8,9 +8,8 @@ import (
 
 	baseAPI "github.com/ae-base-server/api"
 	"github.com/gin-gonic/gin"
-	"github.com/unburdy/unburdy-server-api/internal/models"
-	"github.com/unburdy/unburdy-server-api/modules/audit/entities"
-	"github.com/unburdy/unburdy-server-api/modules/audit/services"
+	"github.com/unburdy/audit-module/entities"
+	"github.com/unburdy/audit-module/services"
 )
 
 type AuditHandler struct {
@@ -36,14 +35,14 @@ func NewAuditHandler(service *services.AuditService) *AuditHandler {
 // @Param page query int false "Page number (default: 1)" example(1)
 // @Param limit query int false "Items per page (default: 50, max: 100)" example(50)
 // @Success 200 {object} entities.AuditLogListResponse
-// @Failure 401 {object} models.ErrorResponse
-// @Failure 500 {object} models.ErrorResponse
+// @Failure 401 {object} baseAPI.ErrorResponse
+// @Failure 500 {object} baseAPI.ErrorResponse
 // @Security BearerAuth
 // @Router /audit/logs [get]
 func (h *AuditHandler) GetAuditLogs(c *gin.Context) {
 	tenantID, err := baseAPI.GetTenantID(c)
 	if err != nil {
-		c.JSON(http.StatusUnauthorized, models.ErrorResponseFunc("Unauthorized", "Failed to get tenant ID: "+err.Error()))
+		c.JSON(http.StatusUnauthorized, baseAPI.ErrorResponseFunc("Unauthorized", "Failed to get tenant ID: "+err.Error()))
 		return
 	}
 
@@ -105,7 +104,7 @@ func (h *AuditHandler) GetAuditLogs(c *gin.Context) {
 
 	logs, total, err := h.service.GetAuditLogs(filter)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, models.ErrorResponseFunc("Internal server error", err.Error()))
+		c.JSON(http.StatusInternalServerError, baseAPI.ErrorResponseFunc("Internal server error", err.Error()))
 		return
 	}
 
@@ -133,28 +132,28 @@ func (h *AuditHandler) GetAuditLogs(c *gin.Context) {
 // @Param entity_type path string true "Entity type" Enums(invoice, invoice_item, session, extra_effort) example(invoice)
 // @Param entity_id path int true "Entity ID" example(123)
 // @Success 200 {object} entities.AuditLogListResponse
-// @Failure 400 {object} models.ErrorResponse
-// @Failure 401 {object} models.ErrorResponse
-// @Failure 500 {object} models.ErrorResponse
+// @Failure 400 {object} baseAPI.ErrorResponse
+// @Failure 401 {object} baseAPI.ErrorResponse
+// @Failure 500 {object} baseAPI.ErrorResponse
 // @Security BearerAuth
 // @Router /audit/entity/{entity_type}/{entity_id} [get]
 func (h *AuditHandler) GetEntityAuditLogs(c *gin.Context) {
 	tenantID, err := baseAPI.GetTenantID(c)
 	if err != nil {
-		c.JSON(http.StatusUnauthorized, models.ErrorResponseFunc("Unauthorized", "Failed to get tenant ID: "+err.Error()))
+		c.JSON(http.StatusUnauthorized, baseAPI.ErrorResponseFunc("Unauthorized", "Failed to get tenant ID: "+err.Error()))
 		return
 	}
 
 	entityType := entities.EntityType(c.Param("entity_type"))
 	entityID, err := strconv.ParseUint(c.Param("entity_id"), 10, 32)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, models.ErrorResponseFunc("Invalid request", "Invalid entity ID"))
+		c.JSON(http.StatusBadRequest, baseAPI.ErrorResponseFunc("Invalid request", "Invalid entity ID"))
 		return
 	}
 
 	logs, err := h.service.GetAuditLogsByEntity(tenantID, uint(entityID), entityType)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, models.ErrorResponseFunc("Internal server error", err.Error()))
+		c.JSON(http.StatusInternalServerError, baseAPI.ErrorResponseFunc("Internal server error", err.Error()))
 		return
 	}
 
@@ -186,14 +185,14 @@ func (h *AuditHandler) GetEntityAuditLogs(c *gin.Context) {
 // @Param start_date query string false "Filter by start date (RFC3339)" example(2026-01-01T00:00:00Z)
 // @Param end_date query string false "Filter by end date (RFC3339)" example(2026-12-31T23:59:59Z)
 // @Success 200 {file} string "CSV file download"
-// @Failure 401 {object} models.ErrorResponse
-// @Failure 500 {object} models.ErrorResponse
+// @Failure 401 {object} baseAPI.ErrorResponse
+// @Failure 500 {object} baseAPI.ErrorResponse
 // @Security BearerAuth
 // @Router /audit/export [get]
 func (h *AuditHandler) ExportAuditLogs(c *gin.Context) {
 	tenantID, err := baseAPI.GetTenantID(c)
 	if err != nil {
-		c.JSON(http.StatusUnauthorized, models.ErrorResponseFunc("Unauthorized", "Failed to get tenant ID: "+err.Error()))
+		c.JSON(http.StatusUnauthorized, baseAPI.ErrorResponseFunc("Unauthorized", "Failed to get tenant ID: "+err.Error()))
 		return
 	}
 
@@ -241,7 +240,7 @@ func (h *AuditHandler) ExportAuditLogs(c *gin.Context) {
 
 	csv, err := h.service.ExportAuditLogsToCSV(filter)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, models.ErrorResponseFunc("Internal server error", err.Error()))
+		c.JSON(http.StatusInternalServerError, baseAPI.ErrorResponseFunc("Internal server error", err.Error()))
 		return
 	}
 
@@ -261,14 +260,14 @@ func (h *AuditHandler) ExportAuditLogs(c *gin.Context) {
 // @Param start_date query string false "Statistics start date (RFC3339)" example(2026-01-01T00:00:00Z)
 // @Param end_date query string false "Statistics end date (RFC3339)" example(2026-12-31T23:59:59Z)
 // @Success 200 {object} map[string]interface{} "Audit statistics with action_counts, user_activity, entity_type_counts, total_logs, date_range"
-// @Failure 401 {object} models.ErrorResponse
-// @Failure 500 {object} models.ErrorResponse
+// @Failure 401 {object} baseAPI.ErrorResponse
+// @Failure 500 {object} baseAPI.ErrorResponse
 // @Security BearerAuth
 // @Router /audit/statistics [get]
 func (h *AuditHandler) GetAuditStatistics(c *gin.Context) {
 	tenantID, err := baseAPI.GetTenantID(c)
 	if err != nil {
-		c.JSON(http.StatusUnauthorized, models.ErrorResponseFunc("Unauthorized", "Failed to get tenant ID: "+err.Error()))
+		c.JSON(http.StatusUnauthorized, baseAPI.ErrorResponseFunc("Unauthorized", "Failed to get tenant ID: "+err.Error()))
 		return
 	}
 
@@ -290,9 +289,9 @@ func (h *AuditHandler) GetAuditStatistics(c *gin.Context) {
 
 	stats, err := h.service.GetAuditStatistics(tenantID, startDate, endDate)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, models.ErrorResponseFunc("Internal server error", err.Error()))
+		c.JSON(http.StatusInternalServerError, baseAPI.ErrorResponseFunc("Internal server error", err.Error()))
 		return
 	}
 
-	c.JSON(http.StatusOK, models.SuccessResponse("Audit statistics retrieved successfully", stats))
+	c.JSON(http.StatusOK, baseAPI.SuccessResponse("Audit statistics retrieved successfully", stats))
 }

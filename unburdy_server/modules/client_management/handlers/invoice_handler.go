@@ -8,10 +8,10 @@ import (
 	baseAPI "github.com/ae-base-server/api"
 	"github.com/ae-base-server/pkg/utils"
 	"github.com/gin-gonic/gin"
+	auditEntities "github.com/unburdy/audit-module/entities"
+	auditServices "github.com/unburdy/audit-module/services"
 	"github.com/unburdy/unburdy-server-api/internal/models"
 	"github.com/unburdy/unburdy-server-api/internal/services"
-	auditEntities "github.com/unburdy/unburdy-server-api/modules/audit/entities"
-	auditServices "github.com/unburdy/unburdy-server-api/modules/audit/services"
 	"github.com/unburdy/unburdy-server-api/modules/client_management/entities"
 	clientServices "github.com/unburdy/unburdy-server-api/modules/client_management/services"
 )

@@ -16,7 +16,10 @@ import (
 	"github.com/ae-base-server/pkg/settings/manager"
 	"github.com/ae-base-server/pkg/settings/accessor"
 
-	// Module settings providers
+	// Module settings providers - not yet implemented for this test
+)
+
+// SettingsTestSuite provides a test suite for the entire settings system
 
 
 

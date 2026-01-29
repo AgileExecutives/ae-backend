@@ -1,103 +1,147 @@
 # Backend Documentation
 
-Multi-tenant SaaS platform with document management, invoice management, and client management modules.
+**Last Updated:** January 29, 2026  
+**Status:** ✅ Current & Validated
 
-## 📚 Documentation Index
+Multi-tenant SaaS platform with modular architecture for document management, invoice management, client management, booking, and audit logging.
 
-### Core Documentation
-- [Architecture Overview](Architecture.md) - System architecture and design principles
-- [Development Principles](DevPrinciples.md) - Coding standards and best practices
-- [Module Development Guide](MODULE_DEVELOPMENT_GUIDE.md) - How to create new modules
-- [Implementation Status](IMPLEMENTATION_STATUS.md) - Current development status
+> 📖 **Quick Start:** See [../DOCUMENTATION.md](../DOCUMENTATION.md) for complete system documentation
+
+---
+
+## 📚 Active Documentation
+
+### Core System
+- **[Architecture.md](Architecture.md)** - System architecture and design principles ✅
+- **[DevPrinciples.md](DevPrinciples.md)** - Coding standards and best practices ✅
+- **[MODULE_DEVELOPMENT_GUIDE.md](MODULE_DEVELOPMENT_GUIDE.md)** - How to create new modules ✅
+- **[IMPLEMENTATION_STATUS.md](IMPLEMENTATION_STATUS.md)** - Current development status ⚠️ (May need update)
 
 ### Invoice System
-- **[Invoice Cancellation (Storno)](INVOICE_CANCELLATION.md)** - Developer guide for cancellation feature
-- **[GoBD Compliance (English)](INVOICE_CANCELLATION_GOBD_EN.md)** - Legal compliance documentation
-- **[GoBD Konformität (Deutsch)](INVOICE_CANCELLATION_GOBD_DE.md)** - Rechtliche Konformitätsdokumentation
-- **[Invoice Cancellation Swagger](INVOICE_CANCELLATION_SWAGGER.md)** - API documentation
-- [Invoicing Overview](INVOICING.md) - Complete invoice workflow
-- [Invoice PDF Generation](INVOICE_PDF_GENERATION.md) - PDF generation system
-- [Invoice VAT Handling](INVOICE_VAT_HANDLING.md) - VAT/tax calculation
-- [XRechnung Support](XRECHNUNG_README.md) - German e-invoice standard
+- **[INVOICING.md](INVOICING.md)** - Complete invoice workflow ✅
+- **[INVOICE_CANCELLATION.md](INVOICE_CANCELLATION.md)** - GoBD-compliant cancellation ✅
+- **[INVOICE_CANCELLATION_GOBD_EN.md](INVOICE_CANCELLATION_GOBD_EN.md)** - Legal compliance (English) ✅
+- **[INVOICE_CANCELLATION_GOBD_DE.md](INVOICE_CANCELLATION_GOBD_DE.md)** - Rechtliche Konformität (Deutsch) ✅
+- **[INVOICE_CANCELLATION_QUICK_REF.md](INVOICE_CANCELLATION_QUICK_REF.md)** - Quick reference card ✅
+- **[INVOICE_CANCELLATION_SWAGGER.md](INVOICE_CANCELLATION_SWAGGER.md)** - API documentation ✅
+- **[INVOICE_CANCELLATION_RELEASE_NOTES.md](INVOICE_CANCELLATION_RELEASE_NOTES.md)** - Release notes ✅
+- **[INVOICE_PDF_GENERATION.md](INVOICE_PDF_GENERATION.md)** - PDF generation system ⚠️ (Check current architecture)
+- **[INVOICE_VAT_HANDLING.md](INVOICE_VAT_HANDLING.md)** - VAT/tax calculation ✅
+- **[INVOICE_MINIO_INTEGRATION.md](INVOICE_MINIO_INTEGRATION.md)** - Document storage ✅
+- **[XRECHNUNG_README.md](XRECHNUNG_README.md)** - German e-invoice standard ✅
+- **[invoice_implementation.md](invoice_implementation.md)** - Implementation details ⚠️ (May be outdated)
 
 ### Features & Systems
-- [Audit Trail](AUDIT_TRAIL_README.md) - Audit logging system
-- [Settings System](ADVANCED_SETTINGS_SYSTEM.md) - Advanced configuration
-- [Template System](TEMPLATE_SYSTEM_ARCHITECTURE.md) - Document templates
-- [Extra Efforts](EXTRA_EFFORTS_DESIGN.md) - Billing for extra services
-- [Unified Token System](UNIFIED_TOKEN_SYSTEM.md) - Authentication tokens
+- **[AUDIT_TRAIL_README.md](AUDIT_TRAIL_README.md)** - Audit logging system ✅ (Updated Jan 29)
+- **[ADVANCED_SETTINGS_SYSTEM.md](ADVANCED_SETTINGS_SYSTEM.md)** - Advanced configuration ✅ (Fixed Jan 29)
+- **[TEMPLATE_SYSTEM_ARCHITECTURE.md](TEMPLATE_SYSTEM_ARCHITECTURE.md)** - Document templates ✅
+- **[TEMPLATE_MANAGEMENT.md](TEMPLATE_MANAGEMENT.md)** - Template operations ✅
+- **[TEMPLATE_CONTRACT_SYSTEM.md](TEMPLATE_CONTRACT_SYSTEM.md)** - Contract-based templates ✅
+- **[EXTRA_EFFORTS_DESIGN.md](EXTRA_EFFORTS_DESIGN.md)** - Billing for extra services ✅
+- **[UNIFIED_TOKEN_SYSTEM.md](UNIFIED_TOKEN_SYSTEM.md)** - Authentication tokens ✅
+- **[PDF_GENERATION.md](PDF_GENERATION.md)** - PDF generation with ChromeDP ✅
+- **[CLIENT_REGISTRATION_WORKFLOW.md](CLIENT_REGISTRATION_WORKFLOW.md)** - Client registration ✅
 
-### API Documentation
-- [Swagger Documentation](SWAGGER_DOCUMENTATION.md) - OpenAPI/Swagger specs
-- [Frontend Integration Guide](FRONTEND_INTEGRATION_GUIDE.md) - Frontend API usage
+### API & Integration
+- **[SWAGGER_DOCUMENTATION.md](SWAGGER_DOCUMENTATION.md)** - OpenAPI/Swagger specs ✅
+- **[SWAGGER_IMPLEMENTATION.md](SWAGGER_IMPLEMENTATION.md)** - Swagger setup ✅
+- **[FRONTEND_INTEGRATION_GUIDE.md](FRONTEND_INTEGRATION_GUIDE.md)** - Frontend API usage ✅
+- **[INVOICE-FRONTEND-IMPLEMENTATION.md](INVOICE-FRONTEND-IMPLEMENTATION.md)** - Invoice frontend guide ✅
 
-## 🚀 Quick Start
+### Organizational
+- **[Module Lifecycle Phases.md](Module%20Lifecycle%20Phases.md)** - Module initialization phases ✅
+- **[New_Template_Module_Req.md](New_Template_Module_Req.md)** - Template module requirements ✅
 
-### Documents Module
+---
 
-Multi-tenant document management system with MinIO storage, Redis caching, and organization-based template management.
+## 📦 Archived Documentation
 
-**Status**: ✅ Priority 1-2 Complete
+Historical documentation moved to [archive/](archive/):
+- Completed migrations (INVOICE_SCHEMA_MIGRATION, ORGANIZATION_FORMAT_MIGRATION, etc.)
+- Old workflows (INVOICE_OLD_WORKFLOW)
+- Refactoring plans (TEMPLATE_REFACTORING_PLAN, TEMPLATE_REFACTORING_COMPLETE)
+- Phase completion summaries (PHASE_12, PRIORITY_3)
+- Resolved issues (MODULE_LIFECYCLE_ISSUES)
 
-#### Features
+These are kept for historical reference but no longer reflect current implementation.
 
-### Document Management
-- ✅ Multi-tenant document storage with isolation
-- ✅ S3-compatible storage via MinIO
-- ✅ SHA256 checksum validation
-- ✅ Pre-signed download URLs (1-hour expiry)
-- ✅ Document metadata and tagging (JSONB)
-- ✅ Soft deletes for audit trail
-- ✅ Reference linking (orders, customers, invoices)
+---
 
-### Template Management
-- ✅ Organization-scoped templates
-- ✅ System-level default templates
-- ✅ Version control
-- ✅ Active/default flags
-- ✅ Variable definitions (JSONB)
-- ⏳ Template rendering (Priority 5)
+## 🚀 Recent Changes (January 2026)
 
-### Security
-- ✅ Tenant isolation at DB and storage levels
-- ✅ Middleware access control
-- ✅ Time-limited download URLs
-- ✅ Organization-based permissions
+### January 29, 2026
+- ✅ **Audit Module** - Moved to shared modules, created independent go.mod
+- ✅ **Invoice Module** - Refactored to use PDF module instead of direct ChromeDP
+- ✅ **Settings System** - Fixed API mismatches, updated to use JSONB Data field
+- ✅ **Email Module** - Simplified to delivery-only (no template rendering)
+- ✅ **Documentation** - Consolidated and validated against current implementation
 
-## Quick Start
+### January 26, 2026
+- ✅ **Invoice Cancellation** - GoBD-compliant storno feature with complete documentation
 
-### 1. Start Docker Services
+---
+
+## 🔍 Quick Reference
+
+### Starting the System
 ```bash
-cd /Users/alex/src/ae/backend/environments/dev
-docker-compose up -d
+# Start services
+cd environments/dev && docker-compose up -d
+
+# Run base-server (port 8081)
+cd base-server && go run main.go
+
+# Run unburdy-server (port 8080)  
+cd unburdy_server && go run main.go
 ```
 
-### 2. Verify Services
-```bash
-# PostgreSQL
-psql -h localhost -U postgres -d ae_dev
-
-# MinIO Console
-open http://localhost:9001  # minioadmin / minioadmin123
-
-# Redis
-redis-cli -h localhost -p 6379 -a redis123 ping
+### Module Structure
+```
+modules/your-module/
+├── go.mod                    # Module definition
+├── module.go                 # Module implementation
+├── entities/                 # Data models
+├── handlers/                 # HTTP handlers
+├── services/                 # Business logic
+└── routes/                   # Route definitions
 ```
 
-### 3. Build Module
-```bash
-cd /Users/alex/src/ae/backend/modules/documents
-go build ./...
-```
+### Creating a Module
+1. Create directory in `modules/`
+2. Initialize with `go mod init github.com/unburdy/your-module`
+3. Implement `core.Module` interface
+4. Add to application's module registry
+5. Generate Swagger docs
 
-## API Endpoints
+### Shared Modules
+Current shared modules in `/modules`:
+- **audit** - Audit trail logging
+- **booking** - Appointment scheduling
+- **calendar** - Calendar management
+- **documents** - Document storage (MinIO)
+- **invoice** - Invoice generation
+- **invoice_number** - Sequential numbering
 
-### Upload Document
-```bash
-POST /api/v1/documents
-Content-Type: multipart/form-data
+---
 
-file: <binary>
+## 📝 Documentation Standards
+
+When creating/updating documentation:
+
+1. **Include date** - Last updated timestamp
+2. **Validate code** - Check against current implementation
+3. **Mark status** - ✅ Current, ⚠️ Needs review, 🗄️ Archived
+4. **Use examples** - Real code snippets from the repo
+5. **Link related docs** - Cross-reference related documentation
+
+---
+
+## 🆘 Support
+
+- **Questions:** Check [../DOCUMENTATION.md](../DOCUMENTATION.md) first
+- **Issues:** GitHub Issues
+- **API Docs:** `/swagger/index.html` when server running
+- **Module Docs:** Each module has inline documentation
 document_type: invoice|template|attachment
 reference_type: order|customer|invoice (optional)
 reference_id: 123 (optional)

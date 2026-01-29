@@ -22,7 +22,7 @@ import (
 	"github.com/ae-base-server/pkg/database"
 	pkgServices "github.com/ae-base-server/pkg/services"
 	"github.com/ae-base-server/pkg/startup"
-	"github.com/ae-base-server/services"
+	pdfServices "github.com/ae-base-server/services"
 	"github.com/gin-gonic/gin"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
@@ -295,7 +295,7 @@ func (app *Application) setupInternalAuthRoutes(router *gin.Engine, db *gorm.DB,
 	userSettingsHandler := internalHandlers.NewUserSettingsHandler(db)
 
 	// Initialize PDF service and handler
-	pdfService := services.NewPDFGenerator()
+	pdfService := pdfServices.NewPDFGenerator()
 	pdfHandler := internalHandlers.NewPDFHandler(pdfService)
 
 	// Public routes for plans (used by signup pages)
