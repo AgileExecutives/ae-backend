@@ -3,7 +3,7 @@ package handlers
 import (
 	"net/http"
 
-	pdfServices "github.com/ae-base-server/services"
+	pdfServices "github.com/ae-base-server/modules/pdf/services"
 	"github.com/gin-gonic/gin"
 )
 

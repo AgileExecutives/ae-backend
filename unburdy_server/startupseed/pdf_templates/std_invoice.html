@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rechnung {{.invoice_number}}</title>
+    <style>
+        @page {
+            size: A4;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-size: 11pt;
+            line-height: 1.4;
+            color: #333;
+            margin: 0;
+            padding: 0;
+        }
+
+        .page-margin-area {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            box-sizing: border-box;
+            padding-left: 2.5cm;
+            padding-right: 2cm;
+            padding-top: 2cm;
+            padding-bottom: 2cm;
+            background-color: #fff;
+            overflow: hidden;
+        }
+
+        .header {
+            display: flex;
+            width: 100%;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 0.8cm;
+        }
+
+        .logo-area {
+            width: 200px;
+            height: 80px;
+            border: 1px dashed #ccc;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #999;
+            font-size: 10pt;
+        }
+
+        .company-info {
+            text-align: right;
+            font-size: 10pt;
+            line-height: 1.3;
+        }
+
+        .sender-line {
+            font-size: 8pt;
+            color: #666;
+            border-bottom: 1px solid #333;
+            padding-bottom: 2pt;
+            margin-bottom: 1cm;
+        }
+
+        .address-invoice-flex {
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
+            gap: 2cm;
+            margin-bottom: 2cm;
+        }
+
+        .address-section {
+            margin-bottom: 0.5cm;
+        }
+
+        .address-block {
+            width: 8.5cm;
+        }
+
+        .invoice-meta {
+            text-align: right;
+        }
+              
+        .main-content {
+            margin-bottom: 2cm;
+        }
+        .main-content h2 {
+            font-size: 11pt;
+            font-weight: bold;
+            margin-bottom: 0.8cm;
+        }
+        .main-content h3 {
+            font-size: 10pt;
+            font-weight: normal;
+            margin-bottom: 0.4cm;
+        }
+        .main-content p {
+            font-size: 10pt;
+            margin-bottom: 0.2cm;
+        }
+
+        .sessions-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 0.4cm;
+        }
+
+        .sessions-table th,
+        .sessions-table td {
+            border: 1px solid #ddd;
+            padding: 1pt;
+            text-align: left;
+        }
+
+        .sessions-table th {
+            background-color: #f8f9fa;
+            font-weight: bold;
+        }
+
+        .sessions-table .number-col {
+            text-align: right;
+            width: 80px;
+        }
+
+        .sessions-table .date-col {
+            width: 100px;
+        }
+
+        .total-section {
+            margin-top: 1cm;
+            text-align: right;
+        }
+
+        .total-table {
+            margin-left: auto;
+            border-collapse: collapse;
+            min-width: 250px;
+        }
+
+        .total-table td {
+            padding: 4pt 8pt;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .total-table .label {
+            font-weight: bold;
+        }
+
+        .total-table .final-total {
+            border-top: 2px solid #333;
+            font-weight: bold;
+            font-size: 12pt;
+        }
+
+        .footer {
+            position: fixed;
+            bottom: 1cm;
+            left: 2.5cm;
+            right: 2.5cm;
+            border-top: 1px solid #ccc;
+            padding-top: 8pt;
+            font-size: 9pt;
+            color: #666;
+        }
+
+        .footer-content {
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .footer-section {
+            flex: 1;
+            margin-right: 2cm;
+        }
+
+        .footer-section:last-child {
+            margin-right: 0;
+        }
+
+        .footer-section h4 {
+            margin: 0 0 4pt 0;
+            font-size: 9pt;
+            font-weight: bold;
+        }
+
+        .footer-section p {
+            margin: 2pt 0;
+            line-height: 1.2;
+        }
+
+
+        .invoice-details-table {
+            border-collapse: collapse;
+            margin-left: 1cm;
+             font-size: 10pt;
+        }
+
+        .invoice-details-table .label {
+            font-weight: bold;
+            color: #333;
+            padding-right: 2mm;
+        }
+        .invoice-details-table .info {
+            text-align: right;
+            white-space: nowrap;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="page-margin-area">
+        <div class="header">
+            <div class="logo-area">
+                [LOGO]
+            </div>
+            <div class="company-info">
+                <strong>{{.organization.name}}</strong><br>
+                {{.organization.street_address}}<br>
+                {{.organization.zip}} {{.organization.city}}<br>
+                <br>
+                Telefon: {{.organization.phone}}<br>
+                E-Mail: {{.organization.email}}
+            </div>
+        </div>
+
+        <div class="sender-line">
+            {{.organization.name}} · {{.organization.street_address}} · {{.organization.zip}} {{.organization.city}}
+        </div>
+
+        <div class="address-section\">\n            <div class=\"address-invoice-flex\">\n                <div class=\"address-block\">\n                    {{if .customer.name}}{{.customer.name}}{{else}}{{.cost_provider.organization}}{{end}}<br>\n                    {{if .customer.department}}{{.customer.department}}<br>{{else if .cost_provider.department}}{{.cost_provider.department}}<br>{{end}}\n                    {{if .customer.contact_person}}{{.customer.contact_person}}<br>{{end}}\n                    {{if .customer.address}}{{.customer.address}}{{else}}{{.cost_provider.street_address}}{{end}}<br>\n                    {{if .customer.address_ext}}{{.customer.address_ext}}<br>{{end}}\n                    {{if .customer.zip}}{{.customer.zip}} {{.customer.city}}{{else}}{{.cost_provider.zip}} {{.cost_provider.city}}{{end}}\n                    {{if .customer.country}}<br>{{.customer.country}}{{end}}\n                </div>
+                <div class="invoice-details.flex-row">
+                    <h1 style="text-align: right; font-size: 12pt; margin-top: 1cm;">RECHNUNG</h1>
+                    <table class="invoice-details-table">
+                        <tr>
+                            <td class="label">Rechnungsnr.:</td>
+                            <td class="info">{{.invoice_number}}</td>
+                        </tr>
+                        <tr>
+                            <td class="label">Rechnungsdatum:</td>
+                            <td class="info">{{.invoice_date}}</td>
+                        </tr>
+                        {{if .client.provider_approval_code}}
+                        <tr>
+                            <td class="label">Bewilligung:</td>
+                            <td class="info">{{.client.provider_approval_code}}</td>
+                        </tr>
+                        {{end}}
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="main-content">
+            {{if .client.first_name}}
+            <h2>Rechnung {{.client.therapy_title}} - {{.client.first_name}} {{.client.last_name}}{{if .client.date_of_birth}} geb. am {{.client.date_of_birth}}{{end}}</h2>
+            {{else}}
+            <h2>Rechnung {{.invoice_number}}</h2>
+            {{end}}
+            <h3>Sehr geehrte Damen und Herren,</h3>
+            <p>hiermit stelle ich folgende Leistungen{{if .client.provider_approval_code}} entsprechend der Bewilligung {{.client.provider_approval_code}}{{end}} in Rechnung:</p>
+            <table class="sessions-table">
+                <thead>
+                    <tr>
+                        <th>Leistung</th>
+                        <th class="number-col">Anzahl</th>
+                        <th class="number-col">Einzelpreis</th>
+                        <th class="number-col">Gesamtpreis</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {{range .invoice_items}}
+                    <tr>
+                        <td>{{.description}}</td>
+                        <td class="number-col">{{.number_units}}</td>
+                        <td class="number-col">{{.unit_price}} €</td>
+                        <td class="number-col">{{.total_amount}} €</td>
+                    </tr>
+                    {{end}}
+                </tbody>
+            </table>
+            
+            <div class="total-section">
+                <table class="total-table">
+                    <tr>
+                        <td class="label">Nettobetrag:</td>
+                        <td class="info">{{.totals.net_total}} €</td>
+                    </tr>
+                    <tr>
+                        <td class="label">MwSt. ({{.totals.tax_rate}}%):</td>
+                        <td class="info">{{.totals.tax_amount}} €</td>
+                    </tr>
+                    <tr class="final-total">
+                        <td class="label">Gesamtbetrag:</td>
+                        <td class="info">{{.totals.gross_total}} €</td>
+                    </tr>
+                </table>
+            </div>
+
+            <p>Bitte prüfen Sie die Rechnung und überweisen Sie den Gesamtbetrag innerhalb von 30 Tagen auf das unten 
+            angegebene Konto.</p>
+            <p>Mit freundlichen Grüßen</p>
+            <p>{{.organization.owner_name}}</p>
+        </div>
+    </div>
+
+    <div class="footer">
+        <div class="footer-content">
+            <div class="footer-section">
+                {{if .organization.bank_account}}
+                {{if .organization.bank_account.bank}}<p>{{.organization.bank_account.bank}}</p>{{end}}
+                {{if .organization.bank_account.iban}}<p>IBAN: {{.organization.bank_account.iban}}</p>{{end}}
+                {{if .organization.bank_account.bic}}<p>BIC: {{.organization.bank_account.bic}}</p>{{end}}
+                {{end}}
+            </div>
+            <div class="footer-section">
+                {{if .organization.tax_id}}<p>Steuernummer: {{.organization.tax_id}}</p>{{end}}
+                <p>{{.organization.phone}}</p>
+                <p>{{.organization.email}}</p>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

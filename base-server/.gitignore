@@ -48,5 +48,6 @@ debug*
 bin
 tmp
 main
+logs
 
 test_results

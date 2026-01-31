@@ -25,6 +25,22 @@ func setupTestDBForInvalidation() (*gorm.DB, error) {
 		return nil, err
 	}
 
+	// Create token_blacklist table
+	err = db.Exec(`
+		CREATE TABLE token_blacklist (
+			id INTEGER PRIMARY KEY AUTOINCREMENT,
+			token_id VARCHAR(255) NOT NULL,
+			user_id INTEGER,
+			reason TEXT,
+			expires_at DATETIME NOT NULL,
+			created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+			deleted_at DATETIME
+		)
+	`).Error
+	if err != nil {
+		return nil, err
+	}
+
 	// Create token_usage table manually for testing
 	db.Exec(`CREATE TABLE IF NOT EXISTS booking_token_usage (
 		id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -50,12 +66,12 @@ func TestInvalidateOneTimeToken(t *testing.T) {
 
 	// Create a test template
 	template := &entities.BookingTemplate{
-		UserID:     1,
-		TenantID:   1,
-		CalendarID: 1,
-		Name:       "Test Template",
-		Duration:   30,
-		Timezone:   "UTC",
+		UserID:       1,
+		TenantID:     1,
+		CalendarID:   1,
+		Name:         "Test Template",
+		SlotDuration: 30,
+		Timezone:     "UTC",
 	}
 	err = db.Create(template).Error
 	require.NoError(t, err)
@@ -96,6 +112,9 @@ func TestInvalidateOneTimeToken(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			// Clear blacklist before each subtest
+			db.Exec("DELETE FROM token_blacklist")
+
 			// Generate a token
 			token, err := service.GenerateBookingLinkWithOptions(
 				template.ID,
@@ -117,26 +136,24 @@ func TestInvalidateOneTimeToken(t *testing.T) {
 			err = service.InvalidateOneTimeToken(token, claims)
 			require.NoError(t, err)
 
-			// Check if the token usage record was created/updated
+			// Check if the token was added to blacklist
 			var count int64
-			db.Table("booking_token_usage").Count(&count)
+			db.Table("token_blacklist").Count(&count)
 
 			if tt.expectInvalidated {
-				// Should have created a usage record
-				assert.Greater(t, count, int64(0), "Expected usage record to be created")
+				// Should have added to blacklist
+				assert.Greater(t, count, int64(0), "Expected token to be blacklisted")
 
-				// Verify the usage count equals max
-				var usage entities.TokenUsage
-				err = db.Table("booking_token_usage").Where("client_id = ?", 123).Last(&usage).Error
+				// Verify the blacklist entry exists
+				var blacklistCount int64
+				hash := sha256.Sum256([]byte(token))
+				tokenID := fmt.Sprintf("%x", hash[:])
+				err = db.Table("token_blacklist").Where("token_id = ?", tokenID).Count(&blacklistCount).Error
 				require.NoError(t, err)
-
-				// For one-time links, max should be 1
-				expectedMax := tt.maxUseCount
-				if expectedMax == 0 {
-					expectedMax = 1
-				}
-				assert.Equal(t, expectedMax, usage.UseCount, "Use count should equal max use count")
-				assert.Equal(t, expectedMax, usage.MaxUseCount)
+				assert.Equal(t, int64(1), blacklistCount, "Token should be in blacklist")
+			} else {
+				// Should NOT have been blacklisted
+				assert.Equal(t, int64(0), count, "Token should not be blacklisted")
 			}
 		})
 	}
@@ -148,12 +165,12 @@ func TestInvalidateOneTimeTokenPreventsReuse(t *testing.T) {
 
 	// Create a test template
 	template := &entities.BookingTemplate{
-		UserID:     1,
-		TenantID:   1,
-		CalendarID: 1,
-		Name:       "Test Template",
-		Duration:   30,
-		Timezone:   "UTC",
+		UserID:       1,
+		TenantID:     1,
+		CalendarID:   1,
+		Name:         "Test Template",
+		SlotDuration: 30,
+		Timezone:     "UTC",
 	}
 	err = db.Create(template).Error
 	require.NoError(t, err)

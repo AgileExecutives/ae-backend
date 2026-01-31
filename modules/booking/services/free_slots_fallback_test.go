@@ -10,7 +10,7 @@ import (
 )
 
 func TestGetWeeklyAvailabilityWithFallback_TemplateHasAvailability(t *testing.T) {
-	db := setupTestDB(t)
+	db := setupFreeSlotsTestDB(t)
 	service := NewFreeSlotsService(db)
 
 	// Create template availability
@@ -29,7 +29,7 @@ func TestGetWeeklyAvailabilityWithFallback_TemplateHasAvailability(t *testing.T)
 }
 
 func TestGetWeeklyAvailabilityWithFallback_EmptyTemplateUsesCalendar(t *testing.T) {
-	db := setupTestDB(t)
+	db := setupFreeSlotsTestDB(t)
 	service := NewFreeSlotsService(db)
 
 	// Create a calendar with availability
@@ -69,7 +69,7 @@ func TestGetWeeklyAvailabilityWithFallback_EmptyTemplateUsesCalendar(t *testing.
 }
 
 func TestGetWeeklyAvailabilityWithFallback_NoDataUsesDefault(t *testing.T) {
-	db := setupTestDB(t)
+	db := setupFreeSlotsTestDB(t)
 	service := NewFreeSlotsService(db)
 
 	// Create calendars table but no data
@@ -102,7 +102,7 @@ func TestGetWeeklyAvailabilityWithFallback_NoDataUsesDefault(t *testing.T) {
 }
 
 func TestHasAvailability(t *testing.T) {
-	db := setupTestDB(t)
+	db := setupFreeSlotsTestDB(t)
 	service := NewFreeSlotsService(db)
 
 	// Empty availability
@@ -123,7 +123,7 @@ func TestHasAvailability(t *testing.T) {
 }
 
 func TestGetDefaultAllDayAvailability(t *testing.T) {
-	db := setupTestDB(t)
+	db := setupFreeSlotsTestDB(t)
 	service := NewFreeSlotsService(db)
 
 	result := service.getDefaultAllDayAvailability()
@@ -142,7 +142,7 @@ func TestGetDefaultAllDayAvailability(t *testing.T) {
 }
 
 func TestCalculateFreeSlots_UsesCalendarFallback(t *testing.T) {
-	db := setupTestDB(t)
+	db := setupFreeSlotsTestDB(t)
 	service := NewFreeSlotsService(db)
 
 	// Setup calendars table
@@ -178,8 +178,8 @@ func TestCalculateFreeSlots_UsesCalendarFallback(t *testing.T) {
 		MaxSeriesBookings:   0,
 	}
 
-	startDate := time.Date(2025, 11, 17, 0, 0, 0, 0, time.UTC) // Monday
-	endDate := time.Date(2025, 11, 17, 23, 59, 59, 0, time.UTC)
+	startDate := time.Date(2026, 2, 2, 0, 0, 0, 0, time.UTC) // Monday
+	endDate := time.Date(2026, 2, 2, 23, 59, 59, 0, time.UTC)
 
 	req := FreeSlotsRequest{
 		TemplateID: 1,

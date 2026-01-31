@@ -4,6 +4,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/golang-jwt/jwt/v5"
 	"github.com/stretchr/testify/assert"
 	"github.com/unburdy/booking-module/entities"
 )
@@ -13,6 +14,8 @@ func TestGenerateToken(t *testing.T) {
 	secret := "test-secret-key"
 	service := NewBookingLinkService(nil, secret)
 
+	now := time.Now()
+	expiresAt := now.Add(24 * time.Hour)
 	claims := entities.BookingLinkClaims{
 		TenantID:   1,
 		UserID:     5,
@@ -20,8 +23,10 @@ func TestGenerateToken(t *testing.T) {
 		TemplateID: 1,
 		ClientID:   123,
 		Purpose:    entities.OneTimeBookingLink,
-		IssuedAt:   time.Now().Unix(),
-		ExpiresAt:  time.Now().Add(24 * time.Hour).Unix(),
+		RegisteredClaims: jwt.RegisteredClaims{
+			IssuedAt:  jwt.NewNumericDate(now),
+			ExpiresAt: jwt.NewNumericDate(expiresAt),
+		},
 	}
 
 	token, err := service.generateToken(claims)
@@ -39,6 +44,8 @@ func TestValidateToken(t *testing.T) {
 	service := NewBookingLinkService(nil, secret)
 
 	// Generate a token
+	now := time.Now()
+	expiresAt := now.Add(24 * time.Hour)
 	originalClaims := entities.BookingLinkClaims{
 		TenantID:   1,
 		UserID:     5,
@@ -46,8 +53,10 @@ func TestValidateToken(t *testing.T) {
 		TemplateID: 1,
 		ClientID:   123,
 		Purpose:    entities.OneTimeBookingLink,
-		IssuedAt:   time.Now().Unix(),
-		ExpiresAt:  time.Now().Add(24 * time.Hour).Unix(),
+		RegisteredClaims: jwt.RegisteredClaims{
+			IssuedAt:  jwt.NewNumericDate(now),
+			ExpiresAt: jwt.NewNumericDate(expiresAt),
+		},
 	}
 
 	token, err := service.generateToken(originalClaims)
@@ -73,6 +82,8 @@ func TestValidateTokenWithInvalidSignature(t *testing.T) {
 	service := NewBookingLinkService(nil, secret)
 
 	// Generate a token
+	now := time.Now()
+	expiresAt := now.Add(24 * time.Hour)
 	claims := entities.BookingLinkClaims{
 		TenantID:   1,
 		UserID:     5,
@@ -80,8 +91,10 @@ func TestValidateTokenWithInvalidSignature(t *testing.T) {
 		TemplateID: 1,
 		ClientID:   123,
 		Purpose:    entities.OneTimeBookingLink,
-		IssuedAt:   time.Now().Unix(),
-		ExpiresAt:  time.Now().Add(24 * time.Hour).Unix(),
+		RegisteredClaims: jwt.RegisteredClaims{
+			IssuedAt:  jwt.NewNumericDate(now),
+			ExpiresAt: jwt.NewNumericDate(expiresAt),
+		},
 	}
 
 	token, err := service.generateToken(claims)
@@ -102,6 +115,8 @@ func TestValidateExpiredToken(t *testing.T) {
 	service := NewBookingLinkService(nil, secret)
 
 	// Generate a token that's already expired
+	issuedAt := time.Now().Add(-48 * time.Hour)
+	expiresAt := time.Now().Add(-24 * time.Hour)
 	claims := entities.BookingLinkClaims{
 		TenantID:   1,
 		UserID:     5,
@@ -109,8 +124,10 @@ func TestValidateExpiredToken(t *testing.T) {
 		TemplateID: 1,
 		ClientID:   123,
 		Purpose:    entities.OneTimeBookingLink,
-		IssuedAt:   time.Now().Add(-48 * time.Hour).Unix(), // 2 days ago
-		ExpiresAt:  time.Now().Add(-24 * time.Hour).Unix(), // Expired 1 day ago
+		RegisteredClaims: jwt.RegisteredClaims{
+			IssuedAt:  jwt.NewNumericDate(issuedAt),
+			ExpiresAt: jwt.NewNumericDate(expiresAt),
+		},
 	}
 
 	token, err := service.generateToken(claims)
@@ -128,6 +145,7 @@ func TestPermanentTokenNoExpiration(t *testing.T) {
 	service := NewBookingLinkService(nil, secret)
 
 	// Generate a permanent token (no expiration)
+	issuedAt := time.Now().Add(-48 * time.Hour)
 	claims := entities.BookingLinkClaims{
 		TenantID:   1,
 		UserID:     5,
@@ -135,8 +153,10 @@ func TestPermanentTokenNoExpiration(t *testing.T) {
 		TemplateID: 1,
 		ClientID:   123,
 		Purpose:    entities.TimedBookingLink,
-		IssuedAt:   time.Now().Add(-48 * time.Hour).Unix(), // 2 days ago
-		// No ExpiresAt for permanent tokens
+		RegisteredClaims: jwt.RegisteredClaims{
+			IssuedAt: jwt.NewNumericDate(issuedAt),
+			// No ExpiresAt for permanent tokens
+		},
 	}
 
 	token, err := service.generateToken(claims)

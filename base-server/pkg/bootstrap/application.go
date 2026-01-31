@@ -22,7 +22,7 @@ import (
 	"github.com/ae-base-server/pkg/database"
 	pkgServices "github.com/ae-base-server/pkg/services"
 	"github.com/ae-base-server/pkg/startup"
-	pdfServices "github.com/ae-base-server/services"
+	pdfServices "github.com/ae-base-server/modules/pdf/services"
 	"github.com/gin-gonic/gin"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"

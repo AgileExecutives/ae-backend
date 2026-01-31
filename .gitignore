@@ -12,3 +12,5 @@ startup.log
 **/docs/swagger.yaml
 **/docs/swagger.json
 **/docs/docs.go
+
+test_results
