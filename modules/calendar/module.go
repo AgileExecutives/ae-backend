@@ -2,6 +2,7 @@ package calendar
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/ae-base-server/pkg/core"
 	"github.com/gin-gonic/gin"
@@ -129,7 +130,16 @@ func (m *Module) Routes() []core.RouteProvider {
 
 // EventHandlers returns event handlers
 func (m *Module) EventHandlers() []core.EventHandler {
-	return []core.EventHandler{}
+	if m.calendarService == nil {
+		fmt.Println("⚠️  Calendar module: calendarService is nil, not registering event handlers")
+		return []core.EventHandler{}
+	}
+
+	// Return the calendar event handler that creates default calendars
+	fmt.Println("📢 Calendar module: Registering calendar event handler for UserCreated events")
+	return []core.EventHandler{
+		handlers.NewCalendarEventHandler(m.calendarService),
+	}
 }
 
 // Middleware returns middleware providers

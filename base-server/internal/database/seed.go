@@ -14,12 +14,15 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"strconv"
 	"time"
 
 	"github.com/ae-base-server/internal/models"
 	"github.com/ae-base-server/internal/services"
 	"github.com/ae-base-server/modules/templates/entities"
 	"github.com/ae-base-server/modules/templates/services/storage"
+	"github.com/ae-base-server/pkg/core"
+	"github.com/ae-base-server/pkg/eventbus"
 	pkgServices "github.com/ae-base-server/pkg/services"
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/datatypes"
@@ -151,7 +154,13 @@ func loadSeedData() (*SeedData, error) {
 }
 
 // Seed adds initial data to the database
+// Seed is the legacy function that uses the global event bus
 func Seed(db *gorm.DB, tenantService *services.TenantService) error {
+	return SeedWithEventBus(db, tenantService, nil)
+}
+
+// SeedWithEventBus seeds the database with initial data and publishes events to the provided event bus
+func SeedWithEventBus(db *gorm.DB, tenantService *services.TenantService, eventBusInstance core.EventBus) error {
 	log.Println("Seeding database with initial data...")
 
 	// Load seed data from JSON file
@@ -306,6 +315,30 @@ func Seed(db *gorm.DB, tenantService *services.TenantService) error {
 				return fmt.Errorf("failed to create user %s: %w", userData.Username, err)
 			}
 			log.Printf("Created user: %s (email_verified: %v)", userData.Username, userData.EmailVerified)
+
+			// Publish UserCreated event so modules can react (e.g., calendar module creates default calendar)
+			if eventBusInstance != nil {
+				userIDStr := strconv.FormatUint(uint64(user.ID), 10)
+				tenantIDStr := strconv.FormatUint(uint64(user.TenantID), 10)
+				log.Printf("📢 Publishing UserCreated event for user %s (ID: %s, Tenant: %s, Email: %s)",
+					userData.Username, userIDStr, tenantIDStr, user.Email)
+
+				// Create event payload
+				payload := eventbus.UserCreatedPayload{
+					UserID:   userIDStr,
+					Email:    user.Email,
+					TenantID: tenantIDStr,
+				}
+
+				if err := eventBusInstance.Publish(eventbus.EventUserCreated, payload); err != nil {
+					log.Printf("⚠️ Warning: Failed to publish UserCreated event for user %s: %v", userData.Username, err)
+					// Don't fail seeding if event publishing fails
+				} else {
+					log.Printf("✅ Successfully published UserCreated event for user %s", userData.Username)
+				}
+			}
+			// Note: Default calendars will be created by the calendar seeding process
+			// which runs after base data seeding
 		}
 	}
 

@@ -749,7 +749,7 @@ func seedInvoiceNumbersOnly(db *gorm.DB) error {
 	}
 
 	// Initialize invoice number service
-	invoiceNumberService := baseAPI.NewInvoiceNumberService(db)
+	invoiceNumberService := invoiceNumberServices.NewInvoiceNumberService(db)
 
 	// Create context for operations
 	ctx := context.Background()
@@ -1090,7 +1090,7 @@ func seedEmailTemplate(ctx context.Context, service *templateServices.TemplateSe
 */
 
 // seedInvoiceNumbers generates sample invoice numbers
-func seedInvoiceNumbers(ctx context.Context, service *baseAPI.InvoiceNumberService, tenantID uint) ([]string, error) {
+func seedInvoiceNumbers(ctx context.Context, service *invoiceNumberServices.InvoiceNumberService, tenantID uint) ([]string, error) {
 	var invoiceNumbers []string
 
 	// Use default invoice config

@@ -414,7 +414,8 @@ func (app *Application) seedDatabase() error {
 	tenantService := internalServices.NewTenantService(app.context.DB, tenantBucketService)
 
 	// Use the enhanced seed function that creates MinIO buckets
-	return internalDB.Seed(app.context.DB, tenantService)
+	// Pass the event bus so UserCreated events trigger module event handlers
+	return internalDB.SeedWithEventBus(app.context.DB, tenantService, app.context.EventBus)
 }
 
 // corsMiddleware adds CORS headers

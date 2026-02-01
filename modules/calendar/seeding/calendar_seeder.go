@@ -325,32 +325,59 @@ func (cs *CalendarSeeder) SeedCalendarData(tenantID, userID uint) error {
 	return nil
 }
 
-// createCalendars creates the base calendars from templates
+// createCalendars retrieves the user's default calendar (only one calendar per user)
 func (cs *CalendarSeeder) createCalendars(tenantID, userID uint) ([]*entities.Calendar, error) {
 	var calendars []*entities.Calendar
 
-	for _, template := range cs.config.CalendarTemplates {
-		availabilityJSON, err := json.Marshal(template.WeeklyAvailability)
+	// First, try to find the default calendar (created by event handler on user creation)
+	var defaultCalendar entities.Calendar
+	err := cs.db.Where("tenant_id = ? AND user_id = ? AND title = ?", tenantID, userID, "My Calendar").
+		First(&defaultCalendar).Error
+
+	if err == nil {
+		// Default calendar exists, use it as the base
+		fmt.Printf("Found default calendar (ID: %d) for user %d\n", defaultCalendar.ID, userID)
+		calendars = append(calendars, &defaultCalendar)
+	} else {
+		// Default calendar doesn't exist (e.g., old user or event handler wasn't active)
+		// Create it manually as fallback
+		fmt.Printf("Default calendar not found for user %d, creating one...\n", userID)
+
+		defaultAvailability := map[string]interface{}{
+			"monday":    map[string]interface{}{"enabled": true, "slots": []map[string]string{{"start": "09:00", "end": "17:00"}}},
+			"tuesday":   map[string]interface{}{"enabled": true, "slots": []map[string]string{{"start": "09:00", "end": "17:00"}}},
+			"wednesday": map[string]interface{}{"enabled": true, "slots": []map[string]string{{"start": "09:00", "end": "17:00"}}},
+			"thursday":  map[string]interface{}{"enabled": true, "slots": []map[string]string{{"start": "09:00", "end": "17:00"}}},
+			"friday":    map[string]interface{}{"enabled": true, "slots": []map[string]string{{"start": "09:00", "end": "17:00"}}},
+			"saturday":  map[string]interface{}{"enabled": false, "slots": []map[string]string{}},
+			"sunday":    map[string]interface{}{"enabled": false, "slots": []map[string]string{}},
+		}
+
+		availabilityJSON, err := json.Marshal(defaultAvailability)
 		if err != nil {
-			return nil, fmt.Errorf("failed to marshal availability: %w", err)
+			return nil, fmt.Errorf("failed to marshal default availability: %w", err)
 		}
 
 		calendar := &entities.Calendar{
 			TenantID:           tenantID,
 			UserID:             userID,
-			Title:              template.Title,
-			Color:              template.Color,
+			Title:              "My Calendar",
+			Color:              "#4285F4", // Google Calendar blue
 			WeeklyAvailability: availabilityJSON,
 			CalendarUUID:       uuid.New().String(),
-			Timezone:           template.Timezone,
+			Timezone:           "Europe/Berlin",
 		}
 
 		if err := cs.db.Create(calendar).Error; err != nil {
-			return nil, fmt.Errorf("failed to create calendar: %w", err)
+			return nil, fmt.Errorf("failed to create default calendar: %w", err)
 		}
 
 		calendars = append(calendars, calendar)
+		fmt.Printf("Created default calendar (ID: %d) for user %d\n", calendar.ID, userID)
 	}
+
+	// Only use the one default calendar - all events will be seeded into it
+	// (No additional calendars from templates)
 
 	return calendars, nil
 }
