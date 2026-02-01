@@ -14,6 +14,7 @@ import (
 type EmailModule struct {
 	emailEntity   *entities.EmailEntity
 	emailHandler  *handlers.EmailHandler
+	publicHandler *handlers.PublicEmailRoutes
 	emailService  *services.EmailService
 	eventHandlers []core.EventHandler
 }
@@ -55,6 +56,7 @@ func (m *EmailModule) Initialize(ctx core.ModuleContext) error {
 
 	// Initialize handlers
 	m.emailHandler = handlers.NewEmailHandler(ctx.DB, m.emailService)
+	m.publicHandler = handlers.NewPublicEmailRoutes(m.emailHandler)
 
 	// Initialize event handlers
 	m.eventHandlers = []core.EventHandler{
@@ -87,6 +89,7 @@ func (m *EmailModule) Entities() []core.Entity {
 func (m *EmailModule) Routes() []core.RouteProvider {
 	return []core.RouteProvider{
 		m.emailHandler,
+		m.publicHandler,
 	}
 }
 

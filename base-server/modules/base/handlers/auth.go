@@ -555,6 +555,33 @@ func (h *AuthHandlers) VerifyEmail(c *gin.Context) {
 	c.JSON(http.StatusOK, models.SuccessResponse("Email verified successfully. You can now log in.", nil))
 }
 
+// CheckVerificationToken validates an email verification token without using it
+// @Summary Check email verification token
+// @ID checkVerificationToken
+// @Description Validate an email verification token to check if it's valid and not expired
+// @Tags authentication
+// @Produce json
+// @Param token path string true "Verification token"
+// @Success 200 {object} models.APIResponse{data=object{email=string,user_id=uint,valid=bool}}
+// @Failure 400 {object} models.ErrorResponse
+// @Router /auth/check-verification-token/{token} [get]
+func (h *AuthHandlers) CheckVerificationToken(c *gin.Context) {
+	token := c.Param("token")
+
+	// Validate verification token
+	userID, email, err := auth.ValidateVerificationToken(token)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, models.ErrorResponseFunc("Invalid or expired verification token", err.Error()))
+		return
+	}
+
+	c.JSON(http.StatusOK, models.SuccessResponse("Token is valid", gin.H{
+		"valid":   true,
+		"email":   email,
+		"user_id": userID,
+	}))
+}
+
 // ForgotPassword handles password reset request
 // @Summary Request password reset
 // @ID forgotPassword

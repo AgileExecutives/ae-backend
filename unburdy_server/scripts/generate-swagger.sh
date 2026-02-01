@@ -10,8 +10,8 @@ echo "🔄 Regenerating Swagger documentation..."
 # Ensure we're in the project root
 cd "$(dirname "$0")/.."
 
-# Generate swagger docs, including all module directories
-swag init -g main.go --parseDependency --parseInternal --dir ./,../modules/booking,../modules/calendar,../modules/documents,../modules/invoice,../modules/templates,./modules/audit,./modules/client_management,../base-server/modules/base,../base-server/modules/customer,../base-server/modules/email,../base-server/modules/pdf,../base-server/modules/static
+# Generate swagger docs, including all module directories (excluding test directories)
+swag init -g main.go --parseDependency --parseInternal --exclude ../modules/invoice/tests,../modules/booking/tests,../modules/calendar/tests --dir ./,../modules/booking,../modules/calendar,../modules/documents,../modules/invoice,./modules/client_management,../base-server/modules/base,../base-server/modules/customer,../base-server/modules/email,../base-server/modules/pdf,../base-server/modules/static,../base-server/modules/templates
 
 echo "✅ Swagger documentation updated!"
 echo "📋 View at: http://localhost:8080/swagger/index.html"

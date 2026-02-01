@@ -3,6 +3,7 @@ package services
 import (
 	"bytes"
 	"crypto/tls"
+	"encoding/json"
 	"fmt"
 	"html/template"
 	"log"
@@ -12,9 +13,22 @@ import (
 	"path/filepath"
 	"regexp"
 	"strings"
+	"sync"
+	"time"
 
 	"github.com/ae-base-server/pkg/utils"
 )
+
+const mockEmailsFilePath = "tmp/mock_emails.json"
+
+// MockEmailRecord represents a single email stored in mock mode
+type MockEmailRecord struct {
+	To      string    `json:"to"`
+	Time    time.Time `json:"time"`
+	Subject string    `json:"subject"`
+	Text    string    `json:"text"`
+	HTML    string    `json:"html"`
+}
 
 // EmailProvider represents different email service providers
 type EmailProvider string
@@ -55,8 +69,9 @@ type EmailData struct {
 
 // EmailService handles email operations
 type EmailService struct {
-	provider  EmailProvider
-	templates map[EmailTemplate]*template.Template
+	provider       EmailProvider
+	templates      map[EmailTemplate]*template.Template
+	mockEmailMutex sync.Mutex
 }
 
 // NewEmailService creates a new email service
@@ -69,6 +84,8 @@ func NewEmailService() *EmailService {
 	mockEmail := utils.GetEnv("MOCK_EMAIL", "false")
 	if strings.ToLower(mockEmail) == "true" {
 		service.provider = ProviderMock
+		// Initialize empty mock emails file
+		service.initMockEmailsFile()
 	} else {
 		service.provider = ProviderSMTP
 	}
@@ -488,6 +505,9 @@ func (e *EmailService) sendMock(to, subject, htmlBody, textBody string) error {
 	fmt.Println("✅ Email processing completed successfully (Mock Mode)")
 	fmt.Println("================================================================================")
 
+	// Save email to JSON file
+	e.saveMockEmail(to, subject, htmlBody, textBody)
+
 	return nil
 }
 
@@ -709,6 +729,97 @@ func (e *EmailService) getDefaultPasswordResetTemplate(data EmailData) string {
     </div>
 </body>
 </html>`, data.RecipientName, data.ResetURL, data.ResetURL, data.ResetURL, data.CompanyName)
+}
+
+// initMockEmailsFile creates an empty mock emails JSON file
+func (e *EmailService) initMockEmailsFile() {
+	// Ensure tmp directory exists
+	dir := filepath.Dir(mockEmailsFilePath)
+	if err := os.MkdirAll(dir, 0755); err != nil {
+		log.Printf("Failed to create tmp directory: %v", err)
+		return
+	}
+
+	// Write empty array to file (clears any existing emails on server start)
+	emptyArray := []MockEmailRecord{}
+	data, err := json.MarshalIndent(emptyArray, "", "  ")
+	if err != nil {
+		log.Printf("Failed to marshal empty email array: %v", err)
+		return
+	}
+
+	if err := os.WriteFile(mockEmailsFilePath, data, 0644); err != nil {
+		log.Printf("Failed to initialize mock emails file: %v", err)
+		return
+	}
+
+	log.Printf("✅ Initialized mock emails file at %s (cleared on server start)", mockEmailsFilePath)
+}
+
+// saveMockEmail appends an email to the mock emails JSON file
+func (e *EmailService) saveMockEmail(to, subject, htmlBody, textBody string) {
+	// Lock to prevent concurrent write race conditions
+	e.mockEmailMutex.Lock()
+	defer e.mockEmailMutex.Unlock()
+
+	fmt.Printf("\n🔵 Saving mock email to file: %s\n", mockEmailsFilePath)
+
+	// Read existing emails
+	var emails []MockEmailRecord
+	data, err := os.ReadFile(mockEmailsFilePath)
+	if err != nil {
+		log.Printf("⚠️ Failed to read mock emails file: %v", err)
+		emails = []MockEmailRecord{}
+	} else {
+		if err := json.Unmarshal(data, &emails); err != nil {
+			log.Printf("⚠️ Failed to unmarshal mock emails: %v", err)
+			emails = []MockEmailRecord{}
+		}
+	}
+
+	// Append new email
+	newEmail := MockEmailRecord{
+		To:      to,
+		Time:    time.Now(),
+		Subject: subject,
+		Text:    textBody,
+		HTML:    htmlBody,
+	}
+	emails = append(emails, newEmail)
+
+	fmt.Printf("📝 Total emails in memory: %d\n", len(emails))
+
+	// Write back to file
+	data, err = json.MarshalIndent(emails, "", "  ")
+	if err != nil {
+		log.Printf("❌ Failed to marshal emails: %v", err)
+		return
+	}
+
+	if err := os.WriteFile(mockEmailsFilePath, data, 0644); err != nil {
+		log.Printf("❌ Failed to write mock emails file: %v", err)
+		return
+	}
+
+	fmt.Printf("✅ Successfully saved email to %s\n", mockEmailsFilePath)
+}
+
+// GetLatestEmails returns all emails from the mock emails file
+func (e *EmailService) GetLatestEmails() ([]MockEmailRecord, error) {
+	var emails []MockEmailRecord
+	data, err := os.ReadFile(mockEmailsFilePath)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return []MockEmailRecord{}, nil
+		}
+		return nil, fmt.Errorf("failed to read mock emails file: %w", err)
+	}
+
+	if err := json.Unmarshal(data, &emails); err != nil {
+		return nil, fmt.Errorf("failed to unmarshal mock emails: %w", err)
+	}
+
+	return emails, nil
 }
 
 // getDefaultWelcomeTemplate returns a default welcome email template

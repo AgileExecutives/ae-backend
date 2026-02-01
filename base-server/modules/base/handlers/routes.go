@@ -37,7 +37,9 @@ func (r *AuthRoutes) RegisterRoutes(router *gin.RouterGroup, ctx core.ModuleCont
 	router.GET("/me", ctx.Auth.RequireAuth(), r.handlers.Me)
 	router.POST("/change-password", ctx.Auth.RequireAuth(), r.handlers.ChangePassword)
 	router.GET("/verify-email/:token", r.handlers.VerifyEmail)
+	router.GET("/check-verification-token/:token", r.handlers.CheckVerificationToken)
 	router.POST("/forgot-password", r.handlers.ForgotPassword)
+	router.GET("/check-reset-token/:token", r.handlers.CheckResetToken)
 	router.POST("/new-password/:token", r.handlers.ResetPassword)
 	router.GET("/password-security", r.handlers.GetPasswordSecurity)
 }
