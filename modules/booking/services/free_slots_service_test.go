@@ -37,12 +37,12 @@ func setupFreeSlotsTestDB(t *testing.T) *gorm.DB {
 func getNextWeekday(weekday time.Weekday, minDaysFromNow int) time.Time {
 	now := time.Now().UTC()
 	future := now.AddDate(0, 0, minDaysFromNow)
-	
+
 	// Find the next occurrence of the specified weekday
 	for future.Weekday() != weekday {
 		future = future.AddDate(0, 0, 1)
 	}
-	
+
 	return time.Date(future.Year(), future.Month(), future.Day(), 0, 0, 0, 0, time.UTC)
 }
 
@@ -333,7 +333,7 @@ func TestIsDateBlocked(t *testing.T) {
 	// Use dynamic dates for blocked ranges (10 months from next Monday)
 	futureDate := getNextWeekday(time.Monday, 7).AddDate(0, 10, 0)
 	year, month, day := futureDate.Date()
-	
+
 	blockedDates := []entities.DateRange{
 		{Start: fmt.Sprintf("%d-%02d-%02d", year, month, day-1), End: fmt.Sprintf("%d-%02d-%02d", year, month, day+1)}, // 3-day range
 	}
