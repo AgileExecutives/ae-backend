@@ -1,6 +1,7 @@
 package services
 
 import (
+	"fmt"
 	"testing"
 	"time"
 
@@ -30,6 +31,19 @@ func setupFreeSlotsTestDB(t *testing.T) *gorm.DB {
 	require.NoError(t, err)
 
 	return db
+}
+
+// getNextWeekday returns the next occurrence of the specified weekday, at least minDaysFromNow days in the future
+func getNextWeekday(weekday time.Weekday, minDaysFromNow int) time.Time {
+	now := time.Now().UTC()
+	future := now.AddDate(0, 0, minDaysFromNow)
+	
+	// Find the next occurrence of the specified weekday
+	for future.Weekday() != weekday {
+		future = future.AddDate(0, 0, 1)
+	}
+	
+	return time.Date(future.Year(), future.Month(), future.Day(), 0, 0, 0, 0, time.UTC)
 }
 
 // createTestTemplate creates a basic booking template for testing
@@ -73,9 +87,9 @@ func TestCalculateFreeSlots_BasicSlotGeneration(t *testing.T) {
 	service := NewFreeSlotsService(db)
 	template := createTestTemplate()
 
-	// Set a specific date range for testing (Monday to Wednesday)
-	startDate := time.Date(2026, 2, 2, 0, 0, 0, 0, time.UTC)  // Monday
-	endDate := time.Date(2026, 2, 4, 23, 59, 59, 0, time.UTC) // Wednesday
+	// Use next Monday at least 7 days in the future
+	startDate := getNextWeekday(time.Monday, 7)
+	endDate := startDate.AddDate(0, 0, 2).Add(23*time.Hour + 59*time.Minute + 59*time.Second) // Wednesday
 
 	req := FreeSlotsRequest{
 		TemplateID: 1,
@@ -86,7 +100,7 @@ func TestCalculateFreeSlots_BasicSlotGeneration(t *testing.T) {
 		Timezone:   "UTC",
 	}
 
-	// Override min notice to allow testing past dates
+	// Override min notice to allow testing
 	template.MinNoticeHours = 0
 	template.AdvanceBookingDays = 365
 
@@ -102,9 +116,9 @@ func TestCalculateFreeSlots_BasicSlotGeneration(t *testing.T) {
 	assert.Equal(t, 10, result.Config.BufferTime)
 	assert.Equal(t, "weekly", result.Config.Interval)
 
-	// Verify month data
-	assert.Equal(t, 2026, result.MonthData.Year)
-	assert.Equal(t, 2, result.MonthData.Month)
+	// Verify month data (use dynamic dates)
+	assert.Equal(t, startDate.Year(), result.MonthData.Year)
+	assert.Equal(t, int(startDate.Month()), result.MonthData.Month)
 	assert.NotEmpty(t, result.MonthData.Days)
 }
 
@@ -114,8 +128,8 @@ func TestGenerateAllSlots_RespectWeeklyAvailability(t *testing.T) {
 	template := createTestTemplate()
 
 	// Test for a full week
-	startDate := time.Date(2026, 2, 2, 0, 0, 0, 0, time.UTC)  // Monday
-	endDate := time.Date(2026, 2, 8, 23, 59, 59, 0, time.UTC) // Sunday
+	startDate := getNextWeekday(time.Monday, 7)
+	endDate := startDate.AddDate(0, 0, 6).Add(23*time.Hour + 59*time.Minute + 59*time.Second) // Sunday
 
 	req := FreeSlotsRequest{
 		StartDate: startDate,
@@ -163,8 +177,8 @@ func TestGenerateAllSlots_SlotDurationAndBuffer(t *testing.T) {
 	template.SlotDuration = 60 // 1 hour
 	template.BufferTime = 15   // 15 minutes
 
-	startDate := time.Date(2026, 2, 2, 0, 0, 0, 0, time.UTC) // Monday
-	endDate := time.Date(2026, 2, 2, 23, 59, 59, 0, time.UTC)
+	startDate := getNextWeekday(time.Monday, 7) // Monday
+	endDate := startDate.Add(23*time.Hour + 59*time.Minute + 59*time.Second)
 
 	req := FreeSlotsRequest{
 		StartDate: startDate,
@@ -200,7 +214,7 @@ func TestFilterConflictingSlots_RemovesConflicts(t *testing.T) {
 	service := NewFreeSlotsService(db)
 
 	// Create test slots
-	baseTime := time.Date(2026, 2, 2, 9, 0, 0, 0, time.UTC)
+	baseTime := getNextWeekday(time.Monday, 7).Add(9 * time.Hour)
 	slots := []entities.TimeSlot{
 		{
 			ID:        "slot-1",
@@ -248,7 +262,7 @@ func TestFilterConflictingSlots_BufferTime(t *testing.T) {
 	db := setupFreeSlotsTestDB(t)
 	service := NewFreeSlotsService(db)
 
-	baseTime := time.Date(2026, 2, 2, 9, 0, 0, 0, time.UTC)
+	baseTime := getNextWeekday(time.Monday, 7).Add(9 * time.Hour)
 
 	// Slot from 09:00 to 09:30
 	slots := []entities.TimeSlot{
@@ -316,25 +330,28 @@ func TestIsDateBlocked(t *testing.T) {
 	db := setupFreeSlotsTestDB(t)
 	service := NewFreeSlotsService(db)
 
+	// Use dynamic dates for blocked ranges (10 months from next Monday)
+	futureDate := getNextWeekday(time.Monday, 7).AddDate(0, 10, 0)
+	year, month, day := futureDate.Date()
+	
 	blockedDates := []entities.DateRange{
-		{Start: "2026-12-24", End: "2026-12-26"}, // Christmas
-		{Start: "2026-12-31", End: "2026-01-01"}, // New Year
+		{Start: fmt.Sprintf("%d-%02d-%02d", year, month, day-1), End: fmt.Sprintf("%d-%02d-%02d", year, month, day+1)}, // 3-day range
 	}
 
 	// Date within blocked range
-	blockedDate := time.Date(2026, 12, 25, 10, 0, 0, 0, time.UTC)
-	assert.True(t, service.isDateBlocked(blockedDate, blockedDates), "Christmas should be blocked")
+	blockedDate := futureDate
+	assert.True(t, service.isDateBlocked(blockedDate, blockedDates), "Date in range should be blocked")
 
 	// Date on start boundary
-	boundaryStart := time.Date(2026, 12, 24, 10, 0, 0, 0, time.UTC)
+	boundaryStart := futureDate.AddDate(0, 0, -1)
 	assert.True(t, service.isDateBlocked(boundaryStart, blockedDates), "Start boundary should be blocked")
 
 	// Date on end boundary
-	boundaryEnd := time.Date(2026, 12, 26, 10, 0, 0, 0, time.UTC)
+	boundaryEnd := futureDate.AddDate(0, 0, 1)
 	assert.True(t, service.isDateBlocked(boundaryEnd, blockedDates), "End boundary should be blocked")
 
 	// Date not in blocked range
-	normalDate := time.Date(2026, 2, 20, 10, 0, 0, 0, time.UTC)
+	normalDate := getNextWeekday(time.Monday, 7).AddDate(0, 0, 14).Add(10 * time.Hour)
 	assert.False(t, service.isDateBlocked(normalDate, blockedDates), "Normal date should not be blocked")
 }
 
@@ -353,20 +370,20 @@ func TestGetWeekdayAvailability(t *testing.T) {
 	}
 
 	// Test Monday
-	monday := time.Date(2026, 2, 2, 0, 0, 0, 0, time.UTC)
+	monday := getNextWeekday(time.Monday, 7)
 	mondayAvail := service.getWeekdayAvailability(monday, weeklyAvail)
 	assert.Len(t, mondayAvail, 1)
 	assert.Equal(t, "09:00", mondayAvail[0].Start)
 	assert.Equal(t, "12:00", mondayAvail[0].End)
 
 	// Test Tuesday
-	tuesday := time.Date(2026, 2, 3, 0, 0, 0, 0, time.UTC)
+	tuesday := getNextWeekday(time.Tuesday, 7)
 	tuesdayAvail := service.getWeekdayAvailability(tuesday, weeklyAvail)
 	assert.Len(t, tuesdayAvail, 1)
 	assert.Equal(t, "10:00", tuesdayAvail[0].Start)
 
 	// Test Wednesday (no availability)
-	wednesday := time.Date(2026, 2, 4, 0, 0, 0, 0, time.UTC)
+	wednesday := getNextWeekday(time.Wednesday, 7)
 	wednesdayAvail := service.getWeekdayAvailability(wednesday, weeklyAvail)
 	assert.Len(t, wednesdayAvail, 0)
 }
@@ -383,7 +400,7 @@ func TestGenerateMonthData(t *testing.T) {
 		// No slots for 2026-02-04
 	}
 
-	startDate := time.Date(2026, 2, 1, 0, 0, 0, 0, time.UTC)
+	startDate := getNextWeekday(time.Monday, 7).AddDate(0, 0, -1)
 	monthData := service.generateMonthData(slots, startDate, time.UTC)
 
 	assert.Equal(t, 2026, monthData.Year)
@@ -418,8 +435,8 @@ func TestCalculateFreeSlots_WithExistingEntries(t *testing.T) {
 	template := createTestTemplate()
 
 	// Insert a calendar entry that will conflict
-	entryStart := time.Date(2026, 2, 2, 10, 0, 0, 0, time.UTC)
-	entryEnd := time.Date(2026, 2, 2, 11, 0, 0, 0, time.UTC)
+	entryStart := getNextWeekday(time.Monday, 7).Add(10 * time.Hour)
+	entryEnd := entryStart.Add(1 * time.Hour)
 
 	err := db.Exec(`
 		INSERT INTO calendar_entries (calendar_id, tenant_id, start_time, end_time)
@@ -427,8 +444,8 @@ func TestCalculateFreeSlots_WithExistingEntries(t *testing.T) {
 	`, 1, 1, entryStart, entryEnd).Error
 	require.NoError(t, err)
 
-	startDate := time.Date(2026, 2, 2, 0, 0, 0, 0, time.UTC)
-	endDate := time.Date(2026, 2, 2, 23, 59, 59, 0, time.UTC)
+	startDate := getNextWeekday(time.Monday, 7)
+	endDate := startDate.Add(23*time.Hour + 59*time.Minute + 59*time.Second)
 
 	req := FreeSlotsRequest{
 		TemplateID: 1,
@@ -507,8 +524,8 @@ func TestCalculateFreeSlots_TimezoneHandling(t *testing.T) {
 	template := createTestTemplate()
 	template.Timezone = "America/New_York"
 
-	startDate := time.Date(2026, 2, 2, 0, 0, 0, 0, time.UTC)
-	endDate := time.Date(2026, 2, 2, 23, 59, 59, 0, time.UTC)
+	startDate := getNextWeekday(time.Monday, 7)
+	endDate := startDate.Add(23*time.Hour + 59*time.Minute + 59*time.Second)
 
 	req := FreeSlotsRequest{
 		TemplateID: 1,
@@ -536,8 +553,8 @@ func TestCalculateFreeSlots_InvalidTimezone(t *testing.T) {
 	service := NewFreeSlotsService(db)
 	template := createTestTemplate()
 
-	startDate := time.Date(2026, 2, 2, 0, 0, 0, 0, time.UTC)
-	endDate := time.Date(2026, 2, 2, 23, 59, 59, 0, time.UTC)
+	startDate := getNextWeekday(time.Monday, 7)
+	endDate := startDate.Add(23*time.Hour + 59*time.Minute + 59*time.Second)
 
 	req := FreeSlotsRequest{
 		TemplateID: 1,
@@ -569,8 +586,8 @@ func TestCalculateFreeSlots_MultipleAvailabilityWindows(t *testing.T) {
 		{Start: "15:00", End: "17:00"},
 	}
 
-	startDate := time.Date(2026, 2, 2, 0, 0, 0, 0, time.UTC) // Monday
-	endDate := time.Date(2026, 2, 2, 23, 59, 59, 0, time.UTC)
+	startDate := getNextWeekday(time.Monday, 7) // Monday
+	endDate := startDate.Add(23*time.Hour + 59*time.Minute + 59*time.Second)
 
 	req := FreeSlotsRequest{
 		TemplateID: 1,
@@ -646,8 +663,8 @@ func TestCalculateFreeSlots_UseTemplateAvailability(t *testing.T) {
 	template.MinNoticeHours = 0
 	template.AdvanceBookingDays = 365
 
-	startDate := time.Date(2026, 2, 2, 0, 0, 0, 0, time.UTC) // Monday
-	endDate := time.Date(2026, 2, 2, 23, 59, 59, 0, time.UTC)
+	startDate := getNextWeekday(time.Monday, 7) // Monday
+	endDate := startDate.Add(23*time.Hour + 59*time.Minute + 59*time.Second)
 
 	req := FreeSlotsRequest{
 		TemplateID: 1,
@@ -709,8 +726,8 @@ func TestCalculateFreeSlots_FallbackToCalendarAvailability(t *testing.T) {
 	template.MinNoticeHours = 0
 	template.AdvanceBookingDays = 365
 
-	startDate := time.Date(2026, 2, 2, 0, 0, 0, 0, time.UTC) // Monday
-	endDate := time.Date(2026, 2, 2, 23, 59, 59, 0, time.UTC)
+	startDate := time.Date(2026, 2, 9, 0, 0, 0, 0, time.UTC) // Monday
+	endDate := time.Date(2026, 2, 9, 23, 59, 59, 0, time.UTC)
 
 	req := FreeSlotsRequest{
 		TemplateID: 1,
@@ -769,8 +786,8 @@ func TestCalculateFreeSlots_FallbackToDefaultAllDay(t *testing.T) {
 	template.AdvanceBookingDays = 365
 	template.SlotDuration = 120 // 2 hour slots to keep test manageable
 
-	startDate := time.Date(2026, 2, 2, 0, 0, 0, 0, time.UTC) // Monday
-	endDate := time.Date(2026, 2, 2, 23, 59, 59, 0, time.UTC)
+	startDate := time.Date(2026, 2, 9, 0, 0, 0, 0, time.UTC) // Monday
+	endDate := time.Date(2026, 2, 9, 23, 59, 59, 0, time.UTC)
 
 	req := FreeSlotsRequest{
 		TemplateID: 1,
@@ -832,8 +849,8 @@ func TestCalculateFreeSlots_CalendarNotFoundUsesDefault(t *testing.T) {
 	template.MinNoticeHours = 0
 	template.AdvanceBookingDays = 365
 
-	startDate := time.Date(2026, 2, 2, 0, 0, 0, 0, time.UTC) // Monday
-	endDate := time.Date(2026, 2, 2, 23, 59, 59, 0, time.UTC)
+	startDate := time.Date(2026, 2, 9, 0, 0, 0, 0, time.UTC) // Monday
+	endDate := time.Date(2026, 2, 9, 23, 59, 59, 0, time.UTC)
 
 	req := FreeSlotsRequest{
 		TemplateID: 1,
@@ -888,10 +905,10 @@ func TestCalculateFreeSlots_PartialTemplateAvailability(t *testing.T) {
 		// Tuesday is empty, but since template has SOME availability, it should use template
 	}
 	template.MinNoticeHours = 0
-	template.AdvanceBookingDays = 365
+	template.AdvanceBookingDays = 1000
 
-	startDate := time.Date(2026, 2, 2, 0, 0, 0, 0, time.UTC)  // Monday
-	endDate := time.Date(2026, 2, 3, 23, 59, 59, 0, time.UTC) // Tuesday
+	startDate := getNextWeekday(time.Monday, 7)
+	endDate := startDate.AddDate(0, 0, 1).Add(23*time.Hour + 59*time.Minute + 59*time.Second) // Tuesday
 
 	req := FreeSlotsRequest{
 		TemplateID: 1,

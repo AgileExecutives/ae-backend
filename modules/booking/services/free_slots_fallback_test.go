@@ -169,17 +169,17 @@ func TestCalculateFreeSlots_UsesCalendarFallback(t *testing.T) {
 
 	// Template with NO availability (should fallback to calendar)
 	template := &entities.BookingTemplate{
-		SlotDuration:        30,
-		BufferTime:          0,
-		MinNoticeHours:      0,
-		AdvanceBookingDays:  365,
-		WeeklyAvailability:  entities.WeeklyAvailability{}, // Empty
-		AllowedIntervals:    []entities.IntervalType{},
-		MaxSeriesBookings:   0,
+		SlotDuration:       30,
+		BufferTime:         0,
+		MinNoticeHours:     0,
+		AdvanceBookingDays: 365,
+		WeeklyAvailability: entities.WeeklyAvailability{}, // Empty
+		AllowedIntervals:   []entities.IntervalType{"none"},
+		MaxSeriesBookings:  0,
 	}
 
-	startDate := time.Date(2026, 2, 2, 0, 0, 0, 0, time.UTC) // Monday
-	endDate := time.Date(2026, 2, 2, 23, 59, 59, 0, time.UTC)
+	startDate := getNextWeekday(time.Monday, 7)
+	endDate := startDate.Add(23*time.Hour + 59*time.Minute + 59*time.Second)
 
 	req := FreeSlotsRequest{
 		TemplateID: 1,
