@@ -11,11 +11,13 @@ import (
 
 // CalendarEntry represents a simplified calendar entry for conflict checking
 type CalendarEntry struct {
-	ID         uint
-	CalendarID uint
-	TenantID   uint
-	StartTime  *time.Time
-	EndTime    *time.Time
+	ID               uint
+	CalendarID       uint
+	TenantID         uint
+	StartTime        *time.Time
+	EndTime          *time.Time
+	SeriesID         *uint
+	PositionInSeries *int
 }
 
 // FreeSlotsService handles free slot calculation
@@ -50,11 +52,21 @@ func (s *FreeSlotsService) CalculateFreeSlots(req FreeSlotsRequest, template *en
 	weeklyAvailability := s.getWeeklyAvailabilityWithFallback(req.CalendarID, req.TenantID, template.WeeklyAvailability)
 
 	// Get existing calendar entries for the date range
+	// For recurrence calculation, we need to look further ahead than the search window
+	// to properly detect conflicts with future occurrences
+	endDateForConflicts := req.EndDate
+	if template.MaxSeriesBookings > 0 && len(template.AllowedIntervals) > 0 {
+		// Extend search window to accommodate max recurrences
+		// For weekly: 10 weeks = 70 days, monthly: 10 months, etc.
+		maxWeeks := template.MaxSeriesBookings * 4 // Conservative estimate (monthly = ~4 weeks)
+		endDateForConflicts = req.EndDate.AddDate(0, 0, maxWeeks*7)
+	}
+
 	var existingEntries []CalendarEntry
 	err = s.db.Table("calendar_entries").
 		Select("id, calendar_id, tenant_id, start_time, end_time").
 		Where("calendar_id = ? AND tenant_id = ? AND start_time >= ? AND start_time <= ? AND deleted_at IS NULL",
-			req.CalendarID, req.TenantID, req.StartDate, req.EndDate).
+			req.CalendarID, req.TenantID, req.StartDate, endDateForConflicts).
 		Find(&existingEntries).Error
 	if err != nil {
 		return nil, fmt.Errorf("failed to fetch existing entries: %w", err)
@@ -470,9 +482,11 @@ func (s *FreeSlotsService) calculateAvailableRecurrences(slots []entities.TimeSl
 		slotDuration := slotEnd.Sub(slotStart)
 
 		// Calculate available recurrences for each allowed interval type
+		// For recurrence counting, extend the search window to accommodate max_series_bookings
+		// This allows users to see the full recurrence potential, not limited by advance_booking_days
 		maxRecurrences := 0
 		for _, intervalType := range template.AllowedIntervals {
-			recurrences := s.countAvailableRecurrences(slotStart, slotEnd, slotDuration, intervalType, template.MaxSeriesBookings, existingEntries, endDate, loc, template.BufferTime)
+			recurrences := s.countAvailableRecurrences(slotStart, slotEnd, slotDuration, intervalType, template.MaxSeriesBookings, existingEntries, loc, template.BufferTime)
 			if recurrences > maxRecurrences {
 				maxRecurrences = recurrences
 			}
@@ -485,17 +499,12 @@ func (s *FreeSlotsService) calculateAvailableRecurrences(slots []entities.TimeSl
 }
 
 // countAvailableRecurrences counts how many recurrences of a specific interval type are available
-func (s *FreeSlotsService) countAvailableRecurrences(slotStart, slotEnd time.Time, duration time.Duration, intervalType entities.IntervalType, maxBookings int, existingEntries []CalendarEntry, endDate time.Time, loc *time.Location, bufferTime int) int {
+func (s *FreeSlotsService) countAvailableRecurrences(slotStart, slotEnd time.Time, duration time.Duration, intervalType entities.IntervalType, maxBookings int, existingEntries []CalendarEntry, loc *time.Location, bufferTime int) int {
 	count := 0
 	currentStart := slotStart
 
-	// Check up to maxBookings recurrences
+	// Check up to maxBookings recurrences (not limited by advance booking window)
 	for count < maxBookings {
-		// Check if we're beyond the search end date
-		if currentStart.After(endDate) {
-			break
-		}
-
 		currentEnd := currentStart.Add(duration)
 
 		// Check if this slot conflicts with any existing entries
@@ -521,6 +530,9 @@ func (s *FreeSlotsService) countAvailableRecurrences(slotStart, slotEnd time.Tim
 
 		if !conflicts {
 			count++
+		} else {
+			// Stop counting on first conflict
+			break
 		}
 
 		// Move to next recurrence based on interval type
