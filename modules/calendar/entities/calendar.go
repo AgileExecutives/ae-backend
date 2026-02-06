@@ -38,8 +38,8 @@ type CalendarEntry struct {
 	Title            string          `gorm:"size:255;not null" json:"title" binding:"required" example:"Meeting"`
 	IsException      bool            `gorm:"default:false" json:"is_exception" example:"false"`
 	Participants     json.RawMessage `gorm:"type:json" json:"participants,omitempty" example:"[]"`
-	StartTime        *time.Time      `gorm:"column:start_time;type:timestamptz" json:"start_time,omitempty" example:"2025-11-04T09:00:00Z"`
-	EndTime          *time.Time      `gorm:"column:end_time;type:timestamptz" json:"end_time,omitempty" example:"2025-11-04T10:00:00Z"`
+	StartTime        *time.Time      `gorm:"column:start_time" json:"start_time,omitempty" example:"2025-11-04T09:00:00Z"`
+	EndTime          *time.Time      `gorm:"column:end_time" json:"end_time,omitempty" example:"2025-11-04T10:00:00Z"`
 	Type             string          `gorm:"size:50" json:"type,omitempty" example:"meeting"`
 	Description      string          `gorm:"type:text" json:"description,omitempty" example:"Team meeting"`
 	Location         string          `gorm:"size:255" json:"location,omitempty" example:"Conference Room A"`
@@ -64,9 +64,9 @@ type CalendarSeries struct {
 	Participants         json.RawMessage `gorm:"type:json" json:"participants,omitempty" example:"[]"`
 	IntervalType         string          `gorm:"size:50;not null;default:'none'" json:"interval_type" example:"weekly"` // none, weekly, monthly-date, monthly-day, yearly
 	IntervalValue        int             `gorm:"not null;default:1" json:"interval_value" example:"2"`                  // number of intervals (e.g. weekly and 2 means every 2 weeks)
-	StartTime            *time.Time      `gorm:"column:start_time;type:timestamptz" json:"start_time,omitempty" example:"2025-11-04T09:00:00Z"`
-	EndTime              *time.Time      `gorm:"column:end_time;type:timestamptz" json:"end_time,omitempty" example:"2025-11-04T10:00:00Z"`
-	LastDate             *time.Time      `gorm:"column:last_date;type:timestamptz" json:"last_date,omitempty" example:"2025-12-31T23:59:59Z"` // end condition for recurring events
+	StartTime            *time.Time      `gorm:"column:start_time" json:"start_time,omitempty" example:"2025-11-04T09:00:00Z"`
+	EndTime              *time.Time      `gorm:"column:end_time" json:"end_time,omitempty" example:"2025-11-04T10:00:00Z"`
+	LastDate             *time.Time      `gorm:"column:last_date" json:"last_date,omitempty" example:"2025-12-31T23:59:59Z"` // end condition for recurring events
 	Description          string          `gorm:"type:text" json:"description,omitempty" example:"Weekly team meeting"`
 	Location             string          `gorm:"size:255" json:"location,omitempty" example:"Conference Room A"`
 	Timezone             string          `gorm:"size:100;default:'UTC'" json:"timezone,omitempty" example:"Europe/Berlin"`

@@ -332,8 +332,6 @@ func TestDeleteInvoice(t *testing.T) {
 }
 
 func TestGetClientsWithUnbilledSessions(t *testing.T) {
-	t.Skip("Skipping test - FinalizeInvoice uses PostgreSQL regex operators not supported in SQLite")
-
 	db := setupInvoiceTestDB(t)
 	service := services.NewInvoiceService(db)
 
@@ -354,7 +352,7 @@ func TestGetClientsWithUnbilledSessions(t *testing.T) {
 		ClientID:   clientID,
 		SessionIDs: sessionIDs[:2],
 	}
-	_, err = service.CreateDraftInvoice(draftReq, tenantID, userID)
+	draftInvoice, err := service.CreateDraftInvoice(draftReq, tenantID, userID)
 	require.NoError(t, err)
 
 	// Sessions are now in 'invoice-draft' status, should still show as unbilled until finalized
@@ -363,20 +361,15 @@ func TestGetClientsWithUnbilledSessions(t *testing.T) {
 	assert.Len(t, clients, 1)
 	assert.Len(t, clients[0].Sessions, 1) // Only 1 conducted session remains
 
-	// NOTE: Finalization step skipped - requires PostgreSQL for invoice number generation
-	// which uses regex operators (!~) not available in SQLite
-
-	// _, err = service.FinalizeInvoice(invoice1.ID, tenantID, userID, nil)
-	// require.NoError(t, err)
+	// Finalize the invoice (invoice number generation now works with SQLite via LIKE patterns)
+	_, err = service.FinalizeInvoice(draftInvoice.ID, tenantID, userID, nil)
+	require.NoError(t, err)
 
 	// Should still have 1 unbilled session
 	clients, err = service.GetClientsWithUnbilledSessions(tenantID, userID)
 	assert.NoError(t, err)
 	assert.Len(t, clients, 1)
 	assert.Len(t, clients[0].Sessions, 1)
-
-	// Test covers draft invoice creation and unbilled session tracking
-	// Full workflow with finalization requires PostgreSQL
 }
 
 func TestMultiTenantIsolation(t *testing.T) {

@@ -96,8 +96,9 @@ func (s *InvoiceNumberService) GenerateInvoiceNumber(organizationID uint, tenant
 			query = query.Where("invoice_number LIKE ?", prefix+"-%")
 		} else {
 			// Without prefix: just numbers like "1", "2", "3"
-			// Exclude year-based formats by checking the pattern
-			query = query.Where("invoice_number !~ ?", "^[0-9]{4}-")
+			// Exclude year-based formats by checking the pattern (YYYY-*)
+			query = query.Where("invoice_number NOT LIKE ? AND invoice_number NOT LIKE ? AND invoice_number NOT LIKE ? AND invoice_number NOT LIKE ? AND invoice_number NOT LIKE ?",
+				"19__-%", "20__-%", "21__-%", "22__-%", "23__-%")
 		}
 	}
 
