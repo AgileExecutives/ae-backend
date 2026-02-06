@@ -2,24 +2,18 @@ package testutils
 
 import (
 	"fmt"
+	"testing"
 	"time"
 
+	"github.com/ae-base-server/internal/models"
 	"gorm.io/gorm"
 )
 
-// TestUser represents a test user for fixtures
-type TestUser struct {
-	ID       uint
-	Email    string
-	Password string
-	TenantID uint
-}
+// TestUser is an alias for models.User
+type TestUser = models.User
 
-// TestTenant represents a test tenant for fixtures
-type TestTenant struct {
-	ID   uint
-	Name string
-}
+// TestTenant is an alias for models.Tenant
+type TestTenant = models.Tenant
 
 // TestInvoice represents a test invoice for fixtures
 type TestInvoice struct {
@@ -34,57 +28,41 @@ type TestInvoice struct {
 }
 
 // CreateTestTenant creates a test tenant in the database
-func CreateTestTenant(db *gorm.DB, name string) (*TestTenant, error) {
+func CreateTestTenant(t *testing.T, db *gorm.DB, name string) *TestTenant {
 	tenant := &TestTenant{
-		Name: name,
+		Name:       name,
+		Slug:       fmt.Sprintf("test-%d", time.Now().UnixNano()),
+		CustomerID: 1, // Default test customer
 	}
 
-	// Note: This is a simplified version. In real usage, you'd use your actual Tenant entity
-	result := db.Table("tenants").Create(map[string]interface{}{
-		"name":       name,
-		"created_at": time.Now(),
-		"updated_at": time.Now(),
-	})
-
+	result := db.Create(tenant)
 	if result.Error != nil {
-		return nil, result.Error
+		t.Fatalf("Failed to create test tenant: %v", result.Error)
 	}
 
-	// Get the ID
-	var id uint
-	db.Raw("SELECT id FROM tenants WHERE name = ? ORDER BY id DESC LIMIT 1", name).Scan(&id)
-	tenant.ID = id
-
-	return tenant, nil
+	return tenant
 }
 
 // CreateTestUser creates a test user in the database
-func CreateTestUser(db *gorm.DB, email string, tenantID uint) (*TestUser, error) {
+func CreateTestUser(t *testing.T, db *gorm.DB, email, passwordHash string, tenantID uint) *TestUser {
 	user := &TestUser{
-		Email:    email,
-		Password: "hashed_password_123",
-		TenantID: tenantID,
+		Email:          email,
+		PasswordHash:   passwordHash,
+		Username:       email, // Use email as username by default
+		TenantID:       tenantID,
+		OrganizationID: 1, // Default test organization
+		Active:         true,
+		FirstName:      "Test",
+		LastName:       "User",
+		Role:           "user",
 	}
 
-	// Note: This is a simplified version. In real usage, you'd use your actual User entity
-	result := db.Table("users").Create(map[string]interface{}{
-		"email":      email,
-		"password":   "hashed_password_123",
-		"tenant_id":  tenantID,
-		"created_at": time.Now(),
-		"updated_at": time.Now(),
-	})
-
+	result := db.Create(user)
 	if result.Error != nil {
-		return nil, result.Error
+		t.Fatalf("Failed to create test user: %v", result.Error)
 	}
 
-	// Get the ID
-	var id uint
-	db.Raw("SELECT id FROM users WHERE email = ? ORDER BY id DESC LIMIT 1", email).Scan(&id)
-	user.ID = id
-
-	return user, nil
+	return user
 }
 
 // CreateTestInvoiceData generates test invoice data
@@ -111,14 +89,9 @@ func CreateTestInvoiceData(tenantID, userID, orgID uint, status string, withItem
 }
 
 // SeedMinimalTestData seeds minimal test data for basic tests
-func SeedMinimalTestData(db *gorm.DB) error {
+func SeedMinimalTestData(t *testing.T, db *gorm.DB) {
 	// Create test tenant
-	_, err := CreateTestTenant(db, "Test Tenant")
-	if err != nil {
-		return fmt.Errorf("failed to create test tenant: %w", err)
-	}
-
-	return nil
+	CreateTestTenant(t, db, "Test Tenant")
 }
 
 // GenerateTestEmail generates a unique test email
@@ -157,11 +130,4 @@ func PastTimePtr(duration time.Duration) *time.Time {
 func FutureTimePtr(duration time.Duration) *time.Time {
 	future := time.Now().Add(duration)
 	return &future
-}
-
-// GenerateTestInvoiceNumber generates a test invoice number
-// Format: YEAR-TENANT-SEQUENCE (e.g., "2024-1-0042")
-func GenerateTestInvoiceNumber(year, tenantID int) string {
-	sequence := time.Now().Nanosecond() % 10000
-	return fmt.Sprintf("%d-%d-%04d", year, tenantID, sequence)
 }

@@ -3,6 +3,7 @@ package testutils
 import (
 	"testing"
 
+	"github.com/ae-base-server/internal/models"
 	"github.com/stretchr/testify/require"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
@@ -15,6 +16,15 @@ func SetupTestDB(t *testing.T) *gorm.DB {
 		Logger: logger.Default.LogMode(logger.Silent), // Reduce test noise
 	})
 	require.NoError(t, err, "Failed to create test database")
+
+	// Auto-migrate all models
+	err = db.AutoMigrate(
+		&models.User{},
+		&models.Tenant{},
+		&models.Customer{},
+		&models.Organization{},
+	)
+	require.NoError(t, err, "Failed to migrate test database")
 
 	return db
 }

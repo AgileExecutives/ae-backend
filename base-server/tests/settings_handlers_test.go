@@ -1,4 +1,4 @@
-package handlers_test
+package settings_test
 
 import (
 	"bytes"
@@ -24,7 +24,6 @@ import (
 	// Module settings providers
 	companySettings "github.com/ae-base-server/modules/company/settings"
 	invoiceSettings "github.com/ae-base-server/modules/invoice/settings"
-	billingSettings "github.com/ae-base-server/modules/billing/settings"
 )
 
 

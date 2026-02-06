@@ -1,11 +1,50 @@
 package testutils
-package testutils
 
 import (
 	"context"
 
+	"github.com/ae-base-server/pkg/core"
 	"github.com/stretchr/testify/mock"
 )
+
+// MockLogger is a mock implementation of core.Logger
+type MockLogger struct {
+	mock.Mock
+}
+
+func (m *MockLogger) Debug(args ...interface{}) {
+	m.Called(args)
+}
+
+func (m *MockLogger) Info(args ...interface{}) {
+	m.Called(args)
+}
+
+func (m *MockLogger) Warn(args ...interface{}) {
+	m.Called(args)
+}
+
+func (m *MockLogger) Error(args ...interface{}) {
+	m.Called(args)
+}
+
+func (m *MockLogger) Fatal(args ...interface{}) {
+	m.Called(args)
+}
+
+func (m *MockLogger) With(key string, value interface{}) core.Logger {
+	return m
+}
+
+// NewMockLogger creates a new mock logger that accepts any calls
+func NewMockLogger() *MockLogger {
+	logger := new(MockLogger)
+	logger.On("Info", mock.Anything).Maybe()
+	logger.On("Debug", mock.Anything).Maybe()
+	logger.On("Warn", mock.Anything).Maybe()
+	logger.On("Error", mock.Anything).Maybe()
+	return logger
+}
 
 // MockEmailService is a mock implementation of email service
 type MockEmailService struct {

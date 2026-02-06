@@ -1,5 +1,4 @@
 package testutils
-package testutils
 
 import (
 	"testing"
@@ -15,8 +14,8 @@ func AssertTimeEqual(t *testing.T, expected, actual time.Time, tolerance time.Du
 	if diff < 0 {
 		diff = -diff
 	}
-	
-	assert.True(t, diff <= tolerance, 
+
+	assert.True(t, diff <= tolerance,
 		"Times differ by more than tolerance. Expected: %s, Actual: %s, Diff: %s, Tolerance: %s",
 		expected, actual, diff, tolerance)
 }
@@ -28,13 +27,13 @@ func AssertTimeNotZero(t *testing.T, actual time.Time, msgAndArgs ...interface{}
 
 // AssertTimeBefore asserts that time1 is before time2
 func AssertTimeBefore(t *testing.T, time1, time2 time.Time, msgAndArgs ...interface{}) {
-	assert.True(t, time1.Before(time2), 
+	assert.True(t, time1.Before(time2),
 		"Expected %s to be before %s", time1, time2)
 }
 
 // AssertTimeAfter asserts that time1 is after time2
 func AssertTimeAfter(t *testing.T, time1, time2 time.Time, msgAndArgs ...interface{}) {
-	assert.True(t, time1.After(time2), 
+	assert.True(t, time1.After(time2),
 		"Expected %s to be after %s", time1, time2)
 }
 
@@ -49,7 +48,7 @@ func AssertFloatEqual(t *testing.T, expected, actual, tolerance float64, msgAndA
 	if diff < 0 {
 		diff = -diff
 	}
-	
+
 	assert.True(t, diff <= tolerance,
 		"Floats differ by more than tolerance. Expected: %f, Actual: %f, Diff: %f, Tolerance: %f",
 		expected, actual, diff, tolerance)

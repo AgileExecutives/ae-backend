@@ -1,18 +1,13 @@
-package handlers
 package handlers_test
 
 import (
 	"bytes"
 	"encoding/json"
-	"net/http"
-	"net/http/httptest"
+	"os"
 	"testing"
-	"time"
 
 	"github.com/ae-base-server/modules/base/handlers"
-	"github.com/ae-base-server/modules/base/services"
 	"github.com/ae-base-server/pkg/testutils"
-	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"golang.org/x/crypto/bcrypt"
@@ -20,479 +15,132 @@ import (
 
 // TestAuthHandler_Login tests the login handler
 func TestAuthHandler_Login(t *testing.T) {
+	// Set JWT secret for testing
+	os.Setenv("JWT_SECRET", "test-secret-key-for-testing")
+	defer os.Unsetenv("JWT_SECRET")
+
 	db := testutils.SetupTestDB(t)
 	defer testutils.CleanupTestDB(db)
 
 	// Setup
-	authService := services.NewAuthService(db)
-	handler := handlers.NewAuthHandler(authService)
+	logger := testutils.NewMockLogger()
+	authHandlers := handlers.NewAuthHandlers(db, logger)
 	router := testutils.SetupTestRouter()
-	router.POST("/auth/login", handler.Login)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-}	})		assert.Equal(t, int64(1), count)		db.Model(&testutils.TestUser{}).Where("email = ?", email).Count(&count)		var count int64		// Verify only one user was created		assert.Equal(t, concurrency-1, conflictCount, "Others should get conflict error")		assert.Equal(t, 1, successCount, "Only one registration should succeed")		// Only one registration should succeed		}			}				conflictCount++			} else if status == http.StatusConflict {				successCount++			if status == http.StatusCreated {			status := <-results		for i := 0; i < concurrency; i++ {		conflictCount := 0		successCount := 0		// Collect results		}			}(i)				results <- resp.StatusCode				resp := testutils.MakeJSONRequest(t, router, "POST", "/auth/register", payload)				}					"company_name": fmt.Sprintf("Company %d", idx),					"username":     fmt.Sprintf("user%d", idx),					"password":     "SecurePass123!",					"email":        email,				payload := map[string]interface{}{				router.POST("/auth/register", handler.Register)				router := testutils.SetupTestRouter()			go func(idx int) {		for i := 0; i < concurrency; i++ {		// Spawn concurrent registration attempts		results := make(chan int, concurrency)		email := "concurrent@example.com"		const concurrency = 10	t.Run("concurrent registrations with same email should fail gracefully", func(t *testing.T) {	handler := handlers.NewAuthHandler(authService)	authService := services.NewAuthService(db)	defer testutils.CleanupTestDB(db)	db := testutils.SetupTestDB(t)func TestAuthHandler_ConcurrentRegistrations(t *testing.T) {// TestAuthHandler_ConcurrentRegistrations tests concurrent registration handling}	})		assert.Equal(t, existingTenant.ID, newUser.TenantID)		db.Where("email = ?", "newmember@example.com").First(&newUser)		var newUser testutils.TestUser		// Verify user joined existing tenant		assert.Equal(t, http.StatusCreated, resp.StatusCode)		// Should succeed		resp := testutils.MakeJSONRequest(t, router, "POST", "/auth/register", payload)		}			"signup_token": signupToken,			"username":     "newmember",			"password":     "SecurePass123!",			"email":        "newmember@example.com",		payload := map[string]interface{}{		router.POST("/auth/register", handler.Register)		router := testutils.SetupTestRouter()		handler := handlers.NewAuthHandler(authService)		authService := services.NewAuthService(db)		// Register with signup token		db.Model(&existingTenant).Update("signup_token", signupToken)		// Store signup token in database (implementation would do this)		signupToken := "invite-token-abc123"		existingTenant := testutils.CreateTestTenant(t, db, "Existing Company")		// Create existing tenant	t.Run("signup token allows joining existing tenant", func(t *testing.T) {	defer testutils.CleanupTestDB(db)	db := testutils.SetupTestDB(t)func TestAuthHandler_SignupTokens(t *testing.T) {// TestAuthHandler_SignupTokens tests multi-tenant signup with tokens}	})		testutils.AssertTimeBefore(t, *verified.EmailVerifiedAt, afterVerify)		testutils.AssertTimeBefore(t, beforeVerify, *verified.EmailVerifiedAt)		// Verify timestamp is reasonable				assert.Nil(t, verified.VerificationToken)		assert.NotNil(t, verified.EmailVerifiedAt)		assert.True(t, verified.EmailVerified)		// Verify state		db.First(&verified, user.ID)		var verified testutils.TestUser		// Reload user		afterVerify := time.Now().UTC()		})			"verification_token": nil,			"email_verified_at":  time.Now().UTC(),			"email_verified":     true,		db.Model(&user).Updates(map[string]interface{}{		beforeVerify := time.Now().UTC()		// Simulate verification (this would be done via handler)		})			"verification_token": "test-token-123",			"email_verified_at": nil,			"email_verified":    false,		db.Model(&user).Updates(map[string]interface{}{		// Update to unverified state				user := testutils.CreateTestUser(t, db, "verify@example.com", "hashedpass", tenant.ID)		tenant := testutils.CreateTestTenant(t, db, "Test Company")		// Create unverified user	t.Run("email verification sets verified flag", func(t *testing.T) {	defer testutils.CleanupTestDB(db)	db := testutils.SetupTestDB(t)func TestAuthHandler_EmailVerification(t *testing.T) {// TestAuthHandler_EmailVerification tests email verification flow}	}		})			tt.checkDB(t)			tt.checkResponse(t, body)			require.NoError(t, err)			err := json.NewDecoder(resp.Body).Decode(&body)			var body map[string]interface{}			// Check response			assert.Equal(t, tt.expectedStatus, resp.StatusCode)			// Assert status			resp := testutils.MakeJSONRequest(t, router, "POST", "/auth/register", tt.payload)			// Make request			tt.setupDB()			// Setup database		t.Run(tt.name, func(t *testing.T) {	for _, tt := range tests {	}		},			checkDB: func(t *testing.T) {},			},				assert.Contains(t, resp["error"], "company_name")				assert.Contains(t, resp, "error")			checkResponse: func(t *testing.T, resp map[string]interface{}) {			expectedStatus: http.StatusBadRequest,			setupDB:        func() {},			},				"username": "testuser",				"password": "SecurePass123!",				"email":    "test@example.com",			payload: map[string]interface{}{			name: "registration requires company name",		{		},			checkDB: func(t *testing.T) {},			},				assert.Contains(t, resp["error"], "email")				assert.Contains(t, resp, "error")			checkResponse: func(t *testing.T, resp map[string]interface{}) {			expectedStatus: http.StatusBadRequest,			setupDB:        func() {},			},				"company_name": "Test Company",				"username":     "testuser",				"password":     "SecurePass123!",				"email":        "invalid-email",			payload: map[string]interface{}{			name: "registration validates email format",		{		},			},				assert.NoError(t, err, "Stored password should be valid bcrypt hash")				err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte("SecurePass123!"))				// Verify bcrypt hash can be verified								assert.Contains(t, user.Password, "$2")				assert.NotEqual(t, "SecurePass123!", user.Password)				// Verify password is hashed (bcrypt hashes start with $2a$, $2b$, or $2y$)				require.NoError(t, err)				err := db.Where("email = ?", "bcrypt@example.com").First(&user).Error				var user testutils.TestUser			checkDB: func(t *testing.T) {			},				assert.Contains(t, resp, "user")			checkResponse: func(t *testing.T, resp map[string]interface{}) {			expectedStatus: http.StatusCreated,			setupDB:        func() {},			},				"company_name": "Bcrypt Company",				"username":     "bcryptuser",				"password":     "SecurePass123!",				"email":        "bcrypt@example.com",			payload: map[string]interface{}{			name: "registration hashes password with bcrypt",		{		},			checkDB: func(t *testing.T) {},			},				assert.Contains(t, resp["error"], "password")				assert.Contains(t, resp, "error")			checkResponse: func(t *testing.T, resp map[string]interface{}) {			expectedStatus: http.StatusBadRequest,			setupDB:        func() {},			},				"company_name": "Test Company",				"username":     "testuser",				"password":     "weak",				"email":        "test@example.com",			payload: map[string]interface{}{			name: "registration validates password strength",		{		},			checkDB: func(t *testing.T) {},			},				assert.Contains(t, resp["error"], "username already exists")				assert.Contains(t, resp, "error")			checkResponse: func(t *testing.T, resp map[string]interface{}) {			expectedStatus: http.StatusConflict,			},				db.Model(&user).Update("username", "existinguser")				user := testutils.CreateTestUser(t, db, "other@example.com", "hashedpass", tenant.ID)				tenant := testutils.CreateTestTenant(t, db, "Existing Company")			setupDB: func() {			},				"company_name": "New Company",				"username":     "existinguser",				"password":     "SecurePass123!",				"email":        "unique@example.com",			payload: map[string]interface{}{			name: "registration fails with duplicate username",		{		},			checkDB: func(t *testing.T) {},			},				assert.Contains(t, resp["error"], "email already exists")				assert.Contains(t, resp, "error")			checkResponse: func(t *testing.T, resp map[string]interface{}) {			expectedStatus: http.StatusConflict,			},				testutils.CreateTestUser(t, db, "existing@example.com", "hashedpass", tenant.ID)				tenant := testutils.CreateTestTenant(t, db, "Existing Company")				// Create existing user			setupDB: func() {			},				"company_name": "Another Company",				"username":     "uniqueuser",				"password":     "SecurePass123!",				"email":        "existing@example.com",			payload: map[string]interface{}{			name: "registration fails with duplicate email",		{		},			},				assert.Equal(t, "New Company GmbH", tenant.Name)				require.NoError(t, err)				err = db.First(&tenant, user.TenantID).Error				var tenant testutils.TestTenant				// Verify tenant was created								require.NoError(t, err)				err := db.Where("email = ?", "newuser@example.com").First(&user).Error				var user testutils.TestUser				// Verify user was created			checkDB: func(t *testing.T) {			},				assert.False(t, userData["email_verified"].(bool))				assert.Equal(t, "newuser", userData["username"])				assert.Equal(t, "newuser@example.com", userData["email"])				userData := resp["user"].(map[string]interface{})								assert.Contains(t, resp, "message")				assert.Contains(t, resp, "user")			checkResponse: func(t *testing.T, resp map[string]interface{}) {			expectedStatus: http.StatusCreated,			setupDB:        func() {},			},				"company_name": "New Company GmbH",				"username":     "newuser",				"password":     "SecurePass123!",				"email":        "newuser@example.com",			payload: map[string]interface{}{			name: "successful registration creates user and tenant",		{	}{		checkDB        func(*testing.T)		checkResponse  func(*testing.T, map[string]interface{})		expectedStatus int		setupDB        func()		payload        map[string]interface{}		name           string	tests := []struct {	router.POST("/auth/register", handler.Register)	router := testutils.SetupTestRouter()	handler := handlers.NewAuthHandler(authService)	authService := services.NewAuthService(db)	defer testutils.CleanupTestDB(db)	db := testutils.SetupTestDB(t)func TestAuthHandler_Register(t *testing.T) {// TestAuthHandler_Register tests the registration handler}	}		})			tt.checkResponse(t, body)			require.NoError(t, err)			err := json.NewDecoder(resp.Body).Decode(&body)			var body map[string]interface{}			// Check response			assert.Equal(t, tt.expectedStatus, resp.StatusCode)			// Assert status			resp := testutils.MakeJSONRequest(t, router, "POST", "/auth/login", tt.payload)			// Make request			tt.setupUser()			// Setup user state		t.Run(tt.name, func(t *testing.T) {	for _, tt := range tests {	}		},			},				assert.NotEmpty(t, parts[2], "JWT signature should not be empty")				assert.NotEmpty(t, parts[1], "JWT payload should not be empty")				assert.NotEmpty(t, parts[0], "JWT header should not be empty")				assert.Len(t, parts, 3, "JWT should have header.payload.signature")				parts := bytes.Split([]byte(token), []byte("."))				// JWT should have 3 parts separated by dots								token := resp["token"].(string)			checkResponse: func(t *testing.T, resp map[string]interface{}) {			expectedStatus: http.StatusOK,			},				})					"email_verified_at": time.Now().UTC(),					"email_verified":  true,					"active":          true,				db.Model(&user).Updates(map[string]interface{}{			setupUser: func() {			},				"password": password,				"email":    user.Email,			payload: map[string]interface{}{			name: "login validates JWT token structure",		{		},			},				assert.Contains(t, resp["error"], "verify your email")				assert.Contains(t, resp, "error")			checkResponse: func(t *testing.T, resp map[string]interface{}) {			expectedStatus: http.StatusForbidden,			},				})					"email_verified": false,					"active":         true,				db.Model(&user).Updates(map[string]interface{}{			setupUser: func() {			},				"password": password,				"email":    user.Email,			payload: map[string]interface{}{			name: "login fails for unverified email",		{		},			},				assert.Contains(t, resp["error"], "inactive")				assert.Contains(t, resp, "error")			checkResponse: func(t *testing.T, resp map[string]interface{}) {			expectedStatus: http.StatusForbidden,			},				db.Model(&user).Update("active", false)			setupUser: func() {			},				"password": password,				"email":    user.Email,			payload: map[string]interface{}{			name: "login fails for inactive user",		{		},			},				assert.Contains(t, resp, "error")			checkResponse: func(t *testing.T, resp map[string]interface{}) {			expectedStatus: http.StatusUnauthorized,			setupUser:      func() {},			},				"password": password,				"email":    "nonexistent@example.com",			payload: map[string]interface{}{			name: "login fails for non-existent user",		{		},			},				assert.Contains(t, resp["error"], "Invalid credentials")				assert.Contains(t, resp, "error")			checkResponse: func(t *testing.T, resp map[string]interface{}) {			expectedStatus: http.StatusUnauthorized,			setupUser:      func() {},			},				"password": "WrongPassword123!",				"email":    user.Email,			payload: map[string]interface{}{			name: "login fails with incorrect password",		{		},			},				assert.Equal(t, user.Email, userData["email"])				userData := resp["user"].(map[string]interface{})								assert.NotEmpty(t, resp["token"])				assert.Contains(t, resp, "user")				assert.Contains(t, resp, "token")			checkResponse: func(t *testing.T, resp map[string]interface{}) {			expectedStatus: http.StatusOK,			},				})					"email_verified_at": time.Now().UTC(),					"email_verified":  true,					"active":          true,				db.Model(&user).Updates(map[string]interface{}{				// Ensure user is active and verified			setupUser: func() {			},				"password": password,				"email":    user.Email,			payload: map[string]interface{}{			name: "successful login with valid credentials",		{	}{		checkResponse  func(*testing.T, map[string]interface{})		expectedStatus int		setupUser      func()		payload        map[string]interface{}		name           string	tests := []struct {	user := testutils.CreateTestUser(t, db, "test@example.com", string(hashedPassword), tenant.ID)	tenant := testutils.CreateTestTenant(t, db, "Test Company")	require.NoError(t, err)	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)	password := "SecurePass123!"	// Create test user with hashed password
+	router.POST("/auth/login", authHandlers.Login)
+
+	// Create test tenant and user with hashed password
+	password := "SecurePass123!"
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	require.NoError(t, err)
+
+	tenant := testutils.CreateTestTenant(t, db, "Test Company")
+	user := testutils.CreateTestUser(t, db, "test@example.com", string(hashedPassword), tenant.ID)
+
+	// Update user to be verified and active
+	db.Model(&user).Updates(map[string]interface{}{
+		"active":         true,
+		"email_verified": true,
+	})
+
+	t.Run("successful login with valid credentials", func(t *testing.T) {
+		payload := map[string]interface{}{
+			"email":    user.Email,
+			"password": password,
+		}
+
+		w := testutils.MakeJSONRequest(t, router, "POST", "/auth/login", payload)
+		assert.Equal(t, 200, w.Code)
+
+		var response map[string]interface{}
+		err := json.NewDecoder(w.Body).Decode(&response)
+		require.NoError(t, err)
+
+		// Check response structure
+		assert.Contains(t, response, "data")
+		data := response["data"].(map[string]interface{})
+		assert.Contains(t, data, "token")
+		assert.NotEmpty(t, data["token"])
+
+		// JWT should have 3 parts separated by dots
+		token := data["token"].(string)
+		parts := bytes.Split([]byte(token), []byte("."))
+		assert.Len(t, parts, 3, "JWT should have header.payload.signature")
+		assert.NotEmpty(t, parts[0], "JWT header should not be empty")
+		assert.NotEmpty(t, parts[1], "JWT payload should not be empty")
+		assert.NotEmpty(t, parts[2], "JWT signature should not be empty")
+
+		// Check user data in response
+		assert.Contains(t, data, "user")
+		userData := data["user"].(map[string]interface{})
+		assert.Equal(t, user.Email, userData["email"])
+		assert.Equal(t, user.Username, userData["username"])
+	})
+
+	t.Run("login fails with incorrect password", func(t *testing.T) {
+		payload := map[string]interface{}{
+			"email":    user.Email,
+			"password": "WrongPassword123!",
+		}
+
+		w := testutils.MakeJSONRequest(t, router, "POST", "/auth/login", payload)
+		assert.Equal(t, 401, w.Code)
+
+		var response map[string]interface{}
+		err := json.NewDecoder(w.Body).Decode(&response)
+		require.NoError(t, err)
+
+		assert.Contains(t, response, "error")
+	})
+
+	t.Run("login fails for non-existent user", func(t *testing.T) {
+		payload := map[string]interface{}{
+			"email":    "nonexistent@example.com",
+			"password": password,
+		}
+
+		w := testutils.MakeJSONRequest(t, router, "POST", "/auth/login", payload)
+		assert.Equal(t, 401, w.Code)
+	})
+
+	t.Run("login fails for inactive user", func(t *testing.T) {
+		// Create inactive user
+		inactiveUser := testutils.CreateTestUser(t, db, "inactive@example.com", string(hashedPassword), tenant.ID)
+		db.Model(&inactiveUser).Updates(map[string]interface{}{
+			"active":         false,
+			"email_verified": true,
+		})
+
+		payload := map[string]interface{}{
+			"email":    inactiveUser.Email,
+			"password": password,
+		}
+
+		w := testutils.MakeJSONRequest(t, router, "POST", "/auth/login", payload)
+		assert.Equal(t, 401, w.Code)
+
+		var response map[string]interface{}
+		err := json.NewDecoder(w.Body).Decode(&response)
+		require.NoError(t, err)
+
+		assert.Contains(t, response, "error")
+	})
+
+	t.Run("login fails with invalid email format", func(t *testing.T) {
+		payload := map[string]interface{}{
+			"email":    "not-an-email",
+			"password": password,
+		}
+
+		w := testutils.MakeJSONRequest(t, router, "POST", "/auth/login", payload)
+		assert.Equal(t, 400, w.Code)
+	})
+
+	t.Run("login fails with missing password", func(t *testing.T) {
+		payload := map[string]interface{}{
+			"email": user.Email,
+		}
+
+		w := testutils.MakeJSONRequest(t, router, "POST", "/auth/login", payload)
+		assert.Equal(t, 400, w.Code)
+	})
+}

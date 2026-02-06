@@ -511,8 +511,7 @@ func TestNewBookingTokenMiddleware(t *testing.T) {
 	middleware := middleware.NewBookingTokenMiddleware(bookingLinkSvc, db)
 
 	assert.NotNil(t, middleware)
-	assert.NotNil(t, middleware.bookingLinkSvc)
-	assert.NotNil(t, middleware.db)
+	// Note: Cannot test unexported fields bookingLinkSvc and db directly
 }
 
 func TestValidateBookingToken_PermanentToken(t *testing.T) {

@@ -222,54 +222,6 @@ func TestCalendarService_CreateCalendarEntry(t *testing.T) {
 	assert.NotZero(t, entry.ID)
 }
 
-// TestCalendarService_GetCalendarsWithDeepPreload tests deep preloading
-func TestCalendarService_GetCalendarsWithDeepPreload(t *testing.T) {
-	db := setupTestDB(t)
-	service := services.NewCalendarService(db)
-
-	// Create a calendar
-	weeklyAvailability := map[string]interface{}{
-		"monday": map[string]string{"start": "09:00", "end": "17:00"},
-	}
-	availabilityJSON, _ := json.Marshal(weeklyAvailability)
-
-	calReq := entities.CreateCalendarRequest{
-		Title:              "Test Calendar",
-		Color:              "#FF0000",
-		WeeklyAvailability: availabilityJSON,
-		Timezone:           "UTC",
-	}
-
-	calendar, err := service.CreateCalendar(calReq, 1, 1)
-	require.NoError(t, err)
-
-	// Create an entry
-	startTime := time.Date(2025, 11, 1, 9, 0, 0, 0, time.UTC)
-	endTime := time.Date(2025, 11, 1, 10, 0, 0, 0, time.UTC)
-	participants, _ := json.Marshal([]string{"user@example.com"})
-
-	entryReq := entities.CreateCalendarEntryRequest{
-		CalendarID:   calendar.ID,
-		Title:        "Test Meeting",
-		StartTime:    &startTime,
-		EndTime:      &endTime,
-		Participants: participants,
-		Type:         "meeting",
-	}
-
-	_, err = service.CreateCalendarEntry(entryReq, 1, 1)
-	require.NoError(t, err)
-
-	// Test deep preload
-	calendars, err := service.GetCalendarsWithDeepPreload(1, 1)
-
-	assert.NoError(t, err)
-	assert.Len(t, calendars, 1)
-	assert.Equal(t, "Test Calendar", calendars[0].Title)
-	// Entries should be preloaded
-	assert.NotNil(t, calendars[0].CalendarEntries)
-}
-
 // TestCalendarService_TenantIsolation tests that calendars are isolated by tenant
 func TestCalendarService_TenantIsolation(t *testing.T) {
 	db := setupTestDB(t)

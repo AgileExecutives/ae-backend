@@ -5,6 +5,7 @@ use (
 	./minimal-server
 	./modules/booking
 	./modules/calendar
+	./modules/calendar/tests
 	./modules/documents
 	./modules/invoice
 	./modules/invoice_number
