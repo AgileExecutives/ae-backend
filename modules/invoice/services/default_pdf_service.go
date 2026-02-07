@@ -69,7 +69,7 @@ func (s *DefaultPDFService) GeneratePDF(ctx context.Context, invoice *entities.I
 	}
 
 	// Convert HTML to PDF using PDF generator service
-	pdfData, err := s.pdfGenerator.ConvertHtmlStringToPDF(ctx, html)
+	_, err = s.pdfGenerator.ConvertHtmlStringToPDF(ctx, html)
 	if err != nil {
 		return 0, fmt.Errorf("failed to convert HTML to PDF: %w", err)
 	}
@@ -111,7 +111,6 @@ func (s *DefaultPDFService) convertToContractFormat(invoice *entities.Invoice) m
 		"street_address": organization.StreetAddress,
 		"zip":            organization.Zip,
 		"city":           organization.City,
-		"country":        organization.Country,
 		"email":          organization.Email,
 		"phone":          organization.Phone,
 		"tax_id":         organization.TaxID,

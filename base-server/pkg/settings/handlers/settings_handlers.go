@@ -123,7 +123,7 @@ func (h *SettingsHandler) SetOrganizationSetting(c *gin.Context) {
 		return
 	}
 
-	err = h.service.SetSetting(tenantID, organizationID, req.Domain, req.Key, req.Value, req.Type)
+	err = h.service.SetSetting(tenantID, organizationID, req.Domain, req.Key, req.Data, "")
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to set setting"})
 		return
@@ -131,12 +131,11 @@ func (h *SettingsHandler) SetOrganizationSetting(c *gin.Context) {
 
 	// Return the created setting
 	setting := entities.SettingResponse{
-		TenantID:       tenantID,
-		OrganizationID: organizationID,
-		Domain:         req.Domain,
-		Key:            req.Key,
-		Value:          req.Value.(string),
-		Type:           req.Type,
+		TenantID: tenantID,
+		Domain:   req.Domain,
+		Key:      req.Key,
+		Version:  1,
+		Data:     req.Data,
 	}
 
 	c.JSON(http.StatusCreated, setting)
@@ -170,8 +169,9 @@ func (h *SettingsHandler) UpdateOrganizationSetting(c *gin.Context) {
 	key := c.Param("key")
 
 	var req struct {
-		Type  string      `json:"type" binding:"required"`
-		Value interface{} `json:"value" binding:"required"`
+		Data  map[string]interface{} `json:"data"`
+		Type  string                 `json:"type"`
+		Value interface{}            `json:"value"`
 	}
 
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -179,19 +179,33 @@ func (h *SettingsHandler) UpdateOrganizationSetting(c *gin.Context) {
 		return
 	}
 
-	err = h.service.SetSetting(tenantID, organizationID, domain, key, req.Value, req.Type)
+	var value interface{}
+	if req.Data != nil {
+		value = req.Data
+	} else if req.Value != nil {
+		value = req.Value
+	} else {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Request must contain either data or value"})
+		return
+	}
+
+	err = h.service.SetSetting(tenantID, organizationID, domain, key, value, req.Type)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update setting"})
 		return
 	}
 
+	data, ok := value.(map[string]interface{})
+	if !ok {
+		data = map[string]interface{}{"value": value}
+	}
+
 	setting := entities.SettingResponse{
-		TenantID:       tenantID,
-		OrganizationID: organizationID,
-		Domain:         domain,
-		Key:            key,
-		Value:          req.Value.(string),
-		Type:           req.Type,
+		TenantID: tenantID,
+		Domain:   domain,
+		Key:      key,
+		Version:  1,
+		Data:     data,
 	}
 
 	c.JSON(http.StatusOK, setting)
@@ -267,7 +281,7 @@ func (h *SettingsHandler) BulkSetOrganizationSettings(c *gin.Context) {
 	var errors []string
 
 	for _, setting := range req.Settings {
-		err = h.service.SetSetting(tenantID, organizationID, setting.Domain, setting.Key, setting.Value, setting.Type)
+		err = h.service.SetSetting(tenantID, organizationID, setting.Domain, setting.Key, setting.Data, "")
 		if err != nil {
 			errors = append(errors, err.Error())
 		} else {

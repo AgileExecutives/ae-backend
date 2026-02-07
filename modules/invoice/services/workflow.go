@@ -52,16 +52,12 @@ func (s *InvoiceService) FinalizeInvoice(ctx context.Context, tenantID, invoiceI
 	var invoiceNumber string
 	if invoice.InvoiceNumber == "" || len(invoice.InvoiceNumber) > 5 && invoice.InvoiceNumber[:6] == "DRAFT-" {
 		invoiceNumberSvc := invoiceNumberService.NewInvoiceNumberService(tx)
-		number, err := invoiceNumberSvc.GenerateInvoiceNumber(
-			invoice.OrganizationID,
-			tenantID,
-			invoice.InvoiceDate,
-		)
+		resp, err := invoiceNumberSvc.GenerateNextInvoiceNumber(ctx, tenantID, invoice.OrganizationID)
 		if err != nil {
 			tx.Rollback()
 			return nil, fmt.Errorf("failed to generate invoice number: %w", err)
 		}
-		invoiceNumber = number
+		invoiceNumber = resp.InvoiceNumber
 	} else {
 		invoiceNumber = invoice.InvoiceNumber
 	}

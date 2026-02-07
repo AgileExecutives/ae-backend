@@ -8,175 +8,108 @@ import (
 	"github.com/stretchr/testify/mock"
 )
 
-// MockContractProvider is a mock implementation of ContractProvider
+// MockContractProvider is a mock implementation of ContractProvider.
 type MockContractProvider struct {
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-}	assert.Contains(t, err.Error(), "unknown contract")	assert.Error(t, err)	err = renderer.validateContract("unknown_contract", jsonData)	jsonData, _ := json.Marshal(testData)	}		"field": "value",	testData := map[string]interface{}{	assert.NoError(t, err)	renderer, err := NewDBRenderer("testdata", mockProvider)	mockProvider.On("GetAvailableContracts").Return([]string{}, nil)	mockProvider := new(MockContractProvider)func TestDBRenderer_UnknownContract(t *testing.T) {}	assert.NotNil(t, contracts)	// The exact contracts returned depend on successful schema compilation	contracts := renderer.GetAvailableContracts()	assert.NoError(t, err)	renderer, err := NewDBRenderer("testdata", mockProvider)	}		}, nil)			},				"field": map[string]interface{}{"type": "string"},			"properties": map[string]interface{}{			"type": "object",		mockProvider.On("GetContract", contractName).Return(map[string]interface{}{	for _, contractName := range expectedContracts {	// Mock contracts for initialization	mockProvider.On("GetAvailableContracts").Return(expectedContracts, nil)	expectedContracts := []string{"password_reset", "welcome", "booking_confirmation"}		mockProvider := new(MockContractProvider)func TestDBRenderer_GetAvailableContracts(t *testing.T) {}	// Should return an error for validation failure	err = renderer.validateContract("password_reset", jsonData)	jsonData, _ := json.Marshal(invalidData)	}		// Missing RecipientName		"AppName": "Test App",	invalidData := map[string]interface{}{	// Test invalid data (missing required field)	assert.NoError(t, err)	renderer, err := NewDBRenderer("testdata", mockProvider)	mockProvider.On("GetContract", "password_reset").Return(schema, nil)	mockProvider.On("GetAvailableContracts").Return([]string{"password_reset"}, nil)	}		"required": []string{"AppName", "RecipientName"},		},			},				"type": "string",			"RecipientName": map[string]interface{}{			},				"type": "string",			"AppName": map[string]interface{}{		"properties": map[string]interface{}{		"type":    "object",		"$schema": "http://json-schema.org/draft-07/schema#",	schema := map[string]interface{}{		mockProvider := new(MockContractProvider)func TestDBRenderer_ValidateContract_InvalidData(t *testing.T) {}	// In a real implementation, you'd want to test with actual schema files	// The validation might pass or fail depending on how the JSON schema compilation works	err = renderer.validateContract("password_reset", jsonData)	jsonData, _ := json.Marshal(validData)	}		"RecipientName": "John Doe",		"AppName":       "Test App",	validData := map[string]interface{}{	// Test valid data	assert.NoError(t, err)	renderer, err := NewDBRenderer("testdata", mockProvider)	mockProvider.On("GetContract", "password_reset").Return(schema, nil)	mockProvider.On("GetAvailableContracts").Return([]string{"password_reset"}, nil)	}		"required": []string{"AppName", "RecipientName"},		},			},				"type": "string",			"RecipientName": map[string]interface{}{			},				"type": "string",			"AppName": map[string]interface{}{		"properties": map[string]interface{}{		"type":    "object",		"$schema": "http://json-schema.org/draft-07/schema#",	schema := map[string]interface{}{		mockProvider := new(MockContractProvider)func TestDBRenderer_ValidateContract_Success(t *testing.T) {}	// (assuming the schema compilation worked)	// This should not error because our test data matches the schema	err = renderer.validateContract("password_reset", jsonData)	// Test that the contract validation would work (even if template file is missing)		// For now, we'll test the validation part	// In a real test environment, you would create actual test template files	// Note: This test would normally fail because we don't have actual template files	assert.NoError(t, err)	jsonData, err := json.Marshal(testData)	}		"RecipientName": "John Doe",		"AppName":       "Test App",	testData := map[string]interface{}{	// Test data that matches the schema	assert.NoError(t, err)	renderer, err := NewDBRenderer(testTemplateDir, mockProvider)	// Create renderer		testTemplateDir := "testdata"	// Create test template directory with a simple template	mockProvider.On("GetContract", "password_reset").Return(schema, nil)	mockProvider.On("GetAvailableContracts").Return([]string{"password_reset"}, nil)	}		"required": []string{"AppName", "RecipientName"},		},			},				"type": "string",			"RecipientName": map[string]interface{}{			},				"type": "string",			"AppName": map[string]interface{}{		"properties": map[string]interface{}{		"type":    "object",		"$schema": "http://json-schema.org/draft-07/schema#",	schema := map[string]interface{}{	// Define a simple JSON schema for password reset		mockProvider := new(MockContractProvider)	// Setup mock contract providerfunc TestDBRenderer_RenderTemplate_Success(t *testing.T) {}	return args.Get(0).([]string), args.Error(1)	args := m.Called()func (m *MockContractProvider) GetAvailableContracts() ([]string, error) {}	return args.Get(0).(map[string]interface{}), args.Error(1)	args := m.Called(templateKey)func (m *MockContractProvider) GetContract(templateKey string) (map[string]interface{}, error) {}	mock.Mock
+	mock.Mock
+}
+
+func (m *MockContractProvider) GetContract(templateKey string) (map[string]interface{}, error) {
+	args := m.Called(templateKey)
+	if v := args.Get(0); v != nil {
+		return v.(map[string]interface{}), args.Error(1)
+	}
+	return nil, args.Error(1)
+}
+
+func (m *MockContractProvider) GetAvailableContracts() ([]string, error) {
+	args := m.Called()
+	if v := args.Get(0); v != nil {
+		return v.([]string), args.Error(1)
+	}
+	return nil, args.Error(1)
+}
+
+func TestDBRenderer_GetAvailableContracts(t *testing.T) {
+	mockProvider := new(MockContractProvider)
+	mockProvider.On("GetAvailableContracts").Return([]string{"password_reset", "welcome"}, nil)
+	mockProvider.On("GetContract", "password_reset").Return(minimalSchemaWithRequired([]string{"AppName", "RecipientName"}), nil)
+	mockProvider.On("GetContract", "welcome").Return(minimalSchemaWithRequired([]string{"RecipientName"}), nil)
+
+	renderer, err := NewDBRenderer("testdata", mockProvider)
+	assert.NoError(t, err)
+
+	contracts := renderer.GetAvailableContracts()
+	assert.ElementsMatch(t, []string{"password_reset", "welcome"}, contracts)
+
+	mockProvider.AssertExpectations(t)
+}
+
+func TestDBRenderer_ValidateContract_Success(t *testing.T) {
+	mockProvider := new(MockContractProvider)
+	mockProvider.On("GetAvailableContracts").Return([]string{"password_reset"}, nil)
+	mockProvider.On("GetContract", "password_reset").Return(minimalSchemaWithRequired([]string{"AppName", "RecipientName"}), nil)
+
+	renderer, err := NewDBRenderer("testdata", mockProvider)
+	assert.NoError(t, err)
+
+	data := map[string]interface{}{
+		"AppName":       "Test App",
+		"RecipientName": "John Doe",
+	}
+	jsonData, err := json.Marshal(data)
+	assert.NoError(t, err)
+
+	err = renderer.validateContract("password_reset", jsonData)
+	assert.NoError(t, err)
+	mockProvider.AssertExpectations(t)
+}
+
+func TestDBRenderer_ValidateContract_InvalidData(t *testing.T) {
+	mockProvider := new(MockContractProvider)
+	mockProvider.On("GetAvailableContracts").Return([]string{"password_reset"}, nil)
+	mockProvider.On("GetContract", "password_reset").Return(minimalSchemaWithRequired([]string{"AppName", "RecipientName"}), nil)
+
+	renderer, err := NewDBRenderer("testdata", mockProvider)
+	assert.NoError(t, err)
+
+	// Missing RecipientName
+	data := map[string]interface{}{
+		"AppName": "Test App",
+	}
+	jsonData, err := json.Marshal(data)
+	assert.NoError(t, err)
+
+	err = renderer.validateContract("password_reset", jsonData)
+	assert.Error(t, err)
+	mockProvider.AssertExpectations(t)
+}
+
+func TestDBRenderer_UnknownContract(t *testing.T) {
+	mockProvider := new(MockContractProvider)
+	mockProvider.On("GetAvailableContracts").Return([]string{}, nil)
+
+	renderer, err := NewDBRenderer("testdata", mockProvider)
+	assert.NoError(t, err)
+
+	jsonData, err := json.Marshal(map[string]interface{}{"field": "value"})
+	assert.NoError(t, err)
+
+	err = renderer.validateContract("unknown_contract", jsonData)
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "unknown contract")
+	mockProvider.AssertExpectations(t)
+}
+
+func minimalSchemaWithRequired(required []string) map[string]interface{} {
+	return map[string]interface{}{
+		"$schema": "http://json-schema.org/draft-07/schema#",
+		"type":    "object",
+		"properties": map[string]interface{}{
+			"AppName": map[string]interface{}{"type": "string"},
+			"RecipientName": map[string]interface{}{
+				"type": "string",
+			},
+		},
+		"required": required,
+	}
+}

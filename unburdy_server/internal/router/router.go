@@ -24,7 +24,7 @@ func SetupExtendedRouter(db *gorm.DB) *gin.Engine {
 
 	// Initialize modular handlers
 	clientHandler := handlers.NewClientHandler(clientService)
-	costProviderHandler := handlers.NewCostProviderHandler(costProviderService)
+	costProviderHandler := handlers.NewCostProviderHandler(costProviderService, clientService)
 
 	// Add unburdy-specific protected routes to the existing router
 	protected := r.Group("/api/v1")
