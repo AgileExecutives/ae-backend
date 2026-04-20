@@ -8052,6 +8052,323 @@ const docTemplate = `{
                 }
             }
         },
+        "/organizations": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Retrieve all organizations for the authenticated user with pagination",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "organizations"
+                ],
+                "summary": "Get all organizations",
+                "operationId": "getOrganizations",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "default": 1,
+                        "description": "Page number",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 10,
+                        "description": "Number of items per page",
+                        "name": "limit",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.OrganizationListAPIResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Create a new organization with the provided information",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "organizations"
+                ],
+                "summary": "Create a new organization",
+                "operationId": "createOrganization",
+                "parameters": [
+                    {
+                        "description": "Organization information",
+                        "name": "organization",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.CreateOrganizationRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/models.OrganizationAPIResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/organizations/supported-formats": {
+            "get": {
+                "description": "Get all supported date, time, and amount formats with examples",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "organizations"
+                ],
+                "summary": "Get supported formats",
+                "operationId": "getSupportedFormats",
+                "responses": {
+                    "200": {
+                        "description": "Supported formats with examples",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/organizations/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Retrieve a specific organization by ID",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "organizations"
+                ],
+                "summary": "Get an organization by ID",
+                "operationId": "getOrganizationById",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Organization ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.OrganizationAPIResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Update an organization's information",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "organizations"
+                ],
+                "summary": "Update an organization",
+                "operationId": "updateOrganization",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Organization ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Updated organization information",
+                        "name": "organization",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.UpdateOrganizationRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.OrganizationAPIResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Delete an organization by ID",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "organizations"
+                ],
+                "summary": "Delete an organization",
+                "operationId": "deleteOrganization",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Organization ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.OrganizationDeleteResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_ae-base-server_internal_models.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/pdf/create": {
             "post": {
                 "security": [
@@ -14948,110 +15265,6 @@ const docTemplate = `{
                 }
             }
         },
-        "models.ClientResponse": {
-            "type": "object",
-            "properties": {
-                "admission_date": {
-                    "type": "string"
-                },
-                "alternative_email": {
-                    "type": "string"
-                },
-                "alternative_first_name": {
-                    "type": "string"
-                },
-                "alternative_last_name": {
-                    "type": "string"
-                },
-                "alternative_phone": {
-                    "type": "string"
-                },
-                "city": {
-                    "type": "string"
-                },
-                "contact_email": {
-                    "type": "string"
-                },
-                "contact_first_name": {
-                    "type": "string"
-                },
-                "contact_last_name": {
-                    "type": "string"
-                },
-                "contact_phone": {
-                    "type": "string"
-                },
-                "cost_provider": {
-                    "$ref": "#/definitions/models.CostProviderResponse"
-                },
-                "cost_provider_id": {
-                    "type": "integer"
-                },
-                "created_at": {
-                    "type": "string"
-                },
-                "date_of_birth": {
-                    "type": "string"
-                },
-                "email": {
-                    "type": "string"
-                },
-                "first_name": {
-                    "type": "string"
-                },
-                "gender": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "integer"
-                },
-                "invoiced_individually": {
-                    "type": "boolean"
-                },
-                "last_name": {
-                    "type": "string"
-                },
-                "notes": {
-                    "type": "string"
-                },
-                "phone": {
-                    "type": "string"
-                },
-                "primary_language": {
-                    "type": "string"
-                },
-                "provider_approval_code": {
-                    "type": "string"
-                },
-                "provider_approval_date": {
-                    "type": "string"
-                },
-                "referral_source": {
-                    "type": "string"
-                },
-                "status": {
-                    "type": "string"
-                },
-                "street_address": {
-                    "type": "string"
-                },
-                "tenant_id": {
-                    "type": "integer"
-                },
-                "therapy_title": {
-                    "type": "string"
-                },
-                "unit_price": {
-                    "type": "number"
-                },
-                "updated_at": {
-                    "type": "string"
-                },
-                "zip": {
-                    "type": "string"
-                }
-            }
-        },
         "models.Contact": {
             "type": "object",
             "required": [
@@ -15236,187 +15449,77 @@ const docTemplate = `{
                 }
             }
         },
-        "models.CostProviderResponse": {
-            "type": "object",
-            "properties": {
-                "city": {
-                    "type": "string"
-                },
-                "contact_name": {
-                    "type": "string"
-                },
-                "created_at": {
-                    "type": "string"
-                },
-                "department": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "integer"
-                },
-                "organization": {
-                    "type": "string"
-                },
-                "street_address": {
-                    "type": "string"
-                },
-                "tenant_id": {
-                    "type": "integer"
-                },
-                "updated_at": {
-                    "type": "string"
-                },
-                "zip": {
-                    "type": "string"
-                }
-            }
-        },
-        "models.CreateClientRequest": {
+        "models.CreateOrganizationRequest": {
             "type": "object",
             "required": [
-                "first_name",
-                "last_name"
+                "name"
             ],
             "properties": {
-                "admission_date": {
-                    "type": "string",
-                    "example": "2025-01-01"
+                "additional_payment_methods": {
+                    "type": "object"
                 },
-                "alternative_email": {
+                "bankaccount_bank": {
                     "type": "string",
-                    "example": "johnny.d@example.com"
+                    "example": "Deutsche Bank"
                 },
-                "alternative_first_name": {
+                "bankaccount_bic": {
                     "type": "string",
-                    "example": "Johnny"
+                    "example": "DEUTDEFF"
                 },
-                "alternative_last_name": {
+                "bankaccount_iban": {
                     "type": "string",
-                    "example": "D"
+                    "example": "DE89370400440532013000"
                 },
-                "alternative_phone": {
+                "bankaccount_owner": {
                     "type": "string",
-                    "example": "+0987654321"
+                    "example": "Acme Corporation"
                 },
                 "city": {
                     "type": "string",
                     "example": "New York"
                 },
-                "contact_email": {
-                    "type": "string",
-                    "example": "jane.smith@example.com"
-                },
-                "contact_first_name": {
-                    "type": "string",
-                    "example": "Jane"
-                },
-                "contact_last_name": {
-                    "type": "string",
-                    "example": "Smith"
-                },
-                "contact_phone": {
-                    "type": "string",
-                    "example": "+1234567890"
-                },
-                "cost_provider_id": {
-                    "type": "integer",
-                    "example": 1
-                },
-                "date_of_birth": {
-                    "type": "string",
-                    "example": "1990-01-15"
-                },
                 "email": {
                     "type": "string",
-                    "example": "john.doe@example.com"
+                    "example": "info@acme.com"
                 },
-                "first_name": {
+                "invoice_content": {
+                    "type": "object"
+                },
+                "name": {
                     "type": "string",
-                    "example": "John"
+                    "example": "Acme Corporation"
                 },
-                "gender": {
+                "owner_name": {
                     "type": "string",
-                    "example": "male"
+                    "example": "John Doe"
                 },
-                "invoiced_individually": {
-                    "type": "boolean",
-                    "example": false
-                },
-                "last_name": {
+                "owner_title": {
                     "type": "string",
-                    "example": "Doe"
-                },
-                "notes": {
-                    "type": "string",
-                    "example": "Additional notes about the client"
+                    "example": "CEO"
                 },
                 "phone": {
                     "type": "string",
-                    "example": "+1234567890"
-                },
-                "primary_language": {
-                    "type": "string",
-                    "example": "English"
-                },
-                "provider_approval_code": {
-                    "type": "string",
-                    "example": "PROV123456"
-                },
-                "provider_approval_date": {
-                    "type": "string",
-                    "example": "2025-01-15"
-                },
-                "referral_source": {
-                    "type": "string",
-                    "example": "Doctor Smith"
-                },
-                "status": {
-                    "type": "string",
-                    "example": "waiting"
+                    "example": "+1-555-0123"
                 },
                 "street_address": {
                     "type": "string",
-                    "example": "123 Main Street"
+                    "example": "123 Business St"
                 },
-                "therapy_title": {
+                "tax_id": {
                     "type": "string",
-                    "example": "Cognitive Behavioral Therapy"
+                    "example": "TAX123456"
+                },
+                "tax_rate": {
+                    "type": "number",
+                    "example": 19
+                },
+                "tax_ustid": {
+                    "type": "string",
+                    "example": "DE123456789"
                 },
                 "unit_price": {
                     "type": "number",
                     "example": 150
-                },
-                "zip": {
-                    "type": "string",
-                    "example": "12345"
-                }
-            }
-        },
-        "models.CreateCostProviderRequest": {
-            "type": "object",
-            "required": [
-                "organization"
-            ],
-            "properties": {
-                "city": {
-                    "type": "string",
-                    "example": "New York"
-                },
-                "contact_name": {
-                    "type": "string",
-                    "example": "Jane Smith"
-                },
-                "department": {
-                    "type": "string",
-                    "example": "Mental Health Division"
-                },
-                "organization": {
-                    "type": "string",
-                    "example": "Health Insurance Corp"
-                },
-                "street_address": {
-                    "type": "string",
-                    "example": "456 Insurance Blvd"
                 },
                 "zip": {
                     "type": "string",
@@ -15446,6 +15549,161 @@ const docTemplate = `{
                 "phone": {
                     "type": "string",
                     "example": "+1-555-123-4567"
+                }
+            }
+        },
+        "models.OrganizationAPIResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/models.OrganizationResponse"
+                },
+                "message": {
+                    "type": "string",
+                    "example": "Organization retrieved successfully"
+                },
+                "success": {
+                    "type": "boolean",
+                    "example": true
+                }
+            }
+        },
+        "models.OrganizationDeleteResponse": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string",
+                    "example": "Organization deleted successfully"
+                },
+                "success": {
+                    "type": "boolean",
+                    "example": true
+                }
+            }
+        },
+        "models.OrganizationListAPIResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.OrganizationResponse"
+                    }
+                },
+                "limit": {
+                    "type": "integer",
+                    "example": 10
+                },
+                "message": {
+                    "type": "string",
+                    "example": "Organizations retrieved successfully"
+                },
+                "page": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "success": {
+                    "type": "boolean",
+                    "example": true
+                },
+                "total": {
+                    "type": "integer",
+                    "example": 100
+                }
+            }
+        },
+        "models.OrganizationResponse": {
+            "type": "object",
+            "properties": {
+                "additional_payment_methods": {
+                    "type": "object"
+                },
+                "amount_format": {
+                    "type": "string"
+                },
+                "bankaccount_bank": {
+                    "type": "string"
+                },
+                "bankaccount_bic": {
+                    "type": "string"
+                },
+                "bankaccount_iban": {
+                    "type": "string"
+                },
+                "bankaccount_owner": {
+                    "type": "string"
+                },
+                "city": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "date_format": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "extra_efforts_billing_mode": {
+                    "type": "string"
+                },
+                "extra_efforts_config": {
+                    "type": "object"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "invoice_content": {
+                    "type": "object"
+                },
+                "line_item_double_unit_text": {
+                    "type": "string"
+                },
+                "line_item_single_unit_text": {
+                    "type": "string"
+                },
+                "locale": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "owner_name": {
+                    "type": "string"
+                },
+                "owner_title": {
+                    "type": "string"
+                },
+                "phone": {
+                    "type": "string"
+                },
+                "street_address": {
+                    "type": "string"
+                },
+                "tax_id": {
+                    "type": "string"
+                },
+                "tax_rate": {
+                    "type": "number"
+                },
+                "tax_ustid": {
+                    "type": "string"
+                },
+                "tenant_id": {
+                    "type": "integer"
+                },
+                "time_format": {
+                    "type": "string"
+                },
+                "unit_price": {
+                    "type": "number"
+                },
+                "updated_at": {
+                    "type": "string"
+                },
+                "zip": {
+                    "type": "string"
                 }
             }
         },
@@ -15516,145 +15774,74 @@ const docTemplate = `{
                 }
             }
         },
-        "models.UpdateClientRequest": {
+        "models.UpdateOrganizationRequest": {
             "type": "object",
             "properties": {
-                "admission_date": {
-                    "type": "string",
-                    "example": "2025-01-01"
+                "additional_payment_methods": {
+                    "type": "object"
                 },
-                "alternative_email": {
+                "bankaccount_bank": {
                     "type": "string",
-                    "example": "johnny.d@example.com"
+                    "example": "Deutsche Bank"
                 },
-                "alternative_first_name": {
+                "bankaccount_bic": {
                     "type": "string",
-                    "example": "Johnny"
+                    "example": "DEUTDEFF"
                 },
-                "alternative_last_name": {
+                "bankaccount_iban": {
                     "type": "string",
-                    "example": "D"
+                    "example": "DE89370400440532013000"
                 },
-                "alternative_phone": {
+                "bankaccount_owner": {
                     "type": "string",
-                    "example": "+0987654321"
+                    "example": "Acme Corporation"
                 },
                 "city": {
                     "type": "string",
                     "example": "New York"
                 },
-                "contact_email": {
-                    "type": "string",
-                    "example": "jane.smith@example.com"
-                },
-                "contact_first_name": {
-                    "type": "string",
-                    "example": "Jane"
-                },
-                "contact_last_name": {
-                    "type": "string",
-                    "example": "Smith"
-                },
-                "contact_phone": {
-                    "type": "string",
-                    "example": "+1234567890"
-                },
-                "cost_provider_id": {
-                    "type": "integer",
-                    "example": 1
-                },
-                "date_of_birth": {
-                    "type": "string",
-                    "example": "1990-01-15"
-                },
                 "email": {
                     "type": "string",
-                    "example": "john.doe@example.com"
+                    "example": "info@acme.com"
                 },
-                "first_name": {
+                "invoice_content": {
+                    "type": "object"
+                },
+                "name": {
                     "type": "string",
-                    "example": "John"
+                    "example": "Acme Corporation"
                 },
-                "gender": {
+                "owner_name": {
                     "type": "string",
-                    "example": "male"
+                    "example": "John Doe"
                 },
-                "invoiced_individually": {
-                    "type": "boolean",
-                    "example": false
-                },
-                "last_name": {
+                "owner_title": {
                     "type": "string",
-                    "example": "Doe"
-                },
-                "notes": {
-                    "type": "string",
-                    "example": "Additional notes about the client"
+                    "example": "CEO"
                 },
                 "phone": {
                     "type": "string",
-                    "example": "+1234567890"
-                },
-                "primary_language": {
-                    "type": "string",
-                    "example": "English"
-                },
-                "provider_approval_code": {
-                    "type": "string",
-                    "example": "PROV123456"
-                },
-                "provider_approval_date": {
-                    "type": "string",
-                    "example": "2025-01-15"
-                },
-                "referral_source": {
-                    "type": "string",
-                    "example": "Doctor Smith"
-                },
-                "status": {
-                    "type": "string",
-                    "example": "active"
+                    "example": "+1-555-0123"
                 },
                 "street_address": {
                     "type": "string",
-                    "example": "123 Main Street"
+                    "example": "123 Business St"
                 },
-                "therapy_title": {
+                "tax_id": {
                     "type": "string",
-                    "example": "Cognitive Behavioral Therapy"
+                    "example": "TAX123456"
+                },
+                "tax_rate": {
+                    "type": "number",
+                    "example": 19
+                },
+                "tax_ustid": {
+                    "type": "string",
+                    "example": "DE123456789"
                 },
                 "unit_price": {
                     "type": "number",
                     "example": 150
-                },
-                "zip": {
-                    "type": "string",
-                    "example": "12345"
-                }
-            }
-        },
-        "models.UpdateCostProviderRequest": {
-            "type": "object",
-            "properties": {
-                "city": {
-                    "type": "string",
-                    "example": "New York"
-                },
-                "contact_name": {
-                    "type": "string",
-                    "example": "Jane Smith"
-                },
-                "department": {
-                    "type": "string",
-                    "example": "Mental Health Division"
-                },
-                "organization": {
-                    "type": "string",
-                    "example": "Health Insurance Corp"
-                },
-                "street_address": {
-                    "type": "string",
-                    "example": "456 Insurance Blvd"
                 },
                 "zip": {
                     "type": "string",

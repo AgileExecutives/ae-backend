@@ -3133,75 +3133,6 @@ definitions:
         example: true
         type: boolean
     type: object
-  models.ClientResponse:
-    properties:
-      admission_date:
-        type: string
-      alternative_email:
-        type: string
-      alternative_first_name:
-        type: string
-      alternative_last_name:
-        type: string
-      alternative_phone:
-        type: string
-      city:
-        type: string
-      contact_email:
-        type: string
-      contact_first_name:
-        type: string
-      contact_last_name:
-        type: string
-      contact_phone:
-        type: string
-      cost_provider:
-        $ref: '#/definitions/models.CostProviderResponse'
-      cost_provider_id:
-        type: integer
-      created_at:
-        type: string
-      date_of_birth:
-        type: string
-      email:
-        type: string
-      first_name:
-        type: string
-      gender:
-        type: string
-      id:
-        type: integer
-      invoiced_individually:
-        type: boolean
-      last_name:
-        type: string
-      notes:
-        type: string
-      phone:
-        type: string
-      primary_language:
-        type: string
-      provider_approval_code:
-        type: string
-      provider_approval_date:
-        type: string
-      referral_source:
-        type: string
-      status:
-        type: string
-      street_address:
-        type: string
-      tenant_id:
-        type: integer
-      therapy_title:
-        type: string
-      unit_price:
-        type: number
-      updated_at:
-        type: string
-      zip:
-        type: string
-    type: object
   models.Contact:
     properties:
       active:
@@ -3324,108 +3255,53 @@ definitions:
       zip:
         type: string
     type: object
-  models.CostProviderResponse:
+  models.CreateOrganizationRequest:
     properties:
-      city:
+      additional_payment_methods:
+        type: object
+      bankaccount_bank:
+        example: Deutsche Bank
         type: string
-      contact_name:
+      bankaccount_bic:
+        example: DEUTDEFF
         type: string
-      created_at:
+      bankaccount_iban:
+        example: DE89370400440532013000
         type: string
-      department:
-        type: string
-      id:
-        type: integer
-      organization:
-        type: string
-      street_address:
-        type: string
-      tenant_id:
-        type: integer
-      updated_at:
-        type: string
-      zip:
-        type: string
-    type: object
-  models.CreateClientRequest:
-    properties:
-      admission_date:
-        example: "2025-01-01"
-        type: string
-      alternative_email:
-        example: johnny.d@example.com
-        type: string
-      alternative_first_name:
-        example: Johnny
-        type: string
-      alternative_last_name:
-        example: D
-        type: string
-      alternative_phone:
-        example: "+0987654321"
+      bankaccount_owner:
+        example: Acme Corporation
         type: string
       city:
         example: New York
         type: string
-      contact_email:
-        example: jane.smith@example.com
-        type: string
-      contact_first_name:
-        example: Jane
-        type: string
-      contact_last_name:
-        example: Smith
-        type: string
-      contact_phone:
-        example: "+1234567890"
-        type: string
-      cost_provider_id:
-        example: 1
-        type: integer
-      date_of_birth:
-        example: "1990-01-15"
-        type: string
       email:
-        example: john.doe@example.com
+        example: info@acme.com
         type: string
-      first_name:
-        example: John
+      invoice_content:
+        type: object
+      name:
+        example: Acme Corporation
         type: string
-      gender:
-        example: male
+      owner_name:
+        example: John Doe
         type: string
-      invoiced_individually:
-        example: false
-        type: boolean
-      last_name:
-        example: Doe
-        type: string
-      notes:
-        example: Additional notes about the client
+      owner_title:
+        example: CEO
         type: string
       phone:
-        example: "+1234567890"
-        type: string
-      primary_language:
-        example: English
-        type: string
-      provider_approval_code:
-        example: PROV123456
-        type: string
-      provider_approval_date:
-        example: "2025-01-15"
-        type: string
-      referral_source:
-        example: Doctor Smith
-        type: string
-      status:
-        example: waiting
+        example: +1-555-0123
         type: string
       street_address:
-        example: 123 Main Street
+        example: 123 Business St
         type: string
-      therapy_title:
-        example: Cognitive Behavioral Therapy
+      tax_id:
+        example: TAX123456
+        type: string
+      tax_rate:
+        example: 19
+        type: number
+      tax_ustid:
+        example: DE123456789
         type: string
       unit_price:
         example: 150
@@ -3434,31 +3310,7 @@ definitions:
         example: "12345"
         type: string
     required:
-    - first_name
-    - last_name
-    type: object
-  models.CreateCostProviderRequest:
-    properties:
-      city:
-        example: New York
-        type: string
-      contact_name:
-        example: Jane Smith
-        type: string
-      department:
-        example: Mental Health Division
-        type: string
-      organization:
-        example: Health Insurance Corp
-        type: string
-      street_address:
-        example: 456 Insurance Blvd
-        type: string
-      zip:
-        example: "12345"
-        type: string
-    required:
-    - organization
+    - name
     type: object
   models.CustomerRequest:
     properties:
@@ -3477,6 +3329,111 @@ definitions:
     required:
     - email
     - name
+    type: object
+  models.OrganizationAPIResponse:
+    properties:
+      data:
+        $ref: '#/definitions/models.OrganizationResponse'
+      message:
+        example: Organization retrieved successfully
+        type: string
+      success:
+        example: true
+        type: boolean
+    type: object
+  models.OrganizationDeleteResponse:
+    properties:
+      message:
+        example: Organization deleted successfully
+        type: string
+      success:
+        example: true
+        type: boolean
+    type: object
+  models.OrganizationListAPIResponse:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/models.OrganizationResponse'
+        type: array
+      limit:
+        example: 10
+        type: integer
+      message:
+        example: Organizations retrieved successfully
+        type: string
+      page:
+        example: 1
+        type: integer
+      success:
+        example: true
+        type: boolean
+      total:
+        example: 100
+        type: integer
+    type: object
+  models.OrganizationResponse:
+    properties:
+      additional_payment_methods:
+        type: object
+      amount_format:
+        type: string
+      bankaccount_bank:
+        type: string
+      bankaccount_bic:
+        type: string
+      bankaccount_iban:
+        type: string
+      bankaccount_owner:
+        type: string
+      city:
+        type: string
+      created_at:
+        type: string
+      date_format:
+        type: string
+      email:
+        type: string
+      extra_efforts_billing_mode:
+        type: string
+      extra_efforts_config:
+        type: object
+      id:
+        type: integer
+      invoice_content:
+        type: object
+      line_item_double_unit_text:
+        type: string
+      line_item_single_unit_text:
+        type: string
+      locale:
+        type: string
+      name:
+        type: string
+      owner_name:
+        type: string
+      owner_title:
+        type: string
+      phone:
+        type: string
+      street_address:
+        type: string
+      tax_id:
+        type: string
+      tax_rate:
+        type: number
+      tax_ustid:
+        type: string
+      tenant_id:
+        type: integer
+      time_format:
+        type: string
+      unit_price:
+        type: number
+      updated_at:
+        type: string
+      zip:
+        type: string
     type: object
   models.PlanRequest:
     properties:
@@ -3524,110 +3481,57 @@ definitions:
       slug:
         type: string
     type: object
-  models.UpdateClientRequest:
+  models.UpdateOrganizationRequest:
     properties:
-      admission_date:
-        example: "2025-01-01"
+      additional_payment_methods:
+        type: object
+      bankaccount_bank:
+        example: Deutsche Bank
         type: string
-      alternative_email:
-        example: johnny.d@example.com
+      bankaccount_bic:
+        example: DEUTDEFF
         type: string
-      alternative_first_name:
-        example: Johnny
+      bankaccount_iban:
+        example: DE89370400440532013000
         type: string
-      alternative_last_name:
-        example: D
-        type: string
-      alternative_phone:
-        example: "+0987654321"
+      bankaccount_owner:
+        example: Acme Corporation
         type: string
       city:
         example: New York
         type: string
-      contact_email:
-        example: jane.smith@example.com
-        type: string
-      contact_first_name:
-        example: Jane
-        type: string
-      contact_last_name:
-        example: Smith
-        type: string
-      contact_phone:
-        example: "+1234567890"
-        type: string
-      cost_provider_id:
-        example: 1
-        type: integer
-      date_of_birth:
-        example: "1990-01-15"
-        type: string
       email:
-        example: john.doe@example.com
+        example: info@acme.com
         type: string
-      first_name:
-        example: John
+      invoice_content:
+        type: object
+      name:
+        example: Acme Corporation
         type: string
-      gender:
-        example: male
+      owner_name:
+        example: John Doe
         type: string
-      invoiced_individually:
-        example: false
-        type: boolean
-      last_name:
-        example: Doe
-        type: string
-      notes:
-        example: Additional notes about the client
+      owner_title:
+        example: CEO
         type: string
       phone:
-        example: "+1234567890"
-        type: string
-      primary_language:
-        example: English
-        type: string
-      provider_approval_code:
-        example: PROV123456
-        type: string
-      provider_approval_date:
-        example: "2025-01-15"
-        type: string
-      referral_source:
-        example: Doctor Smith
-        type: string
-      status:
-        example: active
+        example: +1-555-0123
         type: string
       street_address:
-        example: 123 Main Street
+        example: 123 Business St
         type: string
-      therapy_title:
-        example: Cognitive Behavioral Therapy
+      tax_id:
+        example: TAX123456
+        type: string
+      tax_rate:
+        example: 19
+        type: number
+      tax_ustid:
+        example: DE123456789
         type: string
       unit_price:
         example: 150
         type: number
-      zip:
-        example: "12345"
-        type: string
-    type: object
-  models.UpdateCostProviderRequest:
-    properties:
-      city:
-        example: New York
-        type: string
-      contact_name:
-        example: Jane Smith
-        type: string
-      department:
-        example: Mental Health Division
-        type: string
-      organization:
-        example: Health Insurance Corp
-        type: string
-      street_address:
-        example: 456 Insurance Blvd
-        type: string
       zip:
         example: "12345"
         type: string
@@ -8937,6 +8841,212 @@ paths:
       summary: Mark invoice as sent
       tags:
       - Invoices
+  /organizations:
+    get:
+      description: Retrieve all organizations for the authenticated user with pagination
+      operationId: getOrganizations
+      parameters:
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 10
+        description: Number of items per page
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.OrganizationListAPIResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_ae-base-server_internal_models.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_ae-base-server_internal_models.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get all organizations
+      tags:
+      - organizations
+    post:
+      consumes:
+      - application/json
+      description: Create a new organization with the provided information
+      operationId: createOrganization
+      parameters:
+      - description: Organization information
+        in: body
+        name: organization
+        required: true
+        schema:
+          $ref: '#/definitions/models.CreateOrganizationRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/models.OrganizationAPIResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_ae-base-server_internal_models.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_ae-base-server_internal_models.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_ae-base-server_internal_models.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Create a new organization
+      tags:
+      - organizations
+  /organizations/{id}:
+    delete:
+      description: Delete an organization by ID
+      operationId: deleteOrganization
+      parameters:
+      - description: Organization ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.OrganizationDeleteResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_ae-base-server_internal_models.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_ae-base-server_internal_models.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_ae-base-server_internal_models.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_ae-base-server_internal_models.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Delete an organization
+      tags:
+      - organizations
+    get:
+      description: Retrieve a specific organization by ID
+      operationId: getOrganizationById
+      parameters:
+      - description: Organization ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.OrganizationAPIResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_ae-base-server_internal_models.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_ae-base-server_internal_models.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_ae-base-server_internal_models.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_ae-base-server_internal_models.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get an organization by ID
+      tags:
+      - organizations
+    put:
+      consumes:
+      - application/json
+      description: Update an organization's information
+      operationId: updateOrganization
+      parameters:
+      - description: Organization ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Updated organization information
+        in: body
+        name: organization
+        required: true
+        schema:
+          $ref: '#/definitions/models.UpdateOrganizationRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.OrganizationAPIResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_ae-base-server_internal_models.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_ae-base-server_internal_models.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_ae-base-server_internal_models.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_ae-base-server_internal_models.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Update an organization
+      tags:
+      - organizations
+  /organizations/supported-formats:
+    get:
+      description: Get all supported date, time, and amount formats with examples
+      operationId: getSupportedFormats
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Supported formats with examples
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Get supported formats
+      tags:
+      - organizations
   /pdf/create:
     post:
       consumes:
