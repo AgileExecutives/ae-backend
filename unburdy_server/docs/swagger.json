@@ -9497,6 +9497,421 @@
         }
       }
     },
+    "/settings/organizations/{tenant_id}/domains/{domain}": {
+      "get": {
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "description": "Get all settings for a domain for a tenant",
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "settings"
+        ],
+        "summary": "Get domain settings",
+        "operationId": "getDomainSettings",
+        "parameters": [
+          {
+            "type": "integer",
+            "description": "Tenant ID",
+            "name": "tenant_id",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "Domain",
+            "name": "domain",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/handlers.DomainSettingsResponse"
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "$ref": "#/definitions/github_com_ae-base-server_modules_settings_api_handlers.ErrorResponse"
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "schema": {
+              "$ref": "#/definitions/github_com_ae-base-server_modules_settings_api_handlers.ErrorResponse"
+            }
+          }
+        }
+      },
+      "put": {
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "description": "Create or update multiple settings for a domain for a tenant (payload is an arbitrary JSON object of key->value)",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "settings"
+        ],
+        "summary": "Update domain settings",
+        "operationId": "updateDomainSettings",
+        "parameters": [
+          {
+            "type": "integer",
+            "description": "Tenant ID",
+            "name": "tenant_id",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "Domain",
+            "name": "domain",
+            "in": "path",
+            "required": true
+          },
+          {
+            "description": "Domain payload (arbitrary JSON of key->value)",
+            "name": "request",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/handlers.UpdateKeysResponse"
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "$ref": "#/definitions/github_com_ae-base-server_modules_settings_api_handlers.ErrorResponse"
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "schema": {
+              "$ref": "#/definitions/github_com_ae-base-server_modules_settings_api_handlers.ErrorResponse"
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "schema": {
+              "$ref": "#/definitions/github_com_ae-base-server_modules_settings_api_handlers.ErrorResponse"
+            }
+          }
+        }
+      },
+      "post": {
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "description": "Create or update multiple settings for a domain for a tenant (payload is an arbitrary JSON object of key->value)",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "settings"
+        ],
+        "summary": "Update domain settings",
+        "operationId": "updateDomainSettings",
+        "parameters": [
+          {
+            "type": "integer",
+            "description": "Tenant ID",
+            "name": "tenant_id",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "Domain",
+            "name": "domain",
+            "in": "path",
+            "required": true
+          },
+          {
+            "description": "Domain payload (arbitrary JSON of key->value)",
+            "name": "request",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/handlers.UpdateKeysResponse"
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "$ref": "#/definitions/github_com_ae-base-server_modules_settings_api_handlers.ErrorResponse"
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "schema": {
+              "$ref": "#/definitions/github_com_ae-base-server_modules_settings_api_handlers.ErrorResponse"
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "schema": {
+              "$ref": "#/definitions/github_com_ae-base-server_modules_settings_api_handlers.ErrorResponse"
+            }
+          }
+        }
+      }
+    },
+    "/settings/organizations/{tenant_id}/domains/{domain}/{key}": {
+      "get": {
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "description": "Get a specific setting for a tenant, domain and key",
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "settings"
+        ],
+        "summary": "Get a setting",
+        "operationId": "getSetting",
+        "parameters": [
+          {
+            "type": "integer",
+            "description": "Tenant ID",
+            "name": "tenant_id",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "Domain",
+            "name": "domain",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "Key",
+            "name": "key",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/handlers.SettingResponse"
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "$ref": "#/definitions/github_com_ae-base-server_modules_settings_api_handlers.ErrorResponse"
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "schema": {
+              "$ref": "#/definitions/github_com_ae-base-server_modules_settings_api_handlers.ErrorResponse"
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "schema": {
+              "$ref": "#/definitions/github_com_ae-base-server_modules_settings_api_handlers.ErrorResponse"
+            }
+          }
+        }
+      },
+      "put": {
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "description": "Create or update a specific setting for a tenant (value is an arbitrary JSON object)",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "settings"
+        ],
+        "summary": "Update a setting",
+        "operationId": "updateSetting",
+        "parameters": [
+          {
+            "type": "integer",
+            "description": "Tenant ID",
+            "name": "tenant_id",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "Domain",
+            "name": "domain",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "Key",
+            "name": "key",
+            "in": "path",
+            "required": true
+          },
+          {
+            "description": "Setting payload (arbitrary JSON)",
+            "name": "request",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/handlers.SimpleMessageResponse"
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "$ref": "#/definitions/github_com_ae-base-server_modules_settings_api_handlers.ErrorResponse"
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "schema": {
+              "$ref": "#/definitions/github_com_ae-base-server_modules_settings_api_handlers.ErrorResponse"
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "schema": {
+              "$ref": "#/definitions/github_com_ae-base-server_modules_settings_api_handlers.ErrorResponse"
+            }
+          }
+        }
+      },
+      "post": {
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "description": "Create or update a specific setting for a tenant (value is an arbitrary JSON object)",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "settings"
+        ],
+        "summary": "Update a setting",
+        "operationId": "updateSetting",
+        "parameters": [
+          {
+            "type": "integer",
+            "description": "Tenant ID",
+            "name": "tenant_id",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "Domain",
+            "name": "domain",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "Key",
+            "name": "key",
+            "in": "path",
+            "required": true
+          },
+          {
+            "description": "Setting payload (arbitrary JSON)",
+            "name": "request",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/handlers.SimpleMessageResponse"
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "$ref": "#/definitions/github_com_ae-base-server_modules_settings_api_handlers.ErrorResponse"
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "schema": {
+              "$ref": "#/definitions/github_com_ae-base-server_modules_settings_api_handlers.ErrorResponse"
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "schema": {
+              "$ref": "#/definitions/github_com_ae-base-server_modules_settings_api_handlers.ErrorResponse"
+            }
+          }
+        }
+      }
+    },
     "/static": {
       "get": {
         "security": [
@@ -14510,6 +14925,15 @@
         }
       }
     },
+    "github_com_ae-base-server_modules_settings_api_handlers.ErrorResponse": {
+      "type": "object",
+      "properties": {
+        "error": {
+          "type": "string",
+          "example": "Invalid tenant ID"
+        }
+      }
+    },
     "github_com_unburdy_documents-module_handlers.ErrorResponse": {
       "type": "object",
       "properties": {
@@ -15217,6 +15641,18 @@
         }
       }
     },
+    "handlers.DomainSettingsResponse": {
+      "type": "object",
+      "properties": {
+        "domain": {
+          "type": "string",
+          "example": "invoice"
+        },
+        "settings": {
+          "type": "object"
+        }
+      }
+    },
     "handlers.DownloadURLResponse": {
       "type": "object",
       "properties": {
@@ -15246,6 +15682,39 @@
         }
       }
     },
+    "handlers.SettingResponse": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": "object"
+        },
+        "domain": {
+          "type": "string",
+          "example": "invoice"
+        },
+        "key": {
+          "type": "string",
+          "example": "invoice_prefix"
+        }
+      }
+    },
+    "handlers.SimpleMessageResponse": {
+      "type": "object",
+      "properties": {
+        "domain": {
+          "type": "string",
+          "example": "invoice"
+        },
+        "key": {
+          "type": "string",
+          "example": "invoice_prefix"
+        },
+        "message": {
+          "type": "string",
+          "example": "Setting updated successfully"
+        }
+      }
+    },
     "handlers.SuccessResponse": {
       "type": "object",
       "properties": {
@@ -15256,6 +15725,29 @@
         "success": {
           "type": "boolean",
           "example": true
+        }
+      }
+    },
+    "handlers.UpdateKeysResponse": {
+      "type": "object",
+      "properties": {
+        "domain": {
+          "type": "string",
+          "example": "invoice"
+        },
+        "message": {
+          "type": "string",
+          "example": "Settings updated successfully"
+        },
+        "updated_keys": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "example": [
+            "invoice_prefix",
+            "next_invoice_number"
+          ]
         }
       }
     },

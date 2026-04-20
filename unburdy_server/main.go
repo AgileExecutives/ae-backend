@@ -9,6 +9,7 @@ import (
 	"github.com/ae-base-server/modules/email"
 	"github.com/ae-base-server/modules/organization"
 	"github.com/ae-base-server/modules/pdf"
+	settingsapi "github.com/ae-base-server/modules/settings_api"
 	"github.com/ae-base-server/modules/static"
 	"github.com/ae-base-server/pkg/bootstrap"
 	"github.com/ae-base-server/pkg/config"
@@ -24,7 +25,6 @@ import (
 	"github.com/unburdy/audit-module"
 	_ "github.com/unburdy/unburdy-server-api/docs" // swagger docs
 	"github.com/unburdy/unburdy-server-api/modules/client_management"
-	settings_api "github.com/unburdy/unburdy-server-api/modules/settings_api"
 )
 
 // @title Unburdy Server API
@@ -125,6 +125,7 @@ func main() {
 	modules := []core.Module{
 		base.NewBaseModule(),                   // Base authentication and user management
 		customer.NewCustomerModule(),           // Customer and plan management
+		settingsapi.NewSettingsAPIModule(),     // Tenant-scoped settings HTTP API
 		organization.NewOrganizationModule(),   // Organization management within tenants
 		invoicenumber.NewInvoiceNumberModule(), // Invoice number generation
 		email.NewEmailModule(),                 // Email management and notifications
@@ -149,11 +150,6 @@ func main() {
 	if err := app.Initialize(); err != nil {
 		log.Fatal("Failed to initialize application:", err)
 	}
-
-	// Register settings API routes
-	log.Println("🔧 Registering settings API routes...")
-	settings_api.RegisterRoutes(app.GetRouter(), app.GetDB())
-	log.Println("✅ Settings API routes registered")
 
 	// Start application
 	ctx := context.Background()

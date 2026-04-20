@@ -11,7 +11,7 @@ import (
 
 func TestGetWeeklyAvailabilityWithFallback_TemplateHasAvailability(t *testing.T) {
 	db := setupFreeSlotsTestDB(t)
-	service := NewFreeSlotsService(db)
+	service := newTestFreeSlotsService(db)
 
 	// Create template availability
 	templateAvailability := entities.WeeklyAvailability{
@@ -30,7 +30,7 @@ func TestGetWeeklyAvailabilityWithFallback_TemplateHasAvailability(t *testing.T)
 
 func TestGetWeeklyAvailabilityWithFallback_EmptyTemplateUsesCalendar(t *testing.T) {
 	db := setupFreeSlotsTestDB(t)
-	service := NewFreeSlotsService(db)
+	service := newTestFreeSlotsService(db)
 
 	// Create a calendar with availability
 	calendarAvailability := entities.WeeklyAvailability{
@@ -70,7 +70,7 @@ func TestGetWeeklyAvailabilityWithFallback_EmptyTemplateUsesCalendar(t *testing.
 
 func TestGetWeeklyAvailabilityWithFallback_NoDataUsesDefault(t *testing.T) {
 	db := setupFreeSlotsTestDB(t)
-	service := NewFreeSlotsService(db)
+	service := newTestFreeSlotsService(db)
 
 	// Create calendars table but no data
 	err := db.Exec(`
@@ -103,7 +103,7 @@ func TestGetWeeklyAvailabilityWithFallback_NoDataUsesDefault(t *testing.T) {
 
 func TestHasAvailability(t *testing.T) {
 	db := setupFreeSlotsTestDB(t)
-	service := NewFreeSlotsService(db)
+	service := newTestFreeSlotsService(db)
 
 	// Empty availability
 	empty := entities.WeeklyAvailability{}
@@ -124,7 +124,7 @@ func TestHasAvailability(t *testing.T) {
 
 func TestGetDefaultAllDayAvailability(t *testing.T) {
 	db := setupFreeSlotsTestDB(t)
-	service := NewFreeSlotsService(db)
+	service := newTestFreeSlotsService(db)
 
 	result := service.getDefaultAllDayAvailability()
 
@@ -143,7 +143,7 @@ func TestGetDefaultAllDayAvailability(t *testing.T) {
 
 func TestCalculateFreeSlots_UsesCalendarFallback(t *testing.T) {
 	db := setupFreeSlotsTestDB(t)
-	service := NewFreeSlotsService(db)
+	service := newTestFreeSlotsService(db)
 
 	// Setup calendars table
 	err := db.Exec(`

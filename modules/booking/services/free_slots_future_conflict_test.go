@@ -13,7 +13,7 @@ import (
 // outside the search window (e.g., a booking in May when searching April slots)
 func TestFreeSlotsWithFutureConflict(t *testing.T) {
 	db := setupFreeSlotsTestDB(t)
-	service := NewFreeSlotsService(db)
+	service := newTestFreeSlotsService(db)
 	template := createTestTemplate()
 	template.AllowedIntervals = entities.IntervalArray{entities.IntervalWeekly}
 	template.MaxSeriesBookings = 10
@@ -71,7 +71,7 @@ func TestFreeSlotsWithFutureConflict(t *testing.T) {
 // TestFreeSlotsWithMultipleFutureConflicts tests multiple conflicts outside search window
 func TestFreeSlotsWithMultipleFutureConflicts(t *testing.T) {
 	db := setupFreeSlotsTestDB(t)
-	service := NewFreeSlotsService(db)
+	service := newTestFreeSlotsService(db)
 	template := createTestTemplate()
 	template.AllowedIntervals = entities.IntervalArray{entities.IntervalWeekly}
 	template.MaxSeriesBookings = 10
@@ -135,7 +135,7 @@ func TestFreeSlotsWithMultipleFutureConflicts(t *testing.T) {
 // TestFreeSlotsWithPastBookingNoEffect tests that past bookings don't affect recurrence count
 func TestFreeSlotsWithPastBookingNoEffect(t *testing.T) {
 	db := setupFreeSlotsTestDB(t)
-	service := NewFreeSlotsService(db)
+	service := newTestFreeSlotsService(db)
 	template := createTestTemplate()
 	template.AllowedIntervals = entities.IntervalArray{entities.IntervalWeekly}
 	template.MaxSeriesBookings = 10

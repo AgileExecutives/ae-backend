@@ -2624,6 +2624,12 @@ definitions:
         example: true
         type: boolean
     type: object
+  github_com_ae-base-server_modules_settings_api_handlers.ErrorResponse:
+    properties:
+      error:
+        example: Invalid tenant ID
+        type: string
+    type: object
   github_com_unburdy_documents-module_handlers.ErrorResponse:
     properties:
       error:
@@ -3103,6 +3109,14 @@ definitions:
     - invoice_number
     - organization_id
     type: object
+  handlers.DomainSettingsResponse:
+    properties:
+      domain:
+        example: invoice
+        type: string
+      settings:
+        type: object
+    type: object
   handlers.DownloadURLResponse:
     properties:
       document_id:
@@ -3124,6 +3138,29 @@ definitions:
         example: true
         type: boolean
     type: object
+  handlers.SettingResponse:
+    properties:
+      data:
+        type: object
+      domain:
+        example: invoice
+        type: string
+      key:
+        example: invoice_prefix
+        type: string
+    type: object
+  handlers.SimpleMessageResponse:
+    properties:
+      domain:
+        example: invoice
+        type: string
+      key:
+        example: invoice_prefix
+        type: string
+      message:
+        example: Setting updated successfully
+        type: string
+    type: object
   handlers.SuccessResponse:
     properties:
       message:
@@ -3132,6 +3169,22 @@ definitions:
       success:
         example: true
         type: boolean
+    type: object
+  handlers.UpdateKeysResponse:
+    properties:
+      domain:
+        example: invoice
+        type: string
+      message:
+        example: Settings updated successfully
+        type: string
+      updated_keys:
+        example:
+        - invoice_prefix
+        - next_invoice_number
+        items:
+          type: string
+        type: array
     type: object
   models.Contact:
     properties:
@@ -9766,6 +9819,283 @@ paths:
       summary: Get detailed sessions for upcoming 7 days
       tags:
       - sessions
+  /settings/organizations/{tenant_id}/domains/{domain}:
+    get:
+      description: Get all settings for a domain for a tenant
+      operationId: getDomainSettings
+      parameters:
+      - description: Tenant ID
+        in: path
+        name: tenant_id
+        required: true
+        type: integer
+      - description: Domain
+        in: path
+        name: domain
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.DomainSettingsResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_ae-base-server_modules_settings_api_handlers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_ae-base-server_modules_settings_api_handlers.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get domain settings
+      tags:
+      - settings
+    post:
+      consumes:
+      - application/json
+      description: Create or update multiple settings for a domain for a tenant (payload
+        is an arbitrary JSON object of key->value)
+      operationId: updateDomainSettings
+      parameters:
+      - description: Tenant ID
+        in: path
+        name: tenant_id
+        required: true
+        type: integer
+      - description: Domain
+        in: path
+        name: domain
+        required: true
+        type: string
+      - description: Domain payload (arbitrary JSON of key->value)
+        in: body
+        name: request
+        required: true
+        schema:
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.UpdateKeysResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_ae-base-server_modules_settings_api_handlers.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_ae-base-server_modules_settings_api_handlers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_ae-base-server_modules_settings_api_handlers.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Update domain settings
+      tags:
+      - settings
+    put:
+      consumes:
+      - application/json
+      description: Create or update multiple settings for a domain for a tenant (payload
+        is an arbitrary JSON object of key->value)
+      operationId: updateDomainSettings
+      parameters:
+      - description: Tenant ID
+        in: path
+        name: tenant_id
+        required: true
+        type: integer
+      - description: Domain
+        in: path
+        name: domain
+        required: true
+        type: string
+      - description: Domain payload (arbitrary JSON of key->value)
+        in: body
+        name: request
+        required: true
+        schema:
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.UpdateKeysResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_ae-base-server_modules_settings_api_handlers.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_ae-base-server_modules_settings_api_handlers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_ae-base-server_modules_settings_api_handlers.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Update domain settings
+      tags:
+      - settings
+  /settings/organizations/{tenant_id}/domains/{domain}/{key}:
+    get:
+      description: Get a specific setting for a tenant, domain and key
+      operationId: getSetting
+      parameters:
+      - description: Tenant ID
+        in: path
+        name: tenant_id
+        required: true
+        type: integer
+      - description: Domain
+        in: path
+        name: domain
+        required: true
+        type: string
+      - description: Key
+        in: path
+        name: key
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.SettingResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_ae-base-server_modules_settings_api_handlers.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_ae-base-server_modules_settings_api_handlers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_ae-base-server_modules_settings_api_handlers.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get a setting
+      tags:
+      - settings
+    post:
+      consumes:
+      - application/json
+      description: Create or update a specific setting for a tenant (value is an arbitrary
+        JSON object)
+      operationId: updateSetting
+      parameters:
+      - description: Tenant ID
+        in: path
+        name: tenant_id
+        required: true
+        type: integer
+      - description: Domain
+        in: path
+        name: domain
+        required: true
+        type: string
+      - description: Key
+        in: path
+        name: key
+        required: true
+        type: string
+      - description: Setting payload (arbitrary JSON)
+        in: body
+        name: request
+        required: true
+        schema:
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.SimpleMessageResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_ae-base-server_modules_settings_api_handlers.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_ae-base-server_modules_settings_api_handlers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_ae-base-server_modules_settings_api_handlers.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Update a setting
+      tags:
+      - settings
+    put:
+      consumes:
+      - application/json
+      description: Create or update a specific setting for a tenant (value is an arbitrary
+        JSON object)
+      operationId: updateSetting
+      parameters:
+      - description: Tenant ID
+        in: path
+        name: tenant_id
+        required: true
+        type: integer
+      - description: Domain
+        in: path
+        name: domain
+        required: true
+        type: string
+      - description: Key
+        in: path
+        name: key
+        required: true
+        type: string
+      - description: Setting payload (arbitrary JSON)
+        in: body
+        name: request
+        required: true
+        schema:
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.SimpleMessageResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_ae-base-server_modules_settings_api_handlers.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_ae-base-server_modules_settings_api_handlers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_ae-base-server_modules_settings_api_handlers.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Update a setting
+      tags:
+      - settings
   /static:
     get:
       description: Get a list of all JSON files available in the statics/json directory

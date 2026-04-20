@@ -22,12 +22,13 @@ type CalendarEntry struct {
 
 // FreeSlotsService handles free slot calculation
 type FreeSlotsService struct {
-	db *gorm.DB
+	db  *gorm.DB
+	now func() time.Time
 }
 
 // NewFreeSlotsService creates a new free slots service
 func NewFreeSlotsService(db *gorm.DB) *FreeSlotsService {
-	return &FreeSlotsService{db: db}
+	return &FreeSlotsService{db: db, now: time.Now}
 }
 
 // FreeSlotsRequest contains parameters for free slot calculation
@@ -332,16 +333,21 @@ func (s *FreeSlotsService) getWeekdayAvailability(date time.Time, weeklyAvail en
 
 // isSlotBookable checks if a slot meets advance booking and min notice requirements
 func (s *FreeSlotsService) isSlotBookable(slotStart time.Time, advanceBookingDays, minNoticeHours int) bool {
-	now := time.Now()
+	now := time.Now
+	if s != nil && s.now != nil {
+		now = s.now
+	}
+	currentTime := now()
 
 	// Check minimum notice period
-	minNoticeTime := now.Add(time.Duration(minNoticeHours) * time.Hour)
+	minNoticeTime := currentTime.Add(time.Duration(minNoticeHours) * time.Hour)
 	if slotStart.Before(minNoticeTime) {
 		return false
 	}
 
 	// Check advance booking limit
-	maxAdvanceTime := now.AddDate(0, 0, advanceBookingDays)
+	maxAdvanceDate := currentTime.AddDate(0, 0, advanceBookingDays)
+	maxAdvanceTime := time.Date(maxAdvanceDate.Year(), maxAdvanceDate.Month(), maxAdvanceDate.Day(), 23, 59, 59, 0, maxAdvanceDate.Location())
 	if slotStart.After(maxAdvanceTime) {
 		return false
 	}

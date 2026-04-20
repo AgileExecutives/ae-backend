@@ -13,7 +13,7 @@ import (
 
 func TestCalculateAvailableRecurrences_StopsOnFirstConflict(t *testing.T) {
 	db := setupFreeSlotsTestDB(t)
-	service := NewFreeSlotsService(db)
+	service := newTestFreeSlotsService(db)
 	template := createTestTemplate()
 	template.AllowedIntervals = entities.IntervalArray{entities.IntervalWeekly}
 	template.MaxSeriesBookings = 5
@@ -64,7 +64,7 @@ func TestCalculateAvailableRecurrences_StopsOnFirstConflict(t *testing.T) {
 
 func TestCalculateAvailableRecurrences_AllSlotsAvailable(t *testing.T) {
 	db := setupFreeSlotsTestDB(t)
-	service := NewFreeSlotsService(db)
+	service := newTestFreeSlotsService(db)
 	template := createTestTemplate()
 	template.AllowedIntervals = entities.IntervalArray{entities.IntervalWeekly}
 	template.MaxSeriesBookings = 5
@@ -97,7 +97,7 @@ func TestCalculateAvailableRecurrences_AllSlotsAvailable(t *testing.T) {
 
 func TestCalculateAvailableRecurrences_ImmediateConflict(t *testing.T) {
 	db := setupFreeSlotsTestDB(t)
-	service := NewFreeSlotsService(db)
+	service := newTestFreeSlotsService(db)
 	template := createTestTemplate()
 	template.AllowedIntervals = entities.IntervalArray{entities.IntervalWeekly}
 	template.MaxSeriesBookings = 5
@@ -144,7 +144,7 @@ func TestCalculateAvailableRecurrences_ImmediateConflict(t *testing.T) {
 
 func TestCalculateAvailableRecurrences_MonthlyInterval(t *testing.T) {
 	db := setupFreeSlotsTestDB(t)
-	service := NewFreeSlotsService(db)
+	service := newTestFreeSlotsService(db)
 	template := createTestTemplate()
 	template.AllowedIntervals = entities.IntervalArray{entities.IntervalMonthlyDate}
 	template.MaxSeriesBookings = 4
@@ -193,7 +193,7 @@ func TestCalculateAvailableRecurrences_MonthlyInterval(t *testing.T) {
 
 func TestFreeSlotsResponse_IncludesAvailableRecurrences(t *testing.T) {
 	db := setupFreeSlotsTestDB(t)
-	service := NewFreeSlotsService(db)
+	service := newTestFreeSlotsService(db)
 	template := createTestTemplate()
 	template.AllowedIntervals = entities.IntervalArray{entities.IntervalWeekly}
 	template.MaxSeriesBookings = 3
@@ -227,7 +227,7 @@ func TestFreeSlotsResponse_IncludesAvailableRecurrences(t *testing.T) {
 
 func TestFreeSlotsResponse_DifferentSlotsHaveDifferentRecurrences(t *testing.T) {
 	db := setupFreeSlotsTestDB(t)
-	service := NewFreeSlotsService(db)
+	service := newTestFreeSlotsService(db)
 	template := createTestTemplate()
 	template.AllowedIntervals = entities.IntervalArray{entities.IntervalWeekly}
 	template.MaxSeriesBookings = 5

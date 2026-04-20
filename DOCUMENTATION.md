@@ -46,7 +46,7 @@ ae-backend/
 ├── unburdy_server/           # Production application
 │   └── modules/              # App-specific modules
 │       ├── client_management/  # Client & cost provider management
-│       └── settings_api/       # Settings API wrapper
+│       └── (no settings_api)    # Uses base-server/modules/settings_api
 ├── minimal-server/           # Minimal example server
 ├── documentation/            # Detailed documentation
 └── environments/             # Docker compose configs
