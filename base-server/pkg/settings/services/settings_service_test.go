@@ -220,3 +220,140 @@ func TestSettingsService_ConcurrentWrites(t *testing.T) {
 		assert.NotNil(t, retrieved)
 	}
 }
+// ─── GetDomainSettings ────────────────────────────────────────────────────────
+
+func TestSettingsService_GetDomainSettings(t *testing.T) {
+        service, db := setupSettingsTest(t)
+        defer testutils.CleanupTestDB(db)
+
+        tenantID := uint(1)
+        orgID := "org1"
+        domain := "billing"
+
+        require.NoError(t, service.SetSetting(tenantID, orgID, domain, "rate", "19", "string"))
+        require.NoError(t, service.SetSetting(tenantID, orgID, domain, "currency", "EUR", "string"))
+
+        settings, err := service.GetDomainSettings(tenantID, orgID, domain)
+        require.NoError(t, err)
+        assert.Equal(t, 2, len(settings))
+        assert.Equal(t, "19", settings["rate"])
+        assert.Equal(t, "EUR", settings["currency"])
+}
+
+func TestSettingsService_GetDomainSettings_Empty(t *testing.T) {
+        service, db := setupSettingsTest(t)
+        defer testutils.CleanupTestDB(db)
+
+        settings, err := service.GetDomainSettings(1, "org", "nonexistent")
+        require.NoError(t, err)
+        assert.Empty(t, settings)
+}
+
+// ─── GetAllSettings ───────────────────────────────────────────────────────────
+
+func TestSettingsService_GetAllSettings(t *testing.T) {
+        service, db := setupSettingsTest(t)
+        defer testutils.CleanupTestDB(db)
+
+        tenantID := uint(1)
+        orgID := "org1"
+
+        require.NoError(t, service.SetSetting(tenantID, orgID, "billing", "rate", "19", "string"))
+        require.NoError(t, service.SetSetting(tenantID, orgID, "company", "name", "ACME", "string"))
+
+        all, err := service.GetAllSettings(tenantID, orgID)
+        require.NoError(t, err)
+        assert.Contains(t, all, "billing")
+        assert.Contains(t, all, "company")
+        assert.Equal(t, "19", all["billing"]["rate"])
+        assert.Equal(t, "ACME", all["company"]["name"])
+}
+
+// ─── DeleteDomainSettings ─────────────────────────────────────────────────────
+
+func TestSettingsService_DeleteDomainSettings(t *testing.T) {
+        service, db := setupSettingsTest(t)
+        defer testutils.CleanupTestDB(db)
+
+        tenantID := uint(1)
+        orgID := "org1"
+
+        require.NoError(t, service.SetSetting(tenantID, orgID, "billing", "rate", "19", "string"))
+        require.NoError(t, service.SetSetting(tenantID, orgID, "billing", "currency", "EUR", "string"))
+        require.NoError(t, service.SetSetting(tenantID, orgID, "company", "name", "ACME", "string"))
+
+        err := service.DeleteDomainSettings(tenantID, orgID, "billing")
+        require.NoError(t, err)
+
+        // billing domain gone
+        settings, err := service.GetDomainSettings(tenantID, orgID, "billing")
+        require.NoError(t, err)
+        assert.Empty(t, settings)
+
+        // company domain still present
+        companySettings, err := service.GetDomainSettings(tenantID, orgID, "company")
+        require.NoError(t, err)
+        assert.NotEmpty(t, companySettings)
+}
+
+// ─── GetDomains ───────────────────────────────────────────────────────────────
+
+func TestSettingsService_GetDomains(t *testing.T) {
+        service, db := setupSettingsTest(t)
+        defer testutils.CleanupTestDB(db)
+
+        tenantID := uint(1)
+        orgID := "org1"
+
+        require.NoError(t, service.SetSetting(tenantID, orgID, "billing", "rate", "19", "string"))
+        require.NoError(t, service.SetSetting(tenantID, orgID, "company", "name", "ACME", "string"))
+
+        domains, err := service.GetDomains(tenantID, orgID)
+        require.NoError(t, err)
+        assert.ElementsMatch(t, []string{"billing", "company"}, domains)
+}
+
+func TestSettingsService_GetDomains_Empty(t *testing.T) {
+        service, db := setupSettingsTest(t)
+        defer testutils.CleanupTestDB(db)
+
+        domains, err := service.GetDomains(99, "noorg")
+        require.NoError(t, err)
+        assert.Empty(t, domains)
+}
+
+// ─── ValidateSettings ─────────────────────────────────────────────────────────
+
+func TestSettingsService_ValidateSettings(t *testing.T) {
+        service, db := setupSettingsTest(t)
+        defer testutils.CleanupTestDB(db)
+
+        // no schema defined for unknown domain → should report valid (no rules)
+        valid, errors := service.ValidateSettings("unknown_domain", map[string]interface{}{
+                "foo": "bar",
+        })
+        assert.True(t, valid)
+        assert.Empty(t, errors)
+}
+
+// ─── GetModules ───────────────────────────────────────────────────────────────
+
+func TestSettingsService_GetModules(t *testing.T) {
+        service, db := setupSettingsTest(t)
+        defer testutils.CleanupTestDB(db)
+
+        modules := service.GetModules()
+        // Must return a non-nil slice (may be empty if no modules configured)
+        assert.NotNil(t, modules)
+}
+
+// ─── HealthCheck ──────────────────────────────────────────────────────────────
+
+func TestSettingsService_HealthCheck(t *testing.T) {
+        service, db := setupSettingsTest(t)
+        defer testutils.CleanupTestDB(db)
+
+        health, err := service.HealthCheck()
+        require.NoError(t, err)
+        require.NotNil(t, health)
+}

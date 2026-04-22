@@ -4,6 +4,7 @@ import (
 	"testing"
 	"time"
 
+	baseAuth "github.com/ae-base-server/pkg/auth"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"gorm.io/driver/sqlite"
@@ -303,4 +304,301 @@ func BenchmarkClientService_SearchClients(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		service.SearchClients("User", 1, 10, tenantID)
 	}
+}
+
+func setupClientWithTokenDB(t *testing.T) *gorm.DB {
+	t.Helper()
+	db, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
+	require.NoError(t, err)
+	require.NoError(t, db.AutoMigrate(&entities.Client{}, &entities.RegistrationToken{}))
+	return db
+}
+
+func TestClientService_GetAllClients(t *testing.T) {
+	db := setupClientWithTokenDB(t)
+	svc := services.NewClientService(db)
+
+	dobTime := time.Date(1990, 1, 1, 0, 0, 0, 0, time.UTC)
+	dob := entities.NullableDate{Time: &dobTime}
+	tenantID := uint(1)
+
+	for i, status := range []string{"active", "active", "inactive"} {
+		_ = i
+		req := entities.CreateClientRequest{FirstName: "Test", LastName: "User", DateOfBirth: dob, Status: status}
+		_, err := svc.CreateClient(req, tenantID)
+		require.NoError(t, err)
+	}
+	// Different tenant
+	req2 := entities.CreateClientRequest{FirstName: "Other", LastName: "Tenant", DateOfBirth: dob}
+	_, err := svc.CreateClient(req2, 2)
+	require.NoError(t, err)
+
+	t.Run("returns all for tenant", func(t *testing.T) {
+		clients, total, err := svc.GetAllClients(1, 10, tenantID, "")
+		require.NoError(t, err)
+		assert.Equal(t, 3, total)
+		assert.Len(t, clients, 3)
+	})
+
+	t.Run("filter by status active", func(t *testing.T) {
+		clients, total, err := svc.GetAllClients(1, 10, tenantID, "active")
+		require.NoError(t, err)
+		assert.Equal(t, 2, total)
+		assert.Len(t, clients, 2)
+	})
+
+	t.Run("filter by status inactive", func(t *testing.T) {
+		clients, total, err := svc.GetAllClients(1, 10, tenantID, "inactive")
+		require.NoError(t, err)
+		assert.Equal(t, 1, total)
+		assert.Len(t, clients, 1)
+	})
+
+	t.Run("tenant isolation", func(t *testing.T) {
+		clients, total, err := svc.GetAllClients(1, 10, 2, "")
+		require.NoError(t, err)
+		assert.Equal(t, 1, total)
+		assert.Len(t, clients, 1)
+	})
+
+	t.Run("pagination", func(t *testing.T) {
+		clients, total, err := svc.GetAllClients(1, 2, tenantID, "")
+		require.NoError(t, err)
+		assert.Equal(t, 3, total)
+		assert.Len(t, clients, 2)
+	})
+}
+
+func TestClientService_RegistrationToken(t *testing.T) {
+	db := setupClientWithTokenDB(t)
+	svc := services.NewClientService(db)
+
+	t.Run("generate and validate token", func(t *testing.T) {
+		token, err := svc.GenerateRegistrationToken(1, 1, 10, "test@example.com")
+		require.NoError(t, err)
+		assert.NotEmpty(t, token.Token)
+		assert.Equal(t, uint(10), token.OrganizationID)
+		assert.Equal(t, uint(1), token.TenantID)
+		assert.Equal(t, "test@example.com", token.Email)
+		assert.False(t, token.Blacklisted)
+
+		validated, err := svc.ValidateRegistrationToken(token.Token)
+		require.NoError(t, err)
+		assert.Equal(t, token.ID, validated.ID)
+	})
+
+	t.Run("invalid token returns error", func(t *testing.T) {
+		_, err := svc.ValidateRegistrationToken("nonexistent-token")
+		require.Error(t, err)
+	})
+
+	t.Run("blacklisted token returns error", func(t *testing.T) {
+		token, err := svc.GenerateRegistrationToken(1, 2, 20, "blacklist@example.com")
+		require.NoError(t, err)
+		db.Model(token).Update("blacklisted", true)
+		_, err = svc.ValidateRegistrationToken(token.Token)
+		require.Error(t, err)
+	})
+
+	t.Run("generating new token blacklists old one for same org", func(t *testing.T) {
+		old, err := svc.GenerateRegistrationToken(1, 3, 30, "old@example.com")
+		require.NoError(t, err)
+		_, err = svc.GenerateRegistrationToken(1, 3, 30, "new@example.com")
+		require.NoError(t, err)
+		_, err = svc.ValidateRegistrationToken(old.Token)
+		require.Error(t, err)
+	})
+
+	t.Run("mark as used increments counter", func(t *testing.T) {
+		token, err := svc.GenerateRegistrationToken(1, 4, 40, "used@example.com")
+		require.NoError(t, err)
+		assert.Equal(t, 0, token.UsedCount)
+		err = svc.MarkRegistrationTokenAsUsed(token.ID)
+		require.NoError(t, err)
+		var updated entities.RegistrationToken
+		db.First(&updated, token.ID)
+		assert.Equal(t, 1, updated.UsedCount)
+	})
+}
+
+func TestClientService_RegisterClientViaToken(t *testing.T) {
+	db := setupClientWithTokenDB(t)
+	svc := services.NewClientService(db)
+
+	dobTime := time.Date(1990, 1, 1, 0, 0, 0, 0, time.UTC)
+
+	t.Run("registers client successfully", func(t *testing.T) {
+		token, err := svc.GenerateRegistrationToken(1, 1, 10, "register@example.com")
+		require.NoError(t, err)
+		req := entities.ClientRegistrationRequest{
+			FirstName:   "New",
+			LastName:    "Client",
+			Email:       "register@example.com",
+			DateOfBirth: entities.NullableDate{Time: &dobTime},
+		}
+		client, err := svc.RegisterClientViaToken(token.Token, req)
+		require.NoError(t, err)
+		assert.Equal(t, "New", client.FirstName)
+		assert.Equal(t, "waiting", client.Status)
+		assert.Equal(t, uint(1), client.TenantID)
+	})
+
+	t.Run("invalid token returns error", func(t *testing.T) {
+		req := entities.ClientRegistrationRequest{FirstName: "X", LastName: "Y", Email: "x@example.com", DateOfBirth: entities.NullableDate{Time: &dobTime}}
+		_, err := svc.RegisterClientViaToken("bad-token", req)
+		require.Error(t, err)
+	})
+
+	t.Run("email mismatch with token email returns error", func(t *testing.T) {
+		token, err := svc.GenerateRegistrationToken(1, 1, 50, "specific@example.com")
+		require.NoError(t, err)
+		req := entities.ClientRegistrationRequest{FirstName: "X", LastName: "Y", Email: "other@example.com", DateOfBirth: entities.NullableDate{Time: &dobTime}}
+		_, err = svc.RegisterClientViaToken(token.Token, req)
+		require.Error(t, err)
+	})
+
+	t.Run("duplicate email registration returns error", func(t *testing.T) {
+		token, err := svc.GenerateRegistrationToken(1, 1, 60, "dup@example.com")
+		require.NoError(t, err)
+		req := entities.ClientRegistrationRequest{FirstName: "Dup", LastName: "User", Email: "dup@example.com", DateOfBirth: entities.NullableDate{Time: &dobTime}}
+		_, err = svc.RegisterClientViaToken(token.Token, req)
+		require.NoError(t, err)
+		// Second token for same org, same email
+		token2, err := svc.GenerateRegistrationToken(1, 1, 70, "dup@example.com")
+		require.NoError(t, err)
+		_, err = svc.RegisterClientViaToken(token2.Token, req)
+		require.Error(t, err)
+	})
+}
+
+func TestClientService_GenerateEmailVerificationToken(t *testing.T) {
+	db := setupClientWithTokenDB(t)
+	svc := services.NewClientService(db)
+
+	t.Run("generates token for client with email", func(t *testing.T) {
+		client := entities.Client{
+			TenantID:  1,
+			FirstName: "Email",
+			LastName:  "Tester",
+			Email:     "verify@test.com",
+		}
+		require.NoError(t, db.Create(&client).Error)
+
+		token, err := svc.GenerateEmailVerificationToken(client.ID)
+		require.NoError(t, err)
+		assert.NotEmpty(t, token)
+	})
+
+	t.Run("returns error for client without email", func(t *testing.T) {
+		client := entities.Client{
+			TenantID:  1,
+			FirstName: "No",
+			LastName:  "Email",
+		}
+		require.NoError(t, db.Create(&client).Error)
+
+		_, err := svc.GenerateEmailVerificationToken(client.ID)
+		require.Error(t, err)
+		assert.Contains(t, err.Error(), "email")
+	})
+
+	t.Run("returns error for non-existent client", func(t *testing.T) {
+		_, err := svc.GenerateEmailVerificationToken(9999)
+		require.Error(t, err)
+	})
+}
+
+func TestClientService_VerifyClientEmail(t *testing.T) {
+	db := setupClientWithTokenDB(t)
+	svc := services.NewClientService(db)
+
+	t.Run("verifies email with valid token", func(t *testing.T) {
+		client := entities.Client{
+			TenantID:  1,
+			FirstName: "Valid",
+			LastName:  "Token",
+			Email:     "valid-verify@test.com",
+		}
+		require.NoError(t, db.Create(&client).Error)
+
+		// Generate a real token
+		token, err := baseAuth.GenerateVerificationToken(client.Email, client.ID)
+		require.NoError(t, err)
+
+		result, err := svc.VerifyClientEmail(token)
+		require.NoError(t, err)
+		assert.True(t, result.EmailVerified)
+	})
+
+	t.Run("returns error for invalid token", func(t *testing.T) {
+		_, err := svc.VerifyClientEmail("not-a-valid-token")
+		require.Error(t, err)
+		assert.Contains(t, err.Error(), "invalid verification token")
+	})
+
+	t.Run("returns error when client not found", func(t *testing.T) {
+		// Generate token for non-existent client (email not in DB)
+		token, err := baseAuth.GenerateVerificationToken("nonexistent@test.com", 99999)
+		require.NoError(t, err)
+
+		_, err = svc.VerifyClientEmail(token)
+		require.Error(t, err)
+		assert.Contains(t, err.Error(), "not found")
+	})
+
+	t.Run("returns error when user ID mismatch", func(t *testing.T) {
+		client := entities.Client{
+			TenantID:  1,
+			FirstName: "Mismatch",
+			LastName:  "Test",
+			Email:     "mismatch-verify@test.com",
+		}
+		require.NoError(t, db.Create(&client).Error)
+
+		// Generate token for same email but different user ID
+		token, err := baseAuth.GenerateVerificationToken(client.Email, 99999)
+		require.NoError(t, err)
+
+		_, err = svc.VerifyClientEmail(token)
+		require.Error(t, err)
+		assert.Contains(t, err.Error(), "match")
+	})
+}
+
+func TestClientService_SendVerificationEmail_NoEmailService(t *testing.T) {
+	db := setupClientWithTokenDB(t)
+	svc := services.NewClientService(db)
+
+	t.Run("returns error when client not found", func(t *testing.T) {
+		err := svc.SendVerificationEmail(9999, "some-token")
+		require.Error(t, err)
+		assert.Contains(t, err.Error(), "client not found")
+	})
+
+	t.Run("returns error when client has no email", func(t *testing.T) {
+		client := entities.Client{
+			TenantID:  1,
+			FirstName: "No",
+			LastName:  "Email",
+		}
+		require.NoError(t, db.Create(&client).Error)
+
+		err := svc.SendVerificationEmail(client.ID, "some-token")
+		require.Error(t, err)
+		assert.Contains(t, err.Error(), "email")
+	})
+
+	t.Run("returns error when email service is nil", func(t *testing.T) {
+		client := entities.Client{
+			TenantID:  1,
+			FirstName: "Has",
+			LastName:  "Email",
+			Email:     "has-email@test.com",
+		}
+		require.NoError(t, db.Create(&client).Error)
+
+		err := svc.SendVerificationEmail(client.ID, "some-token")
+		require.Error(t, err)
+		assert.Contains(t, err.Error(), "email service")
+	})
 }

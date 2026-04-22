@@ -60,7 +60,10 @@ for module in "${MODULE_DIRS[@]}"; do
   echo "- $module"
   (
     cd "$module_dir"
-    go test ./... -covermode=atomic -coverprofile="$profile"
+    # -coverpkg=./... instruments ALL packages in the module, not just the one
+    # being directly tested, so cross-package tests (e.g. tests/ -> services/)
+    # contribute coverage to the packages they exercise.
+    go test ./... -covermode=atomic -coverprofile="$profile" -coverpkg=./...
   )
 done
 
