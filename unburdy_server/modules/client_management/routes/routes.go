@@ -18,11 +18,12 @@ type RouteProvider struct {
 	invoiceAdapterHandler *handlers.InvoiceAdapterHandler
 	extraEffortHandler    *handlers.ExtraEffortHandler
 	staticHandler         *handlers.StaticHandler
+	organizationSettings  *handlers.OrganizationSettingsHandler
 	db                    *gorm.DB
 }
 
 // NewRouteProvider creates a new route provider
-func NewRouteProvider(clientHandler *handlers.ClientHandler, costProviderHandler *handlers.CostProviderHandler, sessionHandler *handlers.SessionHandler, invoiceHandler *handlers.InvoiceHandler, invoiceAdapterHandler *handlers.InvoiceAdapterHandler, extraEffortHandler *handlers.ExtraEffortHandler, staticHandler *handlers.StaticHandler, db *gorm.DB) *RouteProvider {
+func NewRouteProvider(clientHandler *handlers.ClientHandler, costProviderHandler *handlers.CostProviderHandler, sessionHandler *handlers.SessionHandler, invoiceHandler *handlers.InvoiceHandler, invoiceAdapterHandler *handlers.InvoiceAdapterHandler, extraEffortHandler *handlers.ExtraEffortHandler, staticHandler *handlers.StaticHandler, organizationSettings *handlers.OrganizationSettingsHandler, db *gorm.DB) *RouteProvider {
 	return &RouteProvider{
 		clientHandler:         clientHandler,
 		costProviderHandler:   costProviderHandler,
@@ -31,6 +32,7 @@ func NewRouteProvider(clientHandler *handlers.ClientHandler, costProviderHandler
 		invoiceAdapterHandler: invoiceAdapterHandler,
 		extraEffortHandler:    extraEffortHandler,
 		staticHandler:         staticHandler,
+		organizationSettings:  organizationSettings,
 		db:                    db,
 	}
 }
@@ -52,6 +54,8 @@ func (rp *RouteProvider) RegisterRoutes(router *gin.RouterGroup, ctx *core.Modul
 		ctx.Router.GET("/api/v1/clients/static/:token/:filename", rp.staticHandler.ServeStaticJSON)
 		// Public cost providers endpoint with registration token authentication
 		ctx.Router.GET("/api/v1/clients/cost-providers/:token", rp.costProviderHandler.GetCostProvidersWithToken)
+		// Public registration settings endpoint with registration token authentication
+		ctx.Router.GET("/api/v1/clients/registration-settings/:token", rp.organizationSettings.GetRegistrationSettingsWithToken)
 	}
 
 	// Client management endpoints (authenticated)
@@ -132,6 +136,13 @@ func (rp *RouteProvider) RegisterRoutes(router *gin.RouterGroup, ctx *core.Modul
 		extraEfforts.GET("/:id", rp.extraEffortHandler.GetExtraEffort)
 		extraEfforts.PUT("/:id", rp.extraEffortHandler.UpdateExtraEffort)
 		extraEfforts.DELETE("/:id", rp.extraEffortHandler.DeleteExtraEffort)
+	}
+
+	organizationSettings := router.Group("/organization/settings")
+	{
+		organizationSettings.GET("/registration", rp.organizationSettings.GetRegistrationSettings)
+		organizationSettings.PUT("/registration", rp.organizationSettings.UpdateRegistrationSettings)
+		organizationSettings.GET("/billing", rp.organizationSettings.GetBillingSettings)
 	}
 }
 

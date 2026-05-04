@@ -48,9 +48,10 @@ func NewModule(db *gorm.DB) baseAPI.ModuleRouteProvider {
 
 	// Initialize static file handler
 	staticHandler := handlers.NewStaticHandler(clientService)
+	organizationSettingsHandler := handlers.NewOrganizationSettingsHandler(db, clientService)
 
 	// Initialize route provider with database for auth middleware
-	routeProvider := routes.NewRouteProvider(clientHandler, costProviderHandler, sessionHandler, invoiceHandler, invoiceAdapterHandler, extraEffortHandler, staticHandler, db)
+	routeProvider := routes.NewRouteProvider(clientHandler, costProviderHandler, sessionHandler, invoiceHandler, invoiceAdapterHandler, extraEffortHandler, staticHandler, organizationSettingsHandler, db)
 
 	return &Module{
 		routeProvider: routeProvider,
@@ -239,9 +240,10 @@ func (m *CoreModule) Initialize(ctx core.ModuleContext) error {
 
 	// Initialize static file handler with registration token auth
 	staticHandler := handlers.NewStaticHandler(clientService)
+	organizationSettingsHandler := handlers.NewOrganizationSettingsHandler(ctx.DB, clientService)
 
 	// Initialize route provider with database for auth middleware
-	m.routeProvider = routes.NewRouteProvider(m.clientHandlers, m.costProviderHandler, m.sessionHandler, m.invoiceHandler, m.invoiceAdapterHandler, extraEffortHandler, staticHandler, ctx.DB)
+	m.routeProvider = routes.NewRouteProvider(m.clientHandlers, m.costProviderHandler, m.sessionHandler, m.invoiceHandler, m.invoiceAdapterHandler, extraEffortHandler, staticHandler, organizationSettingsHandler, ctx.DB)
 
 	// Seed billing settings definitions
 	fmt.Println("\n🌱🌱🌱 STARTING BILLING SETTINGS SEED 🌱🌱🌱")
