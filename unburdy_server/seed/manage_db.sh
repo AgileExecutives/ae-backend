@@ -58,7 +58,7 @@ case "$1" in
         ;;
     "clear")
         echo "🗑️  Clearing all seeded data..."
-        cd "$PROJECT_ROOT/seed" && go run -tags clear seed_database.go
+        cd "$PROJECT_ROOT/seed" && SEED_CLEAR_ONLY=true go run seed_database.go
         ;;
     "test"|"check")
         echo "🔍 Testing database contents..."
@@ -67,7 +67,7 @@ case "$1" in
     "reset")
         echo "🗑️  Clearing and re-seeding database..."
         echo "   Step 1: Clearing existing data..."
-        cd "$PROJECT_ROOT/seed" && go run -tags clear seed_database.go
+        cd "$PROJECT_ROOT/seed" && SEED_CLEAR_ONLY=true go run seed_database.go
         echo "   Step 2: Seeding fresh data..."
         cd "$PROJECT_ROOT/seed" && go run seed_database.go
         ;;

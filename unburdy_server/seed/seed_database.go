@@ -111,6 +111,24 @@ type BookingTemplateSeedData struct {
 func main() {
 	// Check for calendar-only mode from environment or command line
 	calendarOnly := getEnv("SEED_CALENDAR_ONLY", "false") == "true"
+	clearOnly := getEnv("SEED_CLEAR_ONLY", "false") == "true"
+
+	if clearOnly {
+		log.Println("🗑️  Unburdy Server - Clear Seeded Data")
+		log.Println("====================================")
+
+		db, err := connectDatabase()
+		if err != nil {
+			log.Fatal("Failed to connect to database:", err)
+		}
+
+		if err := clearSeededData(db); err != nil {
+			log.Fatal("Failed to clear seeded data:", err)
+		}
+
+		log.Println("\n✨ Seeded data cleared successfully!")
+		return
+	}
 
 	if calendarOnly {
 		log.Println("📅 Unburdy Server - Calendar-Only Seeding")
@@ -210,6 +228,41 @@ func connectDatabase() (*gorm.DB, error) {
 
 	log.Printf("🔗 Connecting to PostgreSQL: %s:%s/%s", host, port, dbname)
 	return gorm.Open(postgres.Open(dsn), &gorm.Config{})
+}
+
+func clearSeededData(db *gorm.DB) error {
+	log.Println("🧹 Clearing seeded tables...")
+
+	tables := []string{
+		"client_invoices",
+		"invoice_items",
+		"invoices",
+		"extra_efforts",
+		"sessions",
+		"booking_templates",
+		"calendar_entries",
+		"calendar_series",
+		"calendars",
+		"clients",
+		"cost_providers",
+		"organizations",
+		"invoice_numbers",
+	}
+
+	for _, table := range tables {
+		if !db.Migrator().HasTable(table) {
+			continue
+		}
+
+		query := fmt.Sprintf("TRUNCATE TABLE \"%s\" RESTART IDENTITY CASCADE", table)
+		if err := db.Exec(query).Error; err != nil {
+			return fmt.Errorf("failed to clear table %s: %w", table, err)
+		}
+
+		log.Printf("  ✓ Cleared %s", table)
+	}
+
+	return nil
 }
 
 // autoMigrateEntities performs auto-migration for all entities
@@ -1271,16 +1324,36 @@ func seedSessions(db *gorm.DB) error {
 		EndTime    *time.Time
 	}
 
+	weekStart := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, time.UTC).
+		AddDate(0, 0, -int(now.Weekday()))
+	weekEnd := weekStart.AddDate(0, 0, 7)
+	maxSessions := 150
+
 	var calendarEntries []CalendarEntry
-	// Get therapy-type calendar entries within date range
-	// Order randomly to get a good mix of past and future
+	var currentWeekEntries []CalendarEntry
 	if err := db.Table("calendar_entries").
-		Where("type = ? AND start_time IS NOT NULL AND start_time >= ? AND start_time <= ?",
-					"therapy", startDate, endDate).
-		Order("RANDOM()"). // Random order to get mix of dates
-		Limit(150).        // Increased limit to cover more sessions
-		Find(&calendarEntries).Error; err != nil {
-		return fmt.Errorf("failed to fetch calendar entries: %w", err)
+		Where("type = ? AND start_time IS NOT NULL AND start_time >= ? AND start_time < ?",
+			"therapy", weekStart, weekEnd).
+		Order("start_time ASC").
+		Find(&currentWeekEntries).Error; err != nil {
+		return fmt.Errorf("failed to fetch current-week calendar entries: %w", err)
+	}
+
+	calendarEntries = append(calendarEntries, currentWeekEntries...)
+
+	remainingLimit := maxSessions - len(calendarEntries)
+	if remainingLimit > 0 {
+		var otherEntries []CalendarEntry
+		if err := db.Table("calendar_entries").
+			Where("type = ? AND start_time IS NOT NULL AND start_time >= ? AND start_time <= ? AND (start_time < ? OR start_time >= ?)",
+				"therapy", startDate, endDate, weekStart, weekEnd).
+			Order("RANDOM()").
+			Limit(remainingLimit).
+			Find(&otherEntries).Error; err != nil {
+			return fmt.Errorf("failed to fetch additional calendar entries: %w", err)
+		}
+
+		calendarEntries = append(calendarEntries, otherEntries...)
 	}
 
 	if len(calendarEntries) == 0 {
@@ -1288,7 +1361,7 @@ func seedSessions(db *gorm.DB) error {
 		return nil
 	}
 
-	log.Printf("  📋 Found %d calendar entries in date range", len(calendarEntries))
+	log.Printf("  📋 Found %d calendar entries in date range (%d from current week prioritized)", len(calendarEntries), len(currentWeekEntries))
 
 	// Get active clients for session creation
 	var clients []entities.Client

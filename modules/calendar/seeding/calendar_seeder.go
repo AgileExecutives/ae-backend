@@ -539,6 +539,10 @@ func (cs *CalendarSeeder) createIndividualEvents(calendar *entities.Calendar, st
 		return fmt.Errorf("failed to create current appointments: %w", err)
 	}
 
+	if err := cs.createCurrentWeekTherapyAppointments(calendar, now); err != nil {
+		return fmt.Errorf("failed to create guaranteed current-week appointments: %w", err)
+	}
+
 	// Future period (moderate density)
 	futureStart := now.AddDate(0, 0, 28)
 	if futureStart.Before(endDate) {
@@ -548,6 +552,38 @@ func (cs *CalendarSeeder) createIndividualEvents(calendar *entities.Calendar, st
 		}
 	}
 
+	return nil
+}
+
+func (cs *CalendarSeeder) createCurrentWeekTherapyAppointments(calendar *entities.Calendar, now time.Time) error {
+	if len(cs.config.EventTemplates.Therapy) == 0 || len(cs.clients) == 0 {
+		return nil
+	}
+
+	therapyTemplate := cs.config.EventTemplates.Therapy[0]
+	weekStart := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, time.UTC).
+		AddDate(0, 0, -int(now.Weekday()))
+	slotIndexes := []int{1, 3, 5}
+	createdCount := 0
+
+	for dayOffset := 1; dayOffset <= 5; dayOffset++ {
+		eventDate := weekStart.AddDate(0, 0, dayOffset)
+
+		for _, slotIndex := range slotIndexes {
+			if slotIndex >= len(therapyTemplate.TimeSlots) {
+				continue
+			}
+
+			client := cs.clients[(dayOffset+slotIndex)%len(cs.clients)]
+			if err := cs.createTherapyAppointmentFromTemplate(calendar, therapyTemplate, client, eventDate, therapyTemplate.TimeSlots[slotIndex]); err != nil {
+				return err
+			}
+
+			createdCount++
+		}
+	}
+
+	fmt.Printf("Created %d guaranteed therapy appointments for the current week on calendar %d\n", createdCount, calendar.ID)
 	return nil
 }
 
@@ -585,58 +621,61 @@ func (cs *CalendarSeeder) createTherapyAppointments(calendar *entities.Calendar,
 
 		// Choose random time slot
 		timeSlot := template.TimeSlots[rand.Intn(len(template.TimeSlots))]
-		startTime, err := time.Parse("15:04", timeSlot)
-		if err != nil {
-			continue // Skip invalid time slots
-		}
-
-		// Calculate end time
-		endTime := startTime.Add(time.Duration(template.DurationMinutes) * time.Minute)
-
-		// Combine with event date (UTC)
-		eventStart := time.Date(
-			eventDate.Year(), eventDate.Month(), eventDate.Day(),
-			startTime.Hour(), startTime.Minute(), 0, 0,
-			time.UTC,
-		)
-
-		eventEnd := time.Date(
-			eventDate.Year(), eventDate.Month(), eventDate.Day(),
-			endTime.Hour(), endTime.Minute(), 0, 0,
-			time.UTC,
-		)
 
 		// Select a random client and generate participants with real data
 		client := cs.clients[rand.Intn(len(cs.clients))]
-		participants := cs.generateTherapyParticipants(template, client)
-		participantsJSON, _ := json.Marshal(participants)
-
-		// Use therapy title in appointment title and description
-		appointmentTitle := cs.generateAppointmentTitle(template, client)
-		appointmentDescription := cs.generateAppointmentDescription(template, client)
-
-		// Random location
-		location := template.Locations[rand.Intn(len(template.Locations))]
-
-		entry := &entities.CalendarEntry{
-			TenantID:     calendar.TenantID,
-			UserID:       calendar.UserID,
-			CalendarID:   calendar.ID,
-			Title:        appointmentTitle,
-			IsException:  false,
-			Participants: participantsJSON,
-			StartTime:    &eventStart,
-			EndTime:      &eventEnd,
-			Type:         template.Type,
-			Description:  appointmentDescription,
-			Location:     location,
-			Timezone:     "Europe/Berlin",
-			IsAllDay:     false,
+		if err := cs.createTherapyAppointmentFromTemplate(calendar, template, client, eventDate, timeSlot); err != nil {
+			return err
 		}
+	}
 
-		if err := cs.db.Create(entry).Error; err != nil {
-			return fmt.Errorf("failed to create therapy appointment: %w", err)
-		}
+	return nil
+}
+
+func (cs *CalendarSeeder) createTherapyAppointmentFromTemplate(calendar *entities.Calendar, template EventTemplate, client UnburdyClient, eventDate time.Time, timeSlot string) error {
+	startTime, err := time.Parse("15:04", timeSlot)
+	if err != nil {
+		return nil
+	}
+
+	endTime := startTime.Add(time.Duration(template.DurationMinutes) * time.Minute)
+
+	eventStart := time.Date(
+		eventDate.Year(), eventDate.Month(), eventDate.Day(),
+		startTime.Hour(), startTime.Minute(), 0, 0,
+		time.UTC,
+	)
+
+	eventEnd := time.Date(
+		eventDate.Year(), eventDate.Month(), eventDate.Day(),
+		endTime.Hour(), endTime.Minute(), 0, 0,
+		time.UTC,
+	)
+
+	participants := cs.generateTherapyParticipants(template, client)
+	participantsJSON, _ := json.Marshal(participants)
+	appointmentTitle := cs.generateAppointmentTitle(template, client)
+	appointmentDescription := cs.generateAppointmentDescription(template, client)
+	location := template.Locations[rand.Intn(len(template.Locations))]
+
+	entry := &entities.CalendarEntry{
+		TenantID:     calendar.TenantID,
+		UserID:       calendar.UserID,
+		CalendarID:   calendar.ID,
+		Title:        appointmentTitle,
+		IsException:  false,
+		Participants: participantsJSON,
+		StartTime:    &eventStart,
+		EndTime:      &eventEnd,
+		Type:         template.Type,
+		Description:  appointmentDescription,
+		Location:     location,
+		Timezone:     "Europe/Berlin",
+		IsAllDay:     false,
+	}
+
+	if err := cs.db.Create(entry).Error; err != nil {
+		return fmt.Errorf("failed to create therapy appointment: %w", err)
 	}
 
 	return nil
