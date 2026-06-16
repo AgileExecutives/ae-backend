@@ -103,19 +103,19 @@ require (
 
 replace github.com/ae/base-server => ../base-server
 
-replace github.com/ae/shared-modules/booking => ../modules/booking
+replace github.com/ae/shared-modules/booking => ../shared-modules/booking
 
-replace github.com/ae/shared-modules/calendar => ../modules/calendar
+replace github.com/ae/shared-modules/calendar => ../shared-modules/calendar
 
-replace github.com/ae/shared-modules/documents => ../modules/documents
+replace github.com/ae/shared-modules/documents => ../shared-modules/documents
 
-replace github.com/ae/shared-modules/invoice => ../modules/invoice
+replace github.com/ae/shared-modules/invoice => ../shared-modules/invoice
 
 require (
 	github.com/ae/shared-modules/audit v0.0.0
 	github.com/ae/shared-modules/invoice_number v0.0.0
 )
 
-replace github.com/ae/shared-modules/invoice_number => ../modules/invoice_number
+replace github.com/ae/shared-modules/invoice_number => ../shared-modules/invoice_number
 
-replace github.com/ae/shared-modules/audit => ../modules/audit
+replace github.com/ae/shared-modules/audit => ../shared-modules/audit
