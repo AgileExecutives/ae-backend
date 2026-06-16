@@ -3,7 +3,7 @@ package testutils
 import (
 	"context"
 
-	"github.com/ae-base-server/pkg/core"
+	"github.com/ae/base-server/pkg/core"
 	"github.com/stretchr/testify/mock"
 )
 

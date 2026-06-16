@@ -1,9 +1,9 @@
-module github.com/unburdy/documents-module
+module github.com/ae/shared-modules/documents
 
 go 1.24.5
 
 require (
-	github.com/ae-base-server v0.0.0
+	github.com/ae/base-server v0.0.0
 	github.com/chromedp/cdproto v0.0.0-20250803210736-d308e07a266d
 	github.com/chromedp/chromedp v0.14.2
 	github.com/gin-gonic/gin v1.10.1
@@ -78,4 +78,4 @@ require (
 	gorm.io/driver/sqlite v1.6.0 // indirect
 )
 
-replace github.com/ae-base-server => ../../base-server
+replace github.com/ae/base-server => ../../base-server

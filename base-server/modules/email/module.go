@@ -3,11 +3,11 @@ package email
 import (
 	"context"
 
-	"github.com/ae-base-server/modules/email/entities"
-	"github.com/ae-base-server/modules/email/events"
-	"github.com/ae-base-server/modules/email/handlers"
-	"github.com/ae-base-server/modules/email/services"
-	"github.com/ae-base-server/pkg/core"
+	"github.com/ae/base-server/modules/email/entities"
+	"github.com/ae/base-server/modules/email/events"
+	"github.com/ae/base-server/modules/email/handlers"
+	"github.com/ae/base-server/modules/email/services"
+	"github.com/ae/base-server/pkg/core"
 )
 
 // EmailModule represents the email module

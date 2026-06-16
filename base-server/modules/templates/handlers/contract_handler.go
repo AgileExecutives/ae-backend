@@ -4,8 +4,8 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/ae-base-server/modules/templates/entities"
-	"github.com/ae-base-server/modules/templates/services"
+	"github.com/ae/base-server/modules/templates/entities"
+	"github.com/ae/base-server/modules/templates/services"
 	"github.com/gin-gonic/gin"
 )
 

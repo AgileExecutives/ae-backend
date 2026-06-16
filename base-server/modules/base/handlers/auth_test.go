@@ -6,8 +6,8 @@ import (
 	"os"
 	"testing"
 
-	"github.com/ae-base-server/modules/base/handlers"
-	"github.com/ae-base-server/pkg/testutils"
+	"github.com/ae/base-server/modules/base/handlers"
+	"github.com/ae/base-server/pkg/testutils"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"golang.org/x/crypto/bcrypt"

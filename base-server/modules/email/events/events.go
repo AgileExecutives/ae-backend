@@ -1,7 +1,7 @@
 package events
 
 import (
-	"github.com/ae-base-server/pkg/core"
+	"github.com/ae/base-server/pkg/core"
 	"gorm.io/gorm"
 )
 

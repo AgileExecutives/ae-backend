@@ -3,7 +3,7 @@ package testutils
 import (
 	"testing"
 
-	"github.com/ae-base-server/internal/models"
+	"github.com/ae/base-server/internal/models"
 	"github.com/stretchr/testify/require"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"

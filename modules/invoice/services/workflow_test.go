@@ -11,7 +11,7 @@ import (
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
 
-	"github.com/unburdy/invoice-module/entities"
+	"github.com/ae/shared-modules/invoice/entities"
 )
 
 func setupInvoiceDB(t *testing.T) *gorm.DB {

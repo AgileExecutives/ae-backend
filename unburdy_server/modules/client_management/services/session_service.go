@@ -7,10 +7,10 @@ import (
 
 	"gorm.io/gorm"
 
-	emailServices "github.com/ae-base-server/modules/email/services"
-	bookingServices "github.com/unburdy/booking-module/services"
-	calendarEntities "github.com/unburdy/calendar-module/entities"
-	calendarServices "github.com/unburdy/calendar-module/services"
+	emailServices "github.com/ae/base-server/modules/email/services"
+	bookingServices "github.com/ae/shared-modules/booking/services"
+	calendarEntities "github.com/ae/shared-modules/calendar/entities"
+	calendarServices "github.com/ae/shared-modules/calendar/services"
 	"github.com/unburdy/unburdy-server-api/modules/client_management/entities"
 )
 

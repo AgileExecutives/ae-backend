@@ -4,7 +4,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/unburdy/booking-module/entities"
+	"github.com/ae/shared-modules/booking/entities"
 	"gorm.io/gorm"
 )
 

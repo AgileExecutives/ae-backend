@@ -5,9 +5,9 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
-	"github.com/unburdy/invoice-module/entities"
-	"github.com/unburdy/invoice-module/services"
-	"github.com/unburdy/invoice-module/utils"
+	"github.com/ae/shared-modules/invoice/entities"
+	"github.com/ae/shared-modules/invoice/services"
+	"github.com/ae/shared-modules/invoice/utils"
 )
 
 // InvoiceHandler handles invoice-related HTTP requests

@@ -4,7 +4,7 @@ import (
 	"testing"
 	"time"
 
-	calendarEntities "github.com/unburdy/calendar-module/entities"
+	calendarEntities "github.com/ae/shared-modules/calendar/entities"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/unburdy/unburdy-server-api/modules/client_management/entities"

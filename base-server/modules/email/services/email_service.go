@@ -16,7 +16,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/ae-base-server/pkg/utils"
+	"github.com/ae/base-server/pkg/utils"
 )
 
 const mockEmailsFilePath = "tmp/mock_emails.json"

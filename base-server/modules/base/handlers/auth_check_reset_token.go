@@ -3,8 +3,8 @@ package handlers
 import (
 	"net/http"
 
-	"github.com/ae-base-server/internal/models"
-	"github.com/ae-base-server/pkg/auth"
+	"github.com/ae/base-server/internal/models"
+	"github.com/ae/base-server/pkg/auth"
 	"github.com/gin-gonic/gin"
 )
 

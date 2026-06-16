@@ -6,7 +6,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/ae-base-server/internal/models"
+	"github.com/ae/base-server/internal/models"
 	"github.com/gin-gonic/gin"
 )
 

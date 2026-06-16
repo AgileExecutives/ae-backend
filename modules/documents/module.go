@@ -3,13 +3,13 @@ package documents
 import (
 	"context"
 
-	templateServices "github.com/ae-base-server/modules/templates/services"
-	"github.com/ae-base-server/pkg/core"
+	templateServices "github.com/ae/base-server/modules/templates/services"
+	"github.com/ae/base-server/pkg/core"
 	"github.com/redis/go-redis/v9"
-	"github.com/unburdy/documents-module/entities"
-	"github.com/unburdy/documents-module/routes"
-	"github.com/unburdy/documents-module/services"
-	"github.com/unburdy/documents-module/services/storage"
+	"github.com/ae/shared-modules/documents/entities"
+	"github.com/ae/shared-modules/documents/routes"
+	"github.com/ae/shared-modules/documents/services"
+	"github.com/ae/shared-modules/documents/services/storage"
 )
 
 // CoreModule implements the core.Module interface for the documents module

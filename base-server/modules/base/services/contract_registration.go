@@ -3,7 +3,7 @@ package services
 import (
 	"path/filepath"
 
-	templateServices "github.com/ae-base-server/modules/templates/services"
+	templateServices "github.com/ae/base-server/modules/templates/services"
 )
 
 // RegisterBaseContracts registers all base template contracts with the template system

@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/unburdy/invoice-module/entities"
-	invoiceNumberService "github.com/unburdy/invoice-number-module/services"
+	"github.com/ae/shared-modules/invoice/entities"
+	invoiceNumberService "github.com/ae/shared-modules/invoice_number/services"
 	"gorm.io/gorm"
 )
 

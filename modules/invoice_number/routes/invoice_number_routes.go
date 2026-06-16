@@ -1,11 +1,11 @@
 package routes
 
 import (
-	"github.com/ae-base-server/pkg/core"
-	"github.com/ae-base-server/pkg/middleware"
+	"github.com/ae/base-server/pkg/core"
+	"github.com/ae/base-server/pkg/middleware"
 	"github.com/gin-gonic/gin"
-	"github.com/unburdy/invoice-number-module/handlers"
-	"github.com/unburdy/invoice-number-module/services"
+	"github.com/ae/shared-modules/invoice_number/handlers"
+	"github.com/ae/shared-modules/invoice_number/services"
 	"gorm.io/gorm"
 )
 

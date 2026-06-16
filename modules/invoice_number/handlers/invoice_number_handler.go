@@ -5,10 +5,10 @@ import (
 	"strconv"
 	"time"
 
-	baseAPI "github.com/ae-base-server/api"
-	"github.com/unburdy/invoice-number-module/services"
+	baseAPI "github.com/ae/base-server/api"
+	"github.com/ae/shared-modules/invoice_number/services"
 
-	// "github.com/ae-base-server/pkg/settings/manager"
+	// "github.com/ae/base-server/pkg/settings/manager"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 )

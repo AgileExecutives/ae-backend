@@ -8,14 +8,14 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/ae-base-server/internal/eventbus"
-	"github.com/ae-base-server/internal/models"
-	_ "github.com/ae-base-server/modules/base/models" // Import models for swagger
-	emailServices "github.com/ae-base-server/modules/email/services"
-	"github.com/ae-base-server/pkg/auth"
-	"github.com/ae-base-server/pkg/config"
-	"github.com/ae-base-server/pkg/core"
-	"github.com/ae-base-server/pkg/utils"
+	"github.com/ae/base-server/internal/eventbus"
+	"github.com/ae/base-server/internal/models"
+	_ "github.com/ae/base-server/modules/base/models" // Import models for swagger
+	emailServices "github.com/ae/base-server/modules/email/services"
+	"github.com/ae/base-server/pkg/auth"
+	"github.com/ae/base-server/pkg/config"
+	"github.com/ae/base-server/pkg/core"
+	"github.com/ae/base-server/pkg/utils"
 	"github.com/gin-gonic/gin"
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"

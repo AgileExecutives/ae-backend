@@ -1,9 +1,9 @@
-module github.com/unburdy/calendar-module
+module github.com/ae/shared-modules/calendar
 
 go 1.24.5
 
 require (
-	github.com/ae-base-server v0.0.0
+	github.com/ae/base-server v0.0.0
 	github.com/gin-gonic/gin v1.10.1
 	github.com/google/uuid v1.6.0
 	github.com/stretchr/testify v1.11.1
@@ -87,4 +87,4 @@ require (
 	gorm.io/driver/postgres v1.6.0 // indirect
 )
 
-replace github.com/ae-base-server => ../../base-server
+replace github.com/ae/base-server => ../../base-server

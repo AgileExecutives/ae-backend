@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/unburdy/audit-module/entities"
+	"github.com/ae/shared-modules/audit/entities"
 	"gorm.io/gorm"
 )
 

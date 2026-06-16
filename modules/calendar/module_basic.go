@@ -1,13 +1,13 @@
 package calendar
 
 import (
-	baseAPI "github.com/ae-base-server/api"
+	baseAPI "github.com/ae/base-server/api"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 
-	"github.com/unburdy/calendar-module/handlers"
-	"github.com/unburdy/calendar-module/routes"
-	"github.com/unburdy/calendar-module/services"
+	"github.com/ae/shared-modules/calendar/handlers"
+	"github.com/ae/shared-modules/calendar/routes"
+	"github.com/ae/shared-modules/calendar/services"
 )
 
 // BasicModule implements the baseAPI.ModuleRouteProvider interface (legacy compatibility)

@@ -3,9 +3,9 @@ package middleware
 import (
 	"net/http"
 
-	baseAPI "github.com/ae-base-server/api"
+	baseAPI "github.com/ae/base-server/api"
 	"github.com/gin-gonic/gin"
-	"github.com/unburdy/documents-module/entities"
+	"github.com/ae/shared-modules/documents/entities"
 	"gorm.io/gorm"
 )
 

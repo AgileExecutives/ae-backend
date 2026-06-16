@@ -5,11 +5,11 @@ package api
 import (
 	"log"
 
-	"github.com/ae-base-server/internal/handlers"
-	"github.com/ae-base-server/internal/services"
-	"github.com/ae-base-server/modules/templates/services/storage"
-	"github.com/ae-base-server/pkg/config"
-	pkgServices "github.com/ae-base-server/pkg/services"
+	"github.com/ae/base-server/internal/handlers"
+	"github.com/ae/base-server/internal/services"
+	"github.com/ae/base-server/modules/templates/services/storage"
+	"github.com/ae/base-server/pkg/config"
+	pkgServices "github.com/ae/base-server/pkg/services"
 	"gorm.io/gorm"
 )
 

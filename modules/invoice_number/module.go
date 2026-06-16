@@ -3,10 +3,10 @@ package invoicenumber
 import (
 	"context"
 
-	"github.com/unburdy/invoice-number-module/entities"
-	"github.com/unburdy/invoice-number-module/routes"
-	"github.com/unburdy/invoice-number-module/services"
-	"github.com/ae-base-server/pkg/core"
+	"github.com/ae/shared-modules/invoice_number/entities"
+	"github.com/ae/shared-modules/invoice_number/routes"
+	"github.com/ae/shared-modules/invoice_number/services"
+	"github.com/ae/base-server/pkg/core"
 )
 
 // InvoiceNumberModule represents the invoice number generation module

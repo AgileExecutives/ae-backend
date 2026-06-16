@@ -9,7 +9,7 @@ import (
 	"path/filepath"
 	"time"
 
-	baseAPI "github.com/ae-base-server/api"
+	baseAPI "github.com/ae/base-server/api"
 	"github.com/unburdy/unburdy-server-api/internal/models"
 	"gorm.io/gorm"
 )

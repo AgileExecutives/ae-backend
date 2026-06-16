@@ -2,7 +2,7 @@
 package api
 
 import (
-	"github.com/ae-base-server/internal/middleware"
+	"github.com/ae/base-server/internal/middleware"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 )

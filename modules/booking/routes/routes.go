@@ -1,12 +1,12 @@
 package routes
 
 import (
-	"github.com/ae-base-server/pkg/middleware"
+	"github.com/ae/base-server/pkg/middleware"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 
-	"github.com/unburdy/booking-module/handlers"
-	bookingMiddleware "github.com/unburdy/booking-module/middleware"
+	"github.com/ae/shared-modules/booking/handlers"
+	bookingMiddleware "github.com/ae/shared-modules/booking/middleware"
 )
 
 // RouteProvider provides routing functionality for booking management

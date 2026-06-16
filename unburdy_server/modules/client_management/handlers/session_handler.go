@@ -6,7 +6,7 @@ import (
 	"strconv"
 	"time"
 
-	baseAPI "github.com/ae-base-server/api"
+	baseAPI "github.com/ae/base-server/api"
 	"github.com/gin-gonic/gin"
 	"github.com/unburdy/unburdy-server-api/modules/client_management/entities"
 	"github.com/unburdy/unburdy-server-api/modules/client_management/services"

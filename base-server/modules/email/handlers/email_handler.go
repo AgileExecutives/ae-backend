@@ -3,12 +3,12 @@ package handlers
 import (
 	"net/http"
 
-	"github.com/ae-base-server/internal/models"
-	_ "github.com/ae-base-server/modules/base/models" // Import models for swagger
-	"github.com/ae-base-server/modules/email/services"
-	"github.com/ae-base-server/pkg/core"
-	"github.com/ae-base-server/pkg/middleware"
-	"github.com/ae-base-server/pkg/utils"
+	"github.com/ae/base-server/internal/models"
+	_ "github.com/ae/base-server/modules/base/models" // Import models for swagger
+	"github.com/ae/base-server/modules/email/services"
+	"github.com/ae/base-server/pkg/core"
+	"github.com/ae/base-server/pkg/middleware"
+	"github.com/ae/base-server/pkg/utils"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 )

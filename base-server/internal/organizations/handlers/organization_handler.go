@@ -4,11 +4,11 @@ import (
 	"net/http"
 	"strconv"
 
-	baseAPI "github.com/ae-base-server/api"
-	"github.com/ae-base-server/internal/models"
-	"github.com/ae-base-server/internal/organizations/services"
-	"github.com/ae-base-server/pkg/formatting"
-	"github.com/ae-base-server/pkg/utils"
+	baseAPI "github.com/ae/base-server/api"
+	"github.com/ae/base-server/internal/models"
+	"github.com/ae/base-server/internal/organizations/services"
+	"github.com/ae/base-server/pkg/formatting"
+	"github.com/ae/base-server/pkg/utils"
 	"github.com/gin-gonic/gin"
 )
 

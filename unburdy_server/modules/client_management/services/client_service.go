@@ -8,8 +8,8 @@ import (
 	"fmt"
 	"os"
 
-	templateEntities "github.com/ae-base-server/modules/templates/entities"
-	baseAuth "github.com/ae-base-server/pkg/auth"
+	templateEntities "github.com/ae/base-server/modules/templates/entities"
+	baseAuth "github.com/ae/base-server/pkg/auth"
 	"github.com/unburdy/unburdy-server-api/modules/client_management/entities"
 	"gorm.io/gorm"
 )

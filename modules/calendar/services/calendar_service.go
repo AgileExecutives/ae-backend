@@ -5,11 +5,11 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/ae-base-server/pkg/core"
+	"github.com/ae/base-server/pkg/core"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 
-	"github.com/unburdy/calendar-module/entities"
+	"github.com/ae/shared-modules/calendar/entities"
 )
 
 type CalendarService struct {

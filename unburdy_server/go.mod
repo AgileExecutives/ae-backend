@@ -3,15 +3,15 @@ module github.com/unburdy/unburdy-server-api
 go 1.24.5
 
 require (
-	github.com/ae-base-server v0.0.0
+	github.com/ae/base-server v0.0.0
 	github.com/chromedp/cdproto v0.0.0-20250803210736-d308e07a266d
 	github.com/chromedp/chromedp v0.14.2
 	github.com/gin-gonic/gin v1.10.1
 	github.com/joho/godotenv v1.5.1
 	github.com/stretchr/testify v1.11.1
-	github.com/unburdy/booking-module v0.0.0
-	github.com/unburdy/calendar-module v0.0.0
-	github.com/unburdy/documents-module v0.0.0
+	github.com/ae/shared-modules/booking v0.0.0
+	github.com/ae/shared-modules/calendar v0.0.0
+	github.com/ae/shared-modules/documents v0.0.0
 	gorm.io/datatypes v1.2.7
 	gorm.io/driver/postgres v1.6.0
 	gorm.io/driver/sqlite v1.6.0
@@ -101,21 +101,21 @@ require (
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
 
-replace github.com/ae-base-server => ../base-server
+replace github.com/ae/base-server => ../base-server
 
-replace github.com/unburdy/booking-module => ../modules/booking
+replace github.com/ae/shared-modules/booking => ../modules/booking
 
-replace github.com/unburdy/calendar-module => ../modules/calendar
+replace github.com/ae/shared-modules/calendar => ../modules/calendar
 
-replace github.com/unburdy/documents-module => ../modules/documents
+replace github.com/ae/shared-modules/documents => ../modules/documents
 
-replace github.com/unburdy/invoice-module => ../modules/invoice
+replace github.com/ae/shared-modules/invoice => ../modules/invoice
 
 require (
-	github.com/unburdy/audit-module v0.0.0
-	github.com/unburdy/invoice-number-module v0.0.0
+	github.com/ae/shared-modules/audit v0.0.0
+	github.com/ae/shared-modules/invoice_number v0.0.0
 )
 
-replace github.com/unburdy/invoice-number-module => ../modules/invoice_number
+replace github.com/ae/shared-modules/invoice_number => ../modules/invoice_number
 
-replace github.com/unburdy/audit-module => ../modules/audit
+replace github.com/ae/shared-modules/audit => ../modules/audit

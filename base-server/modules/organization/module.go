@@ -3,11 +3,11 @@ package organization
 import (
 	"context"
 
-	"github.com/ae-base-server/internal/organizations/handlers"
-	"github.com/ae-base-server/internal/organizations/routes"
-	"github.com/ae-base-server/internal/organizations/services"
-	"github.com/ae-base-server/modules/organization/entities"
-	"github.com/ae-base-server/pkg/core"
+	"github.com/ae/base-server/internal/organizations/handlers"
+	"github.com/ae/base-server/internal/organizations/routes"
+	"github.com/ae/base-server/internal/organizations/services"
+	"github.com/ae/base-server/modules/organization/entities"
+	"github.com/ae/base-server/pkg/core"
 )
 
 // OrganizationModule represents the organization management module

@@ -1,4 +1,4 @@
-module github.com/ae-base-server
+module github.com/ae/base-server
 
 go 1.24.5
 
@@ -95,6 +95,6 @@ require (
 	gorm.io/driver/mysql v1.5.6 // indirect
 )
 
-require github.com/unburdy/invoice-number-module v0.0.0
+require github.com/ae/shared-modules/invoice_number v0.0.0
 
-replace github.com/unburdy/invoice-number-module => ../modules/invoice_number
+replace github.com/ae/shared-modules/invoice_number => ../modules/invoice_number

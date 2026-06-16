@@ -5,8 +5,8 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/ae-base-server/pkg/settings/entities"
-	"github.com/ae-base-server/pkg/settings/services"
+	"github.com/ae/base-server/pkg/settings/entities"
+	"github.com/ae/base-server/pkg/settings/services"
 	"github.com/gin-gonic/gin"
 )
 

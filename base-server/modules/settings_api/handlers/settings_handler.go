@@ -5,8 +5,8 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/ae-base-server/pkg/settings/entities"
-	"github.com/ae-base-server/pkg/settings/repository"
+	"github.com/ae/base-server/pkg/settings/entities"
+	"github.com/ae/base-server/pkg/settings/repository"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 )

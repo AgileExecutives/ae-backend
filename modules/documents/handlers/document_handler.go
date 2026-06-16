@@ -6,11 +6,11 @@ import (
 	"strconv"
 	"time"
 
-	baseAPI "github.com/ae-base-server/api"
-	"github.com/ae-base-server/pkg/core"
+	baseAPI "github.com/ae/base-server/api"
+	"github.com/ae/base-server/pkg/core"
 	"github.com/gin-gonic/gin"
-	"github.com/unburdy/documents-module/entities"
-	"github.com/unburdy/documents-module/services"
+	"github.com/ae/shared-modules/documents/entities"
+	"github.com/ae/shared-modules/documents/services"
 	"gorm.io/gorm"
 )
 

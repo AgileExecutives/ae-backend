@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/ae-base-server/internal/models"
-	"github.com/ae-base-server/pkg/services"
+	"github.com/ae/base-server/internal/models"
+	"github.com/ae/base-server/pkg/services"
 	"gorm.io/gorm"
 )
 

@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/ae-base-server/modules/templates/entities"
+	"github.com/ae/base-server/modules/templates/entities"
 	"gorm.io/gorm"
 )
 

@@ -41,7 +41,7 @@ import (
 	"log"
 	"os"
 
-	"github.com/ae-base-server/api"
+	"github.com/ae/base-server/api"
 )
 
 func main() {

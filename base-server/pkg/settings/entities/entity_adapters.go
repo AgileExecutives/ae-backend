@@ -1,7 +1,7 @@
 package entities
 
 import (
-	"github.com/ae-base-server/pkg/core"
+	"github.com/ae/base-server/pkg/core"
 )
 
 // SettingDefinitionEntity implements core.Entity for SettingDefinition model

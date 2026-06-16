@@ -3,11 +3,11 @@ package services_test
 import (
 	"testing"
 
-	"github.com/ae-base-server/pkg/testutils"
+	"github.com/ae/base-server/pkg/testutils"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"github.com/unburdy/audit-module/entities"
-	"github.com/unburdy/audit-module/services"
+	"github.com/ae/shared-modules/audit/entities"
+	"github.com/ae/shared-modules/audit/services"
 	"gorm.io/gorm"
 )
 

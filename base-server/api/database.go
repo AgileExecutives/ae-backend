@@ -4,16 +4,16 @@ package api
 import (
 	"fmt"
 
-	internalDB "github.com/ae-base-server/internal/database"
-	internalServices "github.com/ae-base-server/internal/services"
-	"github.com/ae-base-server/modules/base"
-	"github.com/ae-base-server/modules/customer"
-	"github.com/ae-base-server/modules/email"
-	"github.com/ae-base-server/modules/pdf"
-	"github.com/ae-base-server/modules/templates/services/storage"
-	"github.com/ae-base-server/pkg/core"
-	"github.com/ae-base-server/pkg/database"
-	pkgServices "github.com/ae-base-server/pkg/services"
+	internalDB "github.com/ae/base-server/internal/database"
+	internalServices "github.com/ae/base-server/internal/services"
+	"github.com/ae/base-server/modules/base"
+	"github.com/ae/base-server/modules/customer"
+	"github.com/ae/base-server/modules/email"
+	"github.com/ae/base-server/modules/pdf"
+	"github.com/ae/base-server/modules/templates/services/storage"
+	"github.com/ae/base-server/pkg/core"
+	"github.com/ae/base-server/pkg/database"
+	pkgServices "github.com/ae/base-server/pkg/services"
 	"gorm.io/gorm"
 )
 

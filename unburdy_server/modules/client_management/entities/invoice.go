@@ -3,7 +3,7 @@ package entities
 import (
 	"time"
 
-	baseAPI "github.com/ae-base-server/api"
+	baseAPI "github.com/ae/base-server/api"
 	"gorm.io/gorm"
 )
 

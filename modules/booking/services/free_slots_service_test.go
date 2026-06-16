@@ -7,7 +7,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"github.com/unburdy/booking-module/entities"
+	"github.com/ae/shared-modules/booking/entities"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 )

@@ -5,7 +5,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/unburdy/calendar-module/tests"
+	"github.com/ae/shared-modules/calendar/tests"
 )
 
 func TestCalendarService_CreateCalendar(t *testing.T) {

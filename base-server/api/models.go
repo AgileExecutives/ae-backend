@@ -2,7 +2,7 @@
 package api
 
 import (
-	"github.com/ae-base-server/internal/models"
+	"github.com/ae/base-server/internal/models"
 )
 
 // Re-export commonly used models

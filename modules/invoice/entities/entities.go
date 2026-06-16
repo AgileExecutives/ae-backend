@@ -1,7 +1,7 @@
 package entities
 
 import (
-	baseCore "github.com/ae-base-server/pkg/core"
+	baseCore "github.com/ae/base-server/pkg/core"
 )
 
 // InvoiceEntity implements core.Entity for Invoice model

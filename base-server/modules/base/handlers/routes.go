@@ -1,7 +1,7 @@
 package handlers
 
 import (
-	"github.com/ae-base-server/pkg/core"
+	"github.com/ae/base-server/pkg/core"
 	"github.com/gin-gonic/gin"
 )
 

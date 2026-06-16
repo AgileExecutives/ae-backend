@@ -3,7 +3,7 @@ package repository
 import (
 	"errors"
 
-	"github.com/ae-base-server/pkg/settings/entities"
+	"github.com/ae/base-server/pkg/settings/entities"
 	"gorm.io/gorm"
 )
 

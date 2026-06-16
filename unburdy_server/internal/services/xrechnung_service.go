@@ -4,7 +4,7 @@ import (
 	"encoding/xml"
 	"fmt"
 
-	baseAPI "github.com/ae-base-server/api"
+	baseAPI "github.com/ae/base-server/api"
 	"github.com/unburdy/unburdy-server-api/internal/models"
 	"github.com/unburdy/unburdy-server-api/modules/client_management/entities"
 	clientServices "github.com/unburdy/unburdy-server-api/modules/client_management/services"

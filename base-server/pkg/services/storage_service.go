@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/ae-base-server/modules/templates/services/storage"
+	"github.com/ae/base-server/modules/templates/services/storage"
 )
 
 // StorageService is a unified service for all MinIO storage operations

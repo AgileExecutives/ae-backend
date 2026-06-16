@@ -7,9 +7,9 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	baseAPI "github.com/ae-base-server/api"
-	"github.com/ae-base-server/pkg/core"
-	settingsEntities "github.com/ae-base-server/pkg/settings/entities"
+	baseAPI "github.com/ae/base-server/api"
+	"github.com/ae/base-server/pkg/core"
+	settingsEntities "github.com/ae/base-server/pkg/settings/entities"
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"

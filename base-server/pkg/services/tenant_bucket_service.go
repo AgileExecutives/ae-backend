@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/ae-base-server/modules/templates/services/storage"
+	"github.com/ae/base-server/modules/templates/services/storage"
 )
 
 // TenantBucketService handles MinIO bucket operations for tenants

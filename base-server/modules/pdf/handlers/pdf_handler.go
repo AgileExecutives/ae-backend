@@ -3,8 +3,8 @@ package handlers
 import (
 	"net/http"
 
-	"github.com/ae-base-server/modules/pdf/services"
-	"github.com/ae-base-server/pkg/core"
+	"github.com/ae/base-server/modules/pdf/services"
+	"github.com/ae/base-server/pkg/core"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 )

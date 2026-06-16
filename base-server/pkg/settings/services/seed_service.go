@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/ae-base-server/pkg/settings/entities"
-	"github.com/ae-base-server/pkg/settings/repository"
+	"github.com/ae/base-server/pkg/settings/entities"
+	"github.com/ae/base-server/pkg/settings/repository"
 	"gorm.io/datatypes"
 )
 

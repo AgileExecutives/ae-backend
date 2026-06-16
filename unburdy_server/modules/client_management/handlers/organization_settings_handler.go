@@ -6,9 +6,9 @@ import (
 	"net/http"
 	"strconv"
 
-	baseAPI "github.com/ae-base-server/api"
-	settingsEntities "github.com/ae-base-server/pkg/settings/entities"
-	settingsRepo "github.com/ae-base-server/pkg/settings/repository"
+	baseAPI "github.com/ae/base-server/api"
+	settingsEntities "github.com/ae/base-server/pkg/settings/entities"
+	settingsRepo "github.com/ae/base-server/pkg/settings/repository"
 	"github.com/gin-gonic/gin"
 	"github.com/unburdy/unburdy-server-api/internal/models"
 	"github.com/unburdy/unburdy-server-api/modules/client_management/services"

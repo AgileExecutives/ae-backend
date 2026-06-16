@@ -6,8 +6,8 @@ import (
 	"testing"
 	"time"
 
-	settingsEntities "github.com/ae-base-server/pkg/settings/entities"
-	baseAPI "github.com/ae-base-server/api"
+	settingsEntities "github.com/ae/base-server/pkg/settings/entities"
+	baseAPI "github.com/ae/base-server/api"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/unburdy/unburdy-server-api/modules/client_management/entities"

@@ -1,10 +1,10 @@
 package tests
 
 import (
-	"github.com/ae-base-server/internal/models"
-	// "github.com/ae-base-server/internal/router" // Package doesn't exist - test is outdated
-	"github.com/ae-base-server/pkg/config"
-	"github.com/ae-base-server/pkg/database"
+	"github.com/ae/base-server/internal/models"
+	// "github.com/ae/base-server/internal/router" // Package doesn't exist - test is outdated
+	"github.com/ae/base-server/pkg/config"
+	"github.com/ae/base-server/pkg/database"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 )

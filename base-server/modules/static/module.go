@@ -3,8 +3,8 @@ package static
 import (
 	"context"
 
-	"github.com/ae-base-server/modules/static/handlers"
-	"github.com/ae-base-server/pkg/core"
+	"github.com/ae/base-server/modules/static/handlers"
+	"github.com/ae/base-server/pkg/core"
 	"gorm.io/gorm"
 )
 

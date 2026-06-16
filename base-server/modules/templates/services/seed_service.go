@@ -7,7 +7,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/ae-base-server/modules/templates/entities"
+	"github.com/ae/base-server/modules/templates/entities"
 	"gorm.io/datatypes"
 	"gorm.io/gorm"
 )

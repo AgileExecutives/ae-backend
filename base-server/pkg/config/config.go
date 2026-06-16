@@ -6,7 +6,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/ae-base-server/pkg/database"
+	"github.com/ae/base-server/pkg/database"
 )
 
 // ValidationError represents a configuration validation error

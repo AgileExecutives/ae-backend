@@ -6,8 +6,8 @@ import (
 	"strconv"
 	"time"
 
-	_ "github.com/ae-base-server/modules/base/models" // Import models for swagger
-	"github.com/ae-base-server/pkg/core"
+	_ "github.com/ae/base-server/modules/base/models" // Import models for swagger
+	"github.com/ae/base-server/pkg/core"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 )

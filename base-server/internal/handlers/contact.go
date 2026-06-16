@@ -4,9 +4,9 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/ae-base-server/internal/models"
-	emailServices "github.com/ae-base-server/modules/email/services"
-	"github.com/ae-base-server/pkg/utils"
+	"github.com/ae/base-server/internal/models"
+	emailServices "github.com/ae/base-server/modules/email/services"
+	"github.com/ae/base-server/pkg/utils"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 )

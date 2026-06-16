@@ -5,14 +5,14 @@ import (
 	"testing"
 	"time"
 
-	"github.com/ae-base-server/pkg/core"
+	"github.com/ae/base-server/pkg/core"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 
-	calendarEntities "github.com/unburdy/calendar-module/entities"
-	calendarServices "github.com/unburdy/calendar-module/services"
+	calendarEntities "github.com/ae/shared-modules/calendar/entities"
+	calendarServices "github.com/ae/shared-modules/calendar/services"
 	"github.com/unburdy/unburdy-server-api/modules/client_management/entities"
 	"github.com/unburdy/unburdy-server-api/modules/client_management/events"
 	"github.com/unburdy/unburdy-server-api/modules/client_management/services"

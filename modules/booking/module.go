@@ -3,16 +3,16 @@ package booking
 import (
 	"context"
 
-	"github.com/ae-base-server/pkg/core"
+	"github.com/ae/base-server/pkg/core"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
 	"gorm.io/gorm"
 
-	"github.com/unburdy/booking-module/entities"
-	"github.com/unburdy/booking-module/handlers"
-	"github.com/unburdy/booking-module/middleware"
-	"github.com/unburdy/booking-module/routes"
-	"github.com/unburdy/booking-module/services"
+	"github.com/ae/shared-modules/booking/entities"
+	"github.com/ae/shared-modules/booking/handlers"
+	"github.com/ae/shared-modules/booking/middleware"
+	"github.com/ae/shared-modules/booking/routes"
+	"github.com/ae/shared-modules/booking/services"
 )
 
 // Module implements the complete core.Module interface for auto-migration support

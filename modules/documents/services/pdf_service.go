@@ -7,8 +7,8 @@ import (
 
 	"github.com/chromedp/cdproto/page"
 	"github.com/chromedp/chromedp"
-	"github.com/unburdy/documents-module/entities"
-	"github.com/unburdy/documents-module/services/storage"
+	"github.com/ae/shared-modules/documents/entities"
+	"github.com/ae/shared-modules/documents/services/storage"
 	"gorm.io/gorm"
 )
 

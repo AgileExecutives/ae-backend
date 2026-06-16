@@ -1,9 +1,9 @@
-module github.com/unburdy/audit-module
+module github.com/ae/shared-modules/audit
 
 go 1.24.5
 
 require (
-	github.com/ae-base-server v0.0.0
+	github.com/ae/base-server v0.0.0
 	github.com/gin-gonic/gin v1.10.1
 	gorm.io/gorm v1.30.0
 )
@@ -58,7 +58,7 @@ require (
 	github.com/twitchyliquid64/golang-asm v0.15.1 // indirect
 	github.com/ugorji/go/codec v1.3.0 // indirect
 	github.com/ulule/limiter/v3 v3.11.2 // indirect
-	github.com/unburdy/invoice-number-module v0.0.0 // indirect
+	github.com/ae/shared-modules/invoice_number v0.0.0 // indirect
 	golang.org/x/arch v0.18.0 // indirect
 	golang.org/x/crypto v0.43.0 // indirect
 	golang.org/x/net v0.45.0 // indirect
@@ -72,6 +72,6 @@ require (
 	gorm.io/driver/postgres v1.6.0 // indirect
 )
 
-replace github.com/ae-base-server => ../../base-server
+replace github.com/ae/base-server => ../../base-server
 
-replace github.com/unburdy/invoice-number-module => ../invoice_number
+replace github.com/ae/shared-modules/invoice_number => ../invoice_number

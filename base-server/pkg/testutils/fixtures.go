@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/ae-base-server/internal/models"
+	"github.com/ae/base-server/internal/models"
 	"gorm.io/gorm"
 )
 

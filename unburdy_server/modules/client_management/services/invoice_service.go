@@ -7,8 +7,8 @@ import (
 	"strings"
 	"time"
 
-	baseAPI "github.com/ae-base-server/api"
-	documentStorage "github.com/unburdy/documents-module/services/storage"
+	baseAPI "github.com/ae/base-server/api"
+	documentStorage "github.com/ae/shared-modules/documents/services/storage"
 	"github.com/unburdy/unburdy-server-api/internal/models"
 	"github.com/unburdy/unburdy-server-api/modules/client_management/entities"
 	"gorm.io/gorm"

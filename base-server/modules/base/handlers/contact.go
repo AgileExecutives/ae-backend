@@ -4,11 +4,11 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/ae-base-server/internal/models"
-	_ "github.com/ae-base-server/modules/base/models"
-	emailServices "github.com/ae-base-server/modules/email/services"
-	"github.com/ae-base-server/pkg/core"
-	"github.com/ae-base-server/pkg/utils"
+	"github.com/ae/base-server/internal/models"
+	_ "github.com/ae/base-server/modules/base/models"
+	emailServices "github.com/ae/base-server/modules/email/services"
+	"github.com/ae/base-server/pkg/core"
+	"github.com/ae/base-server/pkg/utils"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 )

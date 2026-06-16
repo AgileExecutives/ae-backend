@@ -11,14 +11,14 @@ import (
 	"path/filepath"
 	"time"
 
-	baseAPI "github.com/ae-base-server/api"
+	baseAPI "github.com/ae/base-server/api"
 	"github.com/chromedp/cdproto/page"
 	"github.com/chromedp/chromedp"
-	documentStorage "github.com/unburdy/documents-module/services/storage"
+	documentStorage "github.com/ae/shared-modules/documents/services/storage"
 	"github.com/unburdy/unburdy-server-api/modules/client_management/entities"
 	"gorm.io/gorm"
 
-	templateServices "github.com/ae-base-server/modules/templates/services"
+	templateServices "github.com/ae/base-server/modules/templates/services"
 )
 
 // InvoicePDFService handles PDF generation for invoices

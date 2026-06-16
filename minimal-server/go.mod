@@ -3,7 +3,7 @@ module github.com/ae-backend/minimal-server
 go 1.24.5
 
 require (
-	github.com/ae-base-server v0.0.0
+	github.com/ae/base-server v0.0.0
 	github.com/gin-gonic/gin v1.10.1
 	gorm.io/gorm v1.30.0
 )
@@ -72,4 +72,4 @@ require (
 	gorm.io/driver/postgres v1.6.0 // indirect
 )
 
-replace github.com/ae-base-server => ../base-server
+replace github.com/ae/base-server => ../base-server

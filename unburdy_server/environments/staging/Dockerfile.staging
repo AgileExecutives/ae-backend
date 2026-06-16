@@ -1,0 +1,153 @@
+# Multi-stage build for unburdy server staging environment
+FROM golang:1.24-alpine AS builder
+
+# Install git and build dependencies
+RUN apk add --no-cache git ca-certificates tzdata
+
+# Set working directory
+WORKDIR /app
+
+# Copy base-server first (required for replace directive)
+COPY base-server/ /base-server/
+
+# Copy modules directory (required for calendar module)
+COPY modules/ /modules/
+
+# Copy unburdy_server go mod files
+COPY unburdy_server/go.mod unburdy_server/go.sum ./
+
+# Download dependencies (now base-server and modules are available)
+RUN go mod download
+
+# Copy unburdy_server source code
+COPY unburdy_server/ ./
+
+# Build the application
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build \
+    -ldflags='-w -s -extldflags "-static"' \
+    -a -installsuffix cgo \
+    -o unburdy-server .
+
+# Final stage - minimal Alpine image
+FROM alpine:3.18
+
+# Install runtime dependencies
+RUN apk --no-cache add \
+    ca-certificates \
+    postgresql-client \
+    curl \
+    chromium \
+    chromium-chromedriver \
+    && update-ca-certificates
+
+# Create non-root user for security
+RUN adduser -D -s /bin/sh unburdy
+
+# Set working directory
+WORKDIR /app
+
+# Copy binary from builder stage
+COPY --from=builder /app/unburdy-server .
+
+# Copy static files, templates, and configuration
+COPY --from=builder /app/statics ./statics
+COPY --from=builder /app/seed-data.json .
+COPY --from=builder /app/seed ./seed/
+
+# Set Chrome binary path for PDF generation
+ENV CHROME_BIN=/usr/bin/chromium-browser
+
+# Create environment file for staging
+RUN cat > .env << 'EOF'
+# Staging Environment Configuration
+GIN_MODE=release
+SERVER_HOST=0.0.0.0
+SERVER_PORT=8080
+
+# Database Configuration (will be overridden by compose)
+DB_HOST=unburdy-db-staging
+DB_PORT=5432
+DB_USER=unburdy_user
+DB_PASSWORD=unburdy_staging_password
+DB_NAME=ae_saas_basic_test
+DB_SSL_MODE=disable
+
+# JWT Configuration
+JWT_SECRET=unburdy-staging-jwt-secret-key-change-in-production
+
+# Email Configuration (staging)
+SMTP_HOST=smtp.mailtrap.io
+SMTP_PORT=587
+SMTP_USERNAME=staging_user
+SMTP_PASSWORD=staging_password
+FROM_EMAIL=noreply@unburdy-staging.com
+FROM_NAME=Unburdy Staging
+
+# Application Configuration
+LOG_LEVEL=info
+CORS_ALLOWED_ORIGINS=*
+RATE_LIMIT_ENABLED=true
+EOF
+
+# Create startup script with proper database waiting and health checks
+RUN cat > startup.sh << 'EOF'
+#!/bin/sh
+set -e
+
+echo "🚀 Starting Unburdy Server in Staging Environment..."
+echo "📋 Environment: STAGING"
+echo "🌐 Database Host: ${DB_HOST:-unburdy-db-staging}"
+echo "🔌 Database Port: ${DB_PORT:-5432}"
+
+# Wait for database to be ready with timeout
+echo "⏳ Waiting for database connection..."
+RETRY_COUNT=0
+MAX_RETRIES=30
+
+while [ $RETRY_COUNT -lt $MAX_RETRIES ]; do
+    if pg_isready -h "${DB_HOST:-unburdy-db-staging}" -p "${DB_PORT:-5432}" -U "${DB_USER:-unburdy_user}"; then
+        echo "✅ Database connection established"
+        break
+    else
+        echo "Database not ready, attempt $((RETRY_COUNT + 1))/$MAX_RETRIES..."
+        RETRY_COUNT=$((RETRY_COUNT + 1))
+        sleep 2
+    fi
+done
+
+if [ $RETRY_COUNT -eq $MAX_RETRIES ]; then
+    echo "❌ Failed to connect to database after $MAX_RETRIES attempts"
+    exit 1
+fi
+
+# Additional wait for database to be fully ready
+echo "🔄 Waiting additional 5 seconds for database initialization..."
+sleep 5
+
+# Start the application (it will handle migration and seeding automatically)
+echo "🎯 Starting Unburdy Server..."
+echo "📊 Server will be available at http://localhost:8080"
+echo "📚 API Documentation: http://localhost:8080/swagger/index.html"
+echo "🔍 Health Check: http://localhost:8080/api/v1/health"
+
+exec ./unburdy-server
+EOF
+
+# Make startup script executable
+RUN chmod +x startup.sh
+
+# Change ownership to non-root user
+RUN chown -R unburdy:unburdy /app
+
+# Switch to non-root user
+USER unburdy
+
+# Expose port
+EXPOSE 8080
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=45s --retries=3 \
+    CMD curl -f http://localhost:8080/api/v1/health || exit 1
+
+# Set startup command
+CMD ["./startup.sh"]

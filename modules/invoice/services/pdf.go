@@ -3,7 +3,7 @@ package services
 import (
 	"context"
 
-	"github.com/unburdy/invoice-module/entities"
+	"github.com/ae/shared-modules/invoice/entities"
 )
 
 // PDFService defines the interface for PDF generation

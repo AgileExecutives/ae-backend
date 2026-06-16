@@ -1,7 +1,7 @@
 package api
 
 import (
-	"github.com/ae-base-server/internal/models"
+	"github.com/ae/base-server/internal/models"
 )
 
 // Organization exports the internal Organization model for use by external modules

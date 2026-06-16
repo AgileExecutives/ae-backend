@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/ae-base-server/pkg/settings/entities"
-	"github.com/ae-base-server/pkg/settings/repository"
+	"github.com/ae/base-server/pkg/settings/entities"
+	"github.com/ae/base-server/pkg/settings/repository"
 )
 
 // SettingsService provides business logic for settings management

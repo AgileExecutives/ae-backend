@@ -9,8 +9,8 @@ import (
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 
-	"github.com/unburdy/calendar-module/entities"
-	"github.com/unburdy/calendar-module/services"
+	"github.com/ae/shared-modules/calendar/entities"
+	"github.com/ae/shared-modules/calendar/services"
 )
 
 // TestCalendarSeriesGenerationStartsFromCorrectDate verifies that series generation

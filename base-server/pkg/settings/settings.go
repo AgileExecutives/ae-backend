@@ -1,9 +1,9 @@
 package settings
 
 import (
-	"github.com/ae-base-server/pkg/settings/handlers"
-	"github.com/ae-base-server/pkg/settings/repository"
-	"github.com/ae-base-server/pkg/settings/services"
+	"github.com/ae/base-server/pkg/settings/handlers"
+	"github.com/ae/base-server/pkg/settings/repository"
+	"github.com/ae/base-server/pkg/settings/services"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 )

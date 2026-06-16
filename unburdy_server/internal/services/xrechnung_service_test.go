@@ -7,8 +7,8 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	baseAPI "github.com/ae-base-server/api"
-	settingsEntities "github.com/ae-base-server/pkg/settings/entities"
+	baseAPI "github.com/ae/base-server/api"
+	settingsEntities "github.com/ae/base-server/pkg/settings/entities"
 	"github.com/unburdy/unburdy-server-api/internal/models"
 	"github.com/unburdy/unburdy-server-api/modules/client_management/entities"
 	"gorm.io/driver/sqlite"

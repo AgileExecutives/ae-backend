@@ -7,10 +7,10 @@ import (
 	"html/template"
 	"time"
 
-	baseAPI "github.com/ae-base-server/api"
-	pdfServices "github.com/ae-base-server/modules/pdf/services"
-	templateServices "github.com/ae-base-server/modules/templates/services"
-	"github.com/unburdy/invoice-module/entities"
+	baseAPI "github.com/ae/base-server/api"
+	pdfServices "github.com/ae/base-server/modules/pdf/services"
+	templateServices "github.com/ae/base-server/modules/templates/services"
+	"github.com/ae/shared-modules/invoice/entities"
 	"gorm.io/gorm"
 )
 

@@ -6,9 +6,9 @@ import (
 	"log"
 	"os"
 
-	"github.com/ae-base-server/pkg/config"
-	"github.com/ae-base-server/pkg/database"
-	calendarSeeding "github.com/unburdy/calendar-module/seeding"
+	"github.com/ae/base-server/pkg/config"
+	"github.com/ae/base-server/pkg/database"
+	calendarSeeding "github.com/ae/shared-modules/calendar/seeding"
 )
 
 func main() {

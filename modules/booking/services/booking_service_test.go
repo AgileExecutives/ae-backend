@@ -8,8 +8,8 @@ import (
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 
-	"github.com/unburdy/booking-module/entities"
-	"github.com/unburdy/booking-module/services"
+	"github.com/ae/shared-modules/booking/entities"
+	"github.com/ae/shared-modules/booking/services"
 )
 
 // setupBookingTestDB creates an in-memory SQLite database for booking tests

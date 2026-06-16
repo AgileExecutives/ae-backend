@@ -1,12 +1,12 @@
 package routes
 
 import (
-	baseAPI "github.com/ae-base-server/api"
-	templateServices "github.com/ae-base-server/modules/templates/services"
-	"github.com/ae-base-server/pkg/core"
+	baseAPI "github.com/ae/base-server/api"
+	templateServices "github.com/ae/base-server/modules/templates/services"
+	"github.com/ae/base-server/pkg/core"
 	"github.com/gin-gonic/gin"
-	"github.com/unburdy/documents-module/handlers"
-	"github.com/unburdy/documents-module/services"
+	"github.com/ae/shared-modules/documents/handlers"
+	"github.com/ae/shared-modules/documents/services"
 	"gorm.io/gorm"
 )
 

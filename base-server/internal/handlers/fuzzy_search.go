@@ -7,8 +7,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/ae-base-server/internal/models"
-	"github.com/ae-base-server/internal/services"
+	"github.com/ae/base-server/internal/models"
+	"github.com/ae/base-server/internal/services"
 	"github.com/gin-gonic/gin"
 )
 

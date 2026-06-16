@@ -3,11 +3,11 @@ package customer
 import (
 	"context"
 
-	"github.com/ae-base-server/modules/customer/entities"
-	"github.com/ae-base-server/modules/customer/events"
-	"github.com/ae-base-server/modules/customer/handlers"
-	"github.com/ae-base-server/modules/customer/services"
-	"github.com/ae-base-server/pkg/core"
+	"github.com/ae/base-server/modules/customer/entities"
+	"github.com/ae/base-server/modules/customer/events"
+	"github.com/ae/base-server/modules/customer/handlers"
+	"github.com/ae/base-server/modules/customer/services"
+	"github.com/ae/base-server/pkg/core"
 )
 
 // CustomerModule provides customer and plan management functionality

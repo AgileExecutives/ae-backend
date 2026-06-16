@@ -1,8 +1,8 @@
 package entities
 
 import (
-	"github.com/ae-base-server/internal/models"
-	"github.com/ae-base-server/pkg/core"
+	"github.com/ae/base-server/internal/models"
+	"github.com/ae/base-server/pkg/core"
 )
 
 // CustomerEntity implements core.Entity for Customer model

@@ -4,7 +4,7 @@ import (
 	"context"
 	"testing"
 
-	"github.com/ae-base-server/modules/templates/entities"
+	"github.com/ae/base-server/modules/templates/entities"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"gorm.io/driver/sqlite"

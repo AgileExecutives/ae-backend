@@ -1,16 +1,16 @@
-module github.com/unburdy/calendar-module/cmd/seed
+module github.com/ae/shared-modules/calendar/cmd/seed
 
 go 1.24.0
 
 toolchain go1.24.5
 
-replace github.com/ae-base-server => ../../../../base-server
+replace github.com/ae/base-server => ../../../../base-server
 
-replace github.com/unburdy/calendar-module => ../..
+replace github.com/ae/shared-modules/calendar => ../..
 
 require (
-	github.com/ae-base-server v0.0.0
-	github.com/unburdy/calendar-module v0.0.0-00010101000000-000000000000
+	github.com/ae/base-server v0.0.0
+	github.com/ae/shared-modules/calendar v0.0.0-00010101000000-000000000000
 )
 
 require (

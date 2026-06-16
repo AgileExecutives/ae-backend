@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"path/filepath"
 
-	"github.com/ae-base-server/modules/templates/services/storage"
+	"github.com/ae/base-server/modules/templates/services/storage"
 	"github.com/gin-gonic/gin"
 )
 

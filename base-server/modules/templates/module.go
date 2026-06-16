@@ -5,12 +5,12 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/ae-base-server/modules/templates/entities"
-	"github.com/ae-base-server/modules/templates/routes"
-	"github.com/ae-base-server/modules/templates/services"
-	"github.com/ae-base-server/modules/templates/services/storage"
-	"github.com/ae-base-server/pkg/core"
-	pkgServices "github.com/ae-base-server/pkg/services"
+	"github.com/ae/base-server/modules/templates/entities"
+	"github.com/ae/base-server/modules/templates/routes"
+	"github.com/ae/base-server/modules/templates/services"
+	"github.com/ae/base-server/modules/templates/services/storage"
+	"github.com/ae/base-server/pkg/core"
+	pkgServices "github.com/ae/base-server/pkg/services"
 	"github.com/redis/go-redis/v9"
 )
 

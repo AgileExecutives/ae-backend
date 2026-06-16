@@ -4,8 +4,8 @@ import (
 	"context"
 	"testing"
 
-	"github.com/ae-base-server/internal/models"
-	"github.com/ae-base-server/pkg/testutils"
+	"github.com/ae/base-server/internal/models"
+	"github.com/ae/base-server/pkg/testutils"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"gorm.io/gorm"

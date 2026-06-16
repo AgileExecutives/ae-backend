@@ -5,8 +5,8 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/ae-base-server/internal/models"
-	"github.com/ae-base-server/pkg/auth"
+	"github.com/ae/base-server/internal/models"
+	"github.com/ae/base-server/pkg/auth"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 )

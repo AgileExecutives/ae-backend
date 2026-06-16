@@ -5,9 +5,9 @@ import (
 	"strconv"
 	"strings"
 
-	baseAPI "github.com/ae-base-server/api"
-	"github.com/ae-base-server/modules/templates/entities"
-	"github.com/ae-base-server/modules/templates/services"
+	baseAPI "github.com/ae/base-server/api"
+	"github.com/ae/base-server/modules/templates/entities"
+	"github.com/ae/base-server/modules/templates/services"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 )

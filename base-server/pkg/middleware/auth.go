@@ -1,7 +1,7 @@
 package middleware
 
 import (
-	internalMiddleware "github.com/ae-base-server/internal/middleware"
+	internalMiddleware "github.com/ae/base-server/internal/middleware"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 )

@@ -6,7 +6,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"github.com/unburdy/booking-module/entities"
+	"github.com/ae/shared-modules/booking/entities"
 )
 
 // Phase 1: Test recurrence calculation stops on first conflict

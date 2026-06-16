@@ -8,9 +8,9 @@ import (
 	"html/template"
 	"time"
 
-	"github.com/ae-base-server/modules/templates/entities"
-	"github.com/ae-base-server/modules/templates/services/renderer"
-	"github.com/ae-base-server/pkg/services"
+	"github.com/ae/base-server/modules/templates/entities"
+	"github.com/ae/base-server/modules/templates/services/renderer"
+	"github.com/ae/base-server/pkg/services"
 	"gorm.io/gorm"
 )
 

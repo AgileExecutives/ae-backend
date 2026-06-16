@@ -1,8 +1,8 @@
 package routes
 
 import (
-	"github.com/ae-base-server/modules/settings_api/handlers"
-	"github.com/ae-base-server/pkg/core"
+	"github.com/ae/base-server/modules/settings_api/handlers"
+	"github.com/ae/base-server/pkg/core"
 	"github.com/gin-gonic/gin"
 )
 

@@ -2,10 +2,10 @@ package audit
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/unburdy/audit-module/entities"
-	"github.com/unburdy/audit-module/handlers"
-	"github.com/unburdy/audit-module/routes"
-	"github.com/unburdy/audit-module/services"
+	"github.com/ae/shared-modules/audit/entities"
+	"github.com/ae/shared-modules/audit/handlers"
+	"github.com/ae/shared-modules/audit/routes"
+	"github.com/ae/shared-modules/audit/services"
 	"gorm.io/gorm"
 )
 

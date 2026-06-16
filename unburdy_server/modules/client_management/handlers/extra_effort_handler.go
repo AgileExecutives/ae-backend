@@ -5,7 +5,7 @@ import (
 	"strconv"
 	"time"
 
-	baseAPI "github.com/ae-base-server/api"
+	baseAPI "github.com/ae/base-server/api"
 	"github.com/gin-gonic/gin"
 	_ "github.com/unburdy/unburdy-server-api/internal/models" // imported for swagger documentation
 	"github.com/unburdy/unburdy-server-api/modules/client_management/entities"

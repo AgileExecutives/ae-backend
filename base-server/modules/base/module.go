@@ -3,13 +3,13 @@ package base
 import (
 	"context"
 
-	"github.com/ae-base-server/modules/base/entities"
-	"github.com/ae-base-server/modules/base/events"
-	"github.com/ae-base-server/modules/base/handlers"
-	"github.com/ae-base-server/modules/base/middleware"
-	"github.com/ae-base-server/modules/base/services"
-	"github.com/ae-base-server/pkg/core"
-	settingsentities "github.com/ae-base-server/pkg/settings/entities"
+	"github.com/ae/base-server/modules/base/entities"
+	"github.com/ae/base-server/modules/base/events"
+	"github.com/ae/base-server/modules/base/handlers"
+	"github.com/ae/base-server/modules/base/middleware"
+	"github.com/ae/base-server/modules/base/services"
+	"github.com/ae/base-server/pkg/core"
+	settingsentities "github.com/ae/base-server/pkg/settings/entities"
 )
 
 // BaseModule provides core authentication, user management, and contact functionality

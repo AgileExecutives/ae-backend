@@ -6,10 +6,10 @@ import (
 	"strconv"
 	"time"
 
-	baseAPI "github.com/ae-base-server/api"
+	baseAPI "github.com/ae/base-server/api"
 	"github.com/gin-gonic/gin"
-	"github.com/unburdy/audit-module/entities"
-	"github.com/unburdy/audit-module/services"
+	"github.com/ae/shared-modules/audit/entities"
+	"github.com/ae/shared-modules/audit/services"
 )
 
 type AuditHandler struct {

@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	baseAPI "github.com/ae-base-server/api"
+	baseAPI "github.com/ae/base-server/api"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/unburdy/unburdy-server-api/internal/models"

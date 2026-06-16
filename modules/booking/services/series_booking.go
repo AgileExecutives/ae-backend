@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/unburdy/booking-module/entities"
+	"github.com/ae/shared-modules/booking/entities"
 )
 
 // CalendarSeries represents a recurring series in the database

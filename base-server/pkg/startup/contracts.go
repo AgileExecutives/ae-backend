@@ -3,11 +3,11 @@ package startup
 import (
 	"fmt"
 
-	baseServices "github.com/ae-base-server/modules/base/services"
-	emailServices "github.com/ae-base-server/modules/email/services"
+	baseServices "github.com/ae/base-server/modules/base/services"
+	emailServices "github.com/ae/base-server/modules/email/services"
 
-	// invoiceServices "github.com/unburdy/invoice-module/services" // DEPRECATED: old invoice module
-	templateServices "github.com/ae-base-server/modules/templates/services"
+	// invoiceServices "github.com/ae/shared-modules/invoice/services" // DEPRECATED: old invoice module
+	templateServices "github.com/ae/base-server/modules/templates/services"
 	clientManagementServices "github.com/unburdy/unburdy-server-api/modules/client_management/services"
 	"gorm.io/gorm"
 )

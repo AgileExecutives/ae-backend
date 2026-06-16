@@ -1,16 +1,16 @@
-module github.com/unburdy/calendar-module/tests
+module github.com/ae/shared-modules/calendar/tests
 
 go 1.24.0
 
 require (
 	github.com/stretchr/testify v1.11.1
-	github.com/unburdy/calendar-module v0.0.0
+	github.com/ae/shared-modules/calendar v0.0.0
 	gorm.io/driver/sqlite v1.6.0
 	gorm.io/gorm v1.30.0
 )
 
 require (
-	github.com/ae-base-server v0.0.0 // indirect
+	github.com/ae/base-server v0.0.0 // indirect
 	github.com/bytedance/sonic v1.13.3 // indirect
 	github.com/bytedance/sonic/loader v0.2.4 // indirect
 	github.com/cloudwego/base64x v0.1.5 // indirect
@@ -46,6 +46,6 @@ require (
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
 
-replace github.com/unburdy/calendar-module => ../
+replace github.com/ae/shared-modules/calendar => ../
 
-replace github.com/ae-base-server => ../../../base-server
+replace github.com/ae/base-server => ../../../base-server

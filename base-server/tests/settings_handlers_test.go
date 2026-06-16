@@ -7,8 +7,8 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/ae-base-server/pkg/settings"
-	"github.com/ae-base-server/pkg/settings/entities"
+	"github.com/ae/base-server/pkg/settings"
+	"github.com/ae/base-server/pkg/settings/entities"
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
 	"gorm.io/driver/sqlite"

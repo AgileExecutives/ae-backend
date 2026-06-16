@@ -3,10 +3,10 @@ package pdf
 import (
 	"context"
 
-	"github.com/ae-base-server/modules/pdf/events"
-	"github.com/ae-base-server/modules/pdf/handlers"
-	"github.com/ae-base-server/modules/pdf/services"
-	"github.com/ae-base-server/pkg/core"
+	"github.com/ae/base-server/modules/pdf/events"
+	"github.com/ae/base-server/modules/pdf/handlers"
+	"github.com/ae/base-server/modules/pdf/services"
+	"github.com/ae/base-server/pkg/core"
 )
 
 // PDFModule represents the PDF generation module

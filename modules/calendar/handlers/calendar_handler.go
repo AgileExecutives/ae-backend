@@ -7,9 +7,9 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	baseAPI "github.com/ae-base-server/api"
-	"github.com/unburdy/calendar-module/entities"
-	"github.com/unburdy/calendar-module/services"
+	baseAPI "github.com/ae/base-server/api"
+	"github.com/ae/shared-modules/calendar/entities"
+	"github.com/ae/shared-modules/calendar/services"
 )
 
 // CalendarHandler handles calendar-related HTTP requests

@@ -6,10 +6,10 @@ import (
 	"net/http"
 	"time"
 
-	baseAPI "github.com/ae-base-server/api"
+	baseAPI "github.com/ae/base-server/api"
 	"github.com/gin-gonic/gin"
-	"github.com/unburdy/booking-module/entities"
-	"github.com/unburdy/booking-module/services"
+	"github.com/ae/shared-modules/booking/entities"
+	"github.com/ae/shared-modules/booking/services"
 	"gorm.io/gorm"
 )
 

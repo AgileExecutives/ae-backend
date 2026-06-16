@@ -1,8 +1,8 @@
 package entities
 
 import (
-	"github.com/ae-base-server/pkg/core"
-	settingsEntities "github.com/ae-base-server/pkg/settings/entities"
+	"github.com/ae/base-server/pkg/core"
+	settingsEntities "github.com/ae/base-server/pkg/settings/entities"
 )
 
 // SettingEntity represents the settings value entity.

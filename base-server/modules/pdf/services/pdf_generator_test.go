@@ -7,8 +7,8 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/ae-base-server/modules/pdf/services"
-	"github.com/ae-base-server/pkg/testutils"
+	"github.com/ae/base-server/modules/pdf/services"
+	"github.com/ae/base-server/pkg/testutils"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )

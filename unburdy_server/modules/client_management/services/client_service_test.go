@@ -4,7 +4,7 @@ import (
 	"testing"
 	"time"
 
-	baseAuth "github.com/ae-base-server/pkg/auth"
+	baseAuth "github.com/ae/base-server/pkg/auth"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"gorm.io/driver/sqlite"

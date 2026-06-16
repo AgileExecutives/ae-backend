@@ -4,14 +4,14 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/ae-base-server/pkg/core"
+	"github.com/ae/base-server/pkg/core"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 
-	"github.com/unburdy/calendar-module/entities"
-	"github.com/unburdy/calendar-module/handlers"
-	"github.com/unburdy/calendar-module/routes"
-	"github.com/unburdy/calendar-module/services"
+	"github.com/ae/shared-modules/calendar/entities"
+	"github.com/ae/shared-modules/calendar/handlers"
+	"github.com/ae/shared-modules/calendar/routes"
+	"github.com/ae/shared-modules/calendar/services"
 )
 
 // Module implements the complete core.Module interface for auto-migration support

@@ -1,7 +1,7 @@
 package settings
 
 import (
-	"github.com/ae-base-server/pkg/settings/entities"
+	"github.com/ae/base-server/pkg/settings/entities"
 )
 
 // Domain constants

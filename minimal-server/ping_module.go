@@ -3,7 +3,7 @@ package main
 import (
 	"net/http"
 
-	"github.com/ae-base-server/api"
+	"github.com/ae/base-server/api"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 )

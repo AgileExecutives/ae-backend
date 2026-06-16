@@ -3,11 +3,11 @@ package invoice
 import (
 	"context"
 
-	"github.com/ae-base-server/pkg/core"
-	"github.com/unburdy/invoice-module/entities"
-	"github.com/unburdy/invoice-module/handlers"
-	"github.com/unburdy/invoice-module/routes"
-	"github.com/unburdy/invoice-module/services"
+	"github.com/ae/base-server/pkg/core"
+	"github.com/ae/shared-modules/invoice/entities"
+	"github.com/ae/shared-modules/invoice/handlers"
+	"github.com/ae/shared-modules/invoice/routes"
+	"github.com/ae/shared-modules/invoice/services"
 )
 
 // CoreModule implements the core.Module interface for the invoice module

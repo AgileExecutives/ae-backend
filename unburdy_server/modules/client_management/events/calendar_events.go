@@ -3,7 +3,7 @@ package events
 import (
 	"fmt"
 
-	"github.com/ae-base-server/pkg/core"
+	"github.com/ae/base-server/pkg/core"
 	"gorm.io/gorm"
 )
 

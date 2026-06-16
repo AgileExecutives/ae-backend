@@ -3,10 +3,10 @@ package settingsapi
 import (
 	"context"
 
-	"github.com/ae-base-server/modules/settings_api/entities"
-	"github.com/ae-base-server/modules/settings_api/handlers"
-	"github.com/ae-base-server/modules/settings_api/routes"
-	"github.com/ae-base-server/pkg/core"
+	"github.com/ae/base-server/modules/settings_api/entities"
+	"github.com/ae/base-server/modules/settings_api/handlers"
+	"github.com/ae/base-server/modules/settings_api/routes"
+	"github.com/ae/base-server/pkg/core"
 )
 
 // SettingsAPIModule exposes a small tenant-scoped settings HTTP API.

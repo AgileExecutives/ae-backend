@@ -9,7 +9,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/unburdy/calendar-module/entities"
+	"github.com/ae/shared-modules/calendar/entities"
 	"gorm.io/gorm"
 )
 

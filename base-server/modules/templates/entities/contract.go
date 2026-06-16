@@ -3,7 +3,7 @@ package entities
 import (
 	"time"
 
-	baseCore "github.com/ae-base-server/pkg/core"
+	baseCore "github.com/ae/base-server/pkg/core"
 	"gorm.io/datatypes"
 	"gorm.io/gorm"
 )

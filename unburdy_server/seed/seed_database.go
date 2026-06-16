@@ -17,16 +17,16 @@ import (
 	"time"
 
 	// Base server API for seeding base entities
-	baseAPI "github.com/ae-base-server/api"
+	baseAPI "github.com/ae/base-server/api"
 
 	// Application entities
 	"github.com/unburdy/unburdy-server-api/modules/client_management/entities"
 
 	// Calendar seeding
-	calendarSeeding "github.com/unburdy/calendar-module/seeding"
+	calendarSeeding "github.com/ae/shared-modules/calendar/seeding"
 
 	// Invoice numbers module
-	invoiceNumberServices "github.com/unburdy/invoice-number-module/services"
+	invoiceNumberServices "github.com/ae/shared-modules/invoice_number/services"
 
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"

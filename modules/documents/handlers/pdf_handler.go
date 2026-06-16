@@ -6,10 +6,10 @@ import (
 	"strconv"
 	"time"
 
-	baseAPI "github.com/ae-base-server/api"
-	templateServices "github.com/ae-base-server/modules/templates/services"
+	baseAPI "github.com/ae/base-server/api"
+	templateServices "github.com/ae/base-server/modules/templates/services"
 	"github.com/gin-gonic/gin"
-	"github.com/unburdy/documents-module/services"
+	"github.com/ae/shared-modules/documents/services"
 	"gorm.io/gorm"
 )
 
